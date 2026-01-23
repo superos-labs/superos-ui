@@ -9,7 +9,7 @@ export default function Page() {
           {registry.map((entry) => (
             <li key={entry.slug}>
               <Link
-                href={`/components/${entry.slug}`}
+                href={`/${entry.slug}`}
                 className="text-foreground/60 hover:text-foreground block py-1 text-sm transition-colors"
               >
                 {entry.name}

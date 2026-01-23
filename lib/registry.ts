@@ -10,13 +10,6 @@ export interface ComponentEntry {
 // Lazy load components to keep the registry lightweight
 export const registry: ComponentEntry[] = [
   {
-    slug: "component-example",
-    name: "Component Example",
-    get component() {
-      return require("@/components/component-example").ComponentExample
-    },
-  },
-  {
     slug: "calendar",
     name: "Calendar",
     layout: "full",
