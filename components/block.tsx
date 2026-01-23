@@ -290,6 +290,7 @@ function Block({
           colorStyles.completedBg,
           colorStyles.completedBgHover,
           colorStyles.completedText,
+          "opacity-60",
         ] : [
           "border-l-[3px]",
           colorStyles.border,
