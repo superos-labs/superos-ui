@@ -4,6 +4,7 @@ import * as React from "react"
 import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell"
 import { Calendar, type CalendarMode, type CalendarEvent } from "@/components/calendar"
 import { Backlog, type BacklogItem } from "@/components/backlog"
+import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
 import {
   RiMoonLine,
   RiRestaurantLine,
@@ -17,7 +18,13 @@ import {
   RiPenNibLine,
 } from "@remixicon/react"
 
-const SAMPLE_COMMITMENTS: BacklogItem[] = [
+// =============================================================================
+// Sample Data
+// =============================================================================
+// Single source of truth for all components. BacklogItem is the canonical type
+// since it's a superset of WeeklyAnalyticsItem.
+
+const INITIAL_COMMITMENTS: BacklogItem[] = [
   { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "text-indigo-500", plannedHours: 56, completedHours: 48 },
   { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "text-amber-500", plannedHours: 14, completedHours: 12 },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "text-slate-500", plannedHours: 10, completedHours: 8 },
@@ -26,7 +33,7 @@ const SAMPLE_COMMITMENTS: BacklogItem[] = [
   { id: "chores", label: "Chores", icon: RiHome4Line, color: "text-orange-500", plannedHours: 4, completedHours: 2 },
 ]
 
-const SAMPLE_GOALS: BacklogItem[] = [
+const INITIAL_GOALS: BacklogItem[] = [
   { 
     id: "superos", 
     label: "Get SuperOS to $1M ARR", 
@@ -84,6 +91,18 @@ const SAMPLE_GOALS: BacklogItem[] = [
   },
 ]
 
+/** Convert BacklogItem[] to WeeklyAnalyticsItem[] by extracting core fields */
+function toAnalyticsItems(items: BacklogItem[]): WeeklyAnalyticsItem[] {
+  return items.map(({ id, label, icon, color, plannedHours, completedHours }) => ({
+    id,
+    label,
+    icon,
+    color,
+    plannedHours: plannedHours ?? 0,
+    completedHours: completedHours ?? 0,
+  }))
+}
+
 const SAMPLE_CALENDAR_EVENTS: CalendarEvent[] = [
   { title: "Morning workout", dayIndex: 0, startHour: 7, durationMinutes: 60, color: "emerald", status: "completed" },
   { title: "Team standup", dayIndex: 0, startHour: 9, durationMinutes: 30, color: "violet", status: "completed" },
@@ -114,6 +133,7 @@ import {
   RiMoreFill,
   RiSideBarLine,
   RiCheckLine,
+  RiPieChartLine,
 } from "@remixicon/react"
 import { cn } from "@/lib/utils"
 
@@ -121,9 +141,15 @@ function ShellDemo() {
   const [showPlanWeek, setShowPlanWeek] = React.useState(true)
   const [showCalendar, setShowCalendar] = React.useState(true)
   const [showSidebar, setShowSidebar] = React.useState(false)
+  const [showRightSidebar, setShowRightSidebar] = React.useState(false)
   const [showTasks, setShowTasks] = React.useState(true)
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
-  const [goals, setGoals] = React.useState<BacklogItem[]>(SAMPLE_GOALS)
+  const [commitments] = React.useState<BacklogItem[]>(INITIAL_COMMITMENTS)
+  const [goals, setGoals] = React.useState<BacklogItem[]>(INITIAL_GOALS)
+
+  // Derive analytics data from the same source
+  const analyticsCommitments = React.useMemo(() => toAnalyticsItems(commitments), [commitments])
+  const analyticsGoals = React.useMemo(() => toAnalyticsItems(goals), [goals])
 
   const handleToggleGoalTask = React.useCallback((goalId: string, taskId: string) => {
     setGoals(prevGoals => 
@@ -195,19 +221,29 @@ function ShellDemo() {
                 {isPlanning ? "Confirm" : "Plan week"}
               </button>
             )}
+            <button 
+              className={cn(
+                "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+                showRightSidebar ? "text-foreground" : "text-muted-foreground"
+              )}
+              onClick={() => setShowRightSidebar(!showRightSidebar)}
+              title="Toggle analytics"
+            >
+              <RiPieChartLine className="size-4" />
+            </button>
             <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
               <RiMoreFill className="size-4" />
             </button>
           </div>
         </ShellToolbar>
-        <div className={`flex min-h-0 flex-1 ${showSidebar ? "gap-4" : "gap-0"}`}>
+        <div className={`flex min-h-0 flex-1 ${showSidebar || showRightSidebar ? "gap-4" : "gap-0"}`}>
           <div 
             className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
               showSidebar ? "w-[420px] opacity-100" : "w-0 opacity-0"
             }`}
           >
             <Backlog 
-              commitments={SAMPLE_COMMITMENTS}
+              commitments={commitments}
               goals={goals}
               className="h-full w-[420px] max-w-none overflow-y-auto" 
               showTasks={showTasks}
@@ -218,6 +254,18 @@ function ShellDemo() {
           <ShellContent className="overflow-hidden">
             {showCalendar && <Calendar events={SAMPLE_CALENDAR_EVENTS} mode={calendarMode} />}
           </ShellContent>
+          <div 
+            className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
+              showRightSidebar ? "w-[340px] opacity-100" : "w-0 opacity-0"
+            }`}
+          >
+            <WeeklyAnalytics 
+              commitments={analyticsCommitments}
+              goals={analyticsGoals}
+              weekLabel="Jan 20 – 26"
+              className="h-full w-[340px] max-w-none overflow-y-auto" 
+            />
+          </div>
         </div>
       </Shell>
       <KnobsToggle />
@@ -226,6 +274,11 @@ function ShellDemo() {
           label="Show Sidebar"
           value={showSidebar}
           onChange={setShowSidebar}
+        />
+        <KnobBoolean
+          label="Show Analytics"
+          value={showRightSidebar}
+          onChange={setShowRightSidebar}
         />
         <KnobBoolean
           label="Show Plan Week button"
