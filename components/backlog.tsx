@@ -1,50 +1,50 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { 
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import {
   RiAddLine,
   RiMoreLine,
   RiShiningLine,
   RiFlagLine,
   RiCheckLine,
-} from "@remixicon/react"
+} from "@remixicon/react";
 
 // Types
 interface BacklogTask {
-  id: string
-  label: string
-  completed?: boolean
+  id: string;
+  label: string;
+  completed?: boolean;
 }
 
-type IconComponent = React.ComponentType<{ className?: string }>
+type IconComponent = React.ComponentType<{ className?: string }>;
 
 interface BacklogItem {
-  id: string
-  label: string
-  icon: IconComponent
-  color: string
-  plannedHours?: number
-  completedHours?: number
+  id: string;
+  label: string;
+  icon: IconComponent;
+  color: string;
+  plannedHours?: number;
+  completedHours?: number;
   /** Current milestone - the next concrete step toward this goal */
-  milestone?: string
+  milestone?: string;
   /** Tasks associated with this item */
-  tasks?: BacklogTask[]
+  tasks?: BacklogTask[];
 }
 
 interface BacklogGroup {
-  id: string
-  title: string
-  description: string
-  items: BacklogItem[]
+  id: string;
+  title: string;
+  description: string;
+  items: BacklogItem[];
 }
 
 // Components
-type GoalDisplayMode = "goal" | "milestone"
+type GoalDisplayMode = "goal" | "milestone";
 
 interface TaskRowProps {
-  task: BacklogTask
-  onToggle?: (id: string) => void
+  task: BacklogTask;
+  onToggle?: (id: string) => void;
 }
 
 function TaskRow({ task, onToggle }: TaskRowProps) {
@@ -52,7 +52,7 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
     <div
       className={cn(
         "group relative flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all",
-        "hover:bg-muted/60"
+        "hover:bg-muted/60",
       )}
     >
       <button
@@ -61,7 +61,7 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
           "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
           task.completed
             ? "bg-muted text-muted-foreground"
-            : "bg-muted/60 text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground"
+            : "bg-muted/60 text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground",
         )}
       >
         {task.completed && <RiCheckLine className="size-3" />}
@@ -71,49 +71,50 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
           "flex-1 truncate text-xs",
           task.completed
             ? "text-muted-foreground line-through"
-            : "text-foreground/80"
+            : "text-foreground/80",
         )}
       >
         {task.label}
       </span>
     </div>
-  )
+  );
 }
 
 interface BacklogItemRowProps {
-  item: BacklogItem
-  showHours?: boolean
-  showTasks?: boolean
+  item: BacklogItem;
+  showHours?: boolean;
+  showTasks?: boolean;
   /** For goals with milestones, which should be the primary title */
-  goalDisplayMode?: GoalDisplayMode
-  onToggleTask?: (itemId: string, taskId: string) => void
-  className?: string
+  goalDisplayMode?: GoalDisplayMode;
+  onToggleTask?: (itemId: string, taskId: string) => void;
+  className?: string;
 }
 
-function BacklogItemRow({ 
-  item, 
+function BacklogItemRow({
+  item,
   showHours = true,
   showTasks = true,
   goalDisplayMode = "goal",
   onToggleTask,
-  className 
+  className,
 }: BacklogItemRowProps) {
-  const IconComponent = item.icon
-  
-  // Determine what to show as primary vs secondary based on display mode
-  const hasMilestone = !!item.milestone
-  const showMilestoneAsPrimary = goalDisplayMode === "milestone" && hasMilestone
-  const primaryText = showMilestoneAsPrimary ? item.milestone : item.label
-  const secondaryText = showMilestoneAsPrimary ? item.label : item.milestone
+  const IconComponent = item.icon;
 
-  const hasTasks = showTasks && item.tasks && item.tasks.length > 0
+  // Determine what to show as primary vs secondary based on display mode
+  const hasMilestone = !!item.milestone;
+  const showMilestoneAsPrimary =
+    goalDisplayMode === "milestone" && hasMilestone;
+  const primaryText = showMilestoneAsPrimary ? item.milestone : item.label;
+  const secondaryText = showMilestoneAsPrimary ? item.label : item.milestone;
+
+  const hasTasks = showTasks && item.tasks && item.tasks.length > 0;
 
   return (
     <div className={cn("flex flex-col", className)}>
       <div
         className={cn(
           "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
-          "hover:bg-muted/60"
+          "hover:bg-muted/60",
         )}
       >
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
@@ -138,9 +139,13 @@ function BacklogItemRow({
 
         {showHours && item.plannedHours !== undefined && (
           <div className="flex shrink-0 items-center gap-1.5 text-xs">
-            <span className="tabular-nums text-foreground">{item.completedHours ?? 0}h</span>
+            <span className="tabular-nums text-foreground">
+              {item.completedHours ?? 0}h
+            </span>
             <span className="text-muted-foreground/50">/</span>
-            <span className="tabular-nums text-muted-foreground">{item.plannedHours}h</span>
+            <span className="tabular-nums text-muted-foreground">
+              {item.plannedHours}h
+            </span>
           </div>
         )}
 
@@ -161,19 +166,19 @@ function BacklogItemRow({
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface BacklogSectionProps {
-  title: string
-  description?: string
-  items: BacklogItem[]
-  showHours?: boolean
-  showTasks?: boolean
-  goalDisplayMode?: GoalDisplayMode
-  onAddItem?: () => void
-  onToggleTask?: (itemId: string, taskId: string) => void
-  className?: string
+  title: string;
+  description?: string;
+  items: BacklogItem[];
+  showHours?: boolean;
+  showTasks?: boolean;
+  goalDisplayMode?: GoalDisplayMode;
+  onAddItem?: () => void;
+  onToggleTask?: (itemId: string, taskId: string) => void;
+  className?: string;
 }
 
 function BacklogSection({
@@ -187,8 +192,14 @@ function BacklogSection({
   onToggleTask,
   className,
 }: BacklogSectionProps) {
-  const totalPlannedHours = items.reduce((sum, item) => sum + (item.plannedHours || 0), 0)
-  const totalCompletedHours = items.reduce((sum, item) => sum + (item.completedHours || 0), 0)
+  const totalPlannedHours = items.reduce(
+    (sum, item) => sum + (item.plannedHours || 0),
+    0,
+  );
+  const totalCompletedHours = items.reduce(
+    (sum, item) => sum + (item.completedHours || 0),
+    0,
+  );
 
   return (
     <div className={cn("flex flex-col px-3", className)}>
@@ -201,9 +212,13 @@ function BacklogSection({
         </div>
         {showHours && totalPlannedHours > 0 && (
           <div className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-            <span className="tabular-nums text-foreground">{totalCompletedHours}h</span>
+            <span className="tabular-nums text-foreground">
+              {totalCompletedHours}h
+            </span>
             <span className="text-muted-foreground/50">/</span>
-            <span className="tabular-nums text-muted-foreground">{totalPlannedHours}h</span>
+            <span className="tabular-nums text-muted-foreground">
+              {totalPlannedHours}h
+            </span>
           </div>
         )}
       </div>
@@ -233,22 +248,22 @@ function BacklogSection({
         </button>
       )}
     </div>
-  )
+  );
 }
 
 interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of commitment items to display */
-  commitments: BacklogItem[]
+  commitments: BacklogItem[];
   /** Array of goal items to display */
-  goals: BacklogItem[]
-  showHours?: boolean
-  showTasks?: boolean
-  showCommitments?: boolean
+  goals: BacklogItem[];
+  showHours?: boolean;
+  showTasks?: boolean;
+  showCommitments?: boolean;
   /** Whether to display goal or milestone as primary title for goals */
-  goalDisplayMode?: GoalDisplayMode
-  onAddCommitment?: () => void
-  onAddGoal?: () => void
-  onToggleGoalTask?: (goalId: string, taskId: string) => void
+  goalDisplayMode?: GoalDisplayMode;
+  onAddCommitment?: () => void;
+  onAddGoal?: () => void;
+  onToggleGoalTask?: (goalId: string, taskId: string) => void;
 }
 
 function Backlog({
@@ -264,16 +279,28 @@ function Backlog({
   className,
   ...props
 }: BacklogProps) {
-  const totalCommitmentPlanned = commitments.reduce((sum, item) => sum + (item.plannedHours || 0), 0)
-  const totalCommitmentCompleted = commitments.reduce((sum, item) => sum + (item.completedHours || 0), 0)
-  const totalGoalPlanned = goals.reduce((sum, item) => sum + (item.plannedHours || 0), 0)
-  const totalGoalCompleted = goals.reduce((sum, item) => sum + (item.completedHours || 0), 0)
+  const totalCommitmentPlanned = commitments.reduce(
+    (sum, item) => sum + (item.plannedHours || 0),
+    0,
+  );
+  const totalCommitmentCompleted = commitments.reduce(
+    (sum, item) => sum + (item.completedHours || 0),
+    0,
+  );
+  const totalGoalPlanned = goals.reduce(
+    (sum, item) => sum + (item.plannedHours || 0),
+    0,
+  );
+  const totalGoalCompleted = goals.reduce(
+    (sum, item) => sum + (item.completedHours || 0),
+    0,
+  );
 
   return (
     <div
       className={cn(
         "flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className
+        className,
       )}
       {...props}
     >
@@ -310,8 +337,14 @@ function Backlog({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export { Backlog, BacklogSection, BacklogItemRow }
-export type { BacklogProps, BacklogItem, BacklogTask, BacklogGroup, GoalDisplayMode }
+export { Backlog, BacklogSection, BacklogItemRow };
+export type {
+  BacklogProps,
+  BacklogItem,
+  BacklogTask,
+  BacklogGroup,
+  GoalDisplayMode,
+};

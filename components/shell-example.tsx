@@ -211,6 +211,7 @@ function ShellDemo() {
               goals={goals}
               className="h-full w-[420px] max-w-none overflow-y-auto" 
               showTasks={showTasks}
+              showCommitments={false}
               onToggleGoalTask={handleToggleGoalTask}
             />
           </div>
