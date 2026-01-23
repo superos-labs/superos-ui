@@ -47,6 +47,13 @@ export const registry: ComponentEntry[] = [
       return require("@/components/shell-example").ShellExample
     },
   },
+  {
+    slug: "backlog",
+    name: "Backlog",
+    get component() {
+      return require("@/components/backlog-example").BacklogExample
+    },
+  },
 ]
 
 export function getComponent(slug: string): ComponentEntry | undefined {

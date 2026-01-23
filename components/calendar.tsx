@@ -32,32 +32,14 @@ function modeToStatus(mode: CalendarMode, dayIndex?: number): BlockStatus {
   return "planned"
 }
 
-const SAMPLE_EVENTS: CalendarEvent[] = [
-  { title: "Morning workout", dayIndex: 0, startHour: 7, durationMinutes: 60, color: "emerald", status: "completed" },
-  { title: "Team standup", dayIndex: 0, startHour: 9, durationMinutes: 30, color: "violet", status: "completed" },
-  { title: "Design review", dayIndex: 0, startHour: 14, durationMinutes: 90, color: "blue", taskCount: 3, status: "completed" },
-  { title: "1:1 with manager", dayIndex: 1, startHour: 10, durationMinutes: 60, color: "amber", status: "completed" },
-  { title: "Lunch break", dayIndex: 1, startHour: 12, durationMinutes: 60, color: "teal", status: "completed" },
-  { title: "Sprint planning", dayIndex: 1, startHour: 15, durationMinutes: 120, color: "indigo", taskCount: 5, status: "completed" },
-  { title: "Deep work", dayIndex: 2, startHour: 9, durationMinutes: 180, color: "sky", status: "completed" },
-  { title: "Product sync", dayIndex: 2, startHour: 14, durationMinutes: 45, color: "rose", status: "completed" },
-  { title: "Code review", dayIndex: 3, startHour: 10, durationMinutes: 60, color: "cyan", taskCount: 2 },
-  { title: "Team lunch", dayIndex: 3, startHour: 12, durationMinutes: 90, color: "orange" },
-  { title: "Interview", dayIndex: 3, startHour: 16, durationMinutes: 60, color: "pink" },
-  { title: "Focus time", dayIndex: 4, startHour: 8, durationMinutes: 120, color: "violet" },
-  { title: "All-hands", dayIndex: 4, startHour: 11, durationMinutes: 60, color: "fuchsia" },
-  { title: "Project retro", dayIndex: 4, startHour: 15, durationMinutes: 60, color: "green", taskCount: 4 },
-  { title: "Side project", dayIndex: 5, startHour: 10, durationMinutes: 180, color: "lime", status: "outlined" },
-  { title: "Reading", dayIndex: 6, startHour: 9, durationMinutes: 120, color: "slate", status: "outlined" },
-]
-
 interface CalendarProps {
   view?: CalendarView
   mode?: CalendarMode
   selectedDate?: Date
   showHourLabels?: boolean
   headerIsVisible?: boolean
-  sampleData?: boolean
+  /** Events to display on the calendar */
+  events?: CalendarEvent[]
   setBlockStyle?: BlockStyle
 }
 
@@ -249,7 +231,7 @@ function formatEventTime(hour: number, minutes: number = 0) {
   return `${h}${m}${ampm}`
 }
 
-function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, sampleData = false, mode = "schedule", setBlockStyle }: { selectedDate: Date; showHourLabels?: boolean; headerIsVisible?: boolean; sampleData?: boolean; mode?: CalendarMode; setBlockStyle?: BlockStyle }) {
+function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, events = [], mode = "schedule", setBlockStyle }: { selectedDate: Date; showHourLabels?: boolean; headerIsVisible?: boolean; events?: CalendarEvent[]; mode?: CalendarMode; setBlockStyle?: BlockStyle }) {
   const today = isToday(selectedDate)
   const dayName = selectedDate.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3)
   
@@ -261,7 +243,7 @@ function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, 
   const selectedDayIndex = selectedDayOfWeek === 0 ? 6 : selectedDayOfWeek - 1
   
   // Filter events for this day
-  const dayEvents = sampleData ? SAMPLE_EVENTS.filter(e => e.dayIndex === selectedDayIndex) : []
+  const dayEvents = events.filter(e => e.dayIndex === selectedDayIndex)
   
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
@@ -360,7 +342,7 @@ function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, 
   )
 }
 
-function WeekView({ weekDates, showHourLabels = true, sampleData = false, mode = "schedule", setBlockStyle }: { weekDates: Date[]; showHourLabels?: boolean; sampleData?: boolean; mode?: CalendarMode; setBlockStyle?: BlockStyle }) {
+function WeekView({ weekDates, showHourLabels = true, events = [], mode = "schedule", setBlockStyle }: { weekDates: Date[]; showHourLabels?: boolean; events?: CalendarEvent[]; mode?: CalendarMode; setBlockStyle?: BlockStyle }) {
   const headerCols = showHourLabels ? "grid-cols-[3rem_repeat(7,1fr)]" : "grid-cols-[repeat(7,1fr)]"
   const gridCols = showHourLabels ? "grid-cols-[3rem_repeat(7,1fr)]" : "grid-cols-[repeat(7,1fr)]"
   
@@ -413,7 +395,7 @@ function WeekView({ weekDates, showHourLabels = true, sampleData = false, mode =
           {DAYS.map((day, dayIndex) => {
             const date = weekDates[dayIndex]
             const today = isToday(date)
-            const dayEvents = sampleData ? SAMPLE_EVENTS.filter(e => e.dayIndex === dayIndex) : []
+            const dayEvents = events.filter(e => e.dayIndex === dayIndex)
             
             return (
               <div
@@ -484,7 +466,7 @@ export function Calendar({
   selectedDate, 
   showHourLabels = true, 
   headerIsVisible = true, 
-  sampleData = false, 
+  events = [], 
   setBlockStyle
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), [])
@@ -492,11 +474,11 @@ export function Calendar({
   const weekDates = React.useMemo(() => getWeekDates(dateToUse), [dateToUse])
   
   if (view === "day") {
-    return <DayView selectedDate={dateToUse} showHourLabels={showHourLabels} headerIsVisible={headerIsVisible} sampleData={sampleData} mode={mode} setBlockStyle={setBlockStyle} />
+    return <DayView selectedDate={dateToUse} showHourLabels={showHourLabels} headerIsVisible={headerIsVisible} events={events} mode={mode} setBlockStyle={setBlockStyle} />
   }
   
-  return <WeekView weekDates={weekDates} showHourLabels={showHourLabels} sampleData={sampleData} mode={mode} setBlockStyle={setBlockStyle} />
+  return <WeekView weekDates={weekDates} showHourLabels={showHourLabels} events={events} mode={mode} setBlockStyle={setBlockStyle} />
 }
 
 export { CalendarDayHeader }
-export type { CalendarView, CalendarMode, CalendarProps, CalendarDayHeaderProps, BlockStyle }
+export type { CalendarView, CalendarMode, CalendarProps, CalendarDayHeaderProps, CalendarEvent, BlockStyle }
