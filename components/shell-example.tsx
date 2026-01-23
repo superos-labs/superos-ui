@@ -123,6 +123,24 @@ function ShellDemo() {
   const [showSidebar, setShowSidebar] = React.useState(false)
   const [showTasks, setShowTasks] = React.useState(true)
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
+  const [goals, setGoals] = React.useState<BacklogItem[]>(SAMPLE_GOALS)
+
+  const handleToggleGoalTask = React.useCallback((goalId: string, taskId: string) => {
+    setGoals(prevGoals => 
+      prevGoals.map(goal => 
+        goal.id === goalId
+          ? {
+              ...goal,
+              tasks: goal.tasks?.map(task =>
+                task.id === taskId
+                  ? { ...task, completed: !task.completed }
+                  : task
+              )
+            }
+          : goal
+      )
+    )
+  }, [])
 
   const isPlanning = calendarMode === "blueprint"
 
@@ -190,9 +208,10 @@ function ShellDemo() {
           >
             <Backlog 
               commitments={SAMPLE_COMMITMENTS}
-              goals={SAMPLE_GOALS}
+              goals={goals}
               className="h-full w-[420px] max-w-none overflow-y-auto" 
               showTasks={showTasks}
+              onToggleGoalTask={handleToggleGoalTask}
             />
           </div>
           <ShellContent className="overflow-hidden">

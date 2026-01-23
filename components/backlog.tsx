@@ -51,7 +51,7 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
   return (
     <div
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-lg px-3 py-1.5 transition-all",
+        "group relative flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all",
         "hover:bg-muted/60"
       )}
     >
