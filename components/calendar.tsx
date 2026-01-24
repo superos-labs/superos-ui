@@ -1,73 +1,81 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { Block, type BlockColor, type BlockStatus } from "@/components/block"
-import { ResizableBlockWrapper } from "@/components/resizable-block-wrapper"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import {
+  Block,
+  ResizableBlockWrapper,
+  type BlockColor,
+  type BlockStatus,
+} from "@/components/block";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const
-const HOURS = Array.from({ length: 24 }, (_, i) => i)
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-type CalendarView = "week" | "day"
-type CalendarMode = "schedule" | "blueprint"
-type BlockStyle = "planned" | "completed" | "blueprint"
+type CalendarView = "week" | "day";
+type CalendarMode = "schedule" | "blueprint";
+type BlockStyle = "planned" | "completed" | "blueprint";
 
 interface CalendarEvent {
-  id: string
-  title: string
-  dayIndex: number // 0 = Monday, 6 = Sunday
-  startMinutes: number // Minutes from midnight (0-1440)
-  durationMinutes: number
-  color: BlockColor
-  taskCount?: number
-  status?: "base" | "completed" | "outlined"
+  id: string;
+  title: string;
+  dayIndex: number; // 0 = Monday, 6 = Sunday
+  startMinutes: number; // Minutes from midnight (0-1440)
+  durationMinutes: number;
+  color: BlockColor;
+  taskCount?: number;
+  status?: "base" | "completed" | "outlined";
 }
 
 function blockStyleToStatus(style: BlockStyle): BlockStatus {
-  return style
+  return style;
 }
 
 function modeToStatus(mode: CalendarMode, dayIndex?: number): BlockStatus {
-  if (mode === "blueprint") return "blueprint"
+  if (mode === "blueprint") return "blueprint";
   // Monday (0), Tuesday (1), Wednesday (2) show as completed
-  if (dayIndex !== undefined && dayIndex <= 2) return "completed"
-  return "planned"
+  if (dayIndex !== undefined && dayIndex <= 2) return "completed";
+  return "planned";
 }
 
 interface CalendarProps {
-  view?: CalendarView
-  mode?: CalendarMode
-  selectedDate?: Date
-  showHourLabels?: boolean
-  headerIsVisible?: boolean
+  view?: CalendarView;
+  mode?: CalendarMode;
+  selectedDate?: Date;
+  showHourLabels?: boolean;
+  headerIsVisible?: boolean;
   /** Events to display on the calendar */
-  events?: CalendarEvent[]
-  setBlockStyle?: BlockStyle
+  events?: CalendarEvent[];
+  setBlockStyle?: BlockStyle;
   /** Called when an event is being resized */
-  onEventResize?: (eventId: string, newStartMinutes: number, newDurationMinutes: number) => void
+  onEventResize?: (
+    eventId: string,
+    newStartMinutes: number,
+    newDurationMinutes: number,
+  ) => void;
   /** Called when resize operation ends */
-  onEventResizeEnd?: (eventId: string) => void
+  onEventResizeEnd?: (eventId: string) => void;
 }
 
 function getWeekDates(referenceDate: Date = new Date()) {
-  const date = new Date(referenceDate)
-  const day = date.getDay()
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
-  const monday = new Date(date)
-  monday.setDate(diff)
-  
+  const date = new Date(referenceDate);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(date);
+  monday.setDate(diff);
+
   return DAYS.map((_, index) => {
-    const d = new Date(monday)
-    d.setDate(monday.getDate() + index)
-    return d
-  })
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + index);
+    return d;
+  });
 }
 
 function formatHour(hour: number) {
-  if (hour === 0) return "12a"
-  if (hour === 12) return "12p"
-  if (hour < 12) return `${hour}a`
-  return `${hour - 12}p`
+  if (hour === 0) return "12a";
+  if (hour === 12) return "12p";
+  if (hour < 12) return `${hour}a`;
+  return `${hour - 12}p`;
 }
 
 function formatFullDate(date: Date) {
@@ -75,36 +83,36 @@ function formatFullDate(date: Date) {
     weekday: "long",
     month: "long",
     day: "numeric",
-  })
+  });
 }
 
 function isToday(date: Date) {
-  const today = new Date()
+  const today = new Date();
   return (
     date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&
     date.getFullYear() === today.getFullYear()
-  )
+  );
 }
 
 function isCurrentHour(hour: number) {
-  return new Date().getHours() === hour
+  return new Date().getHours() === hour;
 }
 
 interface CalendarDayHeaderProps {
-  day: string
-  date: number
-  isToday?: boolean
-  showBorder?: boolean
-  className?: string
+  day: string;
+  date: number;
+  isToday?: boolean;
+  showBorder?: boolean;
+  className?: string;
 }
 
-function CalendarDayHeader({ 
-  day, 
-  date, 
-  isToday: today = false, 
+function CalendarDayHeader({
+  day,
+  date,
+  isToday: today = false,
   showBorder = true,
-  className 
+  className,
 }: CalendarDayHeaderProps) {
   return (
     <div
@@ -112,51 +120,61 @@ function CalendarDayHeader({
         "flex items-center justify-center gap-1.5 py-3",
         showBorder && "border-border/40 border-r last:border-r-0",
         today && "bg-primary/[0.03]",
-        className
+        className,
       )}
     >
-      <span className={cn(
-        "text-sm font-medium",
-        today ? "text-foreground" : "text-muted-foreground"
-      )}>
+      <span
+        className={cn(
+          "text-sm font-medium",
+          today ? "text-foreground" : "text-muted-foreground",
+        )}
+      >
         {day}
       </span>
-      <span className={cn(
-        "flex size-7 items-center justify-center text-sm tabular-nums",
-        today 
-          ? "bg-red-500 text-white rounded-lg font-medium" 
-          : "text-muted-foreground"
-      )}>
+      <span
+        className={cn(
+          "flex size-7 items-center justify-center text-sm tabular-nums",
+          today
+            ? "bg-red-500 text-white rounded-lg font-medium"
+            : "text-muted-foreground",
+        )}
+      >
         {date}
       </span>
     </div>
-  )
+  );
 }
 
-function CurrentTimeLine({ view = "week", showHourLabels = true }: { view?: CalendarView; showHourLabels?: boolean }) {
-  const [now, setNow] = React.useState(new Date())
-  
+function CurrentTimeLine({
+  view = "week",
+  showHourLabels = true,
+}: {
+  view?: CalendarView;
+  showHourLabels?: boolean;
+}) {
+  const [now, setNow] = React.useState(new Date());
+
   React.useEffect(() => {
-    const updateTime = () => setNow(new Date())
-    updateTime()
-    const interval = setInterval(updateTime, 60000)
-    return () => clearInterval(interval)
-  }, [])
-  
-  const minutes = now.getHours() * 60 + now.getMinutes()
-  const position = (minutes / (24 * 60)) * 100
-  
-  const today = now.getDay()
-  const dayIndex = today === 0 ? 6 : today - 1
-  
-  const timeLabel = now.toLocaleTimeString("en-US", { 
-    hour: "numeric", 
+    const updateTime = () => setNow(new Date());
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  const position = (minutes / (24 * 60)) * 100;
+
+  const today = now.getDay();
+  const dayIndex = today === 0 ? 6 : today - 1;
+
+  const timeLabel = now.toLocaleTimeString("en-US", {
+    hour: "numeric",
     minute: "2-digit",
-    hour12: false 
-  })
-  
-  const gutterWidth = showHourLabels ? "3rem" : "0px"
-  
+    hour12: false,
+  });
+
+  const gutterWidth = showHourLabels ? "3rem" : "0px";
+
   if (view === "day") {
     return (
       <div
@@ -171,30 +189,33 @@ function CurrentTimeLine({ view = "week", showHourLabels = true }: { view?: Cale
             </span>
           </div>
         )}
-        
+
         {/* Line across the day column */}
-        <div 
-          className="absolute right-0 h-[2px] bg-red-500" 
+        <div
+          className="absolute right-0 h-[2px] bg-red-500"
           style={{ left: gutterWidth }}
         />
-        
+
         {/* Dot at the start */}
-        <div 
-          className="absolute top-1/2 size-3 -translate-x-1.5 -translate-y-1/2 rounded-full bg-red-500 shadow-sm" 
+        <div
+          className="absolute top-1/2 size-3 -translate-x-1.5 -translate-y-1/2 rounded-full bg-red-500 shadow-sm"
           style={{ left: gutterWidth }}
         />
       </div>
-    )
+    );
   }
-  
+
   return (
     <div
       className="pointer-events-none absolute right-0 left-0 z-20"
       style={{ top: `${position}%` }}
     >
       {/* Subtle line across entire calendar */}
-      <div className="absolute right-0 h-px bg-red-500/20" style={{ left: gutterWidth }} />
-      
+      <div
+        className="absolute right-0 h-px bg-red-500/20"
+        style={{ left: gutterWidth }}
+      />
+
       {/* Time label in gutter */}
       {showHourLabels && (
         <div className="absolute left-0 flex h-0 w-12 items-center justify-end pr-1.5">
@@ -203,89 +224,95 @@ function CurrentTimeLine({ view = "week", showHourLabels = true }: { view?: Cale
           </span>
         </div>
       )}
-      
+
       {/* Vibrant line across today's column */}
-      <div 
+      <div
         className="absolute h-[2px] bg-red-500"
-        style={{ 
-          left: showHourLabels 
+        style={{
+          left: showHourLabels
             ? `calc(3rem + (100% - 3rem) * ${dayIndex} / 7)`
             : `calc(100% * ${dayIndex} / 7)`,
-          width: showHourLabels 
-            ? `calc((100% - 3rem) / 7)`
-            : `calc(100% / 7)`
+          width: showHourLabels ? `calc((100% - 3rem) / 7)` : `calc(100% / 7)`,
         }}
       />
-      
+
       {/* Dot at the start of the line */}
-      <div 
+      <div
         className="absolute top-1/2 size-3 -translate-y-1/2 rounded-full bg-red-500 shadow-sm"
-        style={{ 
-          left: showHourLabels 
+        style={{
+          left: showHourLabels
             ? `calc(3rem + (100% - 3rem) * ${dayIndex} / 7 - 6px)`
-            : `calc(100% * ${dayIndex} / 7 - 6px)`
+            : `calc(100% * ${dayIndex} / 7 - 6px)`,
         }}
       />
     </div>
-  )
+  );
 }
 
 function formatEventTime(hour: number, minutes: number = 0) {
-  const h = hour % 12 || 12
-  const m = minutes > 0 ? `:${minutes.toString().padStart(2, "0")}` : ""
-  const ampm = hour < 12 ? "a" : "p"
-  return `${h}${m}${ampm}`
+  const h = hour % 12 || 12;
+  const m = minutes > 0 ? `:${minutes.toString().padStart(2, "0")}` : "";
+  const ampm = hour < 12 ? "a" : "p";
+  return `${h}${m}${ampm}`;
 }
 
 function formatTimeFromMinutes(totalMinutes: number) {
-  const hour = Math.floor(totalMinutes / 60)
-  const minutes = totalMinutes % 60
-  return formatEventTime(hour, minutes)
+  const hour = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return formatEventTime(hour, minutes);
 }
 
 // Fixed grid height in pixels (min-h-[1536px] = 1536px for 24 hours)
-const GRID_HEIGHT_PX = 1536
-const PIXELS_PER_MINUTE = GRID_HEIGHT_PX / (24 * 60)
+const GRID_HEIGHT_PX = 1536;
+const PIXELS_PER_MINUTE = GRID_HEIGHT_PX / (24 * 60);
 
 interface DayViewProps {
-  selectedDate: Date
-  showHourLabels?: boolean
-  headerIsVisible?: boolean
-  events?: CalendarEvent[]
-  mode?: CalendarMode
-  setBlockStyle?: BlockStyle
-  onEventResize?: (eventId: string, newStartMinutes: number, newDurationMinutes: number) => void
-  onEventResizeEnd?: (eventId: string) => void
+  selectedDate: Date;
+  showHourLabels?: boolean;
+  headerIsVisible?: boolean;
+  events?: CalendarEvent[];
+  mode?: CalendarMode;
+  setBlockStyle?: BlockStyle;
+  onEventResize?: (
+    eventId: string,
+    newStartMinutes: number,
+    newDurationMinutes: number,
+  ) => void;
+  onEventResizeEnd?: (eventId: string) => void;
 }
 
-function DayView({ 
-  selectedDate, 
-  showHourLabels = true, 
-  headerIsVisible = true, 
-  events = [], 
-  mode = "schedule", 
+function DayView({
+  selectedDate,
+  showHourLabels = true,
+  headerIsVisible = true,
+  events = [],
+  mode = "schedule",
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
 }: DayViewProps) {
-  const today = isToday(selectedDate)
-  const dayName = selectedDate.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3)
-  
-  const headerCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1"
-  const gridCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1"
-  
+  const today = isToday(selectedDate);
+  const dayName = selectedDate
+    .toLocaleDateString("en-US", { weekday: "short" })
+    .slice(0, 3);
+
+  const headerCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1";
+  const gridCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1";
+
   // Get the day index for the selected date (0 = Monday)
-  const selectedDayOfWeek = selectedDate.getDay()
-  const selectedDayIndex = selectedDayOfWeek === 0 ? 6 : selectedDayOfWeek - 1
-  
+  const selectedDayOfWeek = selectedDate.getDay();
+  const selectedDayIndex = selectedDayOfWeek === 0 ? 6 : selectedDayOfWeek - 1;
+
   // Filter events for this day
-  const dayEvents = events.filter(e => e.dayIndex === selectedDayIndex)
-  
+  const dayEvents = events.filter((e) => e.dayIndex === selectedDayIndex);
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       {/* Day Header - matches week view style */}
       {headerIsVisible && (
-        <div className={cn("border-border/40 grid shrink-0 border-b", headerCols)}>
+        <div
+          className={cn("border-border/40 grid shrink-0 border-b", headerCols)}
+        >
           {showHourLabels && <div className="border-border/40 border-r" />}
           <CalendarDayHeader
             day={dayName}
@@ -296,7 +323,7 @@ function DayView({
           />
         </div>
       )}
-      
+
       {/* Time Grid */}
       <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
         <div className={cn("relative grid min-h-[1536px]", gridCols)}>
@@ -307,22 +334,26 @@ function DayView({
                 <div
                   key={hour}
                   className="absolute right-0 left-0"
-                  style={{ 
+                  style={{
                     top: `${(hour / 24) * 100}%`,
-                    height: `${100 / 24}%`
+                    height: `${100 / 24}%`,
                   }}
                 >
-                  <span className={cn(
-                    "absolute -top-2.5 right-2 text-[10px] font-medium tabular-nums",
-                    isCurrentHour(hour) ? "text-primary" : "text-muted-foreground/50"
-                  )}>
+                  <span
+                    className={cn(
+                      "absolute -top-2.5 right-2 text-[10px] font-medium tabular-nums",
+                      isCurrentHour(hour)
+                        ? "text-primary"
+                        : "text-muted-foreground/50",
+                    )}
+                  >
                     {hour === 0 ? "" : formatHour(hour)}
                   </span>
                 </div>
               ))}
             </div>
           )}
-          
+
           {/* Day Column */}
           <div className="relative">
             {HOURS.map((hour) => (
@@ -330,34 +361,38 @@ function DayView({
                 key={hour}
                 className={cn(
                   "border-border/40 absolute right-0 left-0 border-b transition-colors",
-                  "hover:bg-muted/30"
+                  "hover:bg-muted/30",
                 )}
-                style={{ 
+                style={{
                   top: `${(hour / 24) * 100}%`,
-                  height: `${100 / 24}%`
+                  height: `${100 / 24}%`,
                 }}
               />
             ))}
-            
+
             {/* Events */}
             {dayEvents.map((event) => {
-              const topPercent = (event.startMinutes / (24 * 60)) * 100
-              const heightPercent = (event.durationMinutes / (24 * 60)) * 100
-              const endMinutes = event.startMinutes + event.durationMinutes
-              
+              const topPercent = (event.startMinutes / (24 * 60)) * 100;
+              const heightPercent = (event.durationMinutes / (24 * 60)) * 100;
+              const endMinutes = event.startMinutes + event.durationMinutes;
+
               const blockContent = (
                 <Block
                   title={event.title}
                   startTime={formatTimeFromMinutes(event.startMinutes)}
                   endTime={formatTimeFromMinutes(endMinutes)}
                   color={event.color}
-                  status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, selectedDayIndex)}
+                  status={
+                    setBlockStyle
+                      ? blockStyleToStatus(setBlockStyle)
+                      : modeToStatus(mode, selectedDayIndex)
+                  }
                   duration={event.durationMinutes as 30 | 60 | 240}
                   taskCount={event.taskCount}
                   fillContainer
                 />
-              )
-              
+              );
+
               // If resize callbacks are provided, wrap in ResizableBlockWrapper
               if (onEventResize) {
                 return (
@@ -371,14 +406,16 @@ function DayView({
                     startMinutes={event.startMinutes}
                     durationMinutes={event.durationMinutes}
                     pixelsPerMinute={PIXELS_PER_MINUTE}
-                    onResize={(newStart, newDuration) => onEventResize(event.id, newStart, newDuration)}
+                    onResize={(newStart, newDuration) =>
+                      onEventResize(event.id, newStart, newDuration)
+                    }
                     onResizeEnd={() => onEventResizeEnd?.(event.id)}
                   >
                     {blockContent}
                   </ResizableBlockWrapper>
-                )
+                );
               }
-              
+
               return (
                 <div
                   key={event.id}
@@ -390,48 +427,60 @@ function DayView({
                 >
                   {blockContent}
                 </div>
-              )
+              );
             })}
           </div>
-          
+
           {/* Current Time Indicator */}
-          {today && <CurrentTimeLine view="day" showHourLabels={showHourLabels} />}
+          {today && (
+            <CurrentTimeLine view="day" showHourLabels={showHourLabels} />
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 interface WeekViewProps {
-  weekDates: Date[]
-  showHourLabels?: boolean
-  events?: CalendarEvent[]
-  mode?: CalendarMode
-  setBlockStyle?: BlockStyle
-  onEventResize?: (eventId: string, newStartMinutes: number, newDurationMinutes: number) => void
-  onEventResizeEnd?: (eventId: string) => void
+  weekDates: Date[];
+  showHourLabels?: boolean;
+  events?: CalendarEvent[];
+  mode?: CalendarMode;
+  setBlockStyle?: BlockStyle;
+  onEventResize?: (
+    eventId: string,
+    newStartMinutes: number,
+    newDurationMinutes: number,
+  ) => void;
+  onEventResizeEnd?: (eventId: string) => void;
 }
 
-function WeekView({ 
-  weekDates, 
-  showHourLabels = true, 
-  events = [], 
-  mode = "schedule", 
+function WeekView({
+  weekDates,
+  showHourLabels = true,
+  events = [],
+  mode = "schedule",
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
 }: WeekViewProps) {
-  const headerCols = showHourLabels ? "grid-cols-[3rem_repeat(7,1fr)]" : "grid-cols-[repeat(7,1fr)]"
-  const gridCols = showHourLabels ? "grid-cols-[3rem_repeat(7,1fr)]" : "grid-cols-[repeat(7,1fr)]"
-  
+  const headerCols = showHourLabels
+    ? "grid-cols-[3rem_repeat(7,1fr)]"
+    : "grid-cols-[repeat(7,1fr)]";
+  const gridCols = showHourLabels
+    ? "grid-cols-[3rem_repeat(7,1fr)]"
+    : "grid-cols-[repeat(7,1fr)]";
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       {/* Day Headers */}
-      <div className={cn("border-border/40 grid shrink-0 border-b", headerCols)}>
+      <div
+        className={cn("border-border/40 grid shrink-0 border-b", headerCols)}
+      >
         {showHourLabels && <div className="border-border/40 border-r" />}
         {DAYS.map((day, index) => {
-          const date = weekDates[index]
-          
+          const date = weekDates[index];
+
           return (
             <CalendarDayHeader
               key={day}
@@ -439,10 +488,10 @@ function WeekView({
               date={date.getDate()}
               isToday={isToday(date)}
             />
-          )
+          );
         })}
       </div>
-      
+
       {/* Time Grid */}
       <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
         <div className={cn("relative grid min-h-[1536px]", gridCols)}>
@@ -453,34 +502,38 @@ function WeekView({
                 <div
                   key={hour}
                   className="absolute right-0 left-0"
-                  style={{ 
+                  style={{
                     top: `${(hour / 24) * 100}%`,
-                    height: `${100 / 24}%`
+                    height: `${100 / 24}%`,
                   }}
                 >
-                  <span className={cn(
-                    "absolute -top-2.5 right-2 text-[10px] font-medium tabular-nums",
-                    isCurrentHour(hour) ? "text-primary" : "text-muted-foreground/50"
-                  )}>
+                  <span
+                    className={cn(
+                      "absolute -top-2.5 right-2 text-[10px] font-medium tabular-nums",
+                      isCurrentHour(hour)
+                        ? "text-primary"
+                        : "text-muted-foreground/50",
+                    )}
+                  >
                     {hour === 0 ? "" : formatHour(hour)}
                   </span>
                 </div>
               ))}
             </div>
           )}
-          
+
           {/* Day Columns */}
           {DAYS.map((day, dayIndex) => {
-            const date = weekDates[dayIndex]
-            const today = isToday(date)
-            const dayEvents = events.filter(e => e.dayIndex === dayIndex)
-            
+            const date = weekDates[dayIndex];
+            const today = isToday(date);
+            const dayEvents = events.filter((e) => e.dayIndex === dayIndex);
+
             return (
               <div
                 key={day}
                 className={cn(
                   "border-border/40 relative border-r last:border-r-0",
-                  today && "bg-primary/[0.02]"
+                  today && "bg-primary/[0.02]",
                 )}
               >
                 {HOURS.map((hour) => (
@@ -488,34 +541,39 @@ function WeekView({
                     key={hour}
                     className={cn(
                       "border-border/40 absolute right-0 left-0 border-b transition-colors",
-                      "hover:bg-muted/30"
+                      "hover:bg-muted/30",
                     )}
-                    style={{ 
+                    style={{
                       top: `${(hour / 24) * 100}%`,
-                      height: `${100 / 24}%`
+                      height: `${100 / 24}%`,
                     }}
                   />
                 ))}
-                
+
                 {/* Events */}
                 {dayEvents.map((event) => {
-                  const topPercent = (event.startMinutes / (24 * 60)) * 100
-                  const heightPercent = (event.durationMinutes / (24 * 60)) * 100
-                  const endMinutes = event.startMinutes + event.durationMinutes
-                  
+                  const topPercent = (event.startMinutes / (24 * 60)) * 100;
+                  const heightPercent =
+                    (event.durationMinutes / (24 * 60)) * 100;
+                  const endMinutes = event.startMinutes + event.durationMinutes;
+
                   const blockContent = (
                     <Block
                       title={event.title}
                       startTime={formatTimeFromMinutes(event.startMinutes)}
                       endTime={formatTimeFromMinutes(endMinutes)}
                       color={event.color}
-                      status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, dayIndex)}
+                      status={
+                        setBlockStyle
+                          ? blockStyleToStatus(setBlockStyle)
+                          : modeToStatus(mode, dayIndex)
+                      }
                       duration={event.durationMinutes as 30 | 60 | 240}
                       taskCount={event.taskCount}
                       fillContainer
                     />
-                  )
-                  
+                  );
+
                   // If resize callbacks are provided, wrap in ResizableBlockWrapper
                   if (onEventResize) {
                     return (
@@ -529,14 +587,16 @@ function WeekView({
                         startMinutes={event.startMinutes}
                         durationMinutes={event.durationMinutes}
                         pixelsPerMinute={PIXELS_PER_MINUTE}
-                        onResize={(newStart, newDuration) => onEventResize(event.id, newStart, newDuration)}
+                        onResize={(newStart, newDuration) =>
+                          onEventResize(event.id, newStart, newDuration)
+                        }
                         onResizeEnd={() => onEventResizeEnd?.(event.id)}
                       >
                         {blockContent}
                       </ResizableBlockWrapper>
-                    )
+                    );
                   }
-                  
+
                   return (
                     <div
                       key={event.id}
@@ -548,62 +608,69 @@ function WeekView({
                     >
                       {blockContent}
                     </div>
-                  )
+                  );
                 })}
               </div>
-            )
+            );
           })}
-          
+
           {/* Current Time Indicator */}
           <CurrentTimeLine view="week" showHourLabels={showHourLabels} />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export function Calendar({ 
-  view = "week", 
+export function Calendar({
+  view = "week",
   mode = "schedule",
-  selectedDate, 
-  showHourLabels = true, 
-  headerIsVisible = true, 
-  events = [], 
+  selectedDate,
+  showHourLabels = true,
+  headerIsVisible = true,
+  events = [],
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
 }: CalendarProps) {
-  const today = React.useMemo(() => new Date(), [])
-  const dateToUse = selectedDate ?? today
-  const weekDates = React.useMemo(() => getWeekDates(dateToUse), [dateToUse])
-  
+  const today = React.useMemo(() => new Date(), []);
+  const dateToUse = selectedDate ?? today;
+  const weekDates = React.useMemo(() => getWeekDates(dateToUse), [dateToUse]);
+
   if (view === "day") {
     return (
-      <DayView 
-        selectedDate={dateToUse} 
-        showHourLabels={showHourLabels} 
-        headerIsVisible={headerIsVisible} 
-        events={events} 
-        mode={mode} 
+      <DayView
+        selectedDate={dateToUse}
+        showHourLabels={showHourLabels}
+        headerIsVisible={headerIsVisible}
+        events={events}
+        mode={mode}
         setBlockStyle={setBlockStyle}
         onEventResize={onEventResize}
         onEventResizeEnd={onEventResizeEnd}
       />
-    )
+    );
   }
-  
+
   return (
-    <WeekView 
-      weekDates={weekDates} 
-      showHourLabels={showHourLabels} 
-      events={events} 
-      mode={mode} 
+    <WeekView
+      weekDates={weekDates}
+      showHourLabels={showHourLabels}
+      events={events}
+      mode={mode}
       setBlockStyle={setBlockStyle}
       onEventResize={onEventResize}
       onEventResizeEnd={onEventResizeEnd}
     />
-  )
+  );
 }
 
-export { CalendarDayHeader }
-export type { CalendarView, CalendarMode, CalendarProps, CalendarDayHeaderProps, CalendarEvent, BlockStyle }
+export { CalendarDayHeader };
+export type {
+  CalendarView,
+  CalendarMode,
+  CalendarProps,
+  CalendarDayHeaderProps,
+  CalendarEvent,
+  BlockStyle,
+};

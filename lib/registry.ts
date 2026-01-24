@@ -1,10 +1,10 @@
-import { ComponentType } from "react"
+import { ComponentType } from "react";
 
 export interface ComponentEntry {
-  slug: string
-  name: string
-  component: ComponentType
-  layout?: "center" | "bottom" | "full"
+  slug: string;
+  name: string;
+  component: ComponentType;
+  layout?: "center" | "bottom" | "full";
 }
 
 // Lazy load components to keep the registry lightweight
@@ -14,14 +14,14 @@ export const registry: ComponentEntry[] = [
     name: "Calendar",
     layout: "full",
     get component() {
-      return require("@/components/calendar-example").CalendarExample
+      return require("@/components/calendar-example").CalendarExample;
     },
   },
   {
     slug: "block",
     name: "Block",
     get component() {
-      return require("@/components/block-example").BlockExample
+      return require("@/components/block/block-example").BlockExample;
     },
   },
   {
@@ -29,7 +29,8 @@ export const registry: ComponentEntry[] = [
     name: "Floating Toolbar",
     layout: "bottom",
     get component() {
-      return require("@/components/floating-toolbar-example").FloatingToolbarExample
+      return require("@/components/floating-toolbar-example")
+        .FloatingToolbarExample;
     },
   },
   {
@@ -37,39 +38,41 @@ export const registry: ComponentEntry[] = [
     name: "Shell",
     layout: "full",
     get component() {
-      return require("@/components/shell-example").ShellExample
+      return require("@/components/shell-example").ShellExample;
     },
   },
   {
     slug: "backlog",
     name: "Backlog",
     get component() {
-      return require("@/components/backlog-example").BacklogExample
+      return require("@/components/backlog-example").BacklogExample;
     },
   },
   {
     slug: "weekly-analytics",
     name: "Weekly Analytics",
     get component() {
-      return require("@/components/weekly-analytics-example").WeeklyAnalyticsExample
+      return require("@/components/weekly-analytics-example")
+        .WeeklyAnalyticsExample;
     },
   },
   {
     slug: "block-sidebar",
     name: "Block Sidebar",
     get component() {
-      return require("@/components/block-sidebar-example").BlockSidebarExample
+      return require("@/components/block/block-sidebar-example")
+        .BlockSidebarExample;
     },
   },
   {
     slug: "goal-browser",
     name: "Goal Browser",
     get component() {
-      return require("@/components/goal-browser-example").GoalBrowserExample
+      return require("@/components/goal-browser-example").GoalBrowserExample;
     },
   },
-]
+];
 
 export function getComponent(slug: string): ComponentEntry | undefined {
-  return registry.find((entry) => entry.slug === slug)
+  return registry.find((entry) => entry.slug === slug);
 }

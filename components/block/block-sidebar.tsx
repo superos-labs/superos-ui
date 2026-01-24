@@ -10,7 +10,7 @@ import {
   RiCloseLine,
   RiFlagLine,
 } from "@remixicon/react";
-import type { BlockColor } from "@/components/block";
+import type { BlockColor } from "./block";
 
 // Types
 type IconComponent = React.ComponentType<{ className?: string }>;
@@ -68,10 +68,13 @@ function formatTimeDisplay(timeStr: string): string {
 }
 
 // Auto-resizing textarea component
-interface AutoResizeTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
-function AutoResizeTextarea({ className, value, ...props }: AutoResizeTextareaProps) {
+function AutoResizeTextarea({
+  className,
+  value,
+  ...props
+}: AutoResizeTextareaProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(() => {
@@ -103,7 +106,7 @@ function BlockSidebarTaskRow({ task, onToggle }: BlockSidebarTaskRowProps) {
     <div
       className={cn(
         "group relative flex items-center gap-2.5 rounded-lg py-2 px-2 transition-all",
-        "hover:bg-muted/60"
+        "hover:bg-muted/60",
       )}
     >
       <button
@@ -112,7 +115,7 @@ function BlockSidebarTaskRow({ task, onToggle }: BlockSidebarTaskRowProps) {
           "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
           task.completed
             ? "bg-primary text-primary-foreground"
-            : "border border-border bg-background hover:bg-muted"
+            : "border border-border bg-background hover:bg-muted",
         )}
       >
         {task.completed && <RiCheckLine className="size-3" />}
@@ -122,7 +125,7 @@ function BlockSidebarTaskRow({ task, onToggle }: BlockSidebarTaskRowProps) {
           "flex-1 text-sm",
           task.completed
             ? "text-muted-foreground line-through"
-            : "text-foreground"
+            : "text-foreground",
         )}
       >
         {task.label}
@@ -192,7 +195,7 @@ function BlockSidebar({
     <div
       className={cn(
         "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className
+        className,
       )}
       {...props}
     >
@@ -219,7 +222,7 @@ function BlockSidebar({
             className={cn(
               "w-full bg-transparent text-lg font-semibold text-foreground leading-tight",
               "outline-none placeholder:text-muted-foreground/60",
-              "focus:outline-none"
+              "focus:outline-none",
             )}
             placeholder="Block title..."
           />
@@ -258,7 +261,7 @@ function BlockSidebar({
                 onChange={(e) => onDateChange(e.target.value)}
                 className={cn(
                   "w-full rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                  "outline-none focus:bg-muted"
+                  "outline-none focus:bg-muted",
                 )}
               />
             ) : (
@@ -275,7 +278,7 @@ function BlockSidebar({
                     onChange={(e) => onStartTimeChange(e.target.value)}
                     className={cn(
                       "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                      "outline-none focus:bg-muted"
+                      "outline-none focus:bg-muted",
                     )}
                   />
                   <span className="text-sm text-muted-foreground">to</span>
@@ -285,7 +288,7 @@ function BlockSidebar({
                     onChange={(e) => onEndTimeChange(e.target.value)}
                     className={cn(
                       "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                      "outline-none focus:bg-muted"
+                      "outline-none focus:bg-muted",
                     )}
                   />
                 </>
@@ -293,7 +296,8 @@ function BlockSidebar({
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <RiTimeLine className="size-3.5" />
                   <span>
-                    {formatTimeDisplay(block.startTime)} – {formatTimeDisplay(block.endTime)}
+                    {formatTimeDisplay(block.startTime)} –{" "}
+                    {formatTimeDisplay(block.endTime)}
                   </span>
                 </div>
               )}
@@ -313,7 +317,7 @@ function BlockSidebar({
               placeholder="Add notes..."
               className={cn(
                 "w-full min-h-[24px] bg-transparent text-sm text-foreground leading-relaxed",
-                "outline-none placeholder:text-muted-foreground/60"
+                "outline-none placeholder:text-muted-foreground/60",
               )}
             />
           ) : (
@@ -348,4 +352,9 @@ function BlockSidebar({
 }
 
 export { BlockSidebar, BlockSidebarTaskRow, BlockSidebarSection };
-export type { BlockSidebarProps, BlockSidebarData, BlockSidebarTask, BlockSidebarGoal };
+export type {
+  BlockSidebarProps,
+  BlockSidebarData,
+  BlockSidebarTask,
+  BlockSidebarGoal,
+};

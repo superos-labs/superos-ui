@@ -10,6 +10,13 @@ components/
 │   ├── button.tsx
 │   ├── input.tsx
 │   └── shell.tsx
+├── block/                  # Feature folder (when 3+ related files exist)
+│   ├── index.ts            # Public API re-exports
+│   ├── block.tsx           # Core component
+│   ├── block-example.tsx   # Demo wrapper
+│   ├── block-sidebar.tsx   # Related component
+│   ├── resizable-block-wrapper.tsx
+│   └── use-block-resize.ts # Feature-specific hook
 ├── calendar.tsx            # Feature component (molecule/organism)
 ├── calendar-example.tsx    # Interactive demo wrapper
 ├── backlog.tsx
@@ -24,6 +31,7 @@ components/
 The reusable, stateless (or minimally stateful) UI building blocks.
 
 **Responsibilities:**
+
 - Define visual presentation and the public props API
 - Accept all data and callbacks via props
 - Export granular, composable sub-components when appropriate
@@ -35,21 +43,27 @@ The reusable, stateless (or minimally stateful) UI building blocks.
 ```tsx
 // backlog.tsx
 interface BacklogProps {
-  commitments: BacklogItem[]
-  goals: BacklogItem[]
-  showHours?: boolean
-  onToggleTask?: (goalId: string, taskId: string) => void
+  commitments: BacklogItem[];
+  goals: BacklogItem[];
+  showHours?: boolean;
+  onToggleTask?: (goalId: string, taskId: string) => void;
 }
 
-function Backlog({ commitments, goals, showHours = true, onToggleTask }: BacklogProps) {
+function Backlog({
+  commitments,
+  goals,
+  showHours = true,
+  onToggleTask,
+}: BacklogProps) {
   // Pure rendering logic only
 }
 
-export { Backlog, BacklogSection, BacklogItemRow }
-export type { BacklogProps, BacklogItem, BacklogTask }
+export { Backlog, BacklogSection, BacklogItemRow };
+export type { BacklogProps, BacklogItem, BacklogTask };
 ```
 
 **Rules:**
+
 - No `useState` for demo purposes — state should be lifted to consumers
 - No embedded sample data or default arrays
 - Props that accept data should be required, not optional with defaults
@@ -60,6 +74,7 @@ export type { BacklogProps, BacklogItem, BacklogTask }
 Interactive demonstration wrappers for the component playground.
 
 **Responsibilities:**
+
 - Wire up local state to drive the component
 - Provide realistic sample data
 - Expose knobs/controls for interactive exploration
@@ -84,7 +99,7 @@ export function BacklogExample() {
 
   return (
     <KnobsProvider>
-      <Backlog 
+      <Backlog
         commitments={SAMPLE_COMMITMENTS}
         goals={goals}
         showHours={showHours}
@@ -99,6 +114,7 @@ export function BacklogExample() {
 ```
 
 **Rules:**
+
 - All sample data lives here, not in the core component
 - State management for demo interactions lives here
 - Always wrap with `KnobsProvider` for consistent control UI
@@ -111,30 +127,123 @@ Low-level, highly reusable building blocks (atoms).
 **Examples:** Button, Input, Label, Card, Badge
 
 **Rules:**
+
 - Minimal props surface
 - Composable with other primitives
 - No business logic
 - Typically don't need example files (documented via Storybook or inline)
 
+## Feature Folders
+
+When a component grows to include multiple related files (sub-components, hooks, utilities), group them into a **feature folder**.
+
+### When to Create a Feature Folder
+
+| Scenario                                                   | Approach                                           |
+| ---------------------------------------------------------- | -------------------------------------------------- |
+| Single component + example                                 | Keep flat (`calendar.tsx`, `calendar-example.tsx`) |
+| 3+ related files (component, sub-components, hooks, utils) | Feature folder                                     |
+| Hooks used by multiple unrelated components                | `hooks/` folder at root                            |
+| Shared utilities                                           | `lib/` folder                                      |
+
+### Feature Folder Structure
+
+```
+components/
+└── block/
+    ├── index.ts                    # Public API (required)
+    ├── block.tsx                   # Core component
+    ├── block-example.tsx           # Demo wrapper
+    ├── block-sidebar.tsx           # Related sub-component
+    ├── block-sidebar-example.tsx   # Sub-component demo
+    ├── resizable-block-wrapper.tsx # Composition layer
+    └── use-block-resize.ts         # Feature-specific hook
+```
+
+### The `index.ts` File
+
+Every feature folder **must** have an `index.ts` that defines the public API:
+
+```tsx
+// components/block/index.ts
+
+// Public components
+export { Block, BLOCK_COLORS } from "./block";
+export { BlockSidebar } from "./block-sidebar";
+export { ResizableBlockWrapper } from "./resizable-block-wrapper";
+
+// Public types
+export type { BlockProps, BlockColor, BlockStatus } from "./block";
+export type { BlockSidebarProps, BlockSidebarData } from "./block-sidebar";
+
+// Hooks (for advanced use cases)
+export { useBlockResize } from "./use-block-resize";
+export type { UseBlockResizeOptions } from "./use-block-resize";
+```
+
+**Rules:**
+
+- Export only what consumers need — internal helpers stay private
+- Group exports by category (components, types, hooks)
+- Example files are never exported (they register via the playground)
+
+### Import Patterns
+
+**External consumers** import from the folder:
+
+```tsx
+import { Block, BlockSidebar, useBlockResize } from "@/components/block";
+import type { BlockColor, BlockSidebarData } from "@/components/block";
+```
+
+**Internal files** within the folder use relative imports:
+
+```tsx
+// In block-sidebar.tsx
+import type { BlockColor } from "./block";
+
+// In resizable-block-wrapper.tsx
+import { useBlockResize } from "./use-block-resize";
+```
+
+### Migrating to a Feature Folder
+
+When a flat component grows, migrate it:
+
+1. Create the folder: `components/my-feature/`
+2. Move all related files into the folder
+3. Create `index.ts` with public exports
+4. Update internal imports to use relative paths (`./`)
+5. Update external imports to point to the folder
+6. Update `lib/registry.ts` paths for example components
+7. Delete the old files at the root level
+
+### Benefits
+
+- **Co-location**: Related code lives together
+- **Encapsulation**: Internal implementation details are hidden
+- **Discoverability**: `index.ts` shows the public API at a glance
+- **Scalability**: Each feature can grow independently
+
 ## Separation of Concerns
 
-| Concern | Core Component | Example Component |
-|---------|----------------|-------------------|
-| Visual rendering | ✅ | ❌ |
-| Props API & types | ✅ | ❌ |
-| State management | ❌ | ✅ |
-| Sample/mock data | ❌ | ✅ |
-| Interactive knobs | ❌ | ✅ |
-| Event handlers | Callbacks via props | Implementation |
+| Concern           | Core Component      | Example Component |
+| ----------------- | ------------------- | ----------------- |
+| Visual rendering  | ✅                  | ❌                |
+| Props API & types | ✅                  | ❌                |
+| State management  | ❌                  | ✅                |
+| Sample/mock data  | ❌                  | ✅                |
+| Interactive knobs | ❌                  | ✅                |
+| Event handlers    | Callbacks via props | Implementation    |
 
 ## Naming Conventions
 
-| Type | Pattern | Example |
-|------|---------|---------|
-| Core component | `kebab-case.tsx` | `floating-toolbar.tsx` |
-| Example wrapper | `kebab-case-example.tsx` | `floating-toolbar-example.tsx` |
-| UI primitive | `ui/kebab-case.tsx` | `ui/button.tsx` |
-| Types | PascalCase | `BacklogProps`, `CalendarEvent` |
+| Type            | Pattern                  | Example                         |
+| --------------- | ------------------------ | ------------------------------- |
+| Core component  | `kebab-case.tsx`         | `floating-toolbar.tsx`          |
+| Example wrapper | `kebab-case-example.tsx` | `floating-toolbar-example.tsx`  |
+| UI primitive    | `ui/kebab-case.tsx`      | `ui/button.tsx`                 |
+| Types           | PascalCase               | `BacklogProps`, `CalendarEvent` |
 
 ## Registry Integration
 
@@ -146,13 +255,14 @@ export const registry: ComponentEntry[] = [
     slug: "backlog",
     name: "Backlog",
     get component() {
-      return require("@/components/backlog-example").BacklogExample
+      return require("@/components/backlog-example").BacklogExample;
     },
   },
-]
+];
 ```
 
 **Registry fields:**
+
 - `slug`: URL path segment (kebab-case)
 - `name`: Display name in UI
 - `layout`: `"center"` (default), `"bottom"`, or `"full"`
@@ -180,6 +290,7 @@ export const registry: ComponentEntry[] = [
 ## Anti-Patterns to Avoid
 
 ❌ **Embedding sample data in core components**
+
 ```tsx
 // Bad: backlog.tsx
 const SAMPLE_DATA = [...]
@@ -187,6 +298,7 @@ function Backlog({ items = SAMPLE_DATA }) { ... }
 ```
 
 ❌ **Making data props optional with empty defaults**
+
 ```tsx
 // Bad
 interface Props { items?: Item[] }
@@ -198,21 +310,23 @@ function List({ items }) { ... }
 ```
 
 ❌ **Mixing state management into core components**
+
 ```tsx
 // Bad: Core component managing demo state
 function Calendar() {
-  const [events, setEvents] = useState(SAMPLE_EVENTS)
+  const [events, setEvents] = useState(SAMPLE_EVENTS);
   // ...
 }
 ```
 
 ❌ **Duplicating sample data across files**
+
 ```tsx
 // Bad: Same data in multiple example files
 // calendar-example.tsx
 const EVENTS = [...]
 
-// shell-example.tsx  
+// shell-example.tsx
 const EVENTS = [...] // duplicated
 
 // Consider: shared fixtures file if data is reused extensively

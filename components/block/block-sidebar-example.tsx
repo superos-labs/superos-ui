@@ -7,14 +7,14 @@ import {
   type BlockSidebarData,
   type BlockSidebarTask,
   type BlockSidebarGoal,
-} from "@/components/block-sidebar";
+} from "./block-sidebar";
 import {
   KnobsProvider,
   KnobsPanel,
   KnobBoolean,
   KnobSelect,
 } from "@/components/knobs";
-import type { BlockColor } from "@/components/block";
+import type { BlockColor } from "./block";
 import { RiRocketLine } from "@remixicon/react";
 
 const SAMPLE_GOAL: BlockSidebarGoal = {
@@ -78,8 +78,8 @@ export function BlockSidebarExample() {
   const handleToggleTask = useCallback((taskId: string) => {
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
+        task.id === taskId ? { ...task, completed: !task.completed } : task,
+      ),
     );
   }, []);
 
@@ -117,11 +117,7 @@ export function BlockSidebarExample() {
           value={showCloseButton}
           onChange={setShowCloseButton}
         />
-        <KnobBoolean
-          label="Editable"
-          value={editable}
-          onChange={setEditable}
-        />
+        <KnobBoolean label="Editable" value={editable} onChange={setEditable} />
         <KnobSelect
           label="Color"
           value={color}

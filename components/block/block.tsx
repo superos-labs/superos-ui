@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { RiCheckLine, RiCloseLine } from "@remixicon/react"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { RiCheckLine, RiCloseLine } from "@remixicon/react";
 
 const BLOCK_COLORS = {
   violet: {
@@ -226,27 +226,27 @@ const BLOCK_COLORS = {
     completedBgHover: "hover:bg-slate-200",
     completedText: "text-slate-400",
   },
-} as const
+} as const;
 
-type BlockColor = keyof typeof BLOCK_COLORS
-type BlockStatus = "planned" | "completed" | "blueprint"
-type BlockDuration = 30 | 60 | 240
+type BlockColor = keyof typeof BLOCK_COLORS;
+type BlockStatus = "planned" | "completed" | "blueprint";
+type BlockDuration = 30 | 60 | 240;
 
 // Height in pixels per 30 minutes
-const HEIGHT_PER_30_MIN = 40
+const HEIGHT_PER_30_MIN = 40;
 
 interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
-  title: string
-  startTime?: string
-  endTime?: string
-  color?: BlockColor
-  status?: BlockStatus
-  duration?: BlockDuration
-  taskCount?: number
+  title: string;
+  startTime?: string;
+  endTime?: string;
+  color?: BlockColor;
+  status?: BlockStatus;
+  duration?: BlockDuration;
+  taskCount?: number;
   /** Show action buttons on hover for outlined variant (default: true) */
-  showOutlinedActions?: boolean
+  showOutlinedActions?: boolean;
   /** When true, Block fills its container height instead of calculating its own */
-  fillContainer?: boolean
+  fillContainer?: boolean;
 }
 
 function Block({
@@ -263,17 +263,18 @@ function Block({
   style,
   ...props
 }: BlockProps) {
-  const timeDisplay = startTime && endTime 
-    ? `${startTime} – ${endTime}` 
-    : startTime || endTime
+  const timeDisplay =
+    startTime && endTime ? `${startTime} – ${endTime}` : startTime || endTime;
 
-  const colorStyles = BLOCK_COLORS[color]
-  const isCompleted = status === "completed"
-  const isOutlined = status === "blueprint"
-  
-  const height = fillContainer ? undefined : (duration / 30) * HEIGHT_PER_30_MIN
+  const colorStyles = BLOCK_COLORS[color];
+  const isCompleted = status === "completed";
+  const isOutlined = status === "blueprint";
 
-  const isCompact = duration <= 30
+  const height = fillContainer
+    ? undefined
+    : (duration / 30) * HEIGHT_PER_30_MIN;
+
+  const isCompact = duration <= 30;
 
   return (
     <div
@@ -282,46 +283,46 @@ function Block({
         isCompact ? "justify-center py-1" : "py-2",
         "cursor-pointer transition-all",
         fillContainer && "h-full",
-        isOutlined ? [
-          "border border-dashed",
-          colorStyles.outlinedBorder,
-          colorStyles.outlinedBg,
-          colorStyles.outlinedBgHover,
-          colorStyles.text,
-        ] : isCompleted ? [
-          "border-l-[3px]",
-          colorStyles.completedBorder,
-          colorStyles.completedBg,
-          colorStyles.completedBgHover,
-          colorStyles.completedText,
-          "opacity-60",
-        ] : [
-          "border-l-[3px]",
-          colorStyles.border,
-          colorStyles.bg,
-          colorStyles.bgHover,
-          colorStyles.text,
-        ],
-        className
+        isOutlined
+          ? [
+              "border border-dashed",
+              colorStyles.outlinedBorder,
+              colorStyles.outlinedBg,
+              colorStyles.outlinedBgHover,
+              colorStyles.text,
+            ]
+          : isCompleted
+            ? [
+                "border-l-[3px]",
+                colorStyles.completedBorder,
+                colorStyles.completedBg,
+                colorStyles.completedBgHover,
+                colorStyles.completedText,
+                "opacity-60",
+              ]
+            : [
+                "border-l-[3px]",
+                colorStyles.border,
+                colorStyles.bg,
+                colorStyles.bgHover,
+                colorStyles.text,
+              ],
+        className,
       )}
       style={{ height, ...style }}
       {...props}
     >
-      <span className="truncate font-medium leading-tight">
-        {title}
-      </span>
+      <span className="truncate font-medium leading-tight">{title}</span>
       {timeDisplay && !isCompact && (
-        <span className="mt-0.5 truncate text-[11px]">
-          {timeDisplay}
-        </span>
+        <span className="mt-0.5 truncate text-[11px]">{timeDisplay}</span>
       )}
       {taskCount !== undefined && taskCount > 0 && !isOutlined && (
         <div
           className={cn(
             "flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium shadow-sm",
-            isCompact 
-              ? "absolute bottom-1 left-1/2 -translate-x-1/2" 
-              : "absolute bottom-1.5 right-1.5"
+            isCompact
+              ? "absolute bottom-1 left-1/2 -translate-x-1/2"
+              : "absolute bottom-1.5 right-1.5",
           )}
         >
           <RiCheckLine className="size-3" />
@@ -332,16 +333,16 @@ function Block({
         <div
           className={cn(
             "flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100",
-            isCompact 
-              ? "absolute top-1/2 right-1.5 -translate-y-1/2" 
-              : "absolute top-1.5 right-1.5"
+            isCompact
+              ? "absolute top-1/2 right-1.5 -translate-y-1/2"
+              : "absolute top-1.5 right-1.5",
           )}
         >
           <button
             className={cn(
               "flex size-6 items-center justify-center rounded-md transition-colors",
               "bg-white shadow-sm hover:text-green-600",
-              colorStyles.text
+              colorStyles.text,
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -350,7 +351,7 @@ function Block({
           <button
             className={cn(
               "flex size-6 items-center justify-center rounded-md transition-colors",
-              "bg-white text-muted-foreground shadow-sm hover:text-foreground"
+              "bg-white text-muted-foreground shadow-sm hover:text-foreground",
             )}
             onClick={(e) => e.stopPropagation()}
           >
@@ -359,8 +360,8 @@ function Block({
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export { Block, BLOCK_COLORS }
-export type { BlockProps, BlockColor, BlockStatus, BlockDuration }
+export { Block, BLOCK_COLORS };
+export type { BlockProps, BlockColor, BlockStatus, BlockDuration };

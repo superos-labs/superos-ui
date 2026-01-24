@@ -1,35 +1,35 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { useBlockResize } from "@/components/use-block-resize"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { useBlockResize } from "./use-block-resize";
 
 interface ResizableBlockWrapperProps {
-  children: React.ReactNode
-  startMinutes: number
-  durationMinutes: number
+  children: React.ReactNode;
+  startMinutes: number;
+  durationMinutes: number;
   /** Pixels per minute in the calendar grid */
-  pixelsPerMinute: number
+  pixelsPerMinute: number;
   /** Snap to this interval in minutes (default: 15) */
-  snapInterval?: number
+  snapInterval?: number;
   /** Minimum duration in minutes (default: 15) */
-  minDuration?: number
+  minDuration?: number;
   /** Called during resize with new values */
-  onResize?: (newStartMinutes: number, newDurationMinutes: number) => void
+  onResize?: (newStartMinutes: number, newDurationMinutes: number) => void;
   /** Called when resize operation ends */
-  onResizeEnd?: () => void
-  className?: string
-  style?: React.CSSProperties
+  onResizeEnd?: () => void;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-function ResizeHandle({ 
-  edge, 
+function ResizeHandle({
+  edge,
   isActive,
   onPointerDown,
-}: { 
-  edge: "top" | "bottom"
-  isActive: boolean
-  onPointerDown: (e: React.PointerEvent) => void 
+}: {
+  edge: "top" | "bottom";
+  isActive: boolean;
+  onPointerDown: (e: React.PointerEvent) => void;
 }) {
   return (
     <div
@@ -38,20 +38,20 @@ function ResizeHandle({
         "cursor-ns-resize touch-none",
         "opacity-0 transition-opacity group-hover/resize:opacity-100",
         isActive && "opacity-100",
-        edge === "top" ? "-top-1 h-3" : "-bottom-1 h-3"
+        edge === "top" ? "-top-1 h-3" : "-bottom-1 h-3",
       )}
       onPointerDown={onPointerDown}
     >
       {/* Visual indicator */}
-      <div 
+      <div
         className={cn(
           "h-1 w-8 rounded-full transition-colors",
           "bg-foreground/20",
-          isActive && "bg-foreground/40"
-        )} 
+          isActive && "bg-foreground/40",
+        )}
       />
     </div>
-  )
+  );
 }
 
 export function ResizableBlockWrapper({
@@ -80,38 +80,34 @@ export function ResizableBlockWrapper({
     minDuration,
     onResize,
     onResizeEnd,
-  })
+  });
 
   return (
     <div
-      className={cn(
-        "group/resize relative",
-        isResizing && "z-30",
-        className
-      )}
+      className={cn("group/resize relative", isResizing && "z-30", className)}
       style={style}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
       {/* Top resize handle */}
-      <ResizeHandle 
-        edge="top" 
+      <ResizeHandle
+        edge="top"
         isActive={activeEdge === "top"}
-        onPointerDown={(e) => handlePointerDown(e, "top")} 
+        onPointerDown={(e) => handlePointerDown(e, "top")}
       />
-      
+
       {/* Block content */}
       {children}
-      
+
       {/* Bottom resize handle */}
-      <ResizeHandle 
-        edge="bottom" 
+      <ResizeHandle
+        edge="bottom"
         isActive={activeEdge === "bottom"}
-        onPointerDown={(e) => handlePointerDown(e, "bottom")} 
+        onPointerDown={(e) => handlePointerDown(e, "bottom")}
       />
     </div>
-  )
+  );
 }
 
-export type { ResizableBlockWrapperProps }
+export type { ResizableBlockWrapperProps };
