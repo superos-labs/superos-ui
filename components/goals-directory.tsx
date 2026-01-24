@@ -1,278 +1,438 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
-import { 
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import {
   RiAddLine,
-  RiArrowRightSLine,
-} from "@remixicon/react"
+  RiCheckLine,
+  RiCloseLine,
+  RiSparklingLine,
+} from "@remixicon/react";
+
+// Color mapping from Tailwind classes to hex values
+const COLOR_MAP: Record<string, string> = {
+  "text-rose-500": "#f43f5e",
+  "text-pink-500": "#ec4899",
+  "text-fuchsia-500": "#d946ef",
+  "text-purple-500": "#a855f7",
+  "text-violet-500": "#8b5cf6",
+  "text-indigo-500": "#6366f1",
+  "text-blue-500": "#3b82f6",
+  "text-sky-500": "#0ea5e9",
+  "text-cyan-500": "#06b6d4",
+  "text-teal-500": "#14b8a6",
+  "text-emerald-500": "#10b981",
+  "text-green-500": "#22c55e",
+  "text-lime-500": "#84cc16",
+  "text-yellow-500": "#eab308",
+  "text-amber-500": "#f59e0b",
+  "text-orange-500": "#f97316",
+  "text-red-500": "#ef4444",
+  "text-slate-500": "#64748b",
+};
 
 // Types
 interface Goal {
-  id: string
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  color: string
-  description?: string
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  description?: string;
 }
 
 interface LifeArea {
-  id: string
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  color: string
-  description: string
-  goals: Goal[]
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+  description: string;
+  goals: Goal[];
+}
+
+interface PopularGoal extends Goal {
+  areaId: string;
 }
 
 interface GoalsDirectoryProps {
-  lifeAreas: LifeArea[]
-  selectedAreaId?: string
-  onSelectArea?: (areaId: string) => void
-  onSelectGoal?: (areaId: string, goalId: string) => void
-  onAddGoal?: (areaId: string) => void
+  lifeAreas: LifeArea[];
+  popularGoals: PopularGoal[];
+  selectedTab?: string;
+  selectedGoalIds?: Set<string>;
+  onSelectTab?: (tabId: string) => void;
+  onToggleGoal?: (areaId: string, goalId: string) => void;
+  onAddGoal?: (areaId: string) => void;
 }
 
-// Life Area Card Component
-interface LifeAreaCardProps {
-  area: LifeArea
-  isSelected: boolean
-  onClick: () => void
+// Tab Button Component
+interface TabButtonProps {
+  icon?: React.ComponentType<{ className?: string }>;
+  color?: string;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
 }
 
-function LifeAreaCard({ area, isSelected, onClick }: LifeAreaCardProps) {
-  const IconComponent = area.icon
-  
+function TabButton({
+  icon: Icon,
+  color,
+  label,
+  isActive,
+  onClick,
+}: TabButtonProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "group flex flex-col gap-2 rounded-xl border p-4 text-left transition-all",
-        isSelected
-          ? "border-foreground/20 bg-muted ring-1 ring-foreground/10"
-          : "border-border bg-background hover:border-foreground/10 hover:bg-muted/50"
+        "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+        isActive
+          ? "bg-muted text-foreground"
+          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
       )}
     >
-      <div className="flex items-center justify-between">
-        <div className={cn(
-          "flex size-9 items-center justify-center rounded-lg",
-          isSelected ? "bg-background" : "bg-muted"
-        )}>
-          <IconComponent className={cn("size-5", area.color)} />
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {area.goals.length}
-          </span>
-          <RiArrowRightSLine className={cn(
-            "size-4 transition-transform",
-            isSelected ? "text-foreground" : "text-muted-foreground/50 group-hover:text-muted-foreground",
-            isSelected && "translate-x-0.5"
-          )} />
-        </div>
-      </div>
-      <div>
-        <h3 className="font-medium text-foreground">{area.label}</h3>
-        <p className="mt-0.5 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">
-          {area.description}
-        </p>
-      </div>
+      {Icon && (
+        <Icon
+          className={cn("size-4", isActive ? color : "text-muted-foreground")}
+        />
+      )}
+      {label}
     </button>
-  )
+  );
 }
 
 // Goal Row Component
 interface GoalRowProps {
-  goal: Goal
-  onSelect: () => void
+  goal: Goal;
+  isSelected: boolean;
+  onToggle: () => void;
 }
 
-function GoalRow({ goal, onSelect }: GoalRowProps) {
-  const IconComponent = goal.icon
-  
+function GoalRow({ goal, isSelected, onToggle }: GoalRowProps) {
+  const IconComponent = goal.icon;
+
   return (
     <button
-      onClick={onSelect}
-      className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted"
+      onClick={onToggle}
+      className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
     >
-      <div className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-background",
-      )}>
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-background">
         <IconComponent className={cn("size-4", goal.color)} />
       </div>
       <div className="min-w-0 flex-1">
-        <span className="text-sm text-foreground">{goal.label}</span>
-        {goal.description && (
-          <p className="truncate text-[12px] text-muted-foreground">{goal.description}</p>
-        )}
-      </div>
-      <RiArrowRightSLine className="size-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground" />
-    </button>
-  )
-}
-
-// Goals Panel Component
-interface GoalsPanelProps {
-  area: LifeArea
-  onSelectGoal: (goalId: string) => void
-  onAddGoal?: () => void
-  onBack: () => void
-}
-
-function GoalsPanel({ area, onSelectGoal, onAddGoal, onBack }: GoalsPanelProps) {
-  const IconComponent = area.icon
-  
-  return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-border p-4">
-        <button
-          onClick={onBack}
-          className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+        <span
+          className={cn(
+            "text-sm",
+            isSelected ? "font-medium text-foreground" : "text-foreground",
+          )}
         >
-          <RiArrowRightSLine className="size-4 rotate-180" />
-        </button>
-        <div className={cn(
-          "flex size-10 items-center justify-center rounded-xl",
-          "bg-muted"
-        )}>
-          <IconComponent className={cn("size-5", area.color)} />
-        </div>
-        <div className="flex-1">
-          <h2 className="font-semibold text-foreground">{area.label}</h2>
-          <p className="text-[13px] text-muted-foreground">{area.goals.length} goals</p>
-        </div>
-      </div>
-      
-      {/* Goals List */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {onAddGoal && (
-          <button
-            onClick={onAddGoal}
-            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-dashed border-border transition-colors group-hover:border-foreground/20">
-              <RiAddLine className="size-4" />
-            </div>
-            <span className="text-sm">Add a goal</span>
-          </button>
+          {goal.label}
+        </span>
+        {goal.description && (
+          <p className="truncate text-[12px] text-muted-foreground">
+            {goal.description}
+          </p>
         )}
-        {area.goals.map((goal) => (
-          <GoalRow
-            key={goal.id}
-            goal={goal}
-            onSelect={() => onSelectGoal(goal.id)}
-          />
+      </div>
+      <div
+        className={cn(
+          "flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
+          isSelected
+            ? "border-foreground bg-foreground"
+            : "border-border group-hover:border-foreground/30",
+        )}
+      >
+        {isSelected && <RiCheckLine className="size-3 text-background" />}
+      </div>
+    </button>
+  );
+}
+
+// Goals List Component
+interface GoalsListProps {
+  goals: Goal[];
+  selectedGoalIds: Set<string>;
+  onToggleGoal: (goalId: string) => void;
+  onAddGoal?: () => void;
+  areaId: string;
+  getAreaIdForGoal?: (goalId: string) => string;
+}
+
+function GoalsList({
+  goals,
+  selectedGoalIds,
+  onToggleGoal,
+  onAddGoal,
+  areaId,
+  getAreaIdForGoal,
+}: GoalsListProps) {
+  return (
+    <div className="flex-1 overflow-y-auto p-2">
+      {onAddGoal && (
+        <button
+          onClick={onAddGoal}
+          className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-dashed border-border transition-colors group-hover:border-foreground/20">
+            <RiAddLine className="size-4" />
+          </div>
+          <span className="text-sm">Add a goal</span>
+        </button>
+      )}
+      {goals.map((goal) => (
+        <GoalRow
+          key={goal.id}
+          goal={goal}
+          isSelected={selectedGoalIds.has(goal.id)}
+          onToggle={() => onToggleGoal(goal.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Goals Distribution Chart Component
+interface GoalsDistributionChartProps {
+  data: { area: LifeArea; count: number }[];
+}
+
+function GoalsDistributionChart({ data }: GoalsDistributionChartProps) {
+  const chartData = data.map(({ area, count }) => ({
+    name: area.label,
+    value: count,
+    color: COLOR_MAP[area.color] || "#6366f1",
+  }));
+
+  return (
+    <div className="flex items-center gap-3 border-b border-border px-4 py-4">
+      <div className="size-16 shrink-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={20}
+              outerRadius={32}
+              paddingAngle={2}
+              dataKey="value"
+              strokeWidth={0}
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1">
+        {data.map(({ area, count }) => (
+          <div key={area.id} className="flex items-center gap-1.5">
+            <div
+              className="size-2 rounded-full"
+              style={{ backgroundColor: COLOR_MAP[area.color] || "#6366f1" }}
+            />
+            <span className="text-[11px] text-muted-foreground">
+              {area.label}
+            </span>
+          </div>
         ))}
       </div>
-      
-      {/* Footer description */}
-      <div className="border-t border-border bg-muted/30 px-4 py-3">
-        <p className="text-[12px] leading-relaxed text-muted-foreground">
-          {area.description}
-        </p>
+    </div>
+  );
+}
+
+// Selected Goals Sidebar Component
+interface SelectedGoalsSidebarProps {
+  lifeAreas: LifeArea[];
+  selectedGoalIds: Set<string>;
+  onRemoveGoal: (areaId: string, goalId: string) => void;
+}
+
+function SelectedGoalsSidebar({
+  lifeAreas,
+  selectedGoalIds,
+  onRemoveGoal,
+}: SelectedGoalsSidebarProps) {
+  const selectedByArea = React.useMemo(() => {
+    return lifeAreas
+      .map((area) => ({
+        area,
+        goals: area.goals.filter((g) => selectedGoalIds.has(g.id)),
+      }))
+      .filter((item) => item.goals.length > 0);
+  }, [lifeAreas, selectedGoalIds]);
+
+  const chartData = React.useMemo(() => {
+    return selectedByArea.map(({ area, goals }) => ({
+      area,
+      count: goals.length,
+    }));
+  }, [selectedByArea]);
+
+  return (
+    <div className="flex h-full w-72 shrink-0 flex-col border-l border-border">
+      {/* Header */}
+      <div className="border-b border-border px-4 py-3">
+        <h2 className="font-semibold text-foreground">Your goals</h2>
+      </div>
+
+      {/* Content */}
+      <div className="scrollbar-hidden flex-1 overflow-y-auto">
+        {selectedGoalIds.size === 0 ? (
+          <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+            <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-muted">
+              <RiCheckLine className="size-5 text-muted-foreground/40" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              No goals selected
+            </p>
+            <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+              Browse and select goals that resonate with you. You can edit the
+              exact name later.
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Distribution Chart */}
+            <GoalsDistributionChart data={chartData} />
+
+            {/* Goals List */}
+            <div className="py-2">
+              {selectedByArea.map(({ area, goals }) => (
+                <div key={area.id} className="px-3 py-2">
+                  <div className="mb-2 flex items-center gap-2 px-1">
+                    <area.icon className={cn("size-4", area.color)} />
+                    <span className="text-[12px] font-medium text-foreground">
+                      {area.label}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {goals.map((goal) => (
+                      <div
+                        key={goal.id}
+                        className="group flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-2"
+                      >
+                        <goal.icon
+                          className={cn("size-4 shrink-0", goal.color)}
+                        />
+                        <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
+                          {goal.label}
+                        </span>
+                        <button
+                          onClick={() => onRemoveGoal(area.id, goal.id)}
+                          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-background hover:text-foreground"
+                        >
+                          <RiCloseLine className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
 // Main Component
 function GoalsDirectory({
   lifeAreas,
-  selectedAreaId,
-  onSelectArea,
-  onSelectGoal,
+  popularGoals,
+  selectedTab = "popular",
+  selectedGoalIds = new Set(),
+  onSelectTab,
+  onToggleGoal,
   onAddGoal,
 }: GoalsDirectoryProps) {
-  const selectedArea = lifeAreas.find((area) => area.id === selectedAreaId)
+  const selectedArea = lifeAreas.find((area) => area.id === selectedTab);
+  const isPopular = selectedTab === "popular";
 
-  // Animation variants
-  const panelVariants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: { 
-      opacity: 1, 
-      x: 0,
-      transition: { type: "spring", stiffness: 400, damping: 30 }
+  // Get the goals to display based on selected tab
+  const displayedGoals = isPopular ? popularGoals : (selectedArea?.goals ?? []);
+
+  // Get area ID for a goal (for popular tab, goals have areaId)
+  const getAreaIdForGoal = React.useCallback(
+    (goalId: string) => {
+      if (isPopular) {
+        const goal = popularGoals.find((g) => g.id === goalId) as
+          | PopularGoal
+          | undefined;
+        return goal?.areaId ?? "";
+      }
+      return selectedTab;
     },
-    exit: { 
-      opacity: 0, 
-      x: 20,
-      transition: { duration: 0.15 }
+    [isPopular, popularGoals, selectedTab],
+  );
+
+  const handleToggleGoal = React.useCallback(
+    (goalId: string) => {
+      const areaId = getAreaIdForGoal(goalId);
+      onToggleGoal?.(areaId, goalId);
     },
-  }
+    [getAreaIdForGoal, onToggleGoal],
+  );
 
   return (
     <div className="flex h-full w-full overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
-      {/* Left: Life Areas Grid */}
-      <div className={cn(
-        "flex flex-col border-r border-border bg-muted/20",
-        selectedArea ? "hidden w-0 md:flex md:w-80" : "w-full md:w-80"
-      )}>
-        {/* Header */}
-        <div className="border-b border-border p-4">
-          <h1 className="text-lg font-semibold text-foreground">Browse goals by area</h1>
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col">
+        {/* Tabs */}
+        <div className="scrollbar-hidden flex items-center gap-1 overflow-x-auto border-b border-border px-4 py-2">
+          <TabButton
+            icon={RiSparklingLine}
+            color="text-amber-500"
+            label="Popular"
+            isActive={isPopular}
+            onClick={() => onSelectTab?.("popular")}
+          />
+          {lifeAreas.map((area) => (
+            <TabButton
+              key={area.id}
+              icon={area.icon}
+              color={area.color}
+              label={area.label}
+              isActive={selectedTab === area.id}
+              onClick={() => onSelectTab?.(area.id)}
+            />
+          ))}
         </div>
-        
-        {/* Life Areas Grid */}
-        <div className="scrollbar-hidden flex-1 overflow-y-auto p-3">
-          <div className="grid gap-2">
-            {lifeAreas.map((area) => (
-              <LifeAreaCard
-                key={area.id}
-                area={area}
-                isSelected={selectedAreaId === area.id}
-                onClick={() => onSelectArea?.(area.id)}
-              />
-            ))}
+
+        {/* Area Description (for non-popular tabs) */}
+        {selectedArea && (
+          <div className="border-b border-border px-4 py-3">
+            <p className="text-[13px] text-muted-foreground">
+              {selectedArea.description}
+            </p>
           </div>
-        </div>
+        )}
+
+        {/* Goals List */}
+        <GoalsList
+          goals={displayedGoals}
+          selectedGoalIds={selectedGoalIds}
+          onToggleGoal={handleToggleGoal}
+          onAddGoal={
+            selectedArea && onAddGoal
+              ? () => onAddGoal(selectedArea.id)
+              : undefined
+          }
+          areaId={selectedTab}
+          getAreaIdForGoal={getAreaIdForGoal}
+        />
       </div>
 
-      {/* Right: Goals Panel */}
-      <div className={cn(
-        "flex-1 bg-background",
-        !selectedArea && "hidden md:flex"
-      )}>
-        <AnimatePresence mode="wait">
-          {selectedArea ? (
-            <motion.div
-              key={selectedArea.id}
-              variants={panelVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="h-full w-full"
-            >
-              <GoalsPanel
-                area={selectedArea}
-                onSelectGoal={(goalId) => onSelectGoal?.(selectedArea.id, goalId)}
-                onAddGoal={onAddGoal ? () => onAddGoal(selectedArea.id) : undefined}
-                onBack={() => onSelectArea?.("")}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex h-full w-full flex-col items-center justify-center p-8 text-center"
-            >
-              <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-muted">
-                <RiArrowRightSLine className="size-6 text-muted-foreground/40 -rotate-180" />
-              </div>
-              <h3 className="font-medium text-foreground">Select a life area</h3>
-              <p className="mt-1 max-w-[200px] text-[13px] text-muted-foreground">
-                Choose an area to explore and discover goals that resonate with you
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {/* Right: Selected Goals Sidebar */}
+      <SelectedGoalsSidebar
+        lifeAreas={lifeAreas}
+        selectedGoalIds={selectedGoalIds}
+        onRemoveGoal={(areaId, goalId) => onToggleGoal?.(areaId, goalId)}
+      />
     </div>
-  )
+  );
 }
 
-export { GoalsDirectory, LifeAreaCard, GoalRow, GoalsPanel }
-export type { GoalsDirectoryProps, LifeArea, Goal }
+export { GoalsDirectory, TabButton, GoalRow, GoalsList, SelectedGoalsSidebar };
+export type { GoalsDirectoryProps, LifeArea, Goal, PopularGoal };

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { GoalsDirectory, LifeArea } from "@/components/goals-directory"
+import { GoalsDirectory, LifeArea, PopularGoal } from "@/components/goals-directory"
 import { KnobsProvider } from "@/components/knobs"
 import {
   RiHeartPulseLine,
@@ -43,7 +43,7 @@ const LIFE_AREAS: LifeArea[] = [
     id: "health",
     label: "Health",
     icon: RiHeartPulseLine,
-    color: "text-rose-500",
+    color: "text-emerald-500",
     description: "Physical wellbeing, movement, nutrition, and body awareness.",
     goals: [
       { id: "workout-3x", label: "Workout 3x per week", icon: RiRunLine, color: "text-green-500", description: "Build consistent exercise habits" },
@@ -75,7 +75,7 @@ const LIFE_AREAS: LifeArea[] = [
     id: "relationships",
     label: "Relationships",
     icon: RiTeamLine,
-    color: "text-pink-500",
+    color: "text-rose-500",
     description: "Connection with partners, family, friends, and community.",
     goals: [
       { id: "partner-checkin", label: "Weekly partner check-in", icon: RiUserHeartLine, color: "text-rose-500", description: "Maintain intentional connection" },
@@ -105,7 +105,7 @@ const LIFE_AREAS: LifeArea[] = [
     id: "play-exploration",
     label: "Play and Exploration",
     icon: RiGamepadLine,
-    color: "text-emerald-500",
+    color: "text-amber-500",
     description: "Joy, curiosity, novelty, and rediscovering wonder.",
     goals: [
       { id: "new-hobby", label: "Learn a new hobby", icon: RiPaletteLine, color: "text-pink-500", description: "Explore something unfamiliar" },
@@ -117,15 +117,38 @@ const LIFE_AREAS: LifeArea[] = [
   },
 ]
 
-export function GoalsDirectoryExample() {
-  const [selectedAreaId, setSelectedAreaId] = React.useState<string>("")
+// Popular goals - a curated mix from different life areas
+const POPULAR_GOALS: PopularGoal[] = [
+  { id: "workout-3x", label: "Workout 3x per week", icon: RiRunLine, color: "text-green-500", description: "Build consistent exercise habits", areaId: "health" },
+  { id: "ship-project", label: "Ship a concrete project", icon: RiRocketLine, color: "text-violet-500", description: "Complete and launch something real", areaId: "work-craft" },
+  { id: "meditation", label: "Meditation practice", icon: RiMentalHealthLine, color: "text-purple-500", description: "Cultivate presence and calm", areaId: "self-inner" },
+  { id: "deep-work", label: "Increase deep work hours", icon: RiTimeLine, color: "text-indigo-500", description: "Protect focused, uninterrupted time", areaId: "work-craft" },
+  { id: "cook-home", label: "Cook at home 5 days/week", icon: RiRestaurantLine, color: "text-amber-500", description: "Healthier eating, more control", areaId: "health" },
+  { id: "journaling", label: "Journaling", icon: RiBookOpenLine, color: "text-teal-500", description: "Process thoughts through writing", areaId: "self-inner" },
+  { id: "reconnect-friends", label: "Reconnect with friends", icon: RiChat3Line, color: "text-blue-500", description: "Revive dormant friendships", areaId: "relationships" },
+  { id: "learn-skill", label: "Learn a new skill deeply", icon: RiGraduationCapLine, color: "text-amber-500", description: "Go beyond surface-level knowledge", areaId: "work-craft" },
+  { id: "new-hobby", label: "Learn a new hobby", icon: RiPaletteLine, color: "text-pink-500", description: "Explore something unfamiliar", areaId: "play-exploration" },
+  { id: "family-calls", label: "Family weekly calls", icon: RiPhoneLine, color: "text-green-500", description: "Stay close across distance", areaId: "relationships" },
+]
 
-  const handleSelectArea = React.useCallback((areaId: string) => {
-    setSelectedAreaId(areaId)
+export function GoalsDirectoryExample() {
+  const [selectedTab, setSelectedTab] = React.useState<string>("popular")
+  const [selectedGoalIds, setSelectedGoalIds] = React.useState<Set<string>>(new Set())
+
+  const handleSelectTab = React.useCallback((tabId: string) => {
+    setSelectedTab(tabId)
   }, [])
 
-  const handleSelectGoal = React.useCallback((areaId: string, goalId: string) => {
-    console.log("Selected goal:", { areaId, goalId })
+  const handleToggleGoal = React.useCallback((areaId: string, goalId: string) => {
+    setSelectedGoalIds(prev => {
+      const next = new Set(prev)
+      if (next.has(goalId)) {
+        next.delete(goalId)
+      } else {
+        next.add(goalId)
+      }
+      return next
+    })
   }, [])
 
   const handleAddGoal = React.useCallback((areaId: string) => {
@@ -134,12 +157,14 @@ export function GoalsDirectoryExample() {
 
   return (
     <KnobsProvider>
-      <div className="h-[600px] w-full max-w-4xl">
+      <div className="h-[600px] w-full max-w-5xl">
         <GoalsDirectory
           lifeAreas={LIFE_AREAS}
-          selectedAreaId={selectedAreaId}
-          onSelectArea={handleSelectArea}
-          onSelectGoal={handleSelectGoal}
+          popularGoals={POPULAR_GOALS}
+          selectedTab={selectedTab}
+          selectedGoalIds={selectedGoalIds}
+          onSelectTab={handleSelectTab}
+          onToggleGoal={handleToggleGoal}
           onAddGoal={handleAddGoal}
         />
       </div>
