@@ -103,23 +103,26 @@ function toAnalyticsItems(items: BacklogItem[]): WeeklyAnalyticsItem[] {
   }))
 }
 
+// Helper to convert hours to minutes for startMinutes
+const hoursToMinutes = (hours: number) => hours * 60
+
 const SAMPLE_CALENDAR_EVENTS: CalendarEvent[] = [
-  { title: "Morning workout", dayIndex: 0, startHour: 7, durationMinutes: 60, color: "emerald", status: "completed" },
-  { title: "Team standup", dayIndex: 0, startHour: 9, durationMinutes: 30, color: "violet", status: "completed" },
-  { title: "Design review", dayIndex: 0, startHour: 14, durationMinutes: 90, color: "blue", taskCount: 3, status: "completed" },
-  { title: "1:1 with manager", dayIndex: 1, startHour: 10, durationMinutes: 60, color: "amber", status: "completed" },
-  { title: "Lunch break", dayIndex: 1, startHour: 12, durationMinutes: 60, color: "teal", status: "completed" },
-  { title: "Sprint planning", dayIndex: 1, startHour: 15, durationMinutes: 120, color: "indigo", taskCount: 5, status: "completed" },
-  { title: "Deep work", dayIndex: 2, startHour: 9, durationMinutes: 180, color: "sky", status: "completed" },
-  { title: "Product sync", dayIndex: 2, startHour: 14, durationMinutes: 45, color: "rose", status: "completed" },
-  { title: "Code review", dayIndex: 3, startHour: 10, durationMinutes: 60, color: "cyan", taskCount: 2 },
-  { title: "Team lunch", dayIndex: 3, startHour: 12, durationMinutes: 90, color: "orange" },
-  { title: "Interview", dayIndex: 3, startHour: 16, durationMinutes: 60, color: "pink" },
-  { title: "Focus time", dayIndex: 4, startHour: 8, durationMinutes: 120, color: "violet" },
-  { title: "All-hands", dayIndex: 4, startHour: 11, durationMinutes: 60, color: "fuchsia" },
-  { title: "Project retro", dayIndex: 4, startHour: 15, durationMinutes: 60, color: "green", taskCount: 4 },
-  { title: "Side project", dayIndex: 5, startHour: 10, durationMinutes: 180, color: "lime", status: "outlined" },
-  { title: "Reading", dayIndex: 6, startHour: 9, durationMinutes: 120, color: "slate", status: "outlined" },
+  { id: "shell-1", title: "Morning workout", dayIndex: 0, startMinutes: hoursToMinutes(7), durationMinutes: 60, color: "emerald", status: "completed" },
+  { id: "shell-2", title: "Team standup", dayIndex: 0, startMinutes: hoursToMinutes(9), durationMinutes: 30, color: "violet", status: "completed" },
+  { id: "shell-3", title: "Design review", dayIndex: 0, startMinutes: hoursToMinutes(14), durationMinutes: 90, color: "blue", taskCount: 3, status: "completed" },
+  { id: "shell-4", title: "1:1 with manager", dayIndex: 1, startMinutes: hoursToMinutes(10), durationMinutes: 60, color: "amber", status: "completed" },
+  { id: "shell-5", title: "Lunch break", dayIndex: 1, startMinutes: hoursToMinutes(12), durationMinutes: 60, color: "teal", status: "completed" },
+  { id: "shell-6", title: "Sprint planning", dayIndex: 1, startMinutes: hoursToMinutes(15), durationMinutes: 120, color: "indigo", taskCount: 5, status: "completed" },
+  { id: "shell-7", title: "Deep work", dayIndex: 2, startMinutes: hoursToMinutes(9), durationMinutes: 180, color: "sky", status: "completed" },
+  { id: "shell-8", title: "Product sync", dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 45, color: "rose", status: "completed" },
+  { id: "shell-9", title: "Code review", dayIndex: 3, startMinutes: hoursToMinutes(10), durationMinutes: 60, color: "cyan", taskCount: 2 },
+  { id: "shell-10", title: "Team lunch", dayIndex: 3, startMinutes: hoursToMinutes(12), durationMinutes: 90, color: "orange" },
+  { id: "shell-11", title: "Interview", dayIndex: 3, startMinutes: hoursToMinutes(16), durationMinutes: 60, color: "pink" },
+  { id: "shell-12", title: "Focus time", dayIndex: 4, startMinutes: hoursToMinutes(8), durationMinutes: 120, color: "violet" },
+  { id: "shell-13", title: "All-hands", dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 60, color: "fuchsia" },
+  { id: "shell-14", title: "Project retro", dayIndex: 4, startMinutes: hoursToMinutes(15), durationMinutes: 60, color: "green", taskCount: 4 },
+  { id: "shell-15", title: "Side project", dayIndex: 5, startMinutes: hoursToMinutes(10), durationMinutes: 180, color: "lime", status: "outlined" },
+  { id: "shell-16", title: "Reading", dayIndex: 6, startMinutes: hoursToMinutes(9), durationMinutes: 120, color: "slate", status: "outlined" },
 ]
 import {
   KnobsProvider,

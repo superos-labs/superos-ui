@@ -30,6 +30,10 @@ export function BlockExample() {
   const [duration, setDuration] = React.useState<string>("60")
   const [showTasks, setShowTasks] = React.useState(false)
   const [displayCalendar, setDisplayCalendar] = React.useState(false)
+  
+  // State for calendar resize
+  const [startMinutes, setStartMinutes] = React.useState(9 * 60) // 9:00 AM
+  const [calendarDuration, setCalendarDuration] = React.useState(60)
 
   const selectedDuration = durationOptions.find(d => d.value === duration)
 
@@ -38,14 +42,31 @@ export function BlockExample() {
   const dayOfWeek = today.getDay()
   const todayDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
 
+  // Sync duration when knob changes (only when not in calendar mode)
+  React.useEffect(() => {
+    if (!displayCalendar) {
+      setCalendarDuration(parseInt(duration, 10))
+    }
+  }, [duration, displayCalendar])
+
   const blockAsEvent: CalendarEvent = {
+    id: "preview-block",
     title,
     dayIndex: todayDayIndex,
-    startHour: 9,
-    durationMinutes: parseInt(duration, 10),
+    startMinutes,
+    durationMinutes: calendarDuration,
     color,
     taskCount: showTasks ? 3 : undefined,
   }
+
+  const handleEventResize = React.useCallback((
+    _eventId: string,
+    newStartMinutes: number,
+    newDurationMinutes: number
+  ) => {
+    setStartMinutes(newStartMinutes)
+    setCalendarDuration(newDurationMinutes)
+  }, [])
 
   return (
     <KnobsProvider>
@@ -55,6 +76,7 @@ export function BlockExample() {
             view="day"
             events={[blockAsEvent]}
             setBlockStyle={status}
+            onEventResize={handleEventResize}
           />
         </div>
       ) : (

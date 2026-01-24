@@ -3,6 +3,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Block, type BlockColor, type BlockStatus } from "@/components/block"
+import { ResizableBlockWrapper } from "@/components/resizable-block-wrapper"
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
@@ -12,9 +13,10 @@ type CalendarMode = "schedule" | "blueprint"
 type BlockStyle = "planned" | "completed" | "blueprint"
 
 interface CalendarEvent {
+  id: string
   title: string
   dayIndex: number // 0 = Monday, 6 = Sunday
-  startHour: number
+  startMinutes: number // Minutes from midnight (0-1440)
   durationMinutes: number
   color: BlockColor
   taskCount?: number
@@ -41,6 +43,10 @@ interface CalendarProps {
   /** Events to display on the calendar */
   events?: CalendarEvent[]
   setBlockStyle?: BlockStyle
+  /** Called when an event is being resized */
+  onEventResize?: (eventId: string, newStartMinutes: number, newDurationMinutes: number) => void
+  /** Called when resize operation ends */
+  onEventResizeEnd?: (eventId: string) => void
 }
 
 function getWeekDates(referenceDate: Date = new Date()) {
@@ -231,7 +237,37 @@ function formatEventTime(hour: number, minutes: number = 0) {
   return `${h}${m}${ampm}`
 }
 
-function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, events = [], mode = "schedule", setBlockStyle }: { selectedDate: Date; showHourLabels?: boolean; headerIsVisible?: boolean; events?: CalendarEvent[]; mode?: CalendarMode; setBlockStyle?: BlockStyle }) {
+function formatTimeFromMinutes(totalMinutes: number) {
+  const hour = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return formatEventTime(hour, minutes)
+}
+
+// Fixed grid height in pixels (min-h-[1536px] = 1536px for 24 hours)
+const GRID_HEIGHT_PX = 1536
+const PIXELS_PER_MINUTE = GRID_HEIGHT_PX / (24 * 60)
+
+interface DayViewProps {
+  selectedDate: Date
+  showHourLabels?: boolean
+  headerIsVisible?: boolean
+  events?: CalendarEvent[]
+  mode?: CalendarMode
+  setBlockStyle?: BlockStyle
+  onEventResize?: (eventId: string, newStartMinutes: number, newDurationMinutes: number) => void
+  onEventResizeEnd?: (eventId: string) => void
+}
+
+function DayView({ 
+  selectedDate, 
+  showHourLabels = true, 
+  headerIsVisible = true, 
+  events = [], 
+  mode = "schedule", 
+  setBlockStyle,
+  onEventResize,
+  onEventResizeEnd,
+}: DayViewProps) {
   const today = isToday(selectedDate)
   const dayName = selectedDate.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3)
   
@@ -303,32 +339,56 @@ function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, 
               />
             ))}
             
-            {/* Sample Events */}
-            {dayEvents.map((event, idx) => {
-              const topPercent = (event.startHour / 24) * 100
+            {/* Events */}
+            {dayEvents.map((event) => {
+              const topPercent = (event.startMinutes / (24 * 60)) * 100
               const heightPercent = (event.durationMinutes / (24 * 60)) * 100
-              const endHour = event.startHour + Math.floor(event.durationMinutes / 60)
-              const endMinutes = event.durationMinutes % 60
+              const endMinutes = event.startMinutes + event.durationMinutes
+              
+              const blockContent = (
+                <Block
+                  title={event.title}
+                  startTime={formatTimeFromMinutes(event.startMinutes)}
+                  endTime={formatTimeFromMinutes(endMinutes)}
+                  color={event.color}
+                  status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, selectedDayIndex)}
+                  duration={event.durationMinutes as 30 | 60 | 240}
+                  taskCount={event.taskCount}
+                  fillContainer
+                />
+              )
+              
+              // If resize callbacks are provided, wrap in ResizableBlockWrapper
+              if (onEventResize) {
+                return (
+                  <ResizableBlockWrapper
+                    key={event.id}
+                    className="absolute right-1 left-1 z-10"
+                    style={{
+                      top: `${topPercent}%`,
+                      height: `${heightPercent}%`,
+                    }}
+                    startMinutes={event.startMinutes}
+                    durationMinutes={event.durationMinutes}
+                    pixelsPerMinute={PIXELS_PER_MINUTE}
+                    onResize={(newStart, newDuration) => onEventResize(event.id, newStart, newDuration)}
+                    onResizeEnd={() => onEventResizeEnd?.(event.id)}
+                  >
+                    {blockContent}
+                  </ResizableBlockWrapper>
+                )
+              }
               
               return (
                 <div
-                  key={idx}
+                  key={event.id}
                   className="absolute right-1 left-1 z-10"
                   style={{
                     top: `${topPercent}%`,
                     height: `${heightPercent}%`,
                   }}
                 >
-                  <Block
-                    title={event.title}
-                    startTime={formatEventTime(event.startHour)}
-                    endTime={formatEventTime(endHour, endMinutes)}
-                    color={event.color}
-                    status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, selectedDayIndex)}
-                    duration={event.durationMinutes as 30 | 60 | 240}
-                    taskCount={event.taskCount}
-                    fillContainer
-                  />
+                  {blockContent}
                 </div>
               )
             })}
@@ -342,7 +402,25 @@ function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, 
   )
 }
 
-function WeekView({ weekDates, showHourLabels = true, events = [], mode = "schedule", setBlockStyle }: { weekDates: Date[]; showHourLabels?: boolean; events?: CalendarEvent[]; mode?: CalendarMode; setBlockStyle?: BlockStyle }) {
+interface WeekViewProps {
+  weekDates: Date[]
+  showHourLabels?: boolean
+  events?: CalendarEvent[]
+  mode?: CalendarMode
+  setBlockStyle?: BlockStyle
+  onEventResize?: (eventId: string, newStartMinutes: number, newDurationMinutes: number) => void
+  onEventResizeEnd?: (eventId: string) => void
+}
+
+function WeekView({ 
+  weekDates, 
+  showHourLabels = true, 
+  events = [], 
+  mode = "schedule", 
+  setBlockStyle,
+  onEventResize,
+  onEventResizeEnd,
+}: WeekViewProps) {
   const headerCols = showHourLabels ? "grid-cols-[3rem_repeat(7,1fr)]" : "grid-cols-[repeat(7,1fr)]"
   const gridCols = showHourLabels ? "grid-cols-[3rem_repeat(7,1fr)]" : "grid-cols-[repeat(7,1fr)]"
   
@@ -419,32 +497,56 @@ function WeekView({ weekDates, showHourLabels = true, events = [], mode = "sched
                   />
                 ))}
                 
-                {/* Sample Events */}
-                {dayEvents.map((event, idx) => {
-                  const topPercent = (event.startHour / 24) * 100
+                {/* Events */}
+                {dayEvents.map((event) => {
+                  const topPercent = (event.startMinutes / (24 * 60)) * 100
                   const heightPercent = (event.durationMinutes / (24 * 60)) * 100
-                  const endHour = event.startHour + Math.floor(event.durationMinutes / 60)
-                  const endMinutes = event.durationMinutes % 60
+                  const endMinutes = event.startMinutes + event.durationMinutes
+                  
+                  const blockContent = (
+                    <Block
+                      title={event.title}
+                      startTime={formatTimeFromMinutes(event.startMinutes)}
+                      endTime={formatTimeFromMinutes(endMinutes)}
+                      color={event.color}
+                      status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, dayIndex)}
+                      duration={event.durationMinutes as 30 | 60 | 240}
+                      taskCount={event.taskCount}
+                      fillContainer
+                    />
+                  )
+                  
+                  // If resize callbacks are provided, wrap in ResizableBlockWrapper
+                  if (onEventResize) {
+                    return (
+                      <ResizableBlockWrapper
+                        key={event.id}
+                        className="absolute right-1 left-1 z-10"
+                        style={{
+                          top: `${topPercent}%`,
+                          height: `${heightPercent}%`,
+                        }}
+                        startMinutes={event.startMinutes}
+                        durationMinutes={event.durationMinutes}
+                        pixelsPerMinute={PIXELS_PER_MINUTE}
+                        onResize={(newStart, newDuration) => onEventResize(event.id, newStart, newDuration)}
+                        onResizeEnd={() => onEventResizeEnd?.(event.id)}
+                      >
+                        {blockContent}
+                      </ResizableBlockWrapper>
+                    )
+                  }
                   
                   return (
                     <div
-                      key={idx}
+                      key={event.id}
                       className="absolute right-1 left-1 z-10"
                       style={{
                         top: `${topPercent}%`,
                         height: `${heightPercent}%`,
                       }}
                     >
-                      <Block
-                        title={event.title}
-                        startTime={formatEventTime(event.startHour)}
-                        endTime={formatEventTime(endHour, endMinutes)}
-                        color={event.color}
-                        status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, dayIndex)}
-                        duration={event.durationMinutes as 30 | 60 | 240}
-                        taskCount={event.taskCount}
-                        fillContainer
-                      />
+                      {blockContent}
                     </div>
                   )
                 })}
@@ -467,17 +569,40 @@ export function Calendar({
   showHourLabels = true, 
   headerIsVisible = true, 
   events = [], 
-  setBlockStyle
+  setBlockStyle,
+  onEventResize,
+  onEventResizeEnd,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), [])
   const dateToUse = selectedDate ?? today
   const weekDates = React.useMemo(() => getWeekDates(dateToUse), [dateToUse])
   
   if (view === "day") {
-    return <DayView selectedDate={dateToUse} showHourLabels={showHourLabels} headerIsVisible={headerIsVisible} events={events} mode={mode} setBlockStyle={setBlockStyle} />
+    return (
+      <DayView 
+        selectedDate={dateToUse} 
+        showHourLabels={showHourLabels} 
+        headerIsVisible={headerIsVisible} 
+        events={events} 
+        mode={mode} 
+        setBlockStyle={setBlockStyle}
+        onEventResize={onEventResize}
+        onEventResizeEnd={onEventResizeEnd}
+      />
+    )
   }
   
-  return <WeekView weekDates={weekDates} showHourLabels={showHourLabels} events={events} mode={mode} setBlockStyle={setBlockStyle} />
+  return (
+    <WeekView 
+      weekDates={weekDates} 
+      showHourLabels={showHourLabels} 
+      events={events} 
+      mode={mode} 
+      setBlockStyle={setBlockStyle}
+      onEventResize={onEventResize}
+      onEventResizeEnd={onEventResizeEnd}
+    />
+  )
 }
 
 export { CalendarDayHeader }
