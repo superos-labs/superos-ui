@@ -62,10 +62,10 @@ export const registry: ComponentEntry[] = [
     },
   },
   {
-    slug: "goals-directory",
-    name: "Goals Directory",
+    slug: "goal-browser",
+    name: "Goal Browser",
     get component() {
-      return require("@/components/goals-directory-example").GoalsDirectoryExample
+      return require("@/components/goal-browser-example").GoalBrowserExample
     },
   },
 ]

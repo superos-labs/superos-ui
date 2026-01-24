@@ -54,7 +54,7 @@ interface PopularGoal extends Goal {
   areaId: string;
 }
 
-interface GoalsDirectoryProps {
+interface GoalBrowserProps {
   lifeAreas: LifeArea[];
   popularGoals: PopularGoal[];
   selectedTab?: string;
@@ -338,7 +338,7 @@ function SelectedGoalsSidebar({
 }
 
 // Main Component
-function GoalsDirectory({
+function GoalBrowser({
   lifeAreas,
   popularGoals,
   selectedTab = "popular",
@@ -346,7 +346,7 @@ function GoalsDirectory({
   onSelectTab,
   onToggleGoal,
   onAddGoal,
-}: GoalsDirectoryProps) {
+}: GoalBrowserProps) {
   const selectedArea = lifeAreas.find((area) => area.id === selectedTab);
   const isPopular = selectedTab === "popular";
 
@@ -434,5 +434,5 @@ function GoalsDirectory({
   );
 }
 
-export { GoalsDirectory, TabButton, GoalRow, GoalsList, SelectedGoalsSidebar };
-export type { GoalsDirectoryProps, LifeArea, Goal, PopularGoal };
+export { GoalBrowser, TabButton, GoalRow, GoalsList, SelectedGoalsSidebar };
+export type { GoalBrowserProps, LifeArea, Goal, PopularGoal };

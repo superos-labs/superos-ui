@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { GoalsDirectory, LifeArea, PopularGoal } from "@/components/goals-directory"
+import { GoalBrowser, LifeArea, PopularGoal } from "@/components/goal-browser"
 import { KnobsProvider } from "@/components/knobs"
 import {
   RiHeartPulseLine,
@@ -131,7 +131,7 @@ const POPULAR_GOALS: PopularGoal[] = [
   { id: "family-calls", label: "Family weekly calls", icon: RiPhoneLine, color: "text-green-500", description: "Stay close across distance", areaId: "relationships" },
 ]
 
-export function GoalsDirectoryExample() {
+export function GoalBrowserExample() {
   const [selectedTab, setSelectedTab] = React.useState<string>("popular")
   const [selectedGoalIds, setSelectedGoalIds] = React.useState<Set<string>>(new Set())
 
@@ -158,7 +158,7 @@ export function GoalsDirectoryExample() {
   return (
     <KnobsProvider>
       <div className="h-[600px] w-full max-w-5xl">
-        <GoalsDirectory
+        <GoalBrowser
           lifeAreas={LIFE_AREAS}
           popularGoals={POPULAR_GOALS}
           selectedTab={selectedTab}
