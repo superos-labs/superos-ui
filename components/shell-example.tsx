@@ -164,6 +164,19 @@ function ShellDemo() {
     []
   )
 
+  const handleEventDragEnd = React.useCallback(
+    (eventId: string, newDayIndex: number, newStartMinutes: number) => {
+      setCalendarEvents(prev =>
+        prev.map(event =>
+          event.id === eventId
+            ? { ...event, dayIndex: newDayIndex, startMinutes: newStartMinutes }
+            : event
+        )
+      )
+    },
+    []
+  )
+
   // Derive analytics data from the same source
   const analyticsCommitments = React.useMemo(() => toAnalyticsItems(commitments), [commitments])
   const analyticsGoals = React.useMemo(() => toAnalyticsItems(goals), [goals])
@@ -274,6 +287,7 @@ function ShellDemo() {
                 events={calendarEvents} 
                 mode={calendarMode} 
                 onEventResize={handleEventResize}
+                onEventDragEnd={handleEventDragEnd}
               />
             )}
           </ShellContent>
