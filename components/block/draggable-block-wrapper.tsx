@@ -69,8 +69,7 @@ export function DraggableBlockWrapper({
     <div
       className={cn(
         "group/drag relative touch-none",
-        isDragging ? "cursor-grabbing" : "cursor-grab",
-        isDragging && "z-50",
+        isDragging ? "cursor-grabbing z-50" : "cursor-grab z-10",
         className,
       )}
       style={{

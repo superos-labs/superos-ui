@@ -452,7 +452,7 @@ function DayView({
                 return (
                   <DraggableBlockWrapper
                     key={event.id}
-                    className="absolute right-1 left-1 z-10"
+                    className="absolute right-1 left-1"
                     style={{
                       top: `${topPercent}%`,
                       height: `${heightPercent}%`,
@@ -704,7 +704,7 @@ function WeekView({
                     return (
                       <DraggableBlockWrapper
                         key={event.id}
-                        className="absolute right-1 left-1 z-10"
+                        className="absolute right-1 left-1"
                         style={{
                           top: `${topPercent}%`,
                           height: `${heightPercent}%`,
