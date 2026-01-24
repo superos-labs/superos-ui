@@ -61,6 +61,13 @@ export const registry: ComponentEntry[] = [
       return require("@/components/block-sidebar-example").BlockSidebarExample
     },
   },
+  {
+    slug: "goals-directory",
+    name: "Goals Directory",
+    get component() {
+      return require("@/components/goals-directory-example").GoalsDirectoryExample
+    },
+  },
 ]
 
 export function getComponent(slug: string): ComponentEntry | undefined {
