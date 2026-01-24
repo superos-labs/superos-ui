@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Block,
   ResizableBlockWrapper,
+  DraggableBlockWrapper,
   type BlockColor,
   type BlockStatus,
 } from "@/components/block";
@@ -55,6 +56,12 @@ interface CalendarProps {
   ) => void;
   /** Called when resize operation ends */
   onEventResizeEnd?: (eventId: string) => void;
+  /** Called when drag operation ends with the final position */
+  onEventDragEnd?: (
+    eventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
 }
 
 function getWeekDates(referenceDate: Date = new Date()) {
@@ -279,6 +286,11 @@ interface DayViewProps {
     newDurationMinutes: number,
   ) => void;
   onEventResizeEnd?: (eventId: string) => void;
+  onEventDragEnd?: (
+    eventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
 }
 
 function DayView({
@@ -290,6 +302,7 @@ function DayView({
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
+  onEventDragEnd,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -305,6 +318,20 @@ function DayView({
 
   // Filter events for this day
   const dayEvents = events.filter((e) => e.dayIndex === selectedDayIndex);
+
+  // Measure day column width for drag calculations
+  const dayColumnRef = React.useRef<HTMLDivElement>(null);
+  const [dayColumnWidth, setDayColumnWidth] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!dayColumnRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width ?? 0;
+      setDayColumnWidth(width);
+    });
+    observer.observe(dayColumnRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
@@ -355,7 +382,7 @@ function DayView({
           )}
 
           {/* Day Column */}
-          <div className="relative">
+          <div ref={dayColumnRef} className="relative">
             {HOURS.map((hour) => (
               <div
                 key={hour}
@@ -374,29 +401,56 @@ function DayView({
             {dayEvents.map((event) => {
               const topPercent = (event.startMinutes / (24 * 60)) * 100;
               const heightPercent = (event.durationMinutes / (24 * 60)) * 100;
-              const endMinutes = event.startMinutes + event.durationMinutes;
 
-              const blockContent = (
-                <Block
-                  title={event.title}
-                  startTime={formatTimeFromMinutes(event.startMinutes)}
-                  endTime={formatTimeFromMinutes(endMinutes)}
-                  color={event.color}
-                  status={
-                    setBlockStyle
-                      ? blockStyleToStatus(setBlockStyle)
-                      : modeToStatus(mode, selectedDayIndex)
-                  }
-                  duration={event.durationMinutes as 30 | 60 | 240}
-                  taskCount={event.taskCount}
-                  fillContainer
-                />
-              );
+              // Helper to create block content with optional preview times
+              const createBlockContent = (previewStartMinutes?: number) => {
+                const displayStart = previewStartMinutes ?? event.startMinutes;
+                const displayEnd = displayStart + event.durationMinutes;
 
-              // If resize callbacks are provided, wrap in ResizableBlockWrapper
-              if (onEventResize) {
                 return (
-                  <ResizableBlockWrapper
+                  <Block
+                    title={event.title}
+                    startTime={formatTimeFromMinutes(displayStart)}
+                    endTime={formatTimeFromMinutes(displayEnd)}
+                    color={event.color}
+                    status={
+                      setBlockStyle
+                        ? blockStyleToStatus(setBlockStyle)
+                        : modeToStatus(mode, selectedDayIndex)
+                    }
+                    duration={event.durationMinutes as 30 | 60 | 240}
+                    taskCount={event.taskCount}
+                    fillContainer
+                  />
+                );
+              };
+
+              // Helper to wrap with resize if needed
+              const wrapWithResize = (blockContent: React.ReactNode) => {
+                if (onEventResize) {
+                  return (
+                    <ResizableBlockWrapper
+                      className="h-full"
+                      startMinutes={event.startMinutes}
+                      durationMinutes={event.durationMinutes}
+                      pixelsPerMinute={PIXELS_PER_MINUTE}
+                      onResize={(newStart, newDuration) =>
+                        onEventResize(event.id, newStart, newDuration)
+                      }
+                      onResizeEnd={() => onEventResizeEnd?.(event.id)}
+                    >
+                      {blockContent}
+                    </ResizableBlockWrapper>
+                  );
+                }
+                return blockContent;
+              };
+
+              // Add drag capability if callbacks provided
+              // In day view, drag only changes time (vertical), not day
+              if (onEventDragEnd && dayColumnWidth > 0) {
+                return (
+                  <DraggableBlockWrapper
                     key={event.id}
                     className="absolute right-1 left-1 z-10"
                     style={{
@@ -404,15 +458,39 @@ function DayView({
                       height: `${heightPercent}%`,
                     }}
                     startMinutes={event.startMinutes}
+                    dayIndex={selectedDayIndex}
                     durationMinutes={event.durationMinutes}
                     pixelsPerMinute={PIXELS_PER_MINUTE}
-                    onResize={(newStart, newDuration) =>
-                      onEventResize(event.id, newStart, newDuration)
+                    dayColumnWidth={dayColumnWidth}
+                    minDayIndex={selectedDayIndex}
+                    maxDayIndex={selectedDayIndex}
+                    onDragEnd={(newDay, newStart) =>
+                      onEventDragEnd(event.id, newDay, newStart)
                     }
-                    onResizeEnd={() => onEventResizeEnd?.(event.id)}
                   >
-                    {blockContent}
-                  </ResizableBlockWrapper>
+                    {({ isDragging, previewPosition }) => {
+                      const previewStart = isDragging && previewPosition 
+                        ? previewPosition.startMinutes 
+                        : undefined;
+                      return wrapWithResize(createBlockContent(previewStart));
+                    }}
+                  </DraggableBlockWrapper>
+                );
+              }
+
+              // Resize only (no drag)
+              if (onEventResize) {
+                return (
+                  <div
+                    key={event.id}
+                    className="absolute right-1 left-1 z-10"
+                    style={{
+                      top: `${topPercent}%`,
+                      height: `${heightPercent}%`,
+                    }}
+                  >
+                    {wrapWithResize(createBlockContent())}
+                  </div>
                 );
               }
 
@@ -425,7 +503,7 @@ function DayView({
                     height: `${heightPercent}%`,
                   }}
                 >
-                  {blockContent}
+                  {createBlockContent()}
                 </div>
               );
             })}
@@ -453,6 +531,11 @@ interface WeekViewProps {
     newDurationMinutes: number,
   ) => void;
   onEventResizeEnd?: (eventId: string) => void;
+  onEventDragEnd?: (
+    eventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
 }
 
 function WeekView({
@@ -463,6 +546,7 @@ function WeekView({
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
+  onEventDragEnd,
 }: WeekViewProps) {
   const headerCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
@@ -470,6 +554,21 @@ function WeekView({
   const gridCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
     : "grid-cols-[repeat(7,1fr)]";
+
+  // Measure day column width for drag calculations
+  const gridRef = React.useRef<HTMLDivElement>(null);
+  const [dayColumnWidth, setDayColumnWidth] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!gridRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const gridWidth = entries[0]?.contentRect.width ?? 0;
+      const gutterWidth = showHourLabels ? 48 : 0; // 3rem = 48px
+      setDayColumnWidth((gridWidth - gutterWidth) / 7);
+    });
+    observer.observe(gridRef.current);
+    return () => observer.disconnect();
+  }, [showHourLabels]);
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
@@ -494,7 +593,7 @@ function WeekView({
 
       {/* Time Grid */}
       <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
-        <div className={cn("relative grid min-h-[1536px]", gridCols)}>
+        <div ref={gridRef} className={cn("relative grid min-h-[1536px]", gridCols)}>
           {/* Hour Labels */}
           {showHourLabels && (
             <div className="border-border/40 relative border-r">
@@ -555,29 +654,55 @@ function WeekView({
                   const topPercent = (event.startMinutes / (24 * 60)) * 100;
                   const heightPercent =
                     (event.durationMinutes / (24 * 60)) * 100;
-                  const endMinutes = event.startMinutes + event.durationMinutes;
 
-                  const blockContent = (
-                    <Block
-                      title={event.title}
-                      startTime={formatTimeFromMinutes(event.startMinutes)}
-                      endTime={formatTimeFromMinutes(endMinutes)}
-                      color={event.color}
-                      status={
-                        setBlockStyle
-                          ? blockStyleToStatus(setBlockStyle)
-                          : modeToStatus(mode, dayIndex)
-                      }
-                      duration={event.durationMinutes as 30 | 60 | 240}
-                      taskCount={event.taskCount}
-                      fillContainer
-                    />
-                  );
+                  // Helper to create block content with optional preview times
+                  const createBlockContent = (previewStartMinutes?: number) => {
+                    const displayStart = previewStartMinutes ?? event.startMinutes;
+                    const displayEnd = displayStart + event.durationMinutes;
 
-                  // If resize callbacks are provided, wrap in ResizableBlockWrapper
-                  if (onEventResize) {
                     return (
-                      <ResizableBlockWrapper
+                      <Block
+                        title={event.title}
+                        startTime={formatTimeFromMinutes(displayStart)}
+                        endTime={formatTimeFromMinutes(displayEnd)}
+                        color={event.color}
+                        status={
+                          setBlockStyle
+                            ? blockStyleToStatus(setBlockStyle)
+                            : modeToStatus(mode, dayIndex)
+                        }
+                        duration={event.durationMinutes as 30 | 60 | 240}
+                        taskCount={event.taskCount}
+                        fillContainer
+                      />
+                    );
+                  };
+
+                  // Helper to wrap with resize if needed
+                  const wrapWithResize = (blockContent: React.ReactNode) => {
+                    if (onEventResize) {
+                      return (
+                        <ResizableBlockWrapper
+                          className="h-full"
+                          startMinutes={event.startMinutes}
+                          durationMinutes={event.durationMinutes}
+                          pixelsPerMinute={PIXELS_PER_MINUTE}
+                          onResize={(newStart, newDuration) =>
+                            onEventResize(event.id, newStart, newDuration)
+                          }
+                          onResizeEnd={() => onEventResizeEnd?.(event.id)}
+                        >
+                          {blockContent}
+                        </ResizableBlockWrapper>
+                      );
+                    }
+                    return blockContent;
+                  };
+
+                  // Add drag capability if callbacks provided
+                  if (onEventDragEnd && dayColumnWidth > 0) {
+                    return (
+                      <DraggableBlockWrapper
                         key={event.id}
                         className="absolute right-1 left-1 z-10"
                         style={{
@@ -585,15 +710,37 @@ function WeekView({
                           height: `${heightPercent}%`,
                         }}
                         startMinutes={event.startMinutes}
+                        dayIndex={dayIndex}
                         durationMinutes={event.durationMinutes}
                         pixelsPerMinute={PIXELS_PER_MINUTE}
-                        onResize={(newStart, newDuration) =>
-                          onEventResize(event.id, newStart, newDuration)
+                        dayColumnWidth={dayColumnWidth}
+                        onDragEnd={(newDay, newStart) =>
+                          onEventDragEnd(event.id, newDay, newStart)
                         }
-                        onResizeEnd={() => onEventResizeEnd?.(event.id)}
                       >
-                        {blockContent}
-                      </ResizableBlockWrapper>
+                        {({ isDragging, previewPosition }) => {
+                          const previewStart = isDragging && previewPosition 
+                            ? previewPosition.startMinutes 
+                            : undefined;
+                          return wrapWithResize(createBlockContent(previewStart));
+                        }}
+                      </DraggableBlockWrapper>
+                    );
+                  }
+
+                  // Resize only (no drag)
+                  if (onEventResize) {
+                    return (
+                      <div
+                        key={event.id}
+                        className="absolute right-1 left-1 z-10"
+                        style={{
+                          top: `${topPercent}%`,
+                          height: `${heightPercent}%`,
+                        }}
+                      >
+                        {wrapWithResize(createBlockContent())}
+                      </div>
                     );
                   }
 
@@ -606,7 +753,7 @@ function WeekView({
                         height: `${heightPercent}%`,
                       }}
                     >
-                      {blockContent}
+                      {createBlockContent()}
                     </div>
                   );
                 })}
@@ -632,6 +779,7 @@ export function Calendar({
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
+  onEventDragEnd,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -648,6 +796,7 @@ export function Calendar({
         setBlockStyle={setBlockStyle}
         onEventResize={onEventResize}
         onEventResizeEnd={onEventResizeEnd}
+        onEventDragEnd={onEventDragEnd}
       />
     );
   }
@@ -661,6 +810,7 @@ export function Calendar({
       setBlockStyle={setBlockStyle}
       onEventResize={onEventResize}
       onEventResizeEnd={onEventResizeEnd}
+      onEventDragEnd={onEventDragEnd}
     />
   );
 }

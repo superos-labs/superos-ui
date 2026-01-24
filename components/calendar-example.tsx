@@ -54,6 +54,19 @@ export function CalendarExample() {
     ))
   }, [])
 
+  // Handle event drag end - updates the event's day and start time when drag completes
+  const handleEventDragEnd = React.useCallback((
+    eventId: string,
+    newDayIndex: number,
+    newStartMinutes: number
+  ) => {
+    setEvents(prev => prev.map(event =>
+      event.id === eventId
+        ? { ...event, dayIndex: newDayIndex, startMinutes: newStartMinutes }
+        : event
+    ))
+  }, [])
+
   return (
     <KnobsProvider>
       <div className="h-screen w-full">
@@ -65,6 +78,7 @@ export function CalendarExample() {
           events={showEvents ? events : []}
           setBlockStyle={blockStyle || undefined}
           onEventResize={handleEventResize}
+          onEventDragEnd={handleEventDragEnd}
         />
       </div>
       
