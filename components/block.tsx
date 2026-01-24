@@ -245,6 +245,8 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   taskCount?: number
   /** Show action buttons on hover for outlined variant (default: true) */
   showOutlinedActions?: boolean
+  /** When true, Block fills its container height instead of calculating its own */
+  fillContainer?: boolean
 }
 
 function Block({
@@ -256,6 +258,7 @@ function Block({
   duration = 30,
   taskCount,
   showOutlinedActions = true,
+  fillContainer = false,
   className,
   style,
   ...props
@@ -268,7 +271,7 @@ function Block({
   const isCompleted = status === "completed"
   const isOutlined = status === "blueprint"
   
-  const height = (duration / 30) * HEIGHT_PER_30_MIN
+  const height = fillContainer ? undefined : (duration / 30) * HEIGHT_PER_30_MIN
 
   const isCompact = duration <= 30
 
@@ -278,6 +281,7 @@ function Block({
         "group relative flex flex-col overflow-hidden rounded-md px-2.5 text-sm",
         isCompact ? "justify-center py-1" : "py-2",
         "cursor-pointer transition-all",
+        fillContainer && "h-full",
         isOutlined ? [
           "border border-dashed",
           colorStyles.outlinedBorder,

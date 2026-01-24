@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Block, BLOCK_COLORS, type BlockColor, type BlockStatus, type BlockDuration } from "@/components/block"
+import { Calendar, type CalendarEvent } from "@/components/calendar"
 import { 
   KnobsProvider, 
   KnobsToggle, 
@@ -28,22 +29,47 @@ export function BlockExample() {
   const [title, setTitle] = React.useState("Deep work")
   const [duration, setDuration] = React.useState<string>("60")
   const [showTasks, setShowTasks] = React.useState(false)
+  const [displayCalendar, setDisplayCalendar] = React.useState(false)
 
   const selectedDuration = durationOptions.find(d => d.value === duration)
 
+  // Calculate today's day index (0 = Monday, 6 = Sunday)
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const todayDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+
+  const blockAsEvent: CalendarEvent = {
+    title,
+    dayIndex: todayDayIndex,
+    startHour: 9,
+    durationMinutes: parseInt(duration, 10),
+    color,
+    taskCount: showTasks ? 3 : undefined,
+  }
+
   return (
     <KnobsProvider>
-      <div className="w-72">
-        <Block 
-          title={title}
-          startTime="9:00" 
-          endTime={selectedDuration?.endTime ?? "9:30"}
-          color={color}
-          status={status}
-          duration={parseInt(duration, 10) as BlockDuration}
-          taskCount={showTasks ? 3 : undefined}
-        />
-      </div>
+      {displayCalendar ? (
+        <div className="h-[600px] w-full max-w-3xl rounded-lg border overflow-hidden">
+          <Calendar 
+            view="day"
+            events={[blockAsEvent]}
+            setBlockStyle={status}
+          />
+        </div>
+      ) : (
+        <div className="w-72">
+          <Block 
+            title={title}
+            startTime="9:00" 
+            endTime={selectedDuration?.endTime ?? "9:30"}
+            color={color}
+            status={status}
+            duration={parseInt(duration, 10) as BlockDuration}
+            taskCount={showTasks ? 3 : undefined}
+          />
+        </div>
+      )}
       
       <KnobsToggle />
       <KnobsPanel>
@@ -82,6 +108,11 @@ export function BlockExample() {
             onChange={setShowTasks}
           />
         )}
+        <KnobBoolean
+          label="Display calendar"
+          value={displayCalendar}
+          onChange={setDisplayCalendar}
+        />
       </KnobsPanel>
     </KnobsProvider>
   )

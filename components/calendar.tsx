@@ -327,7 +327,7 @@ function DayView({ selectedDate, showHourLabels = true, headerIsVisible = true, 
                     status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, selectedDayIndex)}
                     duration={event.durationMinutes as 30 | 60 | 240}
                     taskCount={event.taskCount}
-                    className="h-full"
+                    fillContainer
                   />
                 </div>
               )
@@ -443,7 +443,7 @@ function WeekView({ weekDates, showHourLabels = true, events = [], mode = "sched
                         status={setBlockStyle ? blockStyleToStatus(setBlockStyle) : modeToStatus(mode, dayIndex)}
                         duration={event.durationMinutes as 30 | 60 | 240}
                         taskCount={event.taskCount}
-                        className="h-full"
+                        fillContainer
                       />
                     </div>
                   )
