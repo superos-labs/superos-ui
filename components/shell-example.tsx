@@ -149,6 +149,20 @@ function ShellDemo() {
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
   const [commitments] = React.useState<BacklogItem[]>(INITIAL_COMMITMENTS)
   const [goals, setGoals] = React.useState<BacklogItem[]>(INITIAL_GOALS)
+  const [calendarEvents, setCalendarEvents] = React.useState<CalendarEvent[]>(SAMPLE_CALENDAR_EVENTS)
+
+  const handleEventResize = React.useCallback(
+    (eventId: string, newStartMinutes: number, newDurationMinutes: number) => {
+      setCalendarEvents(prev =>
+        prev.map(event =>
+          event.id === eventId
+            ? { ...event, startMinutes: newStartMinutes, durationMinutes: newDurationMinutes }
+            : event
+        )
+      )
+    },
+    []
+  )
 
   // Derive analytics data from the same source
   const analyticsCommitments = React.useMemo(() => toAnalyticsItems(commitments), [commitments])
@@ -255,7 +269,13 @@ function ShellDemo() {
             />
           </div>
           <ShellContent className="overflow-hidden">
-            {showCalendar && <Calendar events={SAMPLE_CALENDAR_EVENTS} mode={calendarMode} />}
+            {showCalendar && (
+              <Calendar 
+                events={calendarEvents} 
+                mode={calendarMode} 
+                onEventResize={handleEventResize}
+              />
+            )}
           </ShellContent>
           <div 
             className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${

@@ -1,13 +1,9 @@
 "use client";
 
 import * as React from "react";
-import {
-  Block,
-  BLOCK_COLORS,
-  type BlockColor,
-  type BlockStatus,
-  type BlockDuration,
-} from "./block";
+import { Block } from "./block";
+import { BLOCK_COLORS, type BlockColor } from "./block-colors";
+import type { BlockStatus, BlockDuration } from "./block";
 import { Calendar, type CalendarEvent } from "@/components/calendar";
 import {
   KnobsProvider,

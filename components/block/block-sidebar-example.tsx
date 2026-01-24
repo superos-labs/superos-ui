@@ -14,7 +14,7 @@ import {
   KnobBoolean,
   KnobSelect,
 } from "@/components/knobs";
-import type { BlockColor } from "./block";
+import type { BlockColor } from "./block-colors";
 import { RiRocketLine } from "@remixicon/react";
 
 const SAMPLE_GOAL: BlockSidebarGoal = {

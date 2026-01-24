@@ -10,7 +10,7 @@ import {
   RiCloseLine,
   RiFlagLine,
 } from "@remixicon/react";
-import type { BlockColor } from "./block";
+import type { BlockColor } from "./block-colors";
 
 // Types
 type IconComponent = React.ComponentType<{ className?: string }>;
