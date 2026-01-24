@@ -279,6 +279,53 @@ interface ItemEditViewProps {
   onBack: () => void
 }
 
+// Shared transition config for internal view switches
+const slideTransition = {
+  type: "spring" as const,
+  stiffness: 400,
+  damping: 35,
+  mass: 0.8,
+}
+
+const slideExitTransition = {
+  duration: 0.15,
+  ease: [0.4, 0, 1, 1] as const,
+}
+
+// Variants for sliding forward (deeper into navigation)
+const slideForwardVariants = {
+  initial: { opacity: 0, x: 60, scale: 0.98 },
+  animate: { 
+    opacity: 1, 
+    x: 0, 
+    scale: 1,
+    transition: slideTransition
+  },
+  exit: { 
+    opacity: 0, 
+    x: -40, 
+    scale: 0.98,
+    transition: slideExitTransition
+  },
+}
+
+// Variants for sliding backward (back in navigation)
+const slideBackVariants = {
+  initial: { opacity: 0, x: -60, scale: 0.98 },
+  animate: { 
+    opacity: 1, 
+    x: 0, 
+    scale: 1,
+    transition: slideTransition
+  },
+  exit: { 
+    opacity: 0, 
+    x: 40, 
+    scale: 0.98,
+    transition: slideExitTransition
+  },
+}
+
 function ItemEditView({ item, onBack }: ItemEditViewProps) {
   const [name, setName] = React.useState(item.label)
   const [selectedIconIndex, setSelectedIconIndex] = React.useState(() => {
@@ -306,19 +353,14 @@ function ItemEditView({ item, onBack }: ItemEditViewProps) {
   const selectedColor = AVAILABLE_COLORS[selectedColorIndex]
 
   return (
-    <AnimatePresence mode="popLayout" initial={false}>
+    <AnimatePresence mode="wait" initial={false}>
       {showIconPicker ? (
         <motion.div
           key="icon-picker"
-          layout
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ 
-            opacity: { duration: 0.15 },
-            x: { duration: 0.2, ease: "easeOut" },
-            layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
-          }}
+          variants={slideForwardVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           className="flex flex-col"
         >
           {/* Icon Picker Header */}
@@ -387,15 +429,10 @@ function ItemEditView({ item, onBack }: ItemEditViewProps) {
       ) : (
         <motion.div
           key="edit-form"
-          layout
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          transition={{ 
-            opacity: { duration: 0.15 },
-            x: { duration: 0.2, ease: "easeOut" },
-            layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
-          }}
+          variants={slideBackVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           className="flex flex-col"
         >
           {/* Header */}
@@ -497,6 +534,23 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
   const [openPopup, setOpenPopup] = React.useState<"commitments" | "goals" | "hours" | null>(null)
   const [goalsTab, setGoalsTab] = React.useState<GoalsTab>("popular")
   const [selectedItem, setSelectedItem] = React.useState<SelectedItem | null>(null)
+  const toolbarRef = React.useRef<HTMLDivElement>(null)
+
+  // Click outside to close popup
+  React.useEffect(() => {
+    if (!openPopup) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
+        setOpenPopup(null)
+        setSelectedItem(null)
+      }
+    }
+
+    // Use mousedown for immediate response
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [openPopup])
 
   const handleButtonClick = (type: "commitments" | "goals" | "hours") => {
     setOpenPopup(openPopup === type ? null : type)
@@ -520,8 +574,38 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
   const allocatedHours = TIME_ALLOCATIONS.reduce((sum, item) => sum + item.hours, 0)
   const remainingHours = TOTAL_WEEKLY_HOURS - allocatedHours
 
+  // Animation variants for popups
+  const popupVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 8,
+      scale: 0.96,
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 500,
+        damping: 30,
+        mass: 0.8,
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      y: 4,
+      scale: 0.98,
+      transition: {
+        duration: 0.15,
+        ease: "easeOut"
+      }
+    }
+  }
+
   return (
     <div
+      ref={toolbarRef}
       className={cn(
         "inline-flex items-center gap-0.5 rounded-xl border border-border bg-background p-1.5 shadow-lg",
         className
@@ -536,40 +620,35 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
         >
           Commitments
         </ToolbarTextButton>
-        {openPopup === "commitments" && (
-          <motion.div 
-            layout
-            className="absolute bottom-full left-1/2 mb-3 w-80 -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-lg"
-            transition={{ layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } }}
-          >
-            <AnimatePresence mode="popLayout" initial={false}>
+        <AnimatePresence>
+          {openPopup === "commitments" && (
+            <motion.div 
+              layout
+              variants={popupVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="absolute bottom-full left-1/2 mb-3 w-80 -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-lg"
+              transition={{ layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } }}
+            >
+            <AnimatePresence mode="wait" initial={false}>
               {selectedItem ? (
                 <motion.div
                   key="edit"
-                  layout
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ 
-                    opacity: { duration: 0.15 },
-                    x: { duration: 0.2, ease: "easeOut" },
-                    layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
-                  }}
+                  variants={slideForwardVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
                   <ItemEditView item={selectedItem} onBack={handleBack} />
                 </motion.div>
               ) : (
                 <motion.div
                   key="list"
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ 
-                    opacity: { duration: 0.15 },
-                    x: { duration: 0.2, ease: "easeOut" },
-                    layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
-                  }}
+                  variants={slideBackVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
                   <div className="flex flex-col p-1.5">
                     <button
@@ -602,7 +681,8 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
               )}
             </AnimatePresence>
           </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Goals Button + Popup */}
@@ -613,40 +693,35 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
         >
           Goals
         </ToolbarTextButton>
-        {openPopup === "goals" && (
-          <motion.div 
-            layout
-            className="absolute bottom-full left-1/2 mb-3 w-80 -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-lg"
-            transition={{ layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } }}
-          >
-            <AnimatePresence mode="popLayout" initial={false}>
+        <AnimatePresence>
+          {openPopup === "goals" && (
+            <motion.div 
+              layout
+              variants={popupVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="absolute bottom-full left-1/2 mb-3 w-80 -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-lg"
+              transition={{ layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] } }}
+            >
+            <AnimatePresence mode="wait" initial={false}>
               {selectedItem ? (
                 <motion.div
                   key="edit"
-                  layout
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ 
-                    opacity: { duration: 0.15 },
-                    x: { duration: 0.2, ease: "easeOut" },
-                    layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
-                  }}
+                  variants={slideForwardVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
                   <ItemEditView item={selectedItem} onBack={handleBack} />
                 </motion.div>
               ) : (
                 <motion.div
                   key="list"
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ 
-                    opacity: { duration: 0.15 },
-                    x: { duration: 0.2, ease: "easeOut" },
-                    layout: { duration: 0.25, ease: [0.4, 0, 0.2, 1] }
-                  }}
+                  variants={slideBackVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
                   <div className="p-1.5">
                     <div className="scrollbar-hidden mb-1 flex gap-0.5 overflow-x-auto px-1 pb-1.5 pt-0.5">
@@ -699,7 +774,8 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
               )}
             </AnimatePresence>
           </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
       
       <ToolbarDivider />
@@ -714,8 +790,15 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
           <CircularProgress percentage={hasAllocations ? (remainingHours / TOTAL_WEEKLY_HOURS) * 100 : 100} />
           {hasAllocations ? remainingHours : 168}
         </ToolbarTextButton>
-        {openPopup === "hours" && (
-          <div className="absolute bottom-full left-1/2 mb-3 w-64 -translate-x-1/2 rounded-xl border border-border bg-background p-3 shadow-lg">
+        <AnimatePresence>
+          {openPopup === "hours" && (
+            <motion.div 
+              variants={popupVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="absolute bottom-full left-1/2 mb-3 w-64 -translate-x-1/2 rounded-xl border border-border bg-background p-3 shadow-lg"
+            >
             {hasAllocations ? (
               <>
                 <div className="mb-3 flex items-baseline justify-between">
@@ -766,8 +849,9 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
                 </p>
               </div>
             )}
-          </div>
-        )}
+          </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <ToolbarIconButton 
