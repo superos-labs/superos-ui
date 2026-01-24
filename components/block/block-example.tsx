@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Block } from "./block";
 import { BLOCK_COLORS, type BlockColor } from "./block-colors";
-import type { BlockStatus, BlockDuration } from "./block";
+import type { BlockStatus } from "./block";
 import { Calendar, type CalendarEvent } from "@/components/calendar";
 import {
   KnobsProvider,
@@ -19,39 +18,27 @@ const colorOptions = Object.keys(BLOCK_COLORS).map((key) => ({
   value: key as BlockColor,
 }));
 
-const durationOptions: { label: string; value: string; endTime: string }[] = [
-  { label: "30 min", value: "30", endTime: "9:30" },
-  { label: "1 hour", value: "60", endTime: "10:00" },
-  { label: "4 hours", value: "240", endTime: "13:00" },
-];
-
 export function BlockExample() {
   const [color, setColor] = React.useState<BlockColor>("indigo");
   const [status, setStatus] = React.useState<BlockStatus>("planned");
   const [title, setTitle] = React.useState("Deep work");
-  const [duration, setDuration] = React.useState<string>("60");
   const [showTasks, setShowTasks] = React.useState(false);
-  const [displayCalendar, setDisplayCalendar] = React.useState(false);
+  const [showSecondBlock, setShowSecondBlock] = React.useState(false);
 
   // State for calendar resize
   const [startMinutes, setStartMinutes] = React.useState(9 * 60); // 9:00 AM
   const [calendarDuration, setCalendarDuration] = React.useState(60);
 
-  const selectedDuration = durationOptions.find((d) => d.value === duration);
+  // Second block state
+  const [secondStartMinutes, setSecondStartMinutes] = React.useState(11 * 60); // 11:00 AM
+  const [secondDuration, setSecondDuration] = React.useState(90);
 
   // Calculate today's day index (0 = Monday, 6 = Sunday)
   const today = new Date();
   const dayOfWeek = today.getDay();
   const todayDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
 
-  // Sync duration when knob changes (only when not in calendar mode)
-  React.useEffect(() => {
-    if (!displayCalendar) {
-      setCalendarDuration(parseInt(duration, 10));
-    }
-  }, [duration, displayCalendar]);
-
-  const blockAsEvent: CalendarEvent = {
+  const primaryBlock: CalendarEvent = {
     id: "preview-block",
     title,
     dayIndex: todayDayIndex,
@@ -61,38 +48,41 @@ export function BlockExample() {
     taskCount: showTasks ? 3 : undefined,
   };
 
+  const secondBlock: CalendarEvent = {
+    id: "second-block",
+    title: "Meeting",
+    dayIndex: todayDayIndex,
+    startMinutes: secondStartMinutes,
+    durationMinutes: secondDuration,
+    color: "emerald",
+    taskCount: undefined,
+  };
+
+  const events = showSecondBlock ? [primaryBlock, secondBlock] : [primaryBlock];
+
   const handleEventResize = React.useCallback(
-    (_eventId: string, newStartMinutes: number, newDurationMinutes: number) => {
-      setStartMinutes(newStartMinutes);
-      setCalendarDuration(newDurationMinutes);
+    (eventId: string, newStartMinutes: number, newDurationMinutes: number) => {
+      if (eventId === "preview-block") {
+        setStartMinutes(newStartMinutes);
+        setCalendarDuration(newDurationMinutes);
+      } else if (eventId === "second-block") {
+        setSecondStartMinutes(newStartMinutes);
+        setSecondDuration(newDurationMinutes);
+      }
     },
     [],
   );
 
   return (
     <KnobsProvider>
-      {displayCalendar ? (
-        <div className="h-[600px] w-full max-w-3xl rounded-lg border overflow-hidden">
-          <Calendar
-            view="day"
-            events={[blockAsEvent]}
-            setBlockStyle={status}
-            onEventResize={handleEventResize}
-          />
-        </div>
-      ) : (
-        <div className="w-72">
-          <Block
-            title={title}
-            startTime="9:00"
-            endTime={selectedDuration?.endTime ?? "9:30"}
-            color={color}
-            status={status}
-            duration={parseInt(duration, 10) as BlockDuration}
-            taskCount={showTasks ? 3 : undefined}
-          />
-        </div>
-      )}
+      <div className="h-[600px] w-full max-w-3xl rounded-lg border overflow-hidden">
+        <Calendar
+          view="day"
+          events={events}
+          setBlockStyle={status}
+          onEventResize={handleEventResize}
+        />
+      </div>
 
       <KnobsToggle />
       <KnobsPanel>
@@ -101,12 +91,6 @@ export function BlockExample() {
           value={title}
           onChange={setTitle}
           placeholder="Block title"
-        />
-        <KnobSelect
-          label="Duration"
-          value={duration}
-          onChange={setDuration}
-          options={durationOptions}
         />
         <KnobSelect
           label="Variant"
@@ -132,9 +116,9 @@ export function BlockExample() {
           />
         )}
         <KnobBoolean
-          label="Display calendar"
-          value={displayCalendar}
-          onChange={setDisplayCalendar}
+          label="Show Second Block"
+          value={showSecondBlock}
+          onChange={setShowSecondBlock}
         />
       </KnobsPanel>
     </KnobsProvider>
