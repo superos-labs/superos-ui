@@ -11,7 +11,8 @@ interface DragRenderProps {
   previewPosition: DragPreviewPosition | null;
 }
 
-interface DraggableBlockWrapperProps {
+interface DraggableBlockWrapperProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children" | "onDragEnd"> {
   /** Render prop that receives drag state for customizing content during drag */
   children: React.ReactNode | ((props: DragRenderProps) => React.ReactNode);
   startMinutes: number;
@@ -29,8 +30,6 @@ interface DraggableBlockWrapperProps {
   maxDayIndex?: number;
   /** Called when drag operation ends with the final position */
   onDragEnd?: (newDayIndex: number, newStartMinutes: number) => void;
-  className?: string;
-  style?: React.CSSProperties;
 }
 
 export function DraggableBlockWrapper({
@@ -46,6 +45,7 @@ export function DraggableBlockWrapper({
   onDragEnd,
   className,
   style,
+  ...rest
 }: DraggableBlockWrapperProps) {
   const {
     isDragging,
@@ -74,6 +74,7 @@ export function DraggableBlockWrapper({
 
   return (
     <div
+      {...rest}
       className={cn(
         "group/drag relative touch-none",
         isDragging ? "cursor-grabbing z-50" : "cursor-grab z-10",

@@ -586,7 +586,7 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
       y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 500,
         damping: 30,
         mass: 0.8,
@@ -598,7 +598,7 @@ function FloatingToolbar({ className, hasAllocations = false, ...props }: Floati
       scale: 0.98,
       transition: {
         duration: 0.15,
-        ease: "easeOut"
+        ease: "easeOut" as const,
       }
     }
   }
