@@ -67,6 +67,22 @@ export function CalendarExample() {
     ))
   }, [])
 
+  // Handle double-click on empty grid area - creates a new 1-hour block
+  const handleGridDoubleClick = React.useCallback((
+    dayIndex: number,
+    startMinutes: number
+  ) => {
+    const newEvent: CalendarEvent = {
+      id: crypto.randomUUID(),
+      title: "New Block",
+      dayIndex,
+      startMinutes,
+      durationMinutes: 60,
+      color: "indigo",
+    }
+    setEvents(prev => [...prev, newEvent])
+  }, [])
+
   return (
     <KnobsProvider>
       <div className="h-screen w-full">
@@ -79,6 +95,7 @@ export function CalendarExample() {
           setBlockStyle={blockStyle || undefined}
           onEventResize={handleEventResize}
           onEventDragEnd={handleEventDragEnd}
+          onGridDoubleClick={handleGridDoubleClick}
         />
       </div>
       

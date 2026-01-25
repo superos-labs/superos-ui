@@ -47,23 +47,30 @@ export function DraggableBlockWrapper({
   className,
   style,
 }: DraggableBlockWrapperProps) {
-  const { isDragging, dragOffset, previewPosition, handlePointerDown, handlePointerMove, handlePointerUp } =
-    useBlockDrag({
-      startMinutes,
-      dayIndex,
-      durationMinutes,
-      pixelsPerMinute,
-      dayColumnWidth,
-      snapInterval,
-      minDayIndex,
-      maxDayIndex,
-      onDragEnd,
-    });
+  const {
+    isDragging,
+    dragOffset,
+    previewPosition,
+    handlePointerDown,
+    handlePointerMove,
+    handlePointerUp,
+  } = useBlockDrag({
+    startMinutes,
+    dayIndex,
+    durationMinutes,
+    pixelsPerMinute,
+    dayColumnWidth,
+    snapInterval,
+    minDayIndex,
+    maxDayIndex,
+    onDragEnd,
+  });
 
   // Support both render prop and regular children
-  const content = typeof children === "function" 
-    ? children({ isDragging, previewPosition }) 
-    : children;
+  const content =
+    typeof children === "function"
+      ? children({ isDragging, previewPosition })
+      : children;
 
   return (
     <div

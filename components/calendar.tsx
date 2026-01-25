@@ -62,6 +62,8 @@ interface CalendarProps {
     newDayIndex: number,
     newStartMinutes: number,
   ) => void;
+  /** Called when user double-clicks on an empty area of the calendar grid */
+  onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
 }
 
 function getWeekDates(referenceDate: Date = new Date()) {
@@ -273,6 +275,13 @@ function formatTimeFromMinutes(totalMinutes: number) {
 const GRID_HEIGHT_PX = 1536;
 const PIXELS_PER_MINUTE = GRID_HEIGHT_PX / (24 * 60);
 
+// Snap to 15-minute intervals for precise click positioning
+const SNAP_MINUTES = 15;
+
+function snapToGrid(minutes: number): number {
+  return Math.round(minutes / SNAP_MINUTES) * SNAP_MINUTES;
+}
+
 interface DayViewProps {
   selectedDate: Date;
   showHourLabels?: boolean;
@@ -291,6 +300,7 @@ interface DayViewProps {
     newDayIndex: number,
     newStartMinutes: number,
   ) => void;
+  onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
 }
 
 function DayView({
@@ -303,6 +313,7 @@ function DayView({
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
+  onGridDoubleClick,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -394,6 +405,14 @@ function DayView({
                   top: `${(hour / 24) * 100}%`,
                   height: `${100 / 24}%`,
                 }}
+                onDoubleClick={(e) => {
+                  if (!onGridDoubleClick) return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const relativeY = e.clientY - rect.top;
+                  const minutesIntoHour = (relativeY / rect.height) * 60;
+                  const startMinutes = snapToGrid(hour * 60 + minutesIntoHour);
+                  onGridDoubleClick(selectedDayIndex, startMinutes);
+                }}
               />
             ))}
 
@@ -467,6 +486,7 @@ function DayView({
                     onDragEnd={(newDay, newStart) =>
                       onEventDragEnd(event.id, newDay, newStart)
                     }
+                    onDoubleClick={(e) => e.stopPropagation()}
                   >
                     {({ isDragging, previewPosition }) => {
                       const previewStart = isDragging && previewPosition 
@@ -488,6 +508,7 @@ function DayView({
                       top: `${topPercent}%`,
                       height: `${heightPercent}%`,
                     }}
+                    onDoubleClick={(e) => e.stopPropagation()}
                   >
                     {wrapWithResize(createBlockContent())}
                   </div>
@@ -502,6 +523,7 @@ function DayView({
                     top: `${topPercent}%`,
                     height: `${heightPercent}%`,
                   }}
+                  onDoubleClick={(e) => e.stopPropagation()}
                 >
                   {createBlockContent()}
                 </div>
@@ -536,6 +558,7 @@ interface WeekViewProps {
     newDayIndex: number,
     newStartMinutes: number,
   ) => void;
+  onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
 }
 
 function WeekView({
@@ -547,6 +570,7 @@ function WeekView({
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
+  onGridDoubleClick,
 }: WeekViewProps) {
   const headerCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
@@ -646,6 +670,14 @@ function WeekView({
                       top: `${(hour / 24) * 100}%`,
                       height: `${100 / 24}%`,
                     }}
+                    onDoubleClick={(e) => {
+                      if (!onGridDoubleClick) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const relativeY = e.clientY - rect.top;
+                      const minutesIntoHour = (relativeY / rect.height) * 60;
+                      const startMinutes = snapToGrid(hour * 60 + minutesIntoHour);
+                      onGridDoubleClick(dayIndex, startMinutes);
+                    }}
                   />
                 ))}
 
@@ -717,6 +749,7 @@ function WeekView({
                         onDragEnd={(newDay, newStart) =>
                           onEventDragEnd(event.id, newDay, newStart)
                         }
+                        onDoubleClick={(e) => e.stopPropagation()}
                       >
                         {({ isDragging, previewPosition }) => {
                           const previewStart = isDragging && previewPosition 
@@ -738,6 +771,7 @@ function WeekView({
                           top: `${topPercent}%`,
                           height: `${heightPercent}%`,
                         }}
+                        onDoubleClick={(e) => e.stopPropagation()}
                       >
                         {wrapWithResize(createBlockContent())}
                       </div>
@@ -752,6 +786,7 @@ function WeekView({
                         top: `${topPercent}%`,
                         height: `${heightPercent}%`,
                       }}
+                      onDoubleClick={(e) => e.stopPropagation()}
                     >
                       {createBlockContent()}
                     </div>
@@ -780,6 +815,7 @@ export function Calendar({
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
+  onGridDoubleClick,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -797,6 +833,7 @@ export function Calendar({
         onEventResize={onEventResize}
         onEventResizeEnd={onEventResizeEnd}
         onEventDragEnd={onEventDragEnd}
+        onGridDoubleClick={onGridDoubleClick}
       />
     );
   }
@@ -811,6 +848,7 @@ export function Calendar({
       onEventResize={onEventResize}
       onEventResizeEnd={onEventResizeEnd}
       onEventDragEnd={onEventDragEnd}
+      onGridDoubleClick={onGridDoubleClick}
     />
   );
 }
