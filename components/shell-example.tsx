@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell"
-import { Calendar, type CalendarMode, type CalendarEvent } from "@/components/calendar"
+import { Calendar, useCalendarInteractions, KeyboardToast, type CalendarMode, type CalendarEvent } from "@/components/calendar"
 import { Backlog, type BacklogItem } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
 import {
@@ -149,33 +149,11 @@ function ShellDemo() {
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
   const [commitments] = React.useState<BacklogItem[]>(INITIAL_COMMITMENTS)
   const [goals, setGoals] = React.useState<BacklogItem[]>(INITIAL_GOALS)
-  const [calendarEvents, setCalendarEvents] = React.useState<CalendarEvent[]>(SAMPLE_CALENDAR_EVENTS)
 
-  const handleEventResize = React.useCallback(
-    (eventId: string, newStartMinutes: number, newDurationMinutes: number) => {
-      setCalendarEvents(prev =>
-        prev.map(event =>
-          event.id === eventId
-            ? { ...event, startMinutes: newStartMinutes, durationMinutes: newDurationMinutes }
-            : event
-        )
-      )
-    },
-    []
-  )
-
-  const handleEventDragEnd = React.useCallback(
-    (eventId: string, newDayIndex: number, newStartMinutes: number) => {
-      setCalendarEvents(prev =>
-        prev.map(event =>
-          event.id === eventId
-            ? { ...event, dayIndex: newDayIndex, startMinutes: newStartMinutes }
-            : event
-        )
-      )
-    },
-    []
-  )
+  // Use the interactions hook for all calendar event handling
+  const { events: calendarEvents, handlers: calendarHandlers, toastMessage } = useCalendarInteractions({
+    initialEvents: SAMPLE_CALENDAR_EVENTS,
+  })
 
   // Derive analytics data from the same source
   const analyticsCommitments = React.useMemo(() => toAnalyticsItems(commitments), [commitments])
@@ -286,8 +264,7 @@ function ShellDemo() {
               <Calendar 
                 events={calendarEvents} 
                 mode={calendarMode} 
-                onEventResize={handleEventResize}
-                onEventDragEnd={handleEventDragEnd}
+                {...calendarHandlers}
               />
             )}
           </ShellContent>
@@ -305,6 +282,7 @@ function ShellDemo() {
           </div>
         </div>
       </Shell>
+      <KeyboardToast message={toastMessage} />
       <KnobsToggle />
       <KnobsPanel>
         <KnobBoolean

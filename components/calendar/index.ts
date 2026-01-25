@@ -12,6 +12,12 @@ export { TimeColumn } from "./time-column";
 export { BlockContextMenu, EmptySpaceContextMenu } from "./calendar-context-menu";
 
 // Hooks
+export { useCalendarInteractions } from "./use-calendar-interactions";
+export type {
+  UseCalendarInteractionsOptions,
+  UseCalendarInteractionsReturn,
+} from "./use-calendar-interactions";
+
 export { useCalendarClipboard } from "./use-calendar-clipboard";
 export type {
   UseCalendarClipboardReturn,

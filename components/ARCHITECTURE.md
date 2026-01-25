@@ -234,6 +234,69 @@ When a flat component grows, migrate it:
 | Interactive knobs | ❌                  | ✅                |
 | Event handlers    | Callbacks via props | Implementation    |
 
+## Interactions Hooks
+
+When a component has many callback props for interactivity (e.g., resize, drag, copy/paste, delete), create an **interactions hook** that bundles all state and handlers together. This reduces boilerplate for consumers while keeping the core component pure.
+
+### Pattern
+
+```tsx
+// use-calendar-interactions.ts
+export function useCalendarInteractions({
+  initialEvents = [],
+}: UseCalendarInteractionsOptions): UseCalendarInteractionsReturn {
+  const [events, setEvents] = useState(initialEvents);
+  
+  // All handlers defined here...
+  const handleEventResize = useCallback(...);
+  const handleEventDragEnd = useCallback(...);
+  // etc.
+  
+  return {
+    events,
+    setEvents,
+    handlers: {
+      onEventResize: handleEventResize,
+      onEventDragEnd: handleEventDragEnd,
+      // ... all handlers
+    },
+  };
+}
+```
+
+### Usage
+
+Consumers spread the handlers onto the component:
+
+```tsx
+const { events, handlers, toastMessage } = useCalendarInteractions({
+  initialEvents: SAMPLE_EVENTS,
+});
+
+return (
+  <>
+    <Calendar events={events} {...handlers} />
+    <KeyboardToast message={toastMessage} />
+  </>
+);
+```
+
+### Benefits
+
+- **Reduced boilerplate**: One hook call replaces 10+ handler definitions
+- **Consistent behavior**: All consumers get the same interaction logic
+- **Core component stays pure**: No state management in the component itself
+- **Opt-in complexity**: Basic usage only needs data props; full interactivity is one spread away
+- **Customization**: Consumers can override individual handlers if needed
+
+### When to Create an Interactions Hook
+
+| Scenario | Approach |
+| --- | --- |
+| 1-3 callback props | Keep handlers in example file |
+| 4+ callback props with related state | Create interactions hook |
+| Multiple examples need same behavior | Create interactions hook |
+
 ## Naming Conventions
 
 | Type            | Pattern                  | Example                         |
