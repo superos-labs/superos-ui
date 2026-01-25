@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Block,
@@ -32,10 +32,11 @@ import {
   EmptySpaceContextMenu,
 } from "./calendar-context-menu";
 
-// Subtle scale-in animation for newly created blocks
-const blockEnterAnimation = {
+// Subtle scale animation for block enter/exit
+const blockAnimations = {
   initial: { scale: 0.96, opacity: 0.8 },
   animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.96, opacity: 0 },
   transition: { duration: 0.12, ease: "easeOut" as const },
 };
 
@@ -203,7 +204,8 @@ export function WeekView({
                           if (isCreatingBlock || !onGridDoubleClick) return;
                           const rect = e.currentTarget.getBoundingClientRect();
                           const relativeY = e.clientY - rect.top;
-                          const minutesIntoHour = (relativeY / rect.height) * 60;
+                          const minutesIntoHour =
+                            (relativeY / rect.height) * 60;
                           const startMinutes = snapToGrid(
                             hour * 60 + minutesIntoHour,
                           );
@@ -215,14 +217,16 @@ export function WeekView({
                 })}
 
                 {/* Events */}
-                {dayEvents.map((event) => {
+                <AnimatePresence>
+                  {dayEvents.map((event) => {
                   const topPercent = (event.startMinutes / (24 * 60)) * 100;
                   const heightPercent =
                     (event.durationMinutes / (24 * 60)) * 100;
 
                   // Helper to create block content with optional preview times
                   const createBlockContent = (previewStartMinutes?: number) => {
-                    const displayStart = previewStartMinutes ?? event.startMinutes;
+                    const displayStart =
+                      previewStartMinutes ?? event.startMinutes;
                     const displayEnd = displayStart + event.durationMinutes;
 
                     return (
@@ -234,7 +238,7 @@ export function WeekView({
                         status={
                           setBlockStyle
                             ? blockStyleToStatus(setBlockStyle)
-                            : event.status ?? "planned"
+                            : (event.status ?? "planned")
                         }
                         duration={event.durationMinutes as 30 | 60 | 240}
                         taskCount={event.taskCount}
@@ -322,7 +326,7 @@ export function WeekView({
                         }}
                         onMouseEnter={() => onEventHover?.(event)}
                         onMouseLeave={() => onEventHover?.(null)}
-                        {...blockEnterAnimation}
+                        {...blockAnimations}
                       >
                         <DraggableBlockWrapper
                           className="h-full"
@@ -372,7 +376,7 @@ export function WeekView({
                         onMouseEnter={() => onEventHover?.(event)}
                         onMouseLeave={() => onEventHover?.(null)}
                         onDoubleClick={(e) => e.stopPropagation()}
-                        {...blockEnterAnimation}
+                        {...blockAnimations}
                       >
                         {wrapWithResize(createBlockContent())}
                       </motion.div>,
@@ -390,13 +394,14 @@ export function WeekView({
                       onMouseEnter={() => onEventHover?.(event)}
                       onMouseLeave={() => onEventHover?.(null)}
                       onDoubleClick={(e) => e.stopPropagation()}
-                      {...blockEnterAnimation}
+                      {...blockAnimations}
                     >
                       {createBlockContent()}
                     </motion.div>,
                     event.id,
                   );
-                })}
+                  })}
+                </AnimatePresence>
 
                 {/* Drag-to-create preview */}
                 {createPreview && createPreview.dayIndex === dayIndex && (
@@ -409,9 +414,12 @@ export function WeekView({
                   >
                     <Block
                       title="New Block"
-                      startTime={formatTimeFromMinutes(createPreview.startMinutes)}
+                      startTime={formatTimeFromMinutes(
+                        createPreview.startMinutes,
+                      )}
                       endTime={formatTimeFromMinutes(
-                        createPreview.startMinutes + createPreview.durationMinutes,
+                        createPreview.startMinutes +
+                          createPreview.durationMinutes,
                       )}
                       color="indigo"
                       status="planned"

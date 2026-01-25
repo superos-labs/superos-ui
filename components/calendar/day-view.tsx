@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Block,
@@ -31,10 +31,11 @@ import {
   EmptySpaceContextMenu,
 } from "./calendar-context-menu";
 
-// Subtle scale-in animation for newly created blocks
-const blockEnterAnimation = {
+// Subtle scale animation for block enter/exit
+const blockAnimations = {
   initial: { scale: 0.96, opacity: 0.8 },
   animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.96, opacity: 0 },
   transition: { duration: 0.12, ease: "easeOut" as const },
 };
 
@@ -161,7 +162,7 @@ export function DayView({
             {HOURS.map((hour) => {
               const hourStartMinutes = hour * 60;
               return (
-                  <EmptySpaceContextMenu
+                <EmptySpaceContextMenu
                   key={hour}
                   canPaste={hasClipboardContent}
                   onPaste={() => {
@@ -195,7 +196,9 @@ export function DayView({
                       const rect = e.currentTarget.getBoundingClientRect();
                       const relativeY = e.clientY - rect.top;
                       const minutesIntoHour = (relativeY / rect.height) * 60;
-                      const startMinutes = snapToGrid(hour * 60 + minutesIntoHour);
+                      const startMinutes = snapToGrid(
+                        hour * 60 + minutesIntoHour,
+                      );
                       onGridDoubleClick(selectedDayIndex, startMinutes);
                     }}
                   />
@@ -204,7 +207,8 @@ export function DayView({
             })}
 
             {/* Events */}
-            {dayEvents.map((event) => {
+            <AnimatePresence>
+              {dayEvents.map((event) => {
               const topPercent = (event.startMinutes / (24 * 60)) * 100;
               const heightPercent = (event.durationMinutes / (24 * 60)) * 100;
 
@@ -222,7 +226,7 @@ export function DayView({
                     status={
                       setBlockStyle
                         ? blockStyleToStatus(setBlockStyle)
-                        : event.status ?? "planned"
+                        : (event.status ?? "planned")
                     }
                     duration={event.durationMinutes as 30 | 60 | 240}
                     taskCount={event.taskCount}
@@ -300,7 +304,7 @@ export function DayView({
                     }}
                     onMouseEnter={() => onEventHover?.(event)}
                     onMouseLeave={() => onEventHover?.(null)}
-                    {...blockEnterAnimation}
+                    {...blockAnimations}
                   >
                     <DraggableBlockWrapper
                       className="h-full"
@@ -350,7 +354,7 @@ export function DayView({
                     onMouseEnter={() => onEventHover?.(event)}
                     onMouseLeave={() => onEventHover?.(null)}
                     onDoubleClick={(e) => e.stopPropagation()}
-                    {...blockEnterAnimation}
+                    {...blockAnimations}
                   >
                     {wrapWithResize(createBlockContent())}
                   </motion.div>,
@@ -368,13 +372,14 @@ export function DayView({
                   onMouseEnter={() => onEventHover?.(event)}
                   onMouseLeave={() => onEventHover?.(null)}
                   onDoubleClick={(e) => e.stopPropagation()}
-                  {...blockEnterAnimation}
+                  {...blockAnimations}
                 >
                   {createBlockContent()}
                 </motion.div>,
                 event.id,
               );
-            })}
+              })}
+            </AnimatePresence>
 
             {/* Drag-to-create preview */}
             {createPreview && createPreview.dayIndex === selectedDayIndex && (
