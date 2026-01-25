@@ -7,8 +7,11 @@ import {
   KeyboardToast,
   useCalendarClipboard,
   useCalendarKeyboard,
+  useDeadlineKeyboard,
+  getWeekDates,
   type CalendarMode,
 } from "@/components/calendar"
+import type { DeadlineTask } from "@/hooks/use-unified-schedule"
 import { Backlog, type BacklogItem } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
@@ -86,7 +89,10 @@ function ShellDemoContent() {
     events: calendarEvents,
     getGoalStats,
     getTaskSchedule,
+    getTaskDeadline,
+    getWeekDeadlines,
     toggleTaskComplete,
+    clearTaskDeadline,
     handleDrop,
     hoveredEvent,
     hoverPosition,
@@ -99,33 +105,54 @@ function ShellDemoContent() {
     hasClipboardContent,
   })
 
+  // Hover state for deadline keyboard shortcuts
+  const [hoveredDeadline, setHoveredDeadline] = React.useState<DeadlineTask | null>(null)
+
+  // Compute week dates and deadlines for calendar display
+  const weekDates = React.useMemo(() => getWeekDates(new Date()), [])
+  const weekDeadlines = React.useMemo(
+    () => getWeekDeadlines(weekDates),
+    [getWeekDeadlines, weekDates]
+  )
+
   // Drag context for external drag preview
   const dragContext = useDragContextOptional()
   
-  // Build external drag preview from drag context state
+  // Build external drag preview from drag context state (only for time-grid drops)
   const externalDragPreview = React.useMemo(() => {
     if (!dragContext?.state.isDragging || !dragContext.state.item || !dragContext.state.previewPosition) {
+      return null
+    }
+    // Only show preview for time-grid drops, not header drops
+    if (dragContext.state.previewPosition.dropTarget !== "time-grid") {
       return null
     }
     const item = dragContext.state.item
     const pos = dragContext.state.previewPosition
     return {
       dayIndex: pos.dayIndex,
-      startMinutes: pos.startMinutes,
+      startMinutes: pos.startMinutes ?? 0,
       durationMinutes: getDefaultDuration(item.type),
       color: item.goalColor,
       title: getDragItemTitle(item),
     }
   }, [dragContext?.state])
   
-  // Handle drop from external drag
+  // Handle drop from external drag (time-grid)
   const handleExternalDrop = React.useCallback((dayIndex: number, startMinutes: number) => {
     if (!dragContext?.state.item) return
-    handleDrop(dragContext.state.item, dayIndex, startMinutes)
-  }, [dragContext?.state.item, handleDrop])
+    handleDrop(dragContext.state.item, { dayIndex, startMinutes, dropTarget: "time-grid" }, weekDates)
+  }, [dragContext?.state.item, handleDrop, weekDates])
+  
+  // Handle deadline drop (header)
+  const handleDeadlineDrop = React.useCallback((dayIndex: number, date: string) => {
+    if (!dragContext?.state.item) return
+    handleDrop(dragContext.state.item, { dayIndex, dropTarget: "day-header" }, weekDates)
+    dragContext.endDrag()
+  }, [dragContext, handleDrop, weekDates])
   
   // Keyboard shortcuts - uses hover state from useUnifiedSchedule
-  const { toastMessage } = useCalendarKeyboard({
+  const { toastMessage: calendarToastMessage } = useCalendarKeyboard({
     hoveredEvent,
     hoverPosition,
     hasClipboardContent: calendarHandlers.hasClipboardContent,
@@ -139,6 +166,28 @@ function ShellDemoContent() {
       calendarHandlers.onEventStatusChange(eventId, newStatus)
     },
   })
+
+  // Deadline toast state (separate from calendar toast)
+  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<string | null>(null)
+  
+  // Auto-clear deadline toast
+  React.useEffect(() => {
+    if (deadlineToastMessage) {
+      const timer = setTimeout(() => setDeadlineToastMessage(null), 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [deadlineToastMessage])
+
+  // Deadline keyboard shortcuts
+  useDeadlineKeyboard({
+    hoveredDeadline,
+    onToggleComplete: toggleTaskComplete,
+    onUnassign: clearTaskDeadline,
+    showToast: setDeadlineToastMessage,
+  })
+
+  // Combined toast message (calendar takes precedence)
+  const toastMessage = calendarToastMessage ?? deadlineToastMessage
 
   // Derive analytics data
   const analyticsCommitments = React.useMemo(() => 
@@ -233,6 +282,7 @@ function ShellDemoContent() {
               onToggleGoalTask={toggleTaskComplete}
               getGoalStats={getGoalStats}
               getTaskSchedule={getTaskSchedule}
+              getTaskDeadline={getTaskDeadline}
               draggable={true}
             />
           </div>
@@ -245,6 +295,11 @@ function ShellDemoContent() {
                 enableExternalDrop={true}
                 onExternalDrop={handleExternalDrop}
                 externalDragPreview={externalDragPreview}
+                onDeadlineDrop={handleDeadlineDrop}
+                deadlines={weekDeadlines}
+                onDeadlineToggleComplete={toggleTaskComplete}
+                onDeadlineUnassign={clearTaskDeadline}
+                onDeadlineHover={setHoveredDeadline}
               />
             )}
           </ShellContent>

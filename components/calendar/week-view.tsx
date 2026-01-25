@@ -6,6 +6,7 @@ import { useGridDragCreate } from "@/components/block";
 import { CalendarDayHeader } from "./calendar-day-header";
 import { CurrentTimeLine } from "./current-time-line";
 import { TimeColumn } from "./time-column";
+import { DeadlineTray } from "./deadline-tray";
 import {
   DAYS,
   HOURS,
@@ -44,6 +45,11 @@ export function WeekView({
   enableExternalDrop = false,
   onExternalDrop,
   externalDragPreview,
+  onDeadlineDrop,
+  deadlines,
+  onDeadlineToggleComplete,
+  onDeadlineUnassign,
+  onDeadlineHover,
 }: WeekViewProps) {
   // Compute grid dimensions based on density
   const gridHeight = getGridHeight(density);
@@ -98,10 +104,23 @@ export function WeekView({
               day={day}
               date={date.getDate()}
               isToday={isToday(date)}
+              dayIndex={index}
+              fullDate={date}
+              onDeadlineDrop={onDeadlineDrop}
             />
           );
         })}
       </div>
+
+      {/* Deadline Tray - only visible when there are deadlines */}
+      <DeadlineTray
+        weekDates={weekDates}
+        deadlines={deadlines ?? new Map()}
+        showHourLabels={showHourLabels}
+        onToggleComplete={onDeadlineToggleComplete}
+        onUnassign={onDeadlineUnassign}
+        onDeadlineHover={onDeadlineHover}
+      />
 
       {/* Time Grid */}
       <div className="relative flex-1 overflow-y-auto overflow-x-hidden">

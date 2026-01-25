@@ -3,7 +3,7 @@
 import * as React from "react";
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent } from "@/lib/types";
-import type { DragItem } from "@/lib/drag-types";
+import type { DragItem, DropPosition } from "@/lib/drag-types";
 import type { CalendarEvent, BlockStatus, HoverPosition } from "@/components/calendar";
 import { statusOnPaste } from "@/components/calendar";
 
@@ -16,8 +16,10 @@ export interface ScheduleTask {
   id: string;
   label: string;
   completed?: boolean;
-  /** Reference to the calendar block if scheduled */
+  /** Reference to the calendar block if scheduled (mutually exclusive with deadline) */
   scheduledBlockId?: string;
+  /** ISO date string for deadline (e.g., "2026-01-25") - mutually exclusive with scheduledBlockId */
+  deadline?: string;
 }
 
 /** Goal in the backlog */
@@ -46,6 +48,24 @@ export interface TaskScheduleInfo {
   durationMinutes: number;
 }
 
+/** Deadline info for a task */
+export interface TaskDeadlineInfo {
+  /** ISO date string (e.g., "2026-01-25") */
+  date: string;
+  /** Whether the deadline is in the past */
+  isOverdue: boolean;
+}
+
+/** Task with deadline info for display in the deadline tray */
+export interface DeadlineTask {
+  taskId: string;
+  goalId: string;
+  label: string;
+  goalLabel: string;
+  goalColor: import("@/lib/colors").GoalColor;
+  completed: boolean;
+}
+
 // ============================================================================
 // Hook Options & Return Types
 // ============================================================================
@@ -71,6 +91,8 @@ export interface UseUnifiedScheduleReturn {
   // Computed data accessors
   getGoalStats: (goalId: string) => GoalStats;
   getTaskSchedule: (taskId: string) => TaskScheduleInfo | null;
+  getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
+  getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
 
   // Backlog actions
   toggleTaskComplete: (goalId: string, taskId: string) => void;
@@ -84,6 +106,10 @@ export interface UseUnifiedScheduleReturn {
     startMinutes: number
   ) => void;
 
+  // Deadline actions
+  setTaskDeadline: (goalId: string, taskId: string, date: string) => void;
+  clearTaskDeadline: (goalId: string, taskId: string) => void;
+
   // Calendar event actions
   addEvent: (event: CalendarEvent) => void;
   updateEvent: (eventId: string, updates: Partial<CalendarEvent>) => void;
@@ -91,8 +117,8 @@ export interface UseUnifiedScheduleReturn {
   markEventComplete: (eventId: string) => void;
   markEventIncomplete: (eventId: string) => void;
 
-  // Handler to process drops from drag context
-  handleDrop: (item: DragItem, dayIndex: number, startMinutes: number) => void;
+  // Handler to process drops from drag context (supports both grid and header drops)
+  handleDrop: (item: DragItem, position: DropPosition, weekDates: Date[]) => void;
 
   // Hover state (for keyboard shortcuts)
   hoveredEvent: CalendarEvent | null;
@@ -195,6 +221,54 @@ export function useUnifiedSchedule({
     [events]
   );
 
+  const getTaskDeadline = React.useCallback(
+    (taskId: string): TaskDeadlineInfo | null => {
+      for (const goal of goals) {
+        const task = goal.tasks?.find((t) => t.id === taskId);
+        if (task?.deadline) {
+          const today = new Date().toISOString().split("T")[0];
+          return {
+            date: task.deadline,
+            isOverdue: task.deadline < today && !task.completed,
+          };
+        }
+      }
+      return null;
+    },
+    [goals]
+  );
+
+  const getWeekDeadlines = React.useCallback(
+    (weekDates: Date[]): Map<string, DeadlineTask[]> => {
+      const result = new Map<string, DeadlineTask[]>();
+      
+      // Get ISO dates for the week
+      const weekISODates = weekDates.map((d) => d.toISOString().split("T")[0]);
+      
+      for (const goal of goals) {
+        if (!goal.tasks) continue;
+        
+        for (const task of goal.tasks) {
+          if (task.deadline && weekISODates.includes(task.deadline)) {
+            const existing = result.get(task.deadline) ?? [];
+            existing.push({
+              taskId: task.id,
+              goalId: goal.id,
+              label: task.label,
+              goalLabel: goal.label,
+              goalColor: goal.color,
+              completed: task.completed ?? false,
+            });
+            result.set(task.deadline, existing);
+          }
+        }
+      }
+      
+      return result;
+    },
+    [goals]
+  );
+
   // -------------------------------------------------------------------------
   // Scheduling Actions
   // -------------------------------------------------------------------------
@@ -257,14 +331,16 @@ export function useUnifiedSchedule({
         return [...filtered, newEvent];
       });
 
-      // Update task with new block reference
+      // Update task with new block reference and clear deadline (mutually exclusive)
       setGoals((prev) =>
         prev.map((g) =>
           g.id === goalId
             ? {
                 ...g,
                 tasks: g.tasks?.map((t) =>
-                  t.id === taskId ? { ...t, scheduledBlockId: newEventId } : t
+                  t.id === taskId 
+                    ? { ...t, scheduledBlockId: newEventId, deadline: undefined } 
+                    : t
                 ),
               }
             : g
@@ -274,15 +350,82 @@ export function useUnifiedSchedule({
     [goals, events]
   );
 
+  // -------------------------------------------------------------------------
+  // Deadline Actions
+  // -------------------------------------------------------------------------
+
+  const setTaskDeadline = React.useCallback(
+    (goalId: string, taskId: string, date: string) => {
+      const goal = goals.find((g) => g.id === goalId);
+      const task = goal?.tasks?.find((t) => t.id === taskId);
+      if (!goal || !task) return;
+
+      // If task has a scheduled block, remove it (mutually exclusive)
+      if (task.scheduledBlockId) {
+        setEvents((prev) => prev.filter((e) => e.id !== task.scheduledBlockId));
+      }
+
+      // Update task with deadline and clear scheduledBlockId
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                tasks: g.tasks?.map((t) =>
+                  t.id === taskId
+                    ? { ...t, deadline: date, scheduledBlockId: undefined }
+                    : t
+                ),
+              }
+            : g
+        )
+      );
+    },
+    [goals]
+  );
+
+  const clearTaskDeadline = React.useCallback(
+    (goalId: string, taskId: string) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                tasks: g.tasks?.map((t) =>
+                  t.id === taskId ? { ...t, deadline: undefined } : t
+                ),
+              }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  // -------------------------------------------------------------------------
+  // Drop Handler
+  // -------------------------------------------------------------------------
+
   const handleDrop = React.useCallback(
-    (item: DragItem, dayIndex: number, startMinutes: number) => {
-      if (item.type === "goal") {
-        scheduleGoal(item.goalId, dayIndex, startMinutes);
-      } else if (item.taskId) {
-        scheduleTask(item.goalId, item.taskId, dayIndex, startMinutes);
+    (item: DragItem, position: DropPosition, weekDates: Date[]) => {
+      if (position.dropTarget === "day-header") {
+        // Deadline drop - only for tasks
+        if (item.taskId) {
+          const isoDate = weekDates[position.dayIndex].toISOString().split("T")[0];
+          setTaskDeadline(item.goalId, item.taskId, isoDate);
+        }
+        // Goals dropped on header are ignored (only tasks can have deadlines)
+      } else {
+        // Time grid drop
+        const startMinutes = position.startMinutes ?? 0;
+        if (item.type === "goal") {
+          scheduleGoal(item.goalId, position.dayIndex, startMinutes);
+        } else if (item.taskId) {
+          scheduleTask(item.goalId, item.taskId, position.dayIndex, startMinutes);
+        }
       }
     },
-    [scheduleGoal, scheduleTask]
+    [scheduleGoal, scheduleTask, setTaskDeadline]
   );
 
   // -------------------------------------------------------------------------
@@ -566,9 +709,13 @@ export function useUnifiedSchedule({
     events,
     getGoalStats,
     getTaskSchedule,
+    getTaskDeadline,
+    getWeekDeadlines,
     toggleTaskComplete,
     scheduleGoal,
     scheduleTask,
+    setTaskDeadline,
+    clearTaskDeadline,
     handleDrop,
     addEvent,
     updateEvent,

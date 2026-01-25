@@ -76,7 +76,7 @@ export function useDropZone({
       if (!dragContext?.state.isDragging) return;
 
       const startMinutes = getMinutesFromY(e.clientY);
-      dragContext.setPreviewPosition({ dayIndex, startMinutes });
+      dragContext.setPreviewPosition({ dayIndex, startMinutes, dropTarget: "time-grid" });
     },
     [dragContext, dayIndex, getMinutesFromY]
   );

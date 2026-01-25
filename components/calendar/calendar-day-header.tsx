@@ -1,6 +1,8 @@
 "use client";
 
+import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useDragContextOptional } from "@/components/drag";
 import type { CalendarDayHeaderProps } from "./calendar-types";
 
 export function CalendarDayHeader({
@@ -9,15 +11,73 @@ export function CalendarDayHeader({
   isToday: today = false,
   showBorder = true,
   className,
+  dayIndex,
+  fullDate,
+  isDropTarget = false,
+  onDeadlineDrop,
 }: CalendarDayHeaderProps) {
+  const dragContext = useDragContextOptional();
+  
+  // Check if we're actively dragging a task (only tasks can have deadlines)
+  const isDraggingTask = dragContext?.state.isDragging && 
+    dragContext?.state.item?.type === "task";
+  
+  // Check if this header is being hovered during a drag
+  const isBeingDraggedOver = isDraggingTask &&
+    dragContext?.state.previewPosition?.dayIndex === dayIndex &&
+    dragContext?.state.previewPosition?.dropTarget === "day-header";
+  
+  // Handle pointer move - set preview position for this header
+  // Note: Don't stopPropagation - let global handler update ghost position
+  const handlePointerMove = React.useCallback(
+    () => {
+      if (!isDraggingTask || dayIndex === undefined) return;
+      dragContext?.setPreviewPosition({ 
+        dayIndex, 
+        dropTarget: "day-header" 
+      });
+    },
+    [isDraggingTask, dayIndex, dragContext]
+  );
+  
+  // Handle pointer up - complete the drop
+  const handlePointerUp = React.useCallback(
+    () => {
+      if (!isDraggingTask || dayIndex === undefined || !fullDate) return;
+      
+      const isoDate = fullDate.toISOString().split("T")[0];
+      onDeadlineDrop?.(dayIndex, isoDate);
+      dragContext?.endDrag();
+    },
+    [isDraggingTask, dayIndex, fullDate, onDeadlineDrop, dragContext]
+  );
+  
+  // Handle pointer leave - clear preview if leaving this header
+  const handlePointerLeave = React.useCallback(() => {
+    if (!dragContext?.state.isDragging) return;
+    if (
+      dragContext.state.previewPosition?.dayIndex === dayIndex &&
+      dragContext.state.previewPosition?.dropTarget === "day-header"
+    ) {
+      dragContext.setPreviewPosition(null);
+    }
+  }, [dragContext, dayIndex]);
+
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-1.5 py-3",
+        "flex items-center justify-center gap-1.5 py-3 transition-colors",
         showBorder && "border-border/40 border-r last:border-r-0",
         today && "bg-primary/[0.03]",
+        // Highlight when dragging a task over this header
+        isBeingDraggedOver && "bg-primary/[0.08] ring-1 ring-inset ring-primary/20",
+        // Show as potential drop target when dragging a task
+        isDraggingTask && !isBeingDraggedOver && "hover:bg-primary/[0.05]",
         className,
       )}
+      onPointerMove={isDraggingTask ? handlePointerMove : undefined}
+      onPointerUp={isDraggingTask ? handlePointerUp : undefined}
+      onPointerLeave={isDraggingTask ? handlePointerLeave : undefined}
     >
       <span
         className={cn(

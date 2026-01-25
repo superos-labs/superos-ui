@@ -11,5 +11,5 @@ export { useDropZone } from "./use-drop-zone";
 export { DragGhost } from "./drag-ghost";
 
 // Re-export types from lib for convenience
-export type { DragItem, DropPosition } from "@/lib/drag-types";
+export type { DragItem, DropPosition, DropTarget } from "@/lib/drag-types";
 export { getDefaultDuration, getDragItemTitle } from "@/lib/drag-types";

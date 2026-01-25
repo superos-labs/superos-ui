@@ -142,7 +142,7 @@ export function TimeColumn({
     (e: React.PointerEvent) => {
       if (!enableExternalDrop || !dragContext?.state.isDragging) return;
       const startMinutes = getMinutesFromY(e.clientY);
-      dragContext.setPreviewPosition({ dayIndex, startMinutes });
+      dragContext.setPreviewPosition({ dayIndex, startMinutes, dropTarget: "time-grid" });
     },
     [enableExternalDrop, dragContext, dayIndex, getMinutesFromY]
   );
@@ -166,10 +166,11 @@ export function TimeColumn({
     }
   }, [dragContext, dayIndex]);
   
-  // Check if external drag is over this column
+  // Check if external drag is over this column (time-grid only, not header)
   const isExternalDragOver = enableExternalDrop && 
     dragContext?.state.isDragging && 
-    dragContext?.state.previewPosition?.dayIndex === dayIndex;
+    dragContext?.state.previewPosition?.dayIndex === dayIndex &&
+    dragContext?.state.previewPosition?.dropTarget === "time-grid";
 
   return (
     <div

@@ -194,6 +194,16 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
   setBlockStyle?: BlockStyle;
+  /** Called when a task is dropped on a day header to set a deadline */
+  onDeadlineDrop?: (dayIndex: number, date: string) => void;
+  /** Map of ISO date string to array of deadline tasks for that day */
+  deadlines?: Map<string, import("@/hooks/use-unified-schedule").DeadlineTask[]>;
+  /** Called when a deadline task's completion status is toggled */
+  onDeadlineToggleComplete?: (goalId: string, taskId: string) => void;
+  /** Called when a deadline is removed (unassigned) */
+  onDeadlineUnassign?: (goalId: string, taskId: string) => void;
+  /** Called when mouse enters/leaves a deadline pill (for keyboard shortcuts) */
+  onDeadlineHover?: (deadline: import("@/hooks/use-unified-schedule").DeadlineTask | null) => void;
 }
 
 export interface CalendarDayHeaderProps {
@@ -202,6 +212,14 @@ export interface CalendarDayHeaderProps {
   isToday?: boolean;
   showBorder?: boolean;
   className?: string;
+  /** Day index for drop handling (0 = Monday, 6 = Sunday) */
+  dayIndex?: number;
+  /** Full date for ISO string generation on drop */
+  fullDate?: Date;
+  /** Whether this header is a valid drop target for the current drag */
+  isDropTarget?: boolean;
+  /** Called when an item is dropped on this header */
+  onDeadlineDrop?: (dayIndex: number, date: string) => void;
 }
 
 export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
@@ -223,6 +241,16 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
+  /** Called when a task is dropped on a day header to set a deadline */
+  onDeadlineDrop?: (dayIndex: number, date: string) => void;
+  /** Map of ISO date string to array of deadline tasks for that day */
+  deadlines?: Map<string, import("@/hooks/use-unified-schedule").DeadlineTask[]>;
+  /** Called when a deadline task's completion status is toggled */
+  onDeadlineToggleComplete?: (goalId: string, taskId: string) => void;
+  /** Called when a deadline is removed (unassigned) */
+  onDeadlineUnassign?: (goalId: string, taskId: string) => void;
+  /** Called when mouse enters/leaves a deadline pill (for keyboard shortcuts) */
+  onDeadlineHover?: (deadline: import("@/hooks/use-unified-schedule").DeadlineTask | null) => void;
 }
 
 /**

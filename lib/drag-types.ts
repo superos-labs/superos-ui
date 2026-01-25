@@ -6,7 +6,7 @@
 import type { GoalColor } from "./colors";
 
 /**
- * Represents an item being dragged from the backlog to the calendar.
+ * Represents an item being dragged from the backlog or deadline tray to the calendar.
  */
 export interface DragItem {
   /** Whether dragging a goal or a task */
@@ -21,14 +21,26 @@ export interface DragItem {
   taskId?: string;
   /** Task label (only for task drags) */
   taskLabel?: string;
+  /** ISO date string if dragging an existing deadline from the tray */
+  sourceDeadline?: string;
 }
 
 /**
- * Position on the calendar grid for drop preview.
+ * Drop target type for distinguishing header vs grid drops.
+ */
+export type DropTarget = "time-grid" | "day-header";
+
+/**
+ * Position on the calendar for drop preview.
+ * For time-grid drops, startMinutes is required.
+ * For day-header drops (deadlines), startMinutes is undefined.
  */
 export interface DropPosition {
   dayIndex: number;
-  startMinutes: number;
+  /** Minutes from midnight (0-1440). Undefined for header drops. */
+  startMinutes?: number;
+  /** The type of drop target */
+  dropTarget: DropTarget;
 }
 
 /**

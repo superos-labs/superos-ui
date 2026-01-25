@@ -31,6 +31,11 @@ export function Calendar({
   enableExternalDrop,
   onExternalDrop,
   externalDragPreview,
+  onDeadlineDrop,
+  deadlines,
+  onDeadlineToggleComplete,
+  onDeadlineUnassign,
+  onDeadlineHover,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -90,6 +95,11 @@ export function Calendar({
       enableExternalDrop={enableExternalDrop}
       onExternalDrop={onExternalDrop}
       externalDragPreview={externalDragPreview}
+      onDeadlineDrop={onDeadlineDrop}
+      deadlines={deadlines}
+      onDeadlineToggleComplete={onDeadlineToggleComplete}
+      onDeadlineUnassign={onDeadlineUnassign}
+      onDeadlineHover={onDeadlineHover}
     />
   );
 }

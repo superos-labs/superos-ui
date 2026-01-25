@@ -9,6 +9,7 @@ export { CurrentTimeLine } from "./current-time-line";
 export { DayView } from "./day-view";
 export { WeekView } from "./week-view";
 export { TimeColumn } from "./time-column";
+export { DeadlineTray } from "./deadline-tray";
 export { BlockContextMenu, EmptySpaceContextMenu } from "./calendar-context-menu";
 
 // Hooks
@@ -29,6 +30,9 @@ export type {
   UseCalendarKeyboardOptions,
   UseCalendarKeyboardReturn,
 } from "./use-calendar-keyboard";
+
+export { useDeadlineKeyboard } from "./use-deadline-keyboard";
+export type { UseDeadlineKeyboardOptions } from "./use-deadline-keyboard";
 
 // Keyboard feedback
 export { KeyboardToast } from "./keyboard-toast";

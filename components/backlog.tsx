@@ -15,7 +15,7 @@ import { getIconColorClass } from "@/lib/colors";
 import type { IconComponent } from "@/lib/types";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
-import type { GoalStats, TaskScheduleInfo, ScheduleTask } from "@/hooks/use-unified-schedule";
+import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/hooks/use-unified-schedule";
 
 // =============================================================================
 // Types
@@ -75,6 +75,39 @@ function formatScheduledTime(schedule: TaskScheduleInfo): string {
   return `${days[schedule.dayIndex]} ${timeStr}`;
 }
 
+function formatDeadlineDate(deadline: TaskDeadlineInfo): string {
+  const date = new Date(deadline.date + "T00:00:00"); // Parse as local date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const deadlineTime = date.getTime();
+  const todayTime = today.getTime();
+  const tomorrowTime = tomorrow.getTime();
+  
+  if (deadlineTime === todayTime) {
+    return "Today";
+  }
+  if (deadlineTime === tomorrowTime) {
+    return "Tomorrow";
+  }
+  
+  // Check if within this week (next 7 days)
+  const weekFromNow = new Date(today);
+  weekFromNow.setDate(weekFromNow.getDate() + 7);
+  
+  if (deadlineTime < weekFromNow.getTime() && deadlineTime > todayTime) {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days[date.getDay()];
+  }
+  
+  // Otherwise show date
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[date.getMonth()]} ${date.getDate()}`;
+}
+
 // Components
 type GoalDisplayMode = "goal" | "milestone";
 
@@ -84,6 +117,8 @@ interface TaskRowProps {
   parentGoal: BacklogItem;
   /** Schedule info if this task is on the calendar */
   scheduleInfo?: TaskScheduleInfo | null;
+  /** Deadline info if this task has a deadline */
+  deadlineInfo?: TaskDeadlineInfo | null;
   onToggle?: (id: string) => void;
   /** Whether drag is enabled (requires DragProvider) */
   draggable?: boolean;
@@ -93,6 +128,7 @@ function TaskRow({
   task, 
   parentGoal, 
   scheduleInfo, 
+  deadlineInfo,
   onToggle, 
   draggable = false 
 }: TaskRowProps) {
@@ -107,6 +143,8 @@ function TaskRow({
     goalColor: parentGoal.color,
     taskId: task.id,
     taskLabel: task.label,
+    // Include source deadline if this task has one (for dragging from tray)
+    sourceDeadline: task.deadline,
   };
   
   const { draggableProps, isDragging } = useDraggable({
@@ -148,11 +186,26 @@ function TaskRow({
         {task.label}
       </span>
       
-      {/* Scheduled time pill */}
+      {/* Scheduled time pill (mutually exclusive with deadline) */}
       {scheduleInfo && (
         <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
           <RiTimeLine className="size-3" />
           {formatScheduledTime(scheduleInfo)}
+        </span>
+      )}
+      
+      {/* Deadline pill (shown when no schedule, but has deadline) */}
+      {!scheduleInfo && deadlineInfo && (
+        <span 
+          className={cn(
+            "flex shrink-0 items-center gap-1 text-[10px] tabular-nums",
+            deadlineInfo.isOverdue 
+              ? "text-amber-600 dark:text-amber-500" 
+              : "text-muted-foreground"
+          )}
+        >
+          <RiFlagLine className="size-3" />
+          {formatDeadlineDate(deadlineInfo)}
         </span>
       )}
     </div>
@@ -170,6 +223,8 @@ interface BacklogItemRowProps {
   onToggleTask?: (itemId: string, taskId: string) => void;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  /** Function to get deadline info for a task */
+  getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled (requires DragProvider) */
   draggable?: boolean;
   className?: string;
@@ -183,6 +238,7 @@ function BacklogItemRow({
   goalDisplayMode = "goal",
   onToggleTask,
   getTaskSchedule,
+  getTaskDeadline,
   draggable = false,
   className,
 }: BacklogItemRowProps) {
@@ -273,6 +329,7 @@ function BacklogItemRow({
               task={task}
               parentGoal={item}
               scheduleInfo={getTaskSchedule?.(task.id)}
+              deadlineInfo={getTaskDeadline?.(task.id)}
               onToggle={(taskId) => onToggleTask?.(item.id, taskId)}
               draggable={draggable}
             />
@@ -296,6 +353,8 @@ interface BacklogSectionProps {
   getGoalStats?: (goalId: string) => GoalStats;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  /** Function to get deadline info for a task */
+  getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled */
   draggable?: boolean;
   className?: string;
@@ -312,6 +371,7 @@ function BacklogSection({
   onToggleTask,
   getGoalStats,
   getTaskSchedule,
+  getTaskDeadline,
   draggable = false,
   className,
 }: BacklogSectionProps) {
@@ -368,6 +428,7 @@ function BacklogSection({
             goalDisplayMode={goalDisplayMode}
             onToggleTask={onToggleTask}
             getTaskSchedule={getTaskSchedule}
+            getTaskDeadline={getTaskDeadline}
             draggable={draggable}
           />
         ))}
@@ -405,6 +466,8 @@ interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   getGoalStats?: (goalId: string) => GoalStats;
   /** Function to get schedule info for a task (enables time pill display) */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  /** Function to get deadline info for a task (enables deadline pill display) */
+  getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Enable drag-and-drop (requires DragProvider wrapper) */
   draggable?: boolean;
 }
@@ -421,6 +484,7 @@ function Backlog({
   onToggleGoalTask,
   getGoalStats,
   getTaskSchedule,
+  getTaskDeadline,
   draggable = false,
   className,
   ...props
@@ -444,6 +508,7 @@ function Backlog({
             onAddItem={onAddCommitment}
             getGoalStats={getGoalStats}
             getTaskSchedule={getTaskSchedule}
+            getTaskDeadline={getTaskDeadline}
             draggable={draggable}
             className="py-2"
           />
@@ -460,6 +525,7 @@ function Backlog({
           onToggleTask={onToggleGoalTask}
           getGoalStats={getGoalStats}
           getTaskSchedule={getTaskSchedule}
+          getTaskDeadline={getTaskDeadline}
           draggable={draggable}
           className="py-2"
         />
@@ -484,4 +550,4 @@ export type {
   GoalDisplayMode,
 };
 // Re-export types from use-unified-schedule for convenience
-export type { GoalStats, TaskScheduleInfo } from "@/hooks/use-unified-schedule";
+export type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/hooks/use-unified-schedule";
