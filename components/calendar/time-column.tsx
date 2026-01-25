@@ -11,12 +11,79 @@ import {
 import {
   HOURS,
   COMPACT_LAYOUT_THRESHOLD_PX,
+  BLOCK_MARGIN_PX,
+  BLOCK_GAP_PX,
   blockStyleToStatus,
   canMarkComplete,
   isOvernightEvent,
   type TimeColumnProps,
+  type OverlapLayout,
 } from "./calendar-types";
-import { formatTimeFromMinutes, snapToGrid, blockAnimations } from "./calendar-utils";
+import {
+  formatTimeFromMinutes,
+  snapToGrid,
+  blockAnimations,
+} from "./calendar-utils";
+
+/**
+ * Default layout for segments without overlap calculation.
+ */
+const DEFAULT_LAYOUT: OverlapLayout = {
+  column: 0,
+  totalColumns: 1,
+  leftPercent: 0,
+  widthPercent: 100,
+};
+
+/**
+ * Calculate the CSS style for block positioning based on overlap layout.
+ * Uses calc() to combine percentage-based layout with pixel margins and gaps.
+ *
+ * Applies consistent gaps:
+ * - Horizontal: outer margins on first/last columns, small gap between adjacent blocks
+ * - Vertical: between sequential blocks (bottom gap)
+ */
+function getBlockPositionStyle(
+  layout: OverlapLayout | undefined,
+  topPercent: number,
+  heightPercent: number,
+): React.CSSProperties {
+  const { leftPercent, widthPercent, column, totalColumns } =
+    layout ?? DEFAULT_LAYOUT;
+
+  // For overlapping blocks, use smarter margin distribution:
+  // - First column: full left margin, half gap on right
+  // - Middle columns: half gap on each side
+  // - Last column: half gap on left, full right margin
+  // - Single column (no overlap): full margins on both sides
+  const isFirstColumn = column === 0;
+  const isLastColumn = column === totalColumns - 1;
+  const isSingleColumn = totalColumns === 1;
+
+  let leftOffset: number;
+  let widthReduction: number;
+
+  if (isSingleColumn) {
+    // No overlap - standard margins
+    leftOffset = BLOCK_MARGIN_PX;
+    widthReduction = BLOCK_MARGIN_PX * 2;
+  } else {
+    // Overlapping blocks - distribute gaps evenly
+    const halfGap = BLOCK_GAP_PX / 2;
+    leftOffset = isFirstColumn ? BLOCK_MARGIN_PX : halfGap;
+    const rightReduction = isLastColumn ? BLOCK_MARGIN_PX : halfGap;
+    widthReduction = leftOffset + rightReduction;
+  }
+
+  return {
+    position: "absolute" as const,
+    top: `${topPercent}%`,
+    // Reduce height by gap to create vertical spacing between sequential blocks
+    height: `calc(${heightPercent}% - ${BLOCK_GAP_PX}px)`,
+    left: `calc(${leftPercent}% + ${leftOffset}px)`,
+    width: `calc(${widthPercent}% - ${widthReduction}px)`,
+  };
+}
 import { BlockContextMenu, EmptySpaceContextMenu } from "./calendar-context-menu";
 
 /**
@@ -103,12 +170,19 @@ export function TimeColumn({
       {/* Event Segments */}
       <AnimatePresence>
         {segments.map((segment) => {
-          const { event, startMinutes, endMinutes, position } = segment;
+          const { event, startMinutes, endMinutes, position, layout } = segment;
           const segmentKey = `${event.id}-${position}`;
           const segmentDuration = endMinutes - startMinutes;
 
           const topPercent = (startMinutes / 1440) * 100;
           const heightPercent = (segmentDuration / 1440) * 100;
+
+          // Get positioning style based on overlap layout
+          const positionStyle = getBlockPositionStyle(
+            layout,
+            topPercent,
+            heightPercent,
+          );
 
           // Compute actual pixel height to determine layout mode
           const segmentHeightPx = segmentDuration * pixelsPerMinute;
@@ -228,11 +302,7 @@ export function TimeColumn({
           ) {
             return wrapWithContextMenu(
               <motion.div
-                className="absolute right-1 left-1"
-                style={{
-                  top: `${topPercent}%`,
-                  height: `${heightPercent}%`,
-                }}
+                style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
                 onMouseLeave={() => onEventHover?.(null)}
                 {...blockAnimations}
@@ -277,11 +347,8 @@ export function TimeColumn({
           if (position === "end" && onEventResize) {
             return wrapWithContextMenu(
               <motion.div
-                className="absolute right-1 left-1 z-10"
-                style={{
-                  top: `${topPercent}%`,
-                  height: `${heightPercent}%`,
-                }}
+                className="z-10"
+                style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
                 onMouseLeave={() => onEventHover?.(null)}
                 onDoubleClick={(e) => e.stopPropagation()}
@@ -297,11 +364,8 @@ export function TimeColumn({
           if (onEventResize) {
             return wrapWithContextMenu(
               <motion.div
-                className="absolute right-1 left-1 z-10"
-                style={{
-                  top: `${topPercent}%`,
-                  height: `${heightPercent}%`,
-                }}
+                className="z-10"
+                style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
                 onMouseLeave={() => onEventHover?.(null)}
                 onDoubleClick={(e) => e.stopPropagation()}
@@ -315,11 +379,8 @@ export function TimeColumn({
 
           return wrapWithContextMenu(
             <motion.div
-              className="absolute right-1 left-1 z-10"
-              style={{
-                top: `${topPercent}%`,
-                height: `${heightPercent}%`,
-              }}
+              className="z-10"
+              style={positionStyle}
               onMouseEnter={() => onEventHover?.(event)}
               onMouseLeave={() => onEventHover?.(null)}
               onDoubleClick={(e) => e.stopPropagation()}

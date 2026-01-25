@@ -10,6 +10,22 @@ export const HOURS = Array.from({ length: 24 }, (_, i) => i);
 // Snap to 15-minute intervals for precise click positioning
 export const SNAP_MINUTES = 15;
 
+// ============================================================================
+// Overlap layout configuration
+// ============================================================================
+
+/** Maximum number of side-by-side columns before events become too narrow */
+export const MAX_OVERLAP_COLUMNS = 5;
+
+/** Universal gap between blocks - applies to both overlapping and sequential blocks (in pixels) */
+export const BLOCK_GAP_PX = 2;
+
+/** Base horizontal margin for blocks (in pixels) */
+export const BLOCK_MARGIN_PX = 4;
+
+/** Indentation per nesting level for contained events (in pixels) */
+export const NESTING_INDENT_PX = 8;
+
 // Minimum height in pixels for a block to display full content (title + time subline)
 // Below this threshold, blocks use compact layout (centered title only)
 // Set to 44px so that 30-min blocks only use full layout at "comfortable" density (48px)
@@ -371,6 +387,21 @@ export function clampEventDuration(durationMinutes: number): number {
 export type SegmentPosition = "only" | "start" | "end";
 
 /**
+ * Layout information for positioning overlapping events.
+ * Calculated by the overlap layout algorithm.
+ */
+export interface OverlapLayout {
+  /** 0-indexed column position within the overlap group */
+  column: number;
+  /** Total number of concurrent columns in this segment's time range */
+  totalColumns: number;
+  /** Calculated left position as a percentage (0-100) */
+  leftPercent: number;
+  /** Calculated width as a percentage (0-100) */
+  widthPercent: number;
+}
+
+/**
  * Represents a visible segment of an event for a specific day.
  * Overnight events produce two segments (one per day).
  */
@@ -380,6 +411,8 @@ export interface EventDaySegment {
   startMinutes: number; // 0-1440 within this day
   endMinutes: number; // 0-1440 within this day
   position: SegmentPosition;
+  /** Layout positioning for overlapping events */
+  layout?: OverlapLayout;
 }
 
 /**

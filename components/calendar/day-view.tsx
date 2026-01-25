@@ -13,7 +13,12 @@ import {
   getPixelsPerMinute,
   type DayViewProps,
 } from "./calendar-types";
-import { formatHour, isToday, isCurrentHour } from "./calendar-utils";
+import {
+  formatHour,
+  isToday,
+  isCurrentHour,
+  calculateOverlapLayout,
+} from "./calendar-utils";
 
 export function DayView({
   selectedDate,
@@ -54,7 +59,8 @@ export function DayView({
   const selectedDayIndex = selectedDayOfWeek === 0 ? 6 : selectedDayOfWeek - 1;
 
   // Get segments for this day (handles overnight events automatically)
-  const daySegments = getSegmentsForDay(events, selectedDayIndex, mode);
+  const rawSegments = getSegmentsForDay(events, selectedDayIndex, mode);
+  const daySegments = calculateOverlapLayout(rawSegments);
 
   // Measure day column width for drag calculations
   const dayColumnRef = React.useRef<HTMLDivElement>(null);

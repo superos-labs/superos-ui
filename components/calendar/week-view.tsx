@@ -14,7 +14,12 @@ import {
   getPixelsPerMinute,
   type WeekViewProps,
 } from "./calendar-types";
-import { formatHour, isToday, isCurrentHour } from "./calendar-utils";
+import {
+  formatHour,
+  isToday,
+  isCurrentHour,
+  calculateOverlapLayout,
+} from "./calendar-utils";
 
 export function WeekView({
   weekDates,
@@ -135,7 +140,8 @@ export function WeekView({
           {/* Day Columns */}
           {DAYS.map((day, dayIndex) => {
             const date = weekDates[dayIndex];
-            const daySegments = getSegmentsForDay(events, dayIndex, mode);
+            const rawSegments = getSegmentsForDay(events, dayIndex, mode);
+            const daySegments = calculateOverlapLayout(rawSegments);
 
             return (
               <TimeColumn

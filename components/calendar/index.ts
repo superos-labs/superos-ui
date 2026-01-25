@@ -76,7 +76,19 @@ export {
   getSegmentsForDay,
 } from "./calendar-types";
 
-export type { SegmentPosition, EventDaySegment } from "./calendar-types";
+export type {
+  SegmentPosition,
+  EventDaySegment,
+  OverlapLayout,
+} from "./calendar-types";
+
+// Overlap layout constants
+export {
+  MAX_OVERLAP_COLUMNS,
+  BLOCK_GAP_PX,
+  BLOCK_MARGIN_PX,
+  NESTING_INDENT_PX,
+} from "./calendar-types";
 
 // Utilities (for advanced use cases)
 export {
@@ -89,4 +101,5 @@ export {
   isCurrentHour,
   snapToGrid,
   blockAnimations,
+  calculateOverlapLayout,
 } from "./calendar-utils";
