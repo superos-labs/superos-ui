@@ -393,6 +393,74 @@ const EVENTS = [...] // duplicated
 // Consider: shared fixtures file if data is reused extensively
 ```
 
+## Import Conventions
+
+Consistent import patterns improve discoverability and ensure consumers use the public API.
+
+### Feature Folders
+
+Import from the folder path (resolves to `index.ts`):
+
+```tsx
+// ✅ Correct - imports from public API
+import { Calendar, useCalendarInteractions } from "@/components/calendar";
+import { Block, BlockSidebar, useBlockResize } from "@/components/block";
+import { FloatingToolbar } from "@/components/floating-toolbar";
+import type { CalendarEvent, BlockColor } from "@/components/calendar";
+
+// ❌ Incorrect - bypasses public API
+import { Calendar } from "@/components/calendar/calendar";
+import { useCalendarInteractions } from "@/components/calendar/use-calendar-interactions";
+```
+
+### UI Primitives
+
+Import directly from the file (no `index.ts` needed for simple primitives):
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell";
+```
+
+### Flat Components
+
+Components without a feature folder import from their file:
+
+```tsx
+import { Backlog } from "@/components/backlog";
+import { WeeklyAnalytics } from "@/components/weekly-analytics";
+```
+
+### Shared Types and Utilities
+
+```tsx
+// Cross-cutting types
+import type { BlockType, BlockStatus, IconComponent } from "@/lib/types";
+
+// Colors and utilities
+import { cn } from "@/lib/utils";
+import { getIconColorClass } from "@/lib/colors";
+import type { GoalColor } from "@/lib/colors";
+
+// Drag system types
+import type { DragItem, DropPosition } from "@/lib/drag-types";
+
+// Hooks
+import { useUnifiedSchedule } from "@/hooks";
+```
+
+### Internal Imports (Within Feature Folders)
+
+Files within a feature folder use relative imports:
+
+```tsx
+// In calendar/day-view.tsx
+import { TimeColumn } from "./time-column";
+import { getSegmentsForDay } from "./calendar-types";
+import type { CalendarEvent } from "./calendar-types";
+```
+
 ## Benefits of This Architecture
 
 1. **Testability** — Core components are pure and easy to unit test

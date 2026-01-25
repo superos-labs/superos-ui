@@ -189,8 +189,8 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   selectedDate?: Date;
   showHourLabels?: boolean;
   headerIsVisible?: boolean;
-  /** Events to display on the calendar */
-  events?: CalendarEvent[];
+  /** Events to display on the calendar (required - no default data) */
+  events: CalendarEvent[];
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
   setBlockStyle?: BlockStyle;

@@ -12,7 +12,7 @@ export function Calendar({
   selectedDate,
   showHourLabels = true,
   headerIsVisible = true,
-  events = [],
+  events,
   density,
   setBlockStyle,
   onEventResize,

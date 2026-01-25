@@ -22,7 +22,7 @@ export const registry: ComponentEntry[] = [
     name: "Floating Toolbar",
     layout: "bottom",
     get component() {
-      return require("@/components/floating-toolbar-example")
+      return require("@/components/floating-toolbar/floating-toolbar-example")
         .FloatingToolbarExample;
     },
   },

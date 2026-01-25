@@ -2,9 +2,13 @@
 
 import * as React from "react"
 import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell"
-import { Calendar, KeyboardToast, type CalendarMode } from "@/components/calendar"
-import { useCalendarClipboard } from "@/components/calendar/use-calendar-clipboard"
-import { useCalendarKeyboard } from "@/components/calendar/use-calendar-keyboard"
+import {
+  Calendar,
+  KeyboardToast,
+  useCalendarClipboard,
+  useCalendarKeyboard,
+  type CalendarMode,
+} from "@/components/calendar"
 import { Backlog, type BacklogItem } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
