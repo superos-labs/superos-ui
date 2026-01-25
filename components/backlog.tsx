@@ -12,20 +12,25 @@ import {
 } from "@remixicon/react";
 import type { GoalColor } from "@/lib/colors";
 import { getIconColorClass } from "@/lib/colors";
+import type { IconComponent } from "@/lib/types";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
+import type { GoalStats, TaskScheduleInfo, ScheduleTask } from "@/hooks/use-unified-schedule";
 
+// =============================================================================
 // Types
-interface BacklogTask {
-  id: string;
-  label: string;
-  completed?: boolean;
-  /** Reference to the calendar block if scheduled */
-  scheduledBlockId?: string;
-}
+// =============================================================================
 
-type IconComponent = React.ComponentType<{ className?: string }>;
+/**
+ * BacklogTask is a re-export of ScheduleTask for backward compatibility.
+ * Use ScheduleTask from @/hooks/use-unified-schedule for new code.
+ */
+type BacklogTask = ScheduleTask;
 
+/**
+ * BacklogItem represents a goal or commitment in the backlog.
+ * For goals with tasks, use ScheduleGoal from @/hooks/use-unified-schedule.
+ */
 interface BacklogItem {
   id: string;
   label: string;
@@ -39,20 +44,6 @@ interface BacklogItem {
   milestone?: string;
   /** Tasks associated with this item */
   tasks?: BacklogTask[];
-}
-
-/** Computed statistics for a goal (derived from calendar events) */
-interface GoalStats {
-  plannedHours: number;
-  completedHours: number;
-}
-
-/** Schedule info for a task */
-interface TaskScheduleInfo {
-  blockId: string;
-  dayIndex: number;
-  startMinutes: number;
-  durationMinutes: number;
 }
 
 interface BacklogGroup {
@@ -491,6 +482,6 @@ export type {
   BacklogTask,
   BacklogGroup,
   GoalDisplayMode,
-  GoalStats,
-  TaskScheduleInfo,
 };
+// Re-export types from use-unified-schedule for convenience
+export type { GoalStats, TaskScheduleInfo } from "@/hooks/use-unified-schedule";

@@ -28,7 +28,6 @@ export { useCalendarKeyboard } from "./use-calendar-keyboard";
 export type {
   UseCalendarKeyboardOptions,
   UseCalendarKeyboardReturn,
-  HoverPosition,
 } from "./use-calendar-keyboard";
 
 // Keyboard feedback
@@ -48,6 +47,11 @@ export type {
   DayViewProps,
   WeekViewProps,
   TimeColumnProps,
+  // Shared callback interfaces
+  CalendarEventCallbacks,
+  ExternalDropCallbacks,
+  HoverPosition,
+  ExternalDragPreview,
 } from "./calendar-types";
 
 // Constants (for advanced use cases)

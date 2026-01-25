@@ -2,15 +2,14 @@
 
 import * as React from "react";
 import type { GoalColor } from "@/lib/colors";
+import type { IconComponent } from "@/lib/types";
 import type { DragItem } from "@/lib/drag-types";
-import type { CalendarEvent, BlockStatus } from "@/components/calendar";
+import type { CalendarEvent, BlockStatus, HoverPosition } from "@/components/calendar";
 import { statusOnPaste } from "@/components/calendar";
 
 // ============================================================================
 // Types
 // ============================================================================
-
-type IconComponent = React.ComponentType<{ className?: string }>;
 
 /** Task within a goal */
 export interface ScheduleTask {
@@ -95,6 +94,10 @@ export interface UseUnifiedScheduleReturn {
   // Handler to process drops from drag context
   handleDrop: (item: DragItem, dayIndex: number, startMinutes: number) => void;
 
+  // Hover state (for keyboard shortcuts)
+  hoveredEvent: CalendarEvent | null;
+  hoverPosition: HoverPosition | null;
+
   // Standard calendar handlers (spread onto Calendar component)
   calendarHandlers: {
     onEventResize: (
@@ -124,6 +127,8 @@ export interface UseUnifiedScheduleReturn {
     onEventStatusChange: (eventId: string, status: BlockStatus) => void;
     onEventPaste: (dayIndex: number, startMinutes: number) => void;
     hasClipboardContent: boolean;
+    onEventHover: (event: CalendarEvent | null) => void;
+    onGridPositionHover: (position: HoverPosition | null) => void;
   };
 }
 
@@ -140,6 +145,10 @@ export function useUnifiedSchedule({
 }: UseUnifiedScheduleOptions): UseUnifiedScheduleReturn {
   const [goals, setGoals] = React.useState<ScheduleGoal[]>(initialGoals);
   const [events, setEvents] = React.useState<CalendarEvent[]>(initialEvents);
+
+  // Hover state for keyboard shortcuts
+  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
+  const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
 
   // -------------------------------------------------------------------------
   // Event Management
@@ -566,6 +575,8 @@ export function useUnifiedSchedule({
     deleteEvent,
     markEventComplete,
     markEventIncomplete,
+    hoveredEvent,
+    hoverPosition,
     calendarHandlers: {
       onEventResize: handleEventResize,
       onEventResizeEnd: handleEventResizeEnd,
@@ -578,6 +589,8 @@ export function useUnifiedSchedule({
       onEventStatusChange: handleEventStatusChange,
       onEventPaste: handleEventPaste,
       hasClipboardContent,
+      onEventHover: setHoveredEvent,
+      onGridPositionHover: setHoverPosition,
     },
   };
 }

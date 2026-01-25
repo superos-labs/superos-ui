@@ -1,6 +1,10 @@
 // Public API for the Block component family
+
+// Shared types (re-exported from lib/types for convenience)
+export type { BlockType, BlockStatus } from "@/lib/types";
+
 export { Block } from "./block";
-export type { BlockProps, BlockStatus, BlockDuration, SegmentPosition } from "./block";
+export type { BlockProps, BlockDuration, SegmentPosition } from "./block";
 
 export { BLOCK_COLORS } from "./block-colors";
 export type { BlockColor } from "./block-colors";
@@ -14,7 +18,6 @@ export {
 export type {
   BlockSidebarProps,
   BlockSidebarData,
-  BlockType,
   BlockGoalTask,
   BlockSubtask,
   BlockSidebarGoal,

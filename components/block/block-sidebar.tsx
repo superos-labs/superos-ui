@@ -12,12 +12,9 @@ import {
   RiAddLine,
 } from "@remixicon/react";
 import type { BlockColor } from "./block-colors";
+import type { BlockType, IconComponent } from "@/lib/types";
 
 // Types
-type IconComponent = React.ComponentType<{ className?: string }>;
-
-/** Block type determines available sections and behavior */
-type BlockType = "goal" | "task";
 
 /** Goal task - synced from the goal's master task list */
 interface BlockGoalTask {
@@ -514,8 +511,9 @@ export { BlockSidebar, BlockGoalTaskRow, BlockSubtaskRow, BlockSidebarSection };
 export type {
   BlockSidebarProps,
   BlockSidebarData,
-  BlockType,
   BlockGoalTask,
   BlockSubtask,
   BlockSidebarGoal,
 };
+// Re-export BlockType for backward compatibility
+export type { BlockType } from "@/lib/types";

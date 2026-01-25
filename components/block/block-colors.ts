@@ -1,6 +1,11 @@
 import type { GoalColor } from "@/lib/colors";
 
-// Re-export GoalColor as BlockColor for backward compatibility
+/**
+ * BlockColor is an alias for GoalColor.
+ * Both names refer to the same color palette - use whichever fits your context:
+ * - GoalColor: When working with goals, backlog items, or semantic meaning
+ * - BlockColor: When working with calendar blocks or visual styling
+ */
 export type BlockColor = GoalColor;
 
 export const BLOCK_COLORS: Record<BlockColor, {

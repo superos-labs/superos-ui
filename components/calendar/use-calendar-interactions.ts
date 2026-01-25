@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useCalendarClipboard } from "./use-calendar-clipboard";
-import { useCalendarKeyboard, type HoverPosition } from "./use-calendar-keyboard";
-import { statusOnPaste, type CalendarEvent, type BlockStatus } from "./calendar-types";
+import { useCalendarKeyboard } from "./use-calendar-keyboard";
+import { statusOnPaste, type CalendarEvent, type BlockStatus, type HoverPosition } from "./calendar-types";
 
 export interface UseCalendarInteractionsOptions {
   /** Initial events to populate the calendar */

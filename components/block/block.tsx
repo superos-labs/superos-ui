@@ -4,7 +4,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiCheckLine, RiCloseLine } from "@remixicon/react";
 import { BLOCK_COLORS, type BlockColor } from "./block-colors";
-type BlockStatus = "planned" | "completed" | "blueprint";
+import type { BlockStatus } from "@/lib/types";
+
 type BlockDuration = 30 | 60 | 240;
 
 /**

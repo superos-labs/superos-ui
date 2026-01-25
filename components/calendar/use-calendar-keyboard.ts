@@ -1,12 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { canMarkComplete, type CalendarEvent } from "./calendar-types";
+import { canMarkComplete, type CalendarEvent, type HoverPosition } from "./calendar-types";
 
-export interface HoverPosition {
-  dayIndex: number;
-  startMinutes: number;
-}
+// Re-export HoverPosition for backward compatibility
+export type { HoverPosition };
 
 export interface UseCalendarKeyboardOptions {
   /** Currently hovered event (null if none) */

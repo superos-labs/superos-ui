@@ -1,7 +1,8 @@
-import type { BlockColor, BlockStatus } from "@/components/block";
+import type { BlockColor } from "@/components/block";
+import type { BlockType, BlockStatus } from "@/lib/types";
 
-// Re-export BlockStatus for convenience
-export type { BlockStatus };
+// Re-export shared types for convenience
+export type { BlockType, BlockStatus };
 
 // Constants
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -77,8 +78,7 @@ export type CalendarView = "week" | "day";
 export type CalendarMode = "schedule" | "blueprint";
 export type BlockStyle = "planned" | "completed" | "blueprint";
 
-/** Block type determines whether this is a goal work session or a specific task */
-export type BlockType = "goal" | "task";
+// Note: BlockType is imported from @/lib/types
 
 export interface CalendarEvent {
   id: string;
@@ -99,17 +99,30 @@ export interface CalendarEvent {
   sourceTaskId?: string;
 }
 
-export interface CalendarProps {
-  view?: CalendarView;
-  mode?: CalendarMode;
-  selectedDate?: Date;
-  showHourLabels?: boolean;
-  headerIsVisible?: boolean;
-  /** Events to display on the calendar */
-  events?: CalendarEvent[];
-  /** Density preset controlling vertical spacing (default: "default") */
-  density?: CalendarDensity;
-  setBlockStyle?: BlockStyle;
+// =============================================================================
+// Shared Callback Interfaces
+// =============================================================================
+
+/** Position on the calendar grid */
+export interface HoverPosition {
+  dayIndex: number;
+  startMinutes: number;
+}
+
+/** Preview for external drag items (from backlog) */
+export interface ExternalDragPreview {
+  dayIndex: number;
+  startMinutes: number;
+  durationMinutes: number;
+  color: BlockColor;
+  title: string;
+}
+
+/**
+ * Event callbacks shared across Calendar, DayView, WeekView, and TimeColumn.
+ * Extract to reduce duplication and ensure consistency.
+ */
+export interface CalendarEventCallbacks {
   /** Called when an event is being resized */
   onEventResize?: (
     eventId: string,
@@ -151,23 +164,36 @@ export interface CalendarProps {
   /** Called when mouse enters/leaves an event block (for keyboard shortcuts) */
   onEventHover?: (event: CalendarEvent | null) => void;
   /** Called when mouse moves over the grid (for paste position) */
-  onGridPositionHover?: (
-    position: { dayIndex: number; startMinutes: number } | null,
-  ) => void;
-  
-  // External drop support (for backlog drag-and-drop)
+  onGridPositionHover?: (position: HoverPosition | null) => void;
+}
+
+/**
+ * External drop callbacks for backlog drag-and-drop integration.
+ */
+export interface ExternalDropCallbacks {
   /** Whether to enable external drop zone (requires DragProvider wrapper) */
   enableExternalDrop?: boolean;
   /** Called when an external item is dropped on the calendar */
   onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
   /** Preview for external drag (shown when dragging over) */
-  externalDragPreview?: {
-    dayIndex: number;
-    startMinutes: number;
-    durationMinutes: number;
-    color: BlockColor;
-    title: string;
-  } | null;
+  externalDragPreview?: ExternalDragPreview | null;
+}
+
+// =============================================================================
+// Component Props
+// =============================================================================
+
+export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallbacks {
+  view?: CalendarView;
+  mode?: CalendarMode;
+  selectedDate?: Date;
+  showHourLabels?: boolean;
+  headerIsVisible?: boolean;
+  /** Events to display on the calendar */
+  events?: CalendarEvent[];
+  /** Density preset controlling vertical spacing (default: "default") */
+  density?: CalendarDensity;
+  setBlockStyle?: BlockStyle;
 }
 
 export interface CalendarDayHeaderProps {
@@ -178,7 +204,7 @@ export interface CalendarDayHeaderProps {
   className?: string;
 }
 
-export interface DayViewProps {
+export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
   selectedDate: Date;
   showHourLabels?: boolean;
   headerIsVisible?: boolean;
@@ -187,54 +213,9 @@ export interface DayViewProps {
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
-  onEventResize?: (
-    eventId: string,
-    newStartMinutes: number,
-    newDurationMinutes: number,
-  ) => void;
-  onEventResizeEnd?: (eventId: string) => void;
-  onEventDragEnd?: (
-    eventId: string,
-    newDayIndex: number,
-    newStartMinutes: number,
-  ) => void;
-  onEventDuplicate?: (
-    sourceEventId: string,
-    newDayIndex: number,
-    newStartMinutes: number,
-  ) => void;
-  onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
-  onGridDragCreate?: (
-    dayIndex: number,
-    startMinutes: number,
-    durationMinutes: number,
-  ) => void;
-  onEventCopy?: (event: CalendarEvent) => void;
-  onEventDelete?: (eventId: string) => void;
-  onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
-  onEventPaste?: (dayIndex: number, startMinutes: number) => void;
-  hasClipboardContent?: boolean;
-  onEventHover?: (event: CalendarEvent | null) => void;
-  onGridPositionHover?: (
-    position: { dayIndex: number; startMinutes: number } | null,
-  ) => void;
-  
-  // External drop support (for backlog drag-and-drop)
-  /** Whether to enable external drop zone */
-  enableExternalDrop?: boolean;
-  /** Called when an external item is dropped */
-  onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
-  /** Preview for external drag */
-  externalDragPreview?: {
-    dayIndex: number;
-    startMinutes: number;
-    durationMinutes: number;
-    color: BlockColor;
-    title: string;
-  } | null;
 }
 
-export interface WeekViewProps {
+export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
   weekDates: Date[];
   showHourLabels?: boolean;
   events?: CalendarEvent[];
@@ -242,58 +223,13 @@ export interface WeekViewProps {
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
-  onEventResize?: (
-    eventId: string,
-    newStartMinutes: number,
-    newDurationMinutes: number,
-  ) => void;
-  onEventResizeEnd?: (eventId: string) => void;
-  onEventDragEnd?: (
-    eventId: string,
-    newDayIndex: number,
-    newStartMinutes: number,
-  ) => void;
-  onEventDuplicate?: (
-    sourceEventId: string,
-    newDayIndex: number,
-    newStartMinutes: number,
-  ) => void;
-  onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
-  onGridDragCreate?: (
-    dayIndex: number,
-    startMinutes: number,
-    durationMinutes: number,
-  ) => void;
-  onEventCopy?: (event: CalendarEvent) => void;
-  onEventDelete?: (eventId: string) => void;
-  onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
-  onEventPaste?: (dayIndex: number, startMinutes: number) => void;
-  hasClipboardContent?: boolean;
-  onEventHover?: (event: CalendarEvent | null) => void;
-  onGridPositionHover?: (
-    position: { dayIndex: number; startMinutes: number } | null,
-  ) => void;
-  
-  // External drop support (for backlog drag-and-drop)
-  /** Whether to enable external drop zone */
-  enableExternalDrop?: boolean;
-  /** Called when an external item is dropped */
-  onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
-  /** Preview for external drag */
-  externalDragPreview?: {
-    dayIndex: number;
-    startMinutes: number;
-    durationMinutes: number;
-    color: BlockColor;
-    title: string;
-  } | null;
 }
 
 /**
  * Props for the TimeColumn component - a shared component for rendering
  * a single day column with events, used by both DayView and WeekView.
  */
-export interface TimeColumnProps {
+export interface TimeColumnProps extends CalendarEventCallbacks, ExternalDropCallbacks {
   /** The day index for this column (0 = Monday, 6 = Sunday) */
   dayIndex: number;
   /** Whether this day is today (for highlighting) */
@@ -320,49 +256,8 @@ export interface TimeColumnProps {
   minDayIndex?: number;
   /** Maximum day index for drag constraints (DayView uses this) */
   maxDayIndex?: number;
-  /** Whether the clipboard has content (enables paste) */
-  hasClipboardContent?: boolean;
-  // Callbacks
+  /** Pointer down handler for drag-to-create */
   onPointerDown?: (e: React.PointerEvent, dayIndex: number, minutes: number) => void;
-  onEventResize?: (
-    eventId: string,
-    newStartMinutes: number,
-    newDurationMinutes: number,
-  ) => void;
-  onEventResizeEnd?: (eventId: string) => void;
-  onEventDragEnd?: (
-    eventId: string,
-    newDayIndex: number,
-    newStartMinutes: number,
-  ) => void;
-  onEventDuplicate?: (
-    sourceEventId: string,
-    newDayIndex: number,
-    newStartMinutes: number,
-  ) => void;
-  onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
-  onEventCopy?: (event: CalendarEvent) => void;
-  onEventDelete?: (eventId: string) => void;
-  onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
-  onEventPaste?: (dayIndex: number, startMinutes: number) => void;
-  onEventHover?: (event: CalendarEvent | null) => void;
-  onGridPositionHover?: (
-    position: { dayIndex: number; startMinutes: number } | null,
-  ) => void;
-  
-  // External drop support (for backlog drag-and-drop)
-  /** Whether to enable external drop zone */
-  enableExternalDrop?: boolean;
-  /** Called when an external item is dropped on this column */
-  onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
-  /** Preview for external drag (shown when dragging over) */
-  externalDragPreview?: {
-    dayIndex: number;
-    startMinutes: number;
-    durationMinutes: number;
-    color: BlockColor;
-    title: string;
-  } | null;
 }
 
 // Helper to convert BlockStyle to BlockStatus
