@@ -7,7 +7,7 @@ import type { DragItem, DropPosition } from "@/lib/drag-types";
 // Types
 // ============================================================================
 
-interface DragState {
+export interface DragState {
   /** The item currently being dragged, or null if not dragging */
   item: DragItem | null;
   /** Current pointer position (for ghost positioning) */
@@ -20,7 +20,7 @@ interface DragState {
   isDragging: boolean;
 }
 
-interface DragContextValue {
+export interface DragContextValue {
   state: DragState;
   startDrag: (item: DragItem, e: React.PointerEvent) => void;
   endDrag: () => void;

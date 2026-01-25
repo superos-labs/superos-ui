@@ -24,7 +24,7 @@ export function DayView({
   selectedDate,
   showHourLabels = true,
   headerIsVisible = true,
-  events = [],
+  events,
   mode = "schedule",
   density,
   setBlockStyle,

@@ -2,6 +2,7 @@
 
 // Context and Provider
 export { DragProvider, useDragContext, useDragContextOptional } from "./drag-context";
+export type { DragState, DragContextValue } from "./drag-context";
 
 // Hooks
 export { useDraggable } from "./use-draggable";

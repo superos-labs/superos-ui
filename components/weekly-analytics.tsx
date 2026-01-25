@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import type { IconComponent } from "@/lib/types";
 
 // Types
-type IconComponent = React.ComponentType<{ className?: string }>;
 
 interface WeeklyAnalyticsItem {
   id: string;

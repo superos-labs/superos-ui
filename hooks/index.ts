@@ -8,4 +8,6 @@ export type {
   ScheduleTask,
   GoalStats,
   TaskScheduleInfo,
+  TaskDeadlineInfo,
+  DeadlineTask,
 } from "./use-unified-schedule";

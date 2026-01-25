@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { getHexColor, getIconColorClass, type GoalColor } from "@/lib/colors";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
   RiAddLine,
@@ -10,34 +11,13 @@ import {
   RiSparklingLine,
 } from "@remixicon/react";
 
-// Color mapping from Tailwind classes to hex values
-const COLOR_MAP: Record<string, string> = {
-  "text-rose-500": "#f43f5e",
-  "text-pink-500": "#ec4899",
-  "text-fuchsia-500": "#d946ef",
-  "text-purple-500": "#a855f7",
-  "text-violet-500": "#8b5cf6",
-  "text-indigo-500": "#6366f1",
-  "text-blue-500": "#3b82f6",
-  "text-sky-500": "#0ea5e9",
-  "text-cyan-500": "#06b6d4",
-  "text-teal-500": "#14b8a6",
-  "text-emerald-500": "#10b981",
-  "text-green-500": "#22c55e",
-  "text-lime-500": "#84cc16",
-  "text-yellow-500": "#eab308",
-  "text-amber-500": "#f59e0b",
-  "text-orange-500": "#f97316",
-  "text-red-500": "#ef4444",
-  "text-slate-500": "#64748b",
-};
-
 // Types
 interface Goal {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  color: string;
+  /** Goal color from the centralized palette */
+  color: GoalColor;
   description?: string;
 }
 
@@ -45,7 +25,8 @@ interface LifeArea {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  color: string;
+  /** Area color from the centralized palette */
+  color: GoalColor;
   description: string;
   goals: Goal[];
 }
@@ -67,7 +48,7 @@ interface GoalBrowserProps {
 // Tab Button Component
 interface TabButtonProps {
   icon?: React.ComponentType<{ className?: string }>;
-  color?: string;
+  color?: GoalColor;
   label: string;
   isActive: boolean;
   onClick: () => void;
@@ -92,7 +73,7 @@ function TabButton({
     >
       {Icon && (
         <Icon
-          className={cn("size-4", isActive ? color : "text-muted-foreground")}
+          className={cn("size-4", isActive && color ? getIconColorClass(color) : "text-muted-foreground")}
         />
       )}
       {label}
@@ -116,7 +97,7 @@ function GoalRow({ goal, isSelected, onToggle }: GoalRowProps) {
       className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted/50"
     >
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors group-hover:bg-background">
-        <IconComponent className={cn("size-4", goal.color)} />
+        <IconComponent className={cn("size-4", getIconColorClass(goal.color))} />
       </div>
       <div className="min-w-0 flex-1">
         <span
@@ -153,8 +134,6 @@ interface GoalsListProps {
   selectedGoalIds: Set<string>;
   onToggleGoal: (goalId: string) => void;
   onAddGoal?: () => void;
-  areaId: string;
-  getAreaIdForGoal?: (goalId: string) => string;
 }
 
 function GoalsList({
@@ -162,8 +141,6 @@ function GoalsList({
   selectedGoalIds,
   onToggleGoal,
   onAddGoal,
-  areaId,
-  getAreaIdForGoal,
 }: GoalsListProps) {
   return (
     <div className="flex-1 overflow-y-auto p-2">
@@ -199,7 +176,7 @@ function GoalsDistributionChart({ data }: GoalsDistributionChartProps) {
   const chartData = data.map(({ area, count }) => ({
     name: area.label,
     value: count,
-    color: COLOR_MAP[area.color] || "#6366f1",
+    color: getHexColor(area.color),
   }));
 
   return (
@@ -225,11 +202,11 @@ function GoalsDistributionChart({ data }: GoalsDistributionChartProps) {
         </ResponsiveContainer>
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1">
-        {data.map(({ area, count }) => (
+        {data.map(({ area }) => (
           <div key={area.id} className="flex items-center gap-1.5">
             <div
               className="size-2 rounded-full"
-              style={{ backgroundColor: COLOR_MAP[area.color] || "#6366f1" }}
+              style={{ backgroundColor: getHexColor(area.color) }}
             />
             <span className="text-[11px] text-muted-foreground">
               {area.label}
@@ -301,7 +278,7 @@ function SelectedGoalsSidebar({
               {selectedByArea.map(({ area, goals }) => (
                 <div key={area.id} className="px-3 py-2">
                   <div className="mb-2 flex items-center gap-2 px-1">
-                    <area.icon className={cn("size-4", area.color)} />
+                    <area.icon className={cn("size-4", getIconColorClass(area.color))} />
                     <span className="text-[12px] font-medium text-foreground">
                       {area.label}
                     </span>
@@ -313,7 +290,7 @@ function SelectedGoalsSidebar({
                         className="group flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-2"
                       >
                         <goal.icon
-                          className={cn("size-4 shrink-0", goal.color)}
+                          className={cn("size-4 shrink-0", getIconColorClass(goal.color))}
                         />
                         <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">
                           {goal.label}
@@ -383,7 +360,7 @@ function GoalBrowser({
         <div className="scrollbar-hidden flex items-center gap-1 overflow-x-auto border-b border-border px-4 py-2">
           <TabButton
             icon={RiSparklingLine}
-            color="text-amber-500"
+            color="amber"
             label="Popular"
             isActive={isPopular}
             onClick={() => onSelectTab?.("popular")}
@@ -419,8 +396,6 @@ function GoalBrowser({
               ? () => onAddGoal(selectedArea.id)
               : undefined
           }
-          areaId={selectedTab}
-          getAreaIdForGoal={getAreaIdForGoal}
         />
       </div>
 

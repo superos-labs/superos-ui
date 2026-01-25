@@ -226,7 +226,8 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
   selectedDate: Date;
   showHourLabels?: boolean;
   headerIsVisible?: boolean;
-  events?: CalendarEvent[];
+  /** Events to display (required - always passed from parent Calendar) */
+  events: CalendarEvent[];
   mode?: CalendarMode;
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
@@ -236,7 +237,8 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
 export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
   weekDates: Date[];
   showHourLabels?: boolean;
-  events?: CalendarEvent[];
+  /** Events to display (required - always passed from parent Calendar) */
+  events: CalendarEvent[];
   mode?: CalendarMode;
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */

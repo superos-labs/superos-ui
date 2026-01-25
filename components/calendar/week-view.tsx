@@ -25,7 +25,7 @@ import {
 export function WeekView({
   weekDates,
   showHourLabels = true,
-  events = [],
+  events,
   mode = "schedule",
   density,
   setBlockStyle,
