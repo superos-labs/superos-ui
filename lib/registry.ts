@@ -14,7 +14,7 @@ export const registry: ComponentEntry[] = [
     name: "Calendar",
     layout: "full",
     get component() {
-      return require("@/components/calendar-example").CalendarExample;
+      return require("@/components/calendar/calendar-example").CalendarExample;
     },
   },
   {
