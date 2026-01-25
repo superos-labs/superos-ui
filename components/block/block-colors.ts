@@ -1,4 +1,21 @@
-export const BLOCK_COLORS = {
+import type { GoalColor } from "@/lib/colors";
+
+// Re-export GoalColor as BlockColor for backward compatibility
+export type BlockColor = GoalColor;
+
+export const BLOCK_COLORS: Record<BlockColor, {
+  border: string;
+  bg: string;
+  bgHover: string;
+  text: string;
+  outlinedBorder: string;
+  outlinedBg: string;
+  outlinedBgHover: string;
+  completedBorder: string;
+  completedBg: string;
+  completedBgHover: string;
+  completedText: string;
+}> = {
   violet: {
     border: "border-l-violet-500",
     bg: "bg-violet-200",
@@ -220,6 +237,17 @@ export const BLOCK_COLORS = {
     completedBgHover: "hover:bg-slate-200",
     completedText: "text-slate-400",
   },
-} as const;
-
-export type BlockColor = keyof typeof BLOCK_COLORS;
+  purple: {
+    border: "border-l-purple-500",
+    bg: "bg-purple-200",
+    bgHover: "hover:bg-purple-300",
+    text: "text-purple-600",
+    outlinedBorder: "border-purple-200",
+    outlinedBg: "bg-purple-50",
+    outlinedBgHover: "hover:bg-purple-100",
+    completedBorder: "border-l-purple-300",
+    completedBg: "bg-purple-100",
+    completedBgHover: "hover:bg-purple-200",
+    completedText: "text-purple-400",
+  },
+};

@@ -41,6 +41,9 @@ export function WeekView({
   hasClipboardContent = false,
   onEventHover,
   onGridPositionHover,
+  enableExternalDrop = false,
+  onExternalDrop,
+  externalDragPreview,
 }: WeekViewProps) {
   // Compute grid dimensions based on density
   const gridHeight = getGridHeight(density);
@@ -168,6 +171,9 @@ export function WeekView({
                 onEventPaste={onEventPaste}
                 onEventHover={onEventHover}
                 onGridPositionHover={onGridPositionHover}
+                enableExternalDrop={enableExternalDrop}
+                onExternalDrop={onExternalDrop}
+                externalDragPreview={externalDragPreview}
               />
             );
           })}

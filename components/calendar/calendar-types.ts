@@ -77,6 +77,9 @@ export type CalendarView = "week" | "day";
 export type CalendarMode = "schedule" | "blueprint";
 export type BlockStyle = "planned" | "completed" | "blueprint";
 
+/** Block type determines whether this is a goal work session or a specific task */
+export type BlockType = "goal" | "task";
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -86,6 +89,14 @@ export interface CalendarEvent {
   color: BlockColor;
   taskCount?: number;
   status?: BlockStatus; // "planned" | "completed" | "blueprint"
+  
+  // Block identity and source tracking
+  /** Whether this block is for a goal work session or a specific task */
+  blockType?: BlockType;
+  /** The goal this block is associated with (always present for scheduled blocks) */
+  sourceGoalId?: string;
+  /** For task blocks, which specific task this represents */
+  sourceTaskId?: string;
 }
 
 export interface CalendarProps {
@@ -143,6 +154,20 @@ export interface CalendarProps {
   onGridPositionHover?: (
     position: { dayIndex: number; startMinutes: number } | null,
   ) => void;
+  
+  // External drop support (for backlog drag-and-drop)
+  /** Whether to enable external drop zone (requires DragProvider wrapper) */
+  enableExternalDrop?: boolean;
+  /** Called when an external item is dropped on the calendar */
+  onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
+  /** Preview for external drag (shown when dragging over) */
+  externalDragPreview?: {
+    dayIndex: number;
+    startMinutes: number;
+    durationMinutes: number;
+    color: BlockColor;
+    title: string;
+  } | null;
 }
 
 export interface CalendarDayHeaderProps {
@@ -193,6 +218,20 @@ export interface DayViewProps {
   onGridPositionHover?: (
     position: { dayIndex: number; startMinutes: number } | null,
   ) => void;
+  
+  // External drop support (for backlog drag-and-drop)
+  /** Whether to enable external drop zone */
+  enableExternalDrop?: boolean;
+  /** Called when an external item is dropped */
+  onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
+  /** Preview for external drag */
+  externalDragPreview?: {
+    dayIndex: number;
+    startMinutes: number;
+    durationMinutes: number;
+    color: BlockColor;
+    title: string;
+  } | null;
 }
 
 export interface WeekViewProps {
@@ -234,6 +273,20 @@ export interface WeekViewProps {
   onGridPositionHover?: (
     position: { dayIndex: number; startMinutes: number } | null,
   ) => void;
+  
+  // External drop support (for backlog drag-and-drop)
+  /** Whether to enable external drop zone */
+  enableExternalDrop?: boolean;
+  /** Called when an external item is dropped */
+  onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
+  /** Preview for external drag */
+  externalDragPreview?: {
+    dayIndex: number;
+    startMinutes: number;
+    durationMinutes: number;
+    color: BlockColor;
+    title: string;
+  } | null;
 }
 
 /**
@@ -296,6 +349,20 @@ export interface TimeColumnProps {
   onGridPositionHover?: (
     position: { dayIndex: number; startMinutes: number } | null,
   ) => void;
+  
+  // External drop support (for backlog drag-and-drop)
+  /** Whether to enable external drop zone */
+  enableExternalDrop?: boolean;
+  /** Called when an external item is dropped on this column */
+  onExternalDrop?: (dayIndex: number, startMinutes: number) => void;
+  /** Preview for external drag (shown when dragging over) */
+  externalDragPreview?: {
+    dayIndex: number;
+    startMinutes: number;
+    durationMinutes: number;
+    color: BlockColor;
+    title: string;
+  } | null;
 }
 
 // Helper to convert BlockStyle to BlockStatus

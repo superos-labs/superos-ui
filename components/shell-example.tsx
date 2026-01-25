@@ -2,9 +2,16 @@
 
 import * as React from "react"
 import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell"
-import { Calendar, useCalendarInteractions, KeyboardToast, type CalendarMode, type CalendarEvent } from "@/components/calendar"
+import { Calendar, KeyboardToast, type CalendarMode, type CalendarEvent } from "@/components/calendar"
+import { useCalendarClipboard } from "@/components/calendar/use-calendar-clipboard"
+import { useCalendarKeyboard, type HoverPosition } from "@/components/calendar/use-calendar-keyboard"
 import { Backlog, type BacklogItem } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
+import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
+import { useUnifiedSchedule, type ScheduleGoal } from "@/hooks/use-unified-schedule"
+import { getDefaultDuration, getDragItemTitle, type DragItem } from "@/lib/drag-types"
+import type { GoalColor } from "@/lib/colors"
+import { getIconColorClass } from "@/lib/colors"
 import {
   RiMoonLine,
   RiRestaurantLine,
@@ -21,29 +28,26 @@ import {
 // =============================================================================
 // Sample Data
 // =============================================================================
-// Single source of truth for all components. BacklogItem is the canonical type
-// since it's a superset of WeeklyAnalyticsItem.
+// Single source of truth for all components.
 
 const INITIAL_COMMITMENTS: BacklogItem[] = [
-  { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "text-indigo-500", plannedHours: 56, completedHours: 48 },
-  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "text-amber-500", plannedHours: 14, completedHours: 12 },
-  { id: "commute", label: "Commute", icon: RiCarLine, color: "text-slate-500", plannedHours: 10, completedHours: 8 },
-  { id: "exercise", label: "Exercise", icon: RiRunLine, color: "text-green-500", plannedHours: 5, completedHours: 3 },
-  { id: "hygiene", label: "Hygiene", icon: RiDropLine, color: "text-cyan-500", plannedHours: 7, completedHours: 7 },
-  { id: "chores", label: "Chores", icon: RiHome4Line, color: "text-orange-500", plannedHours: 4, completedHours: 2 },
+  { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo" },
+  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber" },
+  { id: "commute", label: "Commute", icon: RiCarLine, color: "slate" },
+  { id: "exercise", label: "Exercise", icon: RiRunLine, color: "green" },
+  { id: "hygiene", label: "Hygiene", icon: RiDropLine, color: "cyan" },
+  { id: "chores", label: "Chores", icon: RiHome4Line, color: "orange" },
 ]
 
-const INITIAL_GOALS: BacklogItem[] = [
+const INITIAL_GOALS: ScheduleGoal[] = [
   { 
     id: "superos", 
     label: "Get SuperOS to $1M ARR", 
     icon: RiRocketLine, 
-    color: "text-violet-500", 
-    plannedHours: 20, 
-    completedHours: 12, 
+    color: "violet", 
     milestone: "Ship billing integration",
     tasks: [
-      { id: "superos-1", label: "Set up Stripe webhook handlers", completed: true },
+      { id: "superos-1", label: "Set up Stripe webhook handlers", completed: true, scheduledBlockId: "shell-superos-task-1" },
       { id: "superos-2", label: "Build subscription management UI", completed: false },
       { id: "superos-3", label: "Add invoice generation", completed: false },
     ]
@@ -52,9 +56,7 @@ const INITIAL_GOALS: BacklogItem[] = [
     id: "marathon", 
     label: "Run a marathon", 
     icon: RiMedalLine, 
-    color: "text-rose-500", 
-    plannedHours: 6, 
-    completedHours: 4, 
+    color: "rose", 
     milestone: "Complete 10K under 50min",
     tasks: [
       { id: "marathon-1", label: "Run 5K three times this week", completed: true },
@@ -65,9 +67,7 @@ const INITIAL_GOALS: BacklogItem[] = [
     id: "book", 
     label: "Write a book", 
     icon: RiPenNibLine, 
-    color: "text-teal-500", 
-    plannedHours: 7, 
-    completedHours: 5, 
+    color: "teal", 
     milestone: "Finish chapter 3 draft",
     tasks: [
       { id: "book-1", label: "Outline the main conflict", completed: true },
@@ -79,9 +79,7 @@ const INITIAL_GOALS: BacklogItem[] = [
     id: "spanish", 
     label: "Become fluent in Spanish", 
     icon: RiCodeLine, 
-    color: "text-blue-500", 
-    plannedHours: 5, 
-    completedHours: 5, 
+    color: "blue", 
     milestone: "Complete A2 certification",
     tasks: [
       { id: "spanish-1", label: "Complete Duolingo lesson", completed: true },
@@ -91,39 +89,66 @@ const INITIAL_GOALS: BacklogItem[] = [
   },
 ]
 
-/** Convert BacklogItem[] to WeeklyAnalyticsItem[] by extracting core fields */
-function toAnalyticsItems(items: BacklogItem[]): WeeklyAnalyticsItem[] {
-  return items.map(({ id, label, icon, color, plannedHours, completedHours }) => ({
-    id,
-    label,
-    icon,
-    color,
-    plannedHours: plannedHours ?? 0,
-    completedHours: completedHours ?? 0,
-  }))
+/** Convert BacklogItem/ScheduleGoal to WeeklyAnalyticsItem */
+function toAnalyticsItems(
+  items: Array<{ id: string; label: string; icon: React.ComponentType<{ className?: string }>; color: GoalColor }>,
+  getStats: (id: string) => { plannedHours: number; completedHours: number }
+): WeeklyAnalyticsItem[] {
+  return items.map((item) => {
+    const stats = getStats(item.id)
+    return {
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      color: getIconColorClass(item.color),
+      plannedHours: stats.plannedHours,
+      completedHours: stats.completedHours,
+    }
+  })
 }
 
 // Helper to convert hours to minutes for startMinutes
 const hoursToMinutes = (hours: number) => hours * 60
 
 const SAMPLE_CALENDAR_EVENTS: CalendarEvent[] = [
+  // Morning routine (not linked to goals)
   { id: "shell-1", title: "Morning workout", dayIndex: 0, startMinutes: hoursToMinutes(7), durationMinutes: 60, color: "emerald", status: "completed" },
-  { id: "shell-2", title: "Team standup", dayIndex: 0, startMinutes: hoursToMinutes(9), durationMinutes: 30, color: "violet", status: "completed" },
-  { id: "shell-3", title: "Design review", dayIndex: 0, startMinutes: hoursToMinutes(14), durationMinutes: 90, color: "blue", taskCount: 3, status: "completed" },
-  { id: "shell-4", title: "1:1 with manager", dayIndex: 1, startMinutes: hoursToMinutes(10), durationMinutes: 60, color: "amber", status: "completed" },
-  { id: "shell-5", title: "Lunch break", dayIndex: 1, startMinutes: hoursToMinutes(12), durationMinutes: 60, color: "teal", status: "completed" },
-  { id: "shell-6", title: "Sprint planning", dayIndex: 1, startMinutes: hoursToMinutes(15), durationMinutes: 120, color: "indigo", taskCount: 5, status: "completed" },
-  { id: "shell-7", title: "Deep work", dayIndex: 2, startMinutes: hoursToMinutes(9), durationMinutes: 180, color: "sky", status: "completed" },
-  { id: "shell-8", title: "Product sync", dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 45, color: "rose", status: "completed" },
-  { id: "shell-9", title: "Code review", dayIndex: 3, startMinutes: hoursToMinutes(10), durationMinutes: 60, color: "cyan", taskCount: 2 },
-  { id: "shell-10", title: "Team lunch", dayIndex: 3, startMinutes: hoursToMinutes(12), durationMinutes: 90, color: "orange" },
-  { id: "shell-11", title: "Interview", dayIndex: 3, startMinutes: hoursToMinutes(16), durationMinutes: 60, color: "pink" },
-  { id: "shell-12", title: "Focus time", dayIndex: 4, startMinutes: hoursToMinutes(8), durationMinutes: 120, color: "violet" },
-  { id: "shell-13", title: "All-hands", dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 60, color: "fuchsia" },
-  { id: "shell-14", title: "Project retro", dayIndex: 4, startMinutes: hoursToMinutes(15), durationMinutes: 60, color: "green", taskCount: 4 },
-  { id: "shell-15", title: "Side project", dayIndex: 5, startMinutes: hoursToMinutes(10), durationMinutes: 180, color: "lime", status: "blueprint" },
-  { id: "shell-16", title: "Reading", dayIndex: 6, startMinutes: hoursToMinutes(9), durationMinutes: 120, color: "slate", status: "blueprint" },
+  
+  // SuperOS goal work sessions (violet = superos color)
+  { id: "shell-superos-1", title: "Get SuperOS to $1M ARR", dayIndex: 0, startMinutes: hoursToMinutes(9), durationMinutes: 120, color: "violet", status: "completed", blockType: "goal", sourceGoalId: "superos" },
+  { id: "shell-superos-2", title: "Get SuperOS to $1M ARR", dayIndex: 1, startMinutes: hoursToMinutes(9), durationMinutes: 90, color: "violet", status: "completed", blockType: "goal", sourceGoalId: "superos" },
+  { id: "shell-superos-3", title: "Get SuperOS to $1M ARR", dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 120, color: "violet", status: "completed", blockType: "goal", sourceGoalId: "superos" },
+  { id: "shell-superos-4", title: "Get SuperOS to $1M ARR", dayIndex: 4, startMinutes: hoursToMinutes(9), durationMinutes: 90, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+  
+  // SuperOS task blocks
+  { id: "shell-superos-task-1", title: "Set up Stripe webhook handlers", dayIndex: 0, startMinutes: hoursToMinutes(14), durationMinutes: 30, color: "violet", status: "completed", blockType: "task", sourceGoalId: "superos", sourceTaskId: "superos-1" },
+  
+  // Marathon goal work sessions (rose = marathon color)
+  { id: "shell-marathon-1", title: "Run a marathon", dayIndex: 1, startMinutes: hoursToMinutes(7), durationMinutes: 60, color: "rose", status: "completed", blockType: "goal", sourceGoalId: "marathon" },
+  { id: "shell-marathon-2", title: "Run a marathon", dayIndex: 3, startMinutes: hoursToMinutes(7), durationMinutes: 60, color: "rose", status: "completed", blockType: "goal", sourceGoalId: "marathon" },
+  { id: "shell-marathon-3", title: "Run a marathon", dayIndex: 5, startMinutes: hoursToMinutes(8), durationMinutes: 90, color: "rose", blockType: "goal", sourceGoalId: "marathon" },
+  
+  // Book goal work sessions (teal = book color)
+  { id: "shell-book-1", title: "Write a book", dayIndex: 2, startMinutes: hoursToMinutes(9), durationMinutes: 90, color: "teal", status: "completed", blockType: "goal", sourceGoalId: "book" },
+  { id: "shell-book-2", title: "Write a book", dayIndex: 4, startMinutes: hoursToMinutes(14), durationMinutes: 60, color: "teal", status: "completed", blockType: "goal", sourceGoalId: "book" },
+  { id: "shell-book-3", title: "Write a book", dayIndex: 6, startMinutes: hoursToMinutes(10), durationMinutes: 120, color: "teal", blockType: "goal", sourceGoalId: "book" },
+  
+  // Spanish goal work sessions (blue = spanish color)  
+  { id: "shell-spanish-1", title: "Become fluent in Spanish", dayIndex: 0, startMinutes: hoursToMinutes(18), durationMinutes: 60, color: "blue", status: "completed", blockType: "goal", sourceGoalId: "spanish" },
+  { id: "shell-spanish-2", title: "Become fluent in Spanish", dayIndex: 2, startMinutes: hoursToMinutes(18), durationMinutes: 60, color: "blue", status: "completed", blockType: "goal", sourceGoalId: "spanish" },
+  { id: "shell-spanish-3", title: "Become fluent in Spanish", dayIndex: 4, startMinutes: hoursToMinutes(18), durationMinutes: 60, color: "blue", status: "completed", blockType: "goal", sourceGoalId: "spanish" },
+  
+  // Other calendar events (meetings, etc.)
+  { id: "shell-4", title: "1:1 with manager", dayIndex: 1, startMinutes: hoursToMinutes(14), durationMinutes: 60, color: "amber", status: "completed" },
+  { id: "shell-5", title: "Lunch break", dayIndex: 1, startMinutes: hoursToMinutes(12), durationMinutes: 60, color: "orange", status: "completed" },
+  { id: "shell-6", title: "Team sync", dayIndex: 3, startMinutes: hoursToMinutes(10), durationMinutes: 60, color: "indigo" },
+  { id: "shell-7", title: "Team lunch", dayIndex: 3, startMinutes: hoursToMinutes(12), durationMinutes: 90, color: "orange" },
+  
+  // Blueprint blocks for planning
+  { id: "shell-blueprint-1", title: "Deep focus time", dayIndex: 5, startMinutes: hoursToMinutes(14), durationMinutes: 180, color: "sky", status: "blueprint" },
+  { id: "shell-blueprint-2", title: "Weekly review", dayIndex: 6, startMinutes: hoursToMinutes(15), durationMinutes: 60, color: "slate", status: "blueprint" },
 ]
+
 import {
   KnobsProvider,
   KnobsToggle,
@@ -140,41 +165,89 @@ import {
 } from "@remixicon/react"
 import { cn } from "@/lib/utils"
 
-function ShellDemo() {
+function ShellDemoContent() {
   const [showPlanWeek, setShowPlanWeek] = React.useState(true)
   const [showCalendar, setShowCalendar] = React.useState(true)
-  const [showSidebar, setShowSidebar] = React.useState(false)
+  const [showSidebar, setShowSidebar] = React.useState(true)
   const [showRightSidebar, setShowRightSidebar] = React.useState(false)
   const [showTasks, setShowTasks] = React.useState(true)
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
   const [commitments] = React.useState<BacklogItem[]>(INITIAL_COMMITMENTS)
-  const [goals, setGoals] = React.useState<BacklogItem[]>(INITIAL_GOALS)
 
-  // Use the interactions hook for all calendar event handling
-  const { events: calendarEvents, handlers: calendarHandlers, toastMessage } = useCalendarInteractions({
+  // Clipboard for copy/paste (initialized before unified schedule)
+  const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard()
+
+  // Unified schedule hook manages both goals and events with bidirectional sync
+  const {
+    goals,
+    events: calendarEvents,
+    getGoalStats,
+    getTaskSchedule,
+    toggleTaskComplete,
+    handleDrop,
+    calendarHandlers,
+  } = useUnifiedSchedule({
+    initialGoals: INITIAL_GOALS,
     initialEvents: SAMPLE_CALENDAR_EVENTS,
+    onCopy: copy,
+    onPaste: paste,
+    hasClipboardContent,
   })
 
-  // Derive analytics data from the same source
-  const analyticsCommitments = React.useMemo(() => toAnalyticsItems(commitments), [commitments])
-  const analyticsGoals = React.useMemo(() => toAnalyticsItems(goals), [goals])
+  // Drag context for external drag preview
+  const dragContext = useDragContextOptional()
+  
+  // Build external drag preview from drag context state
+  const externalDragPreview = React.useMemo(() => {
+    if (!dragContext?.state.isDragging || !dragContext.state.item || !dragContext.state.previewPosition) {
+      return null
+    }
+    const item = dragContext.state.item
+    const pos = dragContext.state.previewPosition
+    return {
+      dayIndex: pos.dayIndex,
+      startMinutes: pos.startMinutes,
+      durationMinutes: getDefaultDuration(item.type),
+      color: item.goalColor,
+      title: getDragItemTitle(item),
+    }
+  }, [dragContext?.state])
+  
+  // Handle drop from external drag
+  const handleExternalDrop = React.useCallback((dayIndex: number, startMinutes: number) => {
+    if (!dragContext?.state.item) return
+    handleDrop(dragContext.state.item, dayIndex, startMinutes)
+  }, [dragContext?.state.item, handleDrop])
+  
+  // Hover state for keyboard shortcuts
+  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null)
+  const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null)
+  
+  // Keyboard shortcuts
+  const { toastMessage } = useCalendarKeyboard({
+    hoveredEvent,
+    hoverPosition,
+    hasClipboardContent: calendarHandlers.hasClipboardContent,
+    onCopy: calendarHandlers.onEventCopy,
+    onPaste: calendarHandlers.onEventPaste,
+    onDuplicate: (eventId, newDayIndex, newStartMinutes) => 
+      calendarHandlers.onEventDuplicate(eventId, newDayIndex, newStartMinutes),
+    onDelete: (eventId) => calendarHandlers.onEventDelete(eventId),
+    onToggleComplete: (eventId, currentStatus) => {
+      const newStatus = currentStatus === "completed" ? "planned" : "completed"
+      calendarHandlers.onEventStatusChange(eventId, newStatus)
+    },
+  })
 
-  const handleToggleGoalTask = React.useCallback((goalId: string, taskId: string) => {
-    setGoals(prevGoals => 
-      prevGoals.map(goal => 
-        goal.id === goalId
-          ? {
-              ...goal,
-              tasks: goal.tasks?.map(task =>
-                task.id === taskId
-                  ? { ...task, completed: !task.completed }
-                  : task
-              )
-            }
-          : goal
-      )
-    )
-  }, [])
+  // Derive analytics data
+  const analyticsCommitments = React.useMemo(() => 
+    toAnalyticsItems(commitments, () => ({ plannedHours: 0, completedHours: 0 })), 
+    [commitments]
+  )
+  const analyticsGoals = React.useMemo(() => 
+    toAnalyticsItems(goals, getGoalStats), 
+    [goals, getGoalStats]
+  )
 
   const isPlanning = calendarMode === "blueprint"
 
@@ -252,19 +325,27 @@ function ShellDemo() {
           >
             <Backlog 
               commitments={commitments}
-              goals={goals}
+              goals={goals as BacklogItem[]}
               className="h-full w-[420px] max-w-none overflow-y-auto" 
               showTasks={showTasks}
               showCommitments={false}
-              onToggleGoalTask={handleToggleGoalTask}
+              onToggleGoalTask={toggleTaskComplete}
+              getGoalStats={getGoalStats}
+              getTaskSchedule={getTaskSchedule}
+              draggable={true}
             />
           </div>
           <ShellContent className="overflow-hidden">
             {showCalendar && (
               <Calendar 
                 events={calendarEvents} 
-                mode={calendarMode} 
+                mode={calendarMode}
                 {...calendarHandlers}
+                onEventHover={setHoveredEvent}
+                onGridPositionHover={setHoverPosition}
+                enableExternalDrop={true}
+                onExternalDrop={handleExternalDrop}
+                externalDragPreview={externalDragPreview}
               />
             )}
           </ShellContent>
@@ -283,6 +364,7 @@ function ShellDemo() {
         </div>
       </Shell>
       <KeyboardToast message={toastMessage} />
+      <DragGhost />
       <KnobsToggle />
       <KnobsPanel>
         <KnobBoolean
@@ -307,6 +389,14 @@ function ShellDemo() {
         />
       </KnobsPanel>
     </>
+  )
+}
+
+function ShellDemo() {
+  return (
+    <DragProvider>
+      <ShellDemoContent />
+    </DragProvider>
   )
 }
 

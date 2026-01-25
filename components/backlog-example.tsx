@@ -23,12 +23,12 @@ import {
 } from "@remixicon/react"
 
 const INITIAL_COMMITMENTS: BacklogItem[] = [
-  { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "text-indigo-500", plannedHours: 56, completedHours: 48 },
-  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "text-amber-500", plannedHours: 14, completedHours: 12 },
-  { id: "commute", label: "Commute", icon: RiCarLine, color: "text-slate-500", plannedHours: 10, completedHours: 8 },
-  { id: "exercise", label: "Exercise", icon: RiRunLine, color: "text-green-500", plannedHours: 5, completedHours: 3 },
-  { id: "hygiene", label: "Hygiene", icon: RiDropLine, color: "text-cyan-500", plannedHours: 7, completedHours: 7 },
-  { id: "chores", label: "Chores", icon: RiHome4Line, color: "text-orange-500", plannedHours: 4, completedHours: 2 },
+  { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo", plannedHours: 56, completedHours: 48 },
+  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber", plannedHours: 14, completedHours: 12 },
+  { id: "commute", label: "Commute", icon: RiCarLine, color: "slate", plannedHours: 10, completedHours: 8 },
+  { id: "exercise", label: "Exercise", icon: RiRunLine, color: "green", plannedHours: 5, completedHours: 3 },
+  { id: "hygiene", label: "Hygiene", icon: RiDropLine, color: "cyan", plannedHours: 7, completedHours: 7 },
+  { id: "chores", label: "Chores", icon: RiHome4Line, color: "orange", plannedHours: 4, completedHours: 2 },
 ]
 
 const INITIAL_GOALS: BacklogItem[] = [
@@ -36,7 +36,7 @@ const INITIAL_GOALS: BacklogItem[] = [
     id: "superos", 
     label: "Get SuperOS to $1M ARR", 
     icon: RiRocketLine, 
-    color: "text-violet-500", 
+    color: "violet", 
     plannedHours: 20, 
     completedHours: 12, 
     milestone: "Ship billing integration",
@@ -50,7 +50,7 @@ const INITIAL_GOALS: BacklogItem[] = [
     id: "marathon", 
     label: "Run a marathon", 
     icon: RiMedalLine, 
-    color: "text-rose-500", 
+    color: "rose", 
     plannedHours: 6, 
     completedHours: 4, 
     milestone: "Complete 10K under 50min",
@@ -63,7 +63,7 @@ const INITIAL_GOALS: BacklogItem[] = [
     id: "book", 
     label: "Write a book", 
     icon: RiPenNibLine, 
-    color: "text-teal-500", 
+    color: "teal", 
     plannedHours: 7, 
     completedHours: 5, 
     milestone: "Finish chapter 3 draft",
@@ -77,7 +77,7 @@ const INITIAL_GOALS: BacklogItem[] = [
     id: "spanish", 
     label: "Become fluent in Spanish", 
     icon: RiCodeLine, 
-    color: "text-blue-500", 
+    color: "blue", 
     plannedHours: 5, 
     completedHours: 5, 
     milestone: "Complete A2 certification",

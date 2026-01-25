@@ -8,13 +8,20 @@ import {
   RiShiningLine,
   RiFlagLine,
   RiCheckLine,
+  RiTimeLine,
 } from "@remixicon/react";
+import type { GoalColor } from "@/lib/colors";
+import { getIconColorClass } from "@/lib/colors";
+import { useDraggable, useDragContextOptional } from "@/components/drag";
+import type { DragItem } from "@/lib/drag-types";
 
 // Types
 interface BacklogTask {
   id: string;
   label: string;
   completed?: boolean;
+  /** Reference to the calendar block if scheduled */
+  scheduledBlockId?: string;
 }
 
 type IconComponent = React.ComponentType<{ className?: string }>;
@@ -23,13 +30,29 @@ interface BacklogItem {
   id: string;
   label: string;
   icon: IconComponent;
-  color: string;
+  color: GoalColor;
+  /** @deprecated Use getGoalStats instead - hours are now computed from calendar blocks */
   plannedHours?: number;
+  /** @deprecated Use getGoalStats instead - hours are now computed from calendar blocks */
   completedHours?: number;
   /** Current milestone - the next concrete step toward this goal */
   milestone?: string;
   /** Tasks associated with this item */
   tasks?: BacklogTask[];
+}
+
+/** Computed statistics for a goal (derived from calendar events) */
+interface GoalStats {
+  plannedHours: number;
+  completedHours: number;
+}
+
+/** Schedule info for a task */
+interface TaskScheduleInfo {
+  blockId: string;
+  dayIndex: number;
+  startMinutes: number;
+  durationMinutes: number;
 }
 
 interface BacklogGroup {
@@ -39,24 +62,81 @@ interface BacklogGroup {
   items: BacklogItem[];
 }
 
+// Helpers
+function formatScheduledTime(schedule: TaskScheduleInfo): string {
+  const hours = Math.floor(schedule.startMinutes / 60);
+  const minutes = schedule.startMinutes % 60;
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  const timeStr = minutes > 0 
+    ? `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`
+    : `${displayHours} ${period}`;
+  
+  // Get day name (assuming dayIndex 0 = Monday)
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const today = new Date().getDay();
+  const todayIndex = today === 0 ? 6 : today - 1; // Convert Sunday=0 to our Monday=0 format
+  
+  if (schedule.dayIndex === todayIndex) {
+    return timeStr; // Just show time for today
+  }
+  
+  return `${days[schedule.dayIndex]} ${timeStr}`;
+}
+
 // Components
 type GoalDisplayMode = "goal" | "milestone";
 
 interface TaskRowProps {
   task: BacklogTask;
+  /** Parent goal (needed for drag context and color inheritance) */
+  parentGoal: BacklogItem;
+  /** Schedule info if this task is on the calendar */
+  scheduleInfo?: TaskScheduleInfo | null;
   onToggle?: (id: string) => void;
+  /** Whether drag is enabled (requires DragProvider) */
+  draggable?: boolean;
 }
 
-function TaskRow({ task, onToggle }: TaskRowProps) {
+function TaskRow({ 
+  task, 
+  parentGoal, 
+  scheduleInfo, 
+  onToggle, 
+  draggable = false 
+}: TaskRowProps) {
+  // Drag context is optional - only use if within DragProvider
+  const dragContext = useDragContextOptional();
+  const canDrag = draggable && dragContext && !task.completed;
+  
+  const dragItem: DragItem = {
+    type: "task",
+    goalId: parentGoal.id,
+    goalLabel: parentGoal.label,
+    goalColor: parentGoal.color,
+    taskId: task.id,
+    taskLabel: task.label,
+  };
+  
+  const { draggableProps, isDragging } = useDraggable({
+    item: dragItem,
+    disabled: !canDrag,
+  });
+
   return (
     <div
       className={cn(
         "group relative flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all",
         "hover:bg-muted/60",
+        isDragging && "opacity-50",
       )}
+      {...(canDrag ? draggableProps : {})}
     >
       <button
-        onClick={() => onToggle?.(task.id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle?.(task.id);
+        }}
         className={cn(
           "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
           task.completed
@@ -76,29 +156,67 @@ function TaskRow({ task, onToggle }: TaskRowProps) {
       >
         {task.label}
       </span>
+      
+      {/* Scheduled time pill */}
+      {scheduleInfo && (
+        <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
+          <RiTimeLine className="size-3" />
+          {formatScheduledTime(scheduleInfo)}
+        </span>
+      )}
     </div>
   );
 }
 
 interface BacklogItemRowProps {
   item: BacklogItem;
+  /** Computed stats from calendar (optional, uses item.plannedHours/completedHours as fallback) */
+  stats?: GoalStats;
   showHours?: boolean;
   showTasks?: boolean;
   /** For goals with milestones, which should be the primary title */
   goalDisplayMode?: GoalDisplayMode;
   onToggleTask?: (itemId: string, taskId: string) => void;
+  /** Function to get schedule info for a task */
+  getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  /** Whether drag is enabled (requires DragProvider) */
+  draggable?: boolean;
   className?: string;
 }
 
 function BacklogItemRow({
   item,
+  stats,
   showHours = true,
   showTasks = true,
   goalDisplayMode = "goal",
   onToggleTask,
+  getTaskSchedule,
+  draggable = false,
   className,
 }: BacklogItemRowProps) {
   const IconComponent = item.icon;
+
+  // Use computed stats if provided, otherwise fall back to legacy props
+  const plannedHours = stats?.plannedHours ?? item.plannedHours ?? 0;
+  const completedHours = stats?.completedHours ?? item.completedHours ?? 0;
+  const hasHoursData = stats ? (plannedHours > 0 || completedHours > 0) : item.plannedHours !== undefined;
+
+  // Drag context is optional - only use if within DragProvider
+  const dragContext = useDragContextOptional();
+  const canDrag = draggable && dragContext;
+  
+  const dragItem: DragItem = {
+    type: "goal",
+    goalId: item.id,
+    goalLabel: item.label,
+    goalColor: item.color,
+  };
+  
+  const { draggableProps, isDragging } = useDraggable({
+    item: dragItem,
+    disabled: !canDrag,
+  });
 
   // Determine what to show as primary vs secondary based on display mode
   const hasMilestone = !!item.milestone;
@@ -115,10 +233,12 @@ function BacklogItemRow({
         className={cn(
           "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
           "hover:bg-muted/60",
+          isDragging && "opacity-50",
         )}
+        {...(canDrag ? draggableProps : {})}
       >
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-          <IconComponent className={cn("size-4", item.color)} />
+          <IconComponent className={cn("size-4", getIconColorClass(item.color))} />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -137,14 +257,14 @@ function BacklogItemRow({
           )}
         </div>
 
-        {showHours && item.plannedHours !== undefined && (
+        {showHours && hasHoursData && (
           <div className="flex shrink-0 items-center gap-1.5 text-xs">
             <span className="tabular-nums text-foreground">
-              {item.completedHours ?? 0}h
+              {completedHours}h
             </span>
             <span className="text-muted-foreground/50">/</span>
             <span className="tabular-nums text-muted-foreground">
-              {item.plannedHours}h
+              {plannedHours}h
             </span>
           </div>
         )}
@@ -160,7 +280,10 @@ function BacklogItemRow({
             <TaskRow
               key={task.id}
               task={task}
+              parentGoal={item}
+              scheduleInfo={getTaskSchedule?.(task.id)}
               onToggle={(taskId) => onToggleTask?.(item.id, taskId)}
+              draggable={draggable}
             />
           ))}
         </div>
@@ -178,6 +301,12 @@ interface BacklogSectionProps {
   goalDisplayMode?: GoalDisplayMode;
   onAddItem?: () => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
+  /** Function to get computed stats for a goal */
+  getGoalStats?: (goalId: string) => GoalStats;
+  /** Function to get schedule info for a task */
+  getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  /** Whether drag is enabled */
+  draggable?: boolean;
   className?: string;
 }
 
@@ -190,16 +319,30 @@ function BacklogSection({
   goalDisplayMode = "goal",
   onAddItem,
   onToggleTask,
+  getGoalStats,
+  getTaskSchedule,
+  draggable = false,
   className,
 }: BacklogSectionProps) {
-  const totalPlannedHours = items.reduce(
-    (sum, item) => sum + (item.plannedHours || 0),
-    0,
-  );
-  const totalCompletedHours = items.reduce(
-    (sum, item) => sum + (item.completedHours || 0),
-    0,
-  );
+  // Calculate totals from stats if available, otherwise use legacy props
+  const totals = React.useMemo(() => {
+    if (getGoalStats) {
+      return items.reduce(
+        (acc, item) => {
+          const stats = getGoalStats(item.id);
+          return {
+            planned: acc.planned + stats.plannedHours,
+            completed: acc.completed + stats.completedHours,
+          };
+        },
+        { planned: 0, completed: 0 }
+      );
+    }
+    return {
+      planned: items.reduce((sum, item) => sum + (item.plannedHours || 0), 0),
+      completed: items.reduce((sum, item) => sum + (item.completedHours || 0), 0),
+    };
+  }, [items, getGoalStats]);
 
   return (
     <div className={cn("flex flex-col px-3", className)}>
@@ -210,14 +353,14 @@ function BacklogSection({
             <p className="text-xs text-muted-foreground">{description}</p>
           )}
         </div>
-        {showHours && totalPlannedHours > 0 && (
+        {showHours && totals.planned > 0 && (
           <div className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
             <span className="tabular-nums text-foreground">
-              {totalCompletedHours}h
+              {totals.completed}h
             </span>
             <span className="text-muted-foreground/50">/</span>
             <span className="tabular-nums text-muted-foreground">
-              {totalPlannedHours}h
+              {totals.planned}h
             </span>
           </div>
         )}
@@ -228,10 +371,13 @@ function BacklogSection({
           <BacklogItemRow
             key={item.id}
             item={item}
+            stats={getGoalStats?.(item.id)}
             showHours={showHours}
             showTasks={showTasks}
             goalDisplayMode={goalDisplayMode}
             onToggleTask={onToggleTask}
+            getTaskSchedule={getTaskSchedule}
+            draggable={draggable}
           />
         ))}
       </div>
@@ -264,6 +410,12 @@ interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onAddCommitment?: () => void;
   onAddGoal?: () => void;
   onToggleGoalTask?: (goalId: string, taskId: string) => void;
+  /** Function to get computed stats for a goal (enables computed hours display) */
+  getGoalStats?: (goalId: string) => GoalStats;
+  /** Function to get schedule info for a task (enables time pill display) */
+  getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  /** Enable drag-and-drop (requires DragProvider wrapper) */
+  draggable?: boolean;
 }
 
 function Backlog({
@@ -276,26 +428,12 @@ function Backlog({
   onAddCommitment,
   onAddGoal,
   onToggleGoalTask,
+  getGoalStats,
+  getTaskSchedule,
+  draggable = false,
   className,
   ...props
 }: BacklogProps) {
-  const totalCommitmentPlanned = commitments.reduce(
-    (sum, item) => sum + (item.plannedHours || 0),
-    0,
-  );
-  const totalCommitmentCompleted = commitments.reduce(
-    (sum, item) => sum + (item.completedHours || 0),
-    0,
-  );
-  const totalGoalPlanned = goals.reduce(
-    (sum, item) => sum + (item.plannedHours || 0),
-    0,
-  );
-  const totalGoalCompleted = goals.reduce(
-    (sum, item) => sum + (item.completedHours || 0),
-    0,
-  );
-
   return (
     <div
       className={cn(
@@ -313,6 +451,9 @@ function Backlog({
             items={commitments}
             showHours={showHours}
             onAddItem={onAddCommitment}
+            getGoalStats={getGoalStats}
+            getTaskSchedule={getTaskSchedule}
+            draggable={draggable}
             className="py-2"
           />
         )}
@@ -326,6 +467,9 @@ function Backlog({
           goalDisplayMode={goalDisplayMode}
           onAddItem={onAddGoal}
           onToggleTask={onToggleGoalTask}
+          getGoalStats={getGoalStats}
+          getTaskSchedule={getTaskSchedule}
+          draggable={draggable}
           className="py-2"
         />
       </div>
@@ -340,11 +484,13 @@ function Backlog({
   );
 }
 
-export { Backlog, BacklogSection, BacklogItemRow };
+export { Backlog, BacklogSection, BacklogItemRow, TaskRow };
 export type {
   BacklogProps,
   BacklogItem,
   BacklogTask,
   BacklogGroup,
   GoalDisplayMode,
+  GoalStats,
+  TaskScheduleInfo,
 };

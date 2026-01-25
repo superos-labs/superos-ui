@@ -24,6 +24,7 @@ import {
   snapToGrid,
   blockAnimations,
 } from "./calendar-utils";
+import { useDragContextOptional } from "@/components/drag";
 
 /**
  * Default layout for segments without overlap calculation.
@@ -115,13 +116,72 @@ export function TimeColumn({
   onEventPaste,
   onEventHover,
   onGridPositionHover,
+  enableExternalDrop = false,
+  onExternalDrop,
+  externalDragPreview,
 }: TimeColumnProps) {
+  const columnRef = React.useRef<HTMLDivElement>(null);
+  const dragContext = useDragContextOptional();
+  
+  // Calculate minutes from Y position for external drops
+  const getMinutesFromY = React.useCallback(
+    (clientY: number): number => {
+      if (!columnRef.current) return 0;
+      const rect = columnRef.current.getBoundingClientRect();
+      const scrollParent = columnRef.current.closest('[data-calendar-scroll]');
+      const scrollTop = scrollParent?.scrollTop ?? 0;
+      const y = clientY - rect.top + scrollTop;
+      const rawMinutes = y / pixelsPerMinute;
+      return snapToGrid(Math.max(0, Math.min(1440 - 15, rawMinutes)));
+    },
+    [pixelsPerMinute]
+  );
+  
+  // Handle pointer move for external drag preview
+  const handleExternalDragMove = React.useCallback(
+    (e: React.PointerEvent) => {
+      if (!enableExternalDrop || !dragContext?.state.isDragging) return;
+      const startMinutes = getMinutesFromY(e.clientY);
+      dragContext.setPreviewPosition({ dayIndex, startMinutes });
+    },
+    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY]
+  );
+  
+  // Handle pointer up for external drop
+  const handleExternalDrop = React.useCallback(
+    (e: React.PointerEvent) => {
+      if (!enableExternalDrop || !dragContext?.state.isDragging || !dragContext.state.item) return;
+      const startMinutes = getMinutesFromY(e.clientY);
+      onExternalDrop?.(dayIndex, startMinutes);
+      dragContext.endDrag();
+    },
+    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY, onExternalDrop]
+  );
+  
+  // Handle pointer leave - clear preview if leaving this column
+  const handlePointerLeave = React.useCallback(() => {
+    if (!dragContext?.state.isDragging) return;
+    if (dragContext.state.previewPosition?.dayIndex === dayIndex) {
+      dragContext.setPreviewPosition(null);
+    }
+  }, [dragContext, dayIndex]);
+  
+  // Check if external drag is over this column
+  const isExternalDragOver = enableExternalDrop && 
+    dragContext?.state.isDragging && 
+    dragContext?.state.previewPosition?.dayIndex === dayIndex;
+
   return (
     <div
+      ref={columnRef}
       className={cn(
         "border-border/40 relative border-r last:border-r-0",
         isToday && "bg-primary/[0.02]",
+        isExternalDragOver && "bg-primary/[0.05]",
       )}
+      onPointerMove={enableExternalDrop ? handleExternalDragMove : undefined}
+      onPointerUp={enableExternalDrop ? handleExternalDrop : undefined}
+      onPointerLeave={enableExternalDrop ? handlePointerLeave : undefined}
     >
       {/* Hour Cells */}
       {HOURS.map((hour) => {
@@ -414,6 +474,34 @@ export function TimeColumn({
               color="indigo"
               status="planned"
               duration={createPreview.durationMinutes <= 30 ? 30 : 60}
+              compactLayout={previewCompactLayout}
+              fillContainer
+            />
+          </div>
+        );
+      })()}
+      
+      {/* External drag preview (from backlog) */}
+      {externalDragPreview && externalDragPreview.dayIndex === dayIndex && (() => {
+        const previewHeightPx = externalDragPreview.durationMinutes * pixelsPerMinute;
+        const previewCompactLayout = previewHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
+        return (
+          <div
+            className="pointer-events-none absolute right-1 left-1 z-40 opacity-70"
+            style={{
+              top: `${(externalDragPreview.startMinutes / 1440) * 100}%`,
+              height: `${(externalDragPreview.durationMinutes / 1440) * 100}%`,
+            }}
+          >
+            <Block
+              title={externalDragPreview.title}
+              startTime={formatTimeFromMinutes(externalDragPreview.startMinutes)}
+              endTime={formatTimeFromMinutes(
+                externalDragPreview.startMinutes + externalDragPreview.durationMinutes,
+              )}
+              color={externalDragPreview.color}
+              status="planned"
+              duration={externalDragPreview.durationMinutes <= 30 ? 30 : 60}
               compactLayout={previewCompactLayout}
               fillContainer
             />

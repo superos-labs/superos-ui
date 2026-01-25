@@ -41,6 +41,9 @@ export function DayView({
   hasClipboardContent = false,
   onEventHover,
   onGridPositionHover,
+  enableExternalDrop = false,
+  onExternalDrop,
+  externalDragPreview,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -169,6 +172,9 @@ export function DayView({
             onEventPaste={onEventPaste}
             onEventHover={onEventHover}
             onGridPositionHover={onGridPositionHover}
+            enableExternalDrop={enableExternalDrop}
+            onExternalDrop={onExternalDrop}
+            externalDragPreview={externalDragPreview}
           />
 
           {/* Current Time Indicator */}

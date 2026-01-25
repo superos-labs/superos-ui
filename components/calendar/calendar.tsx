@@ -28,6 +28,9 @@ export function Calendar({
   hasClipboardContent,
   onEventHover,
   onGridPositionHover,
+  enableExternalDrop,
+  onExternalDrop,
+  externalDragPreview,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -56,6 +59,9 @@ export function Calendar({
         hasClipboardContent={hasClipboardContent}
         onEventHover={onEventHover}
         onGridPositionHover={onGridPositionHover}
+        enableExternalDrop={enableExternalDrop}
+        onExternalDrop={onExternalDrop}
+        externalDragPreview={externalDragPreview}
       />
     );
   }
@@ -81,6 +87,9 @@ export function Calendar({
       hasClipboardContent={hasClipboardContent}
       onEventHover={onEventHover}
       onGridPositionHover={onGridPositionHover}
+      enableExternalDrop={enableExternalDrop}
+      onExternalDrop={onExternalDrop}
+      externalDragPreview={externalDragPreview}
     />
   );
 }

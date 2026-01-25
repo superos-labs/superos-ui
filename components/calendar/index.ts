@@ -44,6 +44,7 @@ export type {
   CalendarDensity,
   BlockStyle,
   BlockStatus,
+  BlockType,
   DayViewProps,
   WeekViewProps,
   TimeColumnProps,
