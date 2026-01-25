@@ -18,13 +18,6 @@ export const registry: ComponentEntry[] = [
     },
   },
   {
-    slug: "block",
-    name: "Block",
-    get component() {
-      return require("@/components/block/block-example").BlockExample;
-    },
-  },
-  {
     slug: "floating-toolbar",
     name: "Floating Toolbar",
     layout: "bottom",

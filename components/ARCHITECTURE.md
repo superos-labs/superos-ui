@@ -13,7 +13,6 @@ components/
 ├── block/                  # Feature folder (when 3+ related files exist)
 │   ├── index.ts            # Public API re-exports
 │   ├── block.tsx           # Core component
-│   ├── block-example.tsx   # Demo wrapper
 │   ├── block-sidebar.tsx   # Related component
 │   ├── resizable-block-wrapper.tsx
 │   └── use-block-resize.ts # Feature-specific hook
@@ -153,7 +152,6 @@ components/
 └── block/
     ├── index.ts                    # Public API (required)
     ├── block.tsx                   # Core component
-    ├── block-example.tsx           # Demo wrapper
     ├── block-sidebar.tsx           # Related sub-component
     ├── block-sidebar-example.tsx   # Sub-component demo
     ├── resizable-block-wrapper.tsx # Composition layer
