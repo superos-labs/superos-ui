@@ -83,6 +83,23 @@ export function CalendarExample() {
     setEvents(prev => [...prev, newEvent])
   }, [])
 
+  // Handle drag-to-create on empty grid area - creates a block with dragged duration
+  const handleGridDragCreate = React.useCallback((
+    dayIndex: number,
+    startMinutes: number,
+    durationMinutes: number
+  ) => {
+    const newEvent: CalendarEvent = {
+      id: crypto.randomUUID(),
+      title: "New Block",
+      dayIndex,
+      startMinutes,
+      durationMinutes,
+      color: "indigo",
+    }
+    setEvents(prev => [...prev, newEvent])
+  }, [])
+
   return (
     <KnobsProvider>
       <div className="h-screen w-full">
@@ -96,6 +113,7 @@ export function CalendarExample() {
           onEventResize={handleEventResize}
           onEventDragEnd={handleEventDragEnd}
           onGridDoubleClick={handleGridDoubleClick}
+          onGridDragCreate={handleGridDragCreate}
         />
       </div>
       

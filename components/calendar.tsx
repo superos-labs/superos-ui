@@ -6,6 +6,7 @@ import {
   Block,
   ResizableBlockWrapper,
   DraggableBlockWrapper,
+  useGridDragCreate,
   type BlockColor,
   type BlockStatus,
 } from "@/components/block";
@@ -64,6 +65,12 @@ interface CalendarProps {
   ) => void;
   /** Called when user double-clicks on an empty area of the calendar grid */
   onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
+  /** Called when user drags on an empty area of the calendar grid to create a block */
+  onGridDragCreate?: (
+    dayIndex: number,
+    startMinutes: number,
+    durationMinutes: number,
+  ) => void;
 }
 
 function getWeekDates(referenceDate: Date = new Date()) {
@@ -301,6 +308,11 @@ interface DayViewProps {
     newStartMinutes: number,
   ) => void;
   onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
+  onGridDragCreate?: (
+    dayIndex: number,
+    startMinutes: number,
+    durationMinutes: number,
+  ) => void;
 }
 
 function DayView({
@@ -314,6 +326,7 @@ function DayView({
   onEventResizeEnd,
   onEventDragEnd,
   onGridDoubleClick,
+  onGridDragCreate,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -343,6 +356,18 @@ function DayView({
     observer.observe(dayColumnRef.current);
     return () => observer.disconnect();
   }, []);
+
+  // Hook for drag-to-create blocks
+  const {
+    isDragging: isCreatingBlock,
+    preview: createPreview,
+    handlePointerDown: handleGridPointerDown,
+    handlePointerMove: handleGridPointerMove,
+    handlePointerUp: handleGridPointerUp,
+  } = useGridDragCreate({
+    pixelsPerMinute: PIXELS_PER_MINUTE,
+    onCreate: onGridDragCreate,
+  });
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
@@ -393,20 +418,29 @@ function DayView({
           )}
 
           {/* Day Column */}
-          <div ref={dayColumnRef} className="relative">
+          <div
+            ref={dayColumnRef}
+            className="relative"
+            onPointerMove={handleGridPointerMove}
+            onPointerUp={handleGridPointerUp}
+            onPointerCancel={handleGridPointerUp}
+          >
             {HOURS.map((hour) => (
               <div
                 key={hour}
                 className={cn(
-                  "border-border/40 absolute right-0 left-0 border-b transition-colors",
+                  "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
                   "hover:bg-muted/30",
                 )}
                 style={{
                   top: `${(hour / 24) * 100}%`,
                   height: `${100 / 24}%`,
                 }}
+                onPointerDown={(e) =>
+                  handleGridPointerDown(e, selectedDayIndex, hour * 60)
+                }
                 onDoubleClick={(e) => {
-                  if (!onGridDoubleClick) return;
+                  if (isCreatingBlock || !onGridDoubleClick) return;
                   const rect = e.currentTarget.getBoundingClientRect();
                   const relativeY = e.clientY - rect.top;
                   const minutesIntoHour = (relativeY / rect.height) * 60;
@@ -529,6 +563,29 @@ function DayView({
                 </div>
               );
             })}
+
+            {/* Drag-to-create preview */}
+            {createPreview && createPreview.dayIndex === selectedDayIndex && (
+              <div
+                className="pointer-events-none absolute right-1 left-1 z-40"
+                style={{
+                  top: `${(createPreview.startMinutes / 1440) * 100}%`,
+                  height: `${(createPreview.durationMinutes / 1440) * 100}%`,
+                }}
+              >
+                <Block
+                  title="New Block"
+                  startTime={formatTimeFromMinutes(createPreview.startMinutes)}
+                  endTime={formatTimeFromMinutes(
+                    createPreview.startMinutes + createPreview.durationMinutes,
+                  )}
+                  color="indigo"
+                  status="planned"
+                  duration={createPreview.durationMinutes <= 30 ? 30 : 60}
+                  fillContainer
+                />
+              </div>
+            )}
           </div>
 
           {/* Current Time Indicator */}
@@ -559,6 +616,11 @@ interface WeekViewProps {
     newStartMinutes: number,
   ) => void;
   onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
+  onGridDragCreate?: (
+    dayIndex: number,
+    startMinutes: number,
+    durationMinutes: number,
+  ) => void;
 }
 
 function WeekView({
@@ -571,6 +633,7 @@ function WeekView({
   onEventResizeEnd,
   onEventDragEnd,
   onGridDoubleClick,
+  onGridDragCreate,
 }: WeekViewProps) {
   const headerCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
@@ -593,6 +656,18 @@ function WeekView({
     observer.observe(gridRef.current);
     return () => observer.disconnect();
   }, [showHourLabels]);
+
+  // Hook for drag-to-create blocks
+  const {
+    isDragging: isCreatingBlock,
+    preview: createPreview,
+    handlePointerDown: handleGridPointerDown,
+    handlePointerMove: handleGridPointerMove,
+    handlePointerUp: handleGridPointerUp,
+  } = useGridDragCreate({
+    pixelsPerMinute: PIXELS_PER_MINUTE,
+    onCreate: onGridDragCreate,
+  });
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
@@ -617,7 +692,13 @@ function WeekView({
 
       {/* Time Grid */}
       <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
-        <div ref={gridRef} className={cn("relative grid min-h-[1536px]", gridCols)}>
+        <div
+          ref={gridRef}
+          className={cn("relative grid min-h-[1536px]", gridCols)}
+          onPointerMove={handleGridPointerMove}
+          onPointerUp={handleGridPointerUp}
+          onPointerCancel={handleGridPointerUp}
+        >
           {/* Hour Labels */}
           {showHourLabels && (
             <div className="border-border/40 relative border-r">
@@ -663,15 +744,18 @@ function WeekView({
                   <div
                     key={hour}
                     className={cn(
-                      "border-border/40 absolute right-0 left-0 border-b transition-colors",
+                      "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
                       "hover:bg-muted/30",
                     )}
                     style={{
                       top: `${(hour / 24) * 100}%`,
                       height: `${100 / 24}%`,
                     }}
+                    onPointerDown={(e) =>
+                      handleGridPointerDown(e, dayIndex, hour * 60)
+                    }
                     onDoubleClick={(e) => {
-                      if (!onGridDoubleClick) return;
+                      if (isCreatingBlock || !onGridDoubleClick) return;
                       const rect = e.currentTarget.getBoundingClientRect();
                       const relativeY = e.clientY - rect.top;
                       const minutesIntoHour = (relativeY / rect.height) * 60;
@@ -792,6 +876,29 @@ function WeekView({
                     </div>
                   );
                 })}
+
+                {/* Drag-to-create preview */}
+                {createPreview && createPreview.dayIndex === dayIndex && (
+                  <div
+                    className="pointer-events-none absolute right-1 left-1 z-40"
+                    style={{
+                      top: `${(createPreview.startMinutes / 1440) * 100}%`,
+                      height: `${(createPreview.durationMinutes / 1440) * 100}%`,
+                    }}
+                  >
+                    <Block
+                      title="New Block"
+                      startTime={formatTimeFromMinutes(createPreview.startMinutes)}
+                      endTime={formatTimeFromMinutes(
+                        createPreview.startMinutes + createPreview.durationMinutes,
+                      )}
+                      color="indigo"
+                      status="planned"
+                      duration={createPreview.durationMinutes <= 30 ? 30 : 60}
+                      fillContainer
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -816,6 +923,7 @@ export function Calendar({
   onEventResizeEnd,
   onEventDragEnd,
   onGridDoubleClick,
+  onGridDragCreate,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -834,6 +942,7 @@ export function Calendar({
         onEventResizeEnd={onEventResizeEnd}
         onEventDragEnd={onEventDragEnd}
         onGridDoubleClick={onGridDoubleClick}
+        onGridDragCreate={onGridDragCreate}
       />
     );
   }
@@ -849,6 +958,7 @@ export function Calendar({
       onEventResizeEnd={onEventResizeEnd}
       onEventDragEnd={onEventDragEnd}
       onGridDoubleClick={onGridDoubleClick}
+      onGridDragCreate={onGridDragCreate}
     />
   );
 }
