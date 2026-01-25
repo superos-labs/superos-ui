@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Calendar } from "./calendar";
+import { useCalendarClipboard } from "./use-calendar-clipboard";
 import type {
   CalendarView,
   CalendarMode,
@@ -173,6 +174,9 @@ export function CalendarExample() {
   const [blockStyle, setBlockStyle] = React.useState<BlockStyle | "">("");
   const [events, setEvents] = React.useState<CalendarEvent[]>(INITIAL_EVENTS);
 
+  // Clipboard for copy/paste functionality
+  const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard();
+
   // Handle event resize - updates the event's start time and duration
   const handleEventResize = React.useCallback(
     (eventId: string, newStartMinutes: number, newDurationMinutes: number) => {
@@ -258,6 +262,40 @@ export function CalendarExample() {
     [],
   );
 
+  // Handle event copy - copies event to clipboard
+  const handleEventCopy = React.useCallback(
+    (event: CalendarEvent) => {
+      copy(event);
+    },
+    [copy],
+  );
+
+  // Handle event delete - removes the event
+  const handleEventDelete = React.useCallback((eventId: string) => {
+    setEvents((prev) => prev.filter((e) => e.id !== eventId));
+  }, []);
+
+  // Handle event status change - toggles complete/incomplete
+  const handleEventStatusChange = React.useCallback(
+    (eventId: string, status: "base" | "completed" | "outlined") => {
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, status } : e)),
+      );
+    },
+    [],
+  );
+
+  // Handle event paste - creates a new event from clipboard at specified position
+  const handleEventPaste = React.useCallback(
+    (dayIndex: number, startMinutes: number) => {
+      const pastedEvent = paste(dayIndex, startMinutes);
+      if (pastedEvent) {
+        setEvents((prev) => [...prev, pastedEvent]);
+      }
+    },
+    [paste],
+  );
+
   return (
     <KnobsProvider>
       <div className="h-screen w-full">
@@ -273,6 +311,11 @@ export function CalendarExample() {
           onEventDuplicate={handleEventDuplicate}
           onGridDoubleClick={handleGridDoubleClick}
           onGridDragCreate={handleGridDragCreate}
+          onEventCopy={handleEventCopy}
+          onEventDelete={handleEventDelete}
+          onEventStatusChange={handleEventStatusChange}
+          onEventPaste={handleEventPaste}
+          hasClipboardContent={hasClipboardContent}
         />
       </div>
 

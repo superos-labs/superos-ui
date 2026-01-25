@@ -26,6 +26,10 @@ import {
   isCurrentHour,
   snapToGrid,
 } from "./calendar-utils";
+import {
+  BlockContextMenu,
+  EmptySpaceContextMenu,
+} from "./calendar-context-menu";
 
 // Subtle scale-in animation for newly created blocks
 const blockEnterAnimation = {
@@ -46,6 +50,11 @@ export function WeekView({
   onEventDuplicate,
   onGridDoubleClick,
   onGridDragCreate,
+  onEventCopy,
+  onEventDelete,
+  onEventStatusChange,
+  onEventPaste,
+  hasClipboardContent = false,
 }: WeekViewProps) {
   const headerCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
@@ -152,30 +161,45 @@ export function WeekView({
                   today && "bg-primary/[0.02]",
                 )}
               >
-                {HOURS.map((hour) => (
-                  <div
-                    key={hour}
-                    className={cn(
-                      "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
-                      "hover:bg-muted/30",
-                    )}
-                    style={{
-                      top: `${(hour / 24) * 100}%`,
-                      height: `${100 / 24}%`,
-                    }}
-                    onPointerDown={(e) =>
-                      handleGridPointerDown(e, dayIndex, hour * 60)
-                    }
-                    onDoubleClick={(e) => {
-                      if (isCreatingBlock || !onGridDoubleClick) return;
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const relativeY = e.clientY - rect.top;
-                      const minutesIntoHour = (relativeY / rect.height) * 60;
-                      const startMinutes = snapToGrid(hour * 60 + minutesIntoHour);
-                      onGridDoubleClick(dayIndex, startMinutes);
-                    }}
-                  />
-                ))}
+                {HOURS.map((hour) => {
+                  const hourStartMinutes = hour * 60;
+                  return (
+                    <EmptySpaceContextMenu
+                      key={hour}
+                      canPaste={hasClipboardContent}
+                      onPaste={() => {
+                        onEventPaste?.(dayIndex, hourStartMinutes);
+                      }}
+                      onCreate={() => {
+                        onGridDoubleClick?.(dayIndex, hourStartMinutes);
+                      }}
+                    >
+                      <div
+                        className={cn(
+                          "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
+                          "hover:bg-muted/30",
+                        )}
+                        style={{
+                          top: `${(hour / 24) * 100}%`,
+                          height: `${100 / 24}%`,
+                        }}
+                        onPointerDown={(e) =>
+                          handleGridPointerDown(e, dayIndex, hour * 60)
+                        }
+                        onDoubleClick={(e) => {
+                          if (isCreatingBlock || !onGridDoubleClick) return;
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const relativeY = e.clientY - rect.top;
+                          const minutesIntoHour = (relativeY / rect.height) * 60;
+                          const startMinutes = snapToGrid(
+                            hour * 60 + minutesIntoHour,
+                          );
+                          onGridDoubleClick(dayIndex, startMinutes);
+                        }}
+                      />
+                    </EmptySpaceContextMenu>
+                  );
+                })}
 
                 {/* Events */}
                 {dayEvents.map((event) => {
@@ -197,7 +221,11 @@ export function WeekView({
                         status={
                           setBlockStyle
                             ? blockStyleToStatus(setBlockStyle)
-                            : modeToStatus(mode, dayIndex)
+                            : event.status === "completed"
+                              ? "completed"
+                              : event.status === "outlined"
+                                ? "blueprint"
+                                : modeToStatus(mode, dayIndex)
                         }
                         duration={event.durationMinutes as 30 | 60 | 240}
                         taskCount={event.taskCount}
@@ -227,11 +255,51 @@ export function WeekView({
                     return blockContent;
                   };
 
-                  // Add drag capability if callbacks provided
-                  if ((onEventDragEnd || onEventDuplicate) && dayColumnWidth > 0) {
+                  // Helper to wrap content with context menu
+                  const wrapWithContextMenu = (
+                    content: React.ReactNode,
+                    key: string,
+                  ) => {
+                    if (
+                      !onEventCopy &&
+                      !onEventDelete &&
+                      !onEventStatusChange
+                    ) {
+                      return content;
+                    }
                     return (
+                      <BlockContextMenu
+                        key={key}
+                        event={event}
+                        onCopy={() => onEventCopy?.(event)}
+                        onDuplicate={() => {
+                          // Duplicate to same time slot on next day
+                          const nextDay = (event.dayIndex + 1) % 7;
+                          onEventDuplicate?.(
+                            event.id,
+                            nextDay,
+                            event.startMinutes,
+                          );
+                        }}
+                        onDelete={() => onEventDelete?.(event.id)}
+                        onToggleComplete={() => {
+                          const newStatus =
+                            event.status === "completed" ? "base" : "completed";
+                          onEventStatusChange?.(event.id, newStatus);
+                        }}
+                      >
+                        {content}
+                      </BlockContextMenu>
+                    );
+                  };
+
+                  // Add drag capability if callbacks provided
+                  if (
+                    (onEventDragEnd || onEventDuplicate) &&
+                    dayColumnWidth > 0
+                  ) {
+                    return wrapWithContextMenu(
                       <motion.div
-                        key={event.id}
                         className="absolute right-1 left-1"
                         style={{
                           top: `${topPercent}%`,
@@ -261,21 +329,24 @@ export function WeekView({
                           onDoubleClick={(e) => e.stopPropagation()}
                         >
                           {({ isDragging, previewPosition }) => {
-                            const previewStart = isDragging && previewPosition 
-                              ? previewPosition.startMinutes 
-                              : undefined;
-                            return wrapWithResize(createBlockContent(previewStart));
+                            const previewStart =
+                              isDragging && previewPosition
+                                ? previewPosition.startMinutes
+                                : undefined;
+                            return wrapWithResize(
+                              createBlockContent(previewStart),
+                            );
                           }}
                         </DraggableBlockWrapper>
-                      </motion.div>
+                      </motion.div>,
+                      event.id,
                     );
                   }
 
                   // Resize only (no drag)
                   if (onEventResize) {
-                    return (
+                    return wrapWithContextMenu(
                       <motion.div
-                        key={event.id}
                         className="absolute right-1 left-1 z-10"
                         style={{
                           top: `${topPercent}%`,
@@ -285,13 +356,13 @@ export function WeekView({
                         {...blockEnterAnimation}
                       >
                         {wrapWithResize(createBlockContent())}
-                      </motion.div>
+                      </motion.div>,
+                      event.id,
                     );
                   }
 
-                  return (
+                  return wrapWithContextMenu(
                     <motion.div
-                      key={event.id}
                       className="absolute right-1 left-1 z-10"
                       style={{
                         top: `${topPercent}%`,
@@ -301,7 +372,8 @@ export function WeekView({
                       {...blockEnterAnimation}
                     >
                       {createBlockContent()}
-                    </motion.div>
+                    </motion.div>,
+                    event.id,
                   );
                 })}
 

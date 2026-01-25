@@ -8,6 +8,14 @@ export { CalendarDayHeader } from "./calendar-day-header";
 export { CurrentTimeLine } from "./current-time-line";
 export { DayView } from "./day-view";
 export { WeekView } from "./week-view";
+export { BlockContextMenu, EmptySpaceContextMenu } from "./calendar-context-menu";
+
+// Hooks
+export { useCalendarClipboard } from "./use-calendar-clipboard";
+export type {
+  UseCalendarClipboardReturn,
+  CalendarClipboard,
+} from "./use-calendar-clipboard";
 
 // Types
 export type {

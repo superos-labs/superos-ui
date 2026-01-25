@@ -20,6 +20,11 @@ export function Calendar({
   onEventDuplicate,
   onGridDoubleClick,
   onGridDragCreate,
+  onEventCopy,
+  onEventDelete,
+  onEventStatusChange,
+  onEventPaste,
+  hasClipboardContent,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -40,6 +45,11 @@ export function Calendar({
         onEventDuplicate={onEventDuplicate}
         onGridDoubleClick={onGridDoubleClick}
         onGridDragCreate={onGridDragCreate}
+        onEventCopy={onEventCopy}
+        onEventDelete={onEventDelete}
+        onEventStatusChange={onEventStatusChange}
+        onEventPaste={onEventPaste}
+        hasClipboardContent={hasClipboardContent}
       />
     );
   }
@@ -57,6 +67,11 @@ export function Calendar({
       onEventDuplicate={onEventDuplicate}
       onGridDoubleClick={onGridDoubleClick}
       onGridDragCreate={onGridDragCreate}
+      onEventCopy={onEventCopy}
+      onEventDelete={onEventDelete}
+      onEventStatusChange={onEventStatusChange}
+      onEventPaste={onEventPaste}
+      hasClipboardContent={hasClipboardContent}
     />
   );
 }

@@ -64,6 +64,19 @@ export interface CalendarProps {
     startMinutes: number,
     durationMinutes: number,
   ) => void;
+  /** Called when an event is copied via context menu */
+  onEventCopy?: (event: CalendarEvent) => void;
+  /** Called when an event is deleted via context menu */
+  onEventDelete?: (eventId: string) => void;
+  /** Called when an event's status is changed (complete/incomplete) */
+  onEventStatusChange?: (
+    eventId: string,
+    status: "base" | "completed" | "outlined",
+  ) => void;
+  /** Called when user triggers paste via context menu */
+  onEventPaste?: (dayIndex: number, startMinutes: number) => void;
+  /** Whether the clipboard has content (enables/disables paste) */
+  hasClipboardContent?: boolean;
 }
 
 export interface CalendarDayHeaderProps {
@@ -103,6 +116,14 @@ export interface DayViewProps {
     startMinutes: number,
     durationMinutes: number,
   ) => void;
+  onEventCopy?: (event: CalendarEvent) => void;
+  onEventDelete?: (eventId: string) => void;
+  onEventStatusChange?: (
+    eventId: string,
+    status: "base" | "completed" | "outlined",
+  ) => void;
+  onEventPaste?: (dayIndex: number, startMinutes: number) => void;
+  hasClipboardContent?: boolean;
 }
 
 export interface WeekViewProps {
@@ -133,6 +154,14 @@ export interface WeekViewProps {
     startMinutes: number,
     durationMinutes: number,
   ) => void;
+  onEventCopy?: (event: CalendarEvent) => void;
+  onEventDelete?: (eventId: string) => void;
+  onEventStatusChange?: (
+    eventId: string,
+    status: "base" | "completed" | "outlined",
+  ) => void;
+  onEventPaste?: (dayIndex: number, startMinutes: number) => void;
+  hasClipboardContent?: boolean;
 }
 
 // Helper to convert BlockStyle to BlockStatus

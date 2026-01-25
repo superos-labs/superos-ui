@@ -25,6 +25,10 @@ import {
   isCurrentHour,
   snapToGrid,
 } from "./calendar-utils";
+import {
+  BlockContextMenu,
+  EmptySpaceContextMenu,
+} from "./calendar-context-menu";
 
 // Subtle scale-in animation for newly created blocks
 const blockEnterAnimation = {
@@ -46,6 +50,11 @@ export function DayView({
   onEventDuplicate,
   onGridDoubleClick,
   onGridDragCreate,
+  onEventCopy,
+  onEventDelete,
+  onEventStatusChange,
+  onEventPaste,
+  hasClipboardContent = false,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -144,30 +153,43 @@ export function DayView({
             onPointerUp={handleGridPointerUp}
             onPointerCancel={handleGridPointerUp}
           >
-            {HOURS.map((hour) => (
-              <div
-                key={hour}
-                className={cn(
-                  "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
-                  "hover:bg-muted/30",
-                )}
-                style={{
-                  top: `${(hour / 24) * 100}%`,
-                  height: `${100 / 24}%`,
-                }}
-                onPointerDown={(e) =>
-                  handleGridPointerDown(e, selectedDayIndex, hour * 60)
-                }
-                onDoubleClick={(e) => {
-                  if (isCreatingBlock || !onGridDoubleClick) return;
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const relativeY = e.clientY - rect.top;
-                  const minutesIntoHour = (relativeY / rect.height) * 60;
-                  const startMinutes = snapToGrid(hour * 60 + minutesIntoHour);
-                  onGridDoubleClick(selectedDayIndex, startMinutes);
-                }}
-              />
-            ))}
+            {HOURS.map((hour) => {
+              const hourStartMinutes = hour * 60;
+              return (
+                  <EmptySpaceContextMenu
+                  key={hour}
+                  canPaste={hasClipboardContent}
+                  onPaste={() => {
+                    onEventPaste?.(selectedDayIndex, hourStartMinutes);
+                  }}
+                  onCreate={() => {
+                    onGridDoubleClick?.(selectedDayIndex, hourStartMinutes);
+                  }}
+                >
+                  <div
+                    className={cn(
+                      "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
+                      "hover:bg-muted/30",
+                    )}
+                    style={{
+                      top: `${(hour / 24) * 100}%`,
+                      height: `${100 / 24}%`,
+                    }}
+                    onPointerDown={(e) =>
+                      handleGridPointerDown(e, selectedDayIndex, hour * 60)
+                    }
+                    onDoubleClick={(e) => {
+                      if (isCreatingBlock || !onGridDoubleClick) return;
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const relativeY = e.clientY - rect.top;
+                      const minutesIntoHour = (relativeY / rect.height) * 60;
+                      const startMinutes = snapToGrid(hour * 60 + minutesIntoHour);
+                      onGridDoubleClick(selectedDayIndex, startMinutes);
+                    }}
+                  />
+                </EmptySpaceContextMenu>
+              );
+            })}
 
             {/* Events */}
             {dayEvents.map((event) => {
@@ -188,7 +210,11 @@ export function DayView({
                     status={
                       setBlockStyle
                         ? blockStyleToStatus(setBlockStyle)
-                        : modeToStatus(mode, selectedDayIndex)
+                        : event.status === "completed"
+                          ? "completed"
+                          : event.status === "outlined"
+                            ? "blueprint"
+                            : modeToStatus(mode, selectedDayIndex)
                     }
                     duration={event.durationMinutes as 30 | 60 | 240}
                     taskCount={event.taskCount}
@@ -218,12 +244,41 @@ export function DayView({
                 return blockContent;
               };
 
+              // Helper to wrap content with context menu
+              const wrapWithContextMenu = (
+                content: React.ReactNode,
+                key: string,
+              ) => {
+                if (!onEventCopy && !onEventDelete && !onEventStatusChange) {
+                  return content;
+                }
+                return (
+                  <BlockContextMenu
+                    key={key}
+                    event={event}
+                    onCopy={() => onEventCopy?.(event)}
+                    onDuplicate={() => {
+                      // Duplicate to same time slot on next day
+                      const nextDay = (event.dayIndex + 1) % 7;
+                      onEventDuplicate?.(event.id, nextDay, event.startMinutes);
+                    }}
+                    onDelete={() => onEventDelete?.(event.id)}
+                    onToggleComplete={() => {
+                      const newStatus =
+                        event.status === "completed" ? "base" : "completed";
+                      onEventStatusChange?.(event.id, newStatus);
+                    }}
+                  >
+                    {content}
+                  </BlockContextMenu>
+                );
+              };
+
               // Add drag capability if callbacks provided
               // In day view, drag only changes time (vertical), not day
               if ((onEventDragEnd || onEventDuplicate) && dayColumnWidth > 0) {
-                return (
+                return wrapWithContextMenu(
                   <motion.div
-                    key={event.id}
                     className="absolute right-1 left-1"
                     style={{
                       top: `${topPercent}%`,
@@ -255,21 +310,22 @@ export function DayView({
                       onDoubleClick={(e) => e.stopPropagation()}
                     >
                       {({ isDragging, previewPosition }) => {
-                        const previewStart = isDragging && previewPosition 
-                          ? previewPosition.startMinutes 
-                          : undefined;
+                        const previewStart =
+                          isDragging && previewPosition
+                            ? previewPosition.startMinutes
+                            : undefined;
                         return wrapWithResize(createBlockContent(previewStart));
                       }}
                     </DraggableBlockWrapper>
-                  </motion.div>
+                  </motion.div>,
+                  event.id,
                 );
               }
 
               // Resize only (no drag)
               if (onEventResize) {
-                return (
+                return wrapWithContextMenu(
                   <motion.div
-                    key={event.id}
                     className="absolute right-1 left-1 z-10"
                     style={{
                       top: `${topPercent}%`,
@@ -279,13 +335,13 @@ export function DayView({
                     {...blockEnterAnimation}
                   >
                     {wrapWithResize(createBlockContent())}
-                  </motion.div>
+                  </motion.div>,
+                  event.id,
                 );
               }
 
-              return (
+              return wrapWithContextMenu(
                 <motion.div
-                  key={event.id}
                   className="absolute right-1 left-1 z-10"
                   style={{
                     top: `${topPercent}%`,
@@ -295,7 +351,8 @@ export function DayView({
                   {...blockEnterAnimation}
                 >
                   {createBlockContent()}
-                </motion.div>
+                </motion.div>,
+                event.id,
               );
             })}
 
