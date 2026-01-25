@@ -7,13 +7,16 @@ export type { BlockColor } from "./block-colors";
 
 export {
   BlockSidebar,
-  BlockSidebarTaskRow,
+  BlockGoalTaskRow,
+  BlockSubtaskRow,
   BlockSidebarSection,
 } from "./block-sidebar";
 export type {
   BlockSidebarProps,
   BlockSidebarData,
-  BlockSidebarTask,
+  BlockType,
+  BlockGoalTask,
+  BlockSubtask,
   BlockSidebarGoal,
 } from "./block-sidebar";
 

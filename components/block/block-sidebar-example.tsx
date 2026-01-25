@@ -5,16 +5,17 @@ import { useCallback, useState } from "react";
 import {
   BlockSidebar,
   type BlockSidebarData,
-  type BlockSidebarTask,
+  type BlockGoalTask,
+  type BlockSubtask,
   type BlockSidebarGoal,
+  type BlockType,
 } from "./block-sidebar";
 import {
   KnobsProvider,
+  KnobsToggle,
   KnobsPanel,
-  KnobBoolean,
   KnobSelect,
 } from "@/components/knobs";
-import type { BlockColor } from "./block-colors";
 import { RiRocketLine } from "@remixicon/react";
 
 const SAMPLE_GOAL: BlockSidebarGoal = {
@@ -24,105 +25,153 @@ const SAMPLE_GOAL: BlockSidebarGoal = {
   color: "text-indigo-500",
 };
 
-const SAMPLE_TASKS: BlockSidebarTask[] = [
+// Goal tasks that are assigned to this block
+const SAMPLE_GOAL_TASKS: BlockGoalTask[] = [
   { id: "task-1", label: "Review project requirements", completed: true },
   { id: "task-2", label: "Update design mockups", completed: true },
   { id: "task-3", label: "Write unit tests", completed: false },
   { id: "task-4", label: "Document API changes", completed: false },
 ];
 
+// Available tasks from the goal that haven't been assigned yet
+const AVAILABLE_GOAL_TASKS: BlockGoalTask[] = [
+  { id: "task-5", label: "Set up CI/CD pipeline", completed: false },
+  { id: "task-6", label: "Write integration tests", completed: false },
+];
+
+// Ephemeral subtasks for this block session
+const SAMPLE_SUBTASKS: BlockSubtask[] = [
+  { id: "sub-1", text: "Quick sync with design", done: false },
+  { id: "sub-2", text: "Review PR comments", done: true },
+];
+
 const SAMPLE_BLOCK: BlockSidebarData = {
   id: "block-1",
   title: "Deep Work: Product Development",
+  blockType: "goal",
   date: "2026-01-20",
   startTime: "09:00",
   endTime: "11:30",
   notes:
     "Focus on the core feature implementation. Review the latest feedback from the design team and incorporate changes. Prepare for the afternoon sync meeting.",
-  tasks: SAMPLE_TASKS,
+  subtasks: SAMPLE_SUBTASKS,
+  goalTasks: SAMPLE_GOAL_TASKS,
   color: "indigo",
   goal: SAMPLE_GOAL,
 };
 
-const COLOR_OPTIONS: { value: BlockColor; label: string }[] = [
-  { value: "violet", label: "Violet" },
-  { value: "indigo", label: "Indigo" },
-  { value: "blue", label: "Blue" },
-  { value: "sky", label: "Sky" },
-  { value: "cyan", label: "Cyan" },
-  { value: "teal", label: "Teal" },
-  { value: "emerald", label: "Emerald" },
-  { value: "green", label: "Green" },
-  { value: "lime", label: "Lime" },
-  { value: "yellow", label: "Yellow" },
-  { value: "amber", label: "Amber" },
-  { value: "orange", label: "Orange" },
-  { value: "red", label: "Red" },
-  { value: "rose", label: "Rose" },
-  { value: "pink", label: "Pink" },
-  { value: "fuchsia", label: "Fuchsia" },
-  { value: "slate", label: "Slate" },
+const BLOCK_TYPE_OPTIONS: { value: BlockType; label: string }[] = [
+  { value: "goal", label: "Goal Block" },
+  { value: "task", label: "Task Block" },
 ];
 
 export function BlockSidebarExample() {
-  const [showCloseButton, setShowCloseButton] = useState(true);
-  const [editable, setEditable] = useState(true);
-  const [color, setColor] = useState<BlockColor>("indigo");
-  const [tasks, setTasks] = useState(SAMPLE_TASKS);
+  const [blockType, setBlockType] = useState<BlockType>("goal");
+  const [goalTasks, setGoalTasks] = useState(SAMPLE_GOAL_TASKS);
+  const [availableTasks, setAvailableTasks] = useState(AVAILABLE_GOAL_TASKS);
+  const [subtasks, setSubtasks] = useState(SAMPLE_SUBTASKS);
   const [title, setTitle] = useState(SAMPLE_BLOCK.title);
   const [date, setDate] = useState(SAMPLE_BLOCK.date);
   const [startTime, setStartTime] = useState(SAMPLE_BLOCK.startTime);
   const [endTime, setEndTime] = useState(SAMPLE_BLOCK.endTime);
   const [notes, setNotes] = useState(SAMPLE_BLOCK.notes || "");
 
-  const handleToggleTask = useCallback((taskId: string) => {
-    setTasks((prev) =>
+  // Goal task handlers
+  const handleToggleGoalTask = useCallback((taskId: string) => {
+    setGoalTasks((prev) =>
       prev.map((task) =>
         task.id === taskId ? { ...task, completed: !task.completed } : task,
       ),
     );
   }, []);
 
+  const handleAssignTask = useCallback((taskId: string) => {
+    const taskToAssign = availableTasks.find((t) => t.id === taskId);
+    if (taskToAssign) {
+      setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId));
+      setGoalTasks((prev) => [...prev, taskToAssign]);
+    }
+  }, [availableTasks]);
+
+  const handleUnassignTask = useCallback((taskId: string) => {
+    const taskToUnassign = goalTasks.find((t) => t.id === taskId);
+    if (taskToUnassign) {
+      setGoalTasks((prev) => prev.filter((t) => t.id !== taskId));
+      setAvailableTasks((prev) => [...prev, taskToUnassign]);
+    }
+  }, [goalTasks]);
+
+  // Subtask handlers
+  const handleAddSubtask = useCallback(() => {
+    const newSubtask: BlockSubtask = {
+      id: `sub-${Date.now()}`,
+      text: "",
+      done: false,
+    };
+    setSubtasks((prev) => [...prev, newSubtask]);
+  }, []);
+
+  const handleToggleSubtask = useCallback((subtaskId: string) => {
+    setSubtasks((prev) =>
+      prev.map((s) => (s.id === subtaskId ? { ...s, done: !s.done } : s)),
+    );
+  }, []);
+
+  const handleUpdateSubtask = useCallback((subtaskId: string, text: string) => {
+    setSubtasks((prev) =>
+      prev.map((s) => (s.id === subtaskId ? { ...s, text } : s)),
+    );
+  }, []);
+
+  const handleDeleteSubtask = useCallback((subtaskId: string) => {
+    setSubtasks((prev) => prev.filter((s) => s.id !== subtaskId));
+  }, []);
+
   const handleClose = useCallback(() => {
-    // In a real app, this would close the sidebar
     console.log("Close sidebar");
   }, []);
 
   const block: BlockSidebarData = {
     ...SAMPLE_BLOCK,
     title,
+    blockType,
     date,
     startTime,
     endTime,
-    color,
-    tasks,
+    goalTasks,
+    subtasks,
     notes,
+    goal: blockType === "goal" ? SAMPLE_GOAL : undefined,
   };
 
   return (
     <KnobsProvider>
       <BlockSidebar
         block={block}
-        onToggleTask={handleToggleTask}
-        onClose={showCloseButton ? handleClose : undefined}
-        onTitleChange={editable ? setTitle : undefined}
-        onDateChange={editable ? setDate : undefined}
-        onStartTimeChange={editable ? setStartTime : undefined}
-        onEndTimeChange={editable ? setEndTime : undefined}
-        onNotesChange={editable ? setNotes : undefined}
+        onClose={handleClose}
+        onTitleChange={setTitle}
+        onDateChange={setDate}
+        onStartTimeChange={setStartTime}
+        onEndTimeChange={setEndTime}
+        onNotesChange={setNotes}
+        // Subtask handlers
+        onAddSubtask={handleAddSubtask}
+        onToggleSubtask={handleToggleSubtask}
+        onUpdateSubtask={handleUpdateSubtask}
+        onDeleteSubtask={handleDeleteSubtask}
+        // Goal task handlers
+        onToggleGoalTask={handleToggleGoalTask}
+        availableGoalTasks={availableTasks}
+        onAssignTask={handleAssignTask}
+        onUnassignTask={handleUnassignTask}
       />
+      <KnobsToggle />
       <KnobsPanel>
-        <KnobBoolean
-          label="Show Close Button"
-          value={showCloseButton}
-          onChange={setShowCloseButton}
-        />
-        <KnobBoolean label="Editable" value={editable} onChange={setEditable} />
         <KnobSelect
-          label="Color"
-          value={color}
-          options={COLOR_OPTIONS}
-          onChange={setColor}
+          label="Block Type"
+          value={blockType}
+          options={BLOCK_TYPE_OPTIONS}
+          onChange={setBlockType}
         />
       </KnobsPanel>
     </KnobsProvider>

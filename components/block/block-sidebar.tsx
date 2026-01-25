@@ -9,16 +9,28 @@ import {
   RiCheckLine,
   RiCloseLine,
   RiFlagLine,
+  RiAddLine,
 } from "@remixicon/react";
 import type { BlockColor } from "./block-colors";
 
 // Types
 type IconComponent = React.ComponentType<{ className?: string }>;
 
-interface BlockSidebarTask {
+/** Block type determines available sections and behavior */
+type BlockType = "goal" | "task";
+
+/** Goal task - synced from the goal's master task list */
+interface BlockGoalTask {
   id: string;
   label: string;
   completed?: boolean;
+}
+
+/** Ephemeral subtask - block-scoped, deleted with block */
+interface BlockSubtask {
+  id: string;
+  text: string;
+  done: boolean;
 }
 
 interface BlockSidebarGoal {
@@ -31,6 +43,8 @@ interface BlockSidebarGoal {
 interface BlockSidebarData {
   id: string;
   title: string;
+  /** Block type: 'goal' shows goal tasks section, 'task' does not */
+  blockType: BlockType;
   /** Date in ISO format (YYYY-MM-DD) */
   date: string;
   /** Start time in 24h format (HH:MM) */
@@ -39,11 +53,13 @@ interface BlockSidebarData {
   endTime: string;
   /** Optional notes for the block */
   notes?: string;
-  /** Tasks associated with this block */
-  tasks: BlockSidebarTask[];
+  /** Ephemeral subtasks, deleted with block */
+  subtasks: BlockSubtask[];
+  /** Assigned tasks from the goal (only when blockType === 'goal') */
+  goalTasks: BlockGoalTask[];
   /** Color theme for the block */
   color: BlockColor;
-  /** Associated goal */
+  /** Associated goal (only when blockType === 'goal') */
   goal?: BlockSidebarGoal;
 }
 
@@ -95,13 +111,13 @@ function AutoResizeTextarea({
   );
 }
 
-// Task row component
-interface BlockSidebarTaskRowProps {
-  task: BlockSidebarTask;
+// Goal task row component (prominent checkbox style)
+interface BlockGoalTaskRowProps {
+  task: BlockGoalTask;
   onToggle?: (id: string) => void;
 }
 
-function BlockSidebarTaskRow({ task, onToggle }: BlockSidebarTaskRowProps) {
+function BlockGoalTaskRow({ task, onToggle }: BlockGoalTaskRowProps) {
   return (
     <div
       className={cn(
@@ -130,6 +146,68 @@ function BlockSidebarTaskRow({ task, onToggle }: BlockSidebarTaskRowProps) {
       >
         {task.label}
       </span>
+    </div>
+  );
+}
+
+// Subtask row component (Notion-style subtle checkbox)
+interface BlockSubtaskRowProps {
+  subtask: BlockSubtask;
+  onToggle?: (id: string) => void;
+  onChange?: (id: string, text: string) => void;
+  onDelete?: (id: string) => void;
+}
+
+function BlockSubtaskRow({
+  subtask,
+  onToggle,
+  onChange,
+  onDelete,
+}: BlockSubtaskRowProps) {
+  return (
+    <div className="group flex items-center gap-2 py-0.5">
+      <button
+        onClick={() => onToggle?.(subtask.id)}
+        className={cn(
+          "flex size-4 shrink-0 items-center justify-center rounded border transition-colors",
+          subtask.done
+            ? "border-muted-foreground/30 bg-muted-foreground/20"
+            : "border-muted-foreground/40 hover:border-muted-foreground/60",
+        )}
+      >
+        {subtask.done && (
+          <RiCheckLine className="size-2.5 text-muted-foreground" />
+        )}
+      </button>
+      {onChange ? (
+        <input
+          type="text"
+          value={subtask.text}
+          onChange={(e) => onChange(subtask.id, e.target.value)}
+          className={cn(
+            "flex-1 bg-transparent text-sm outline-none",
+            subtask.done && "text-muted-foreground line-through",
+          )}
+          placeholder="Subtask..."
+        />
+      ) : (
+        <span
+          className={cn(
+            "flex-1 text-sm",
+            subtask.done && "text-muted-foreground line-through",
+          )}
+        >
+          {subtask.text}
+        </span>
+      )}
+      {onDelete && (
+        <button
+          onClick={() => onDelete(subtask.id)}
+          className="flex size-5 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-all hover:text-muted-foreground group-hover:opacity-100"
+        >
+          <RiCloseLine className="size-3.5" />
+        </button>
+      )}
     </div>
   );
 }
@@ -163,8 +241,6 @@ function BlockSidebarSection({
 interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Block data to display */
   block: BlockSidebarData;
-  /** Callback when a task is toggled */
-  onToggleTask?: (taskId: string) => void;
   /** Callback when close button is clicked */
   onClose?: () => void;
   /** Callback when title is updated */
@@ -177,20 +253,48 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onEndTimeChange?: (endTime: string) => void;
   /** Callback when notes are updated */
   onNotesChange?: (notes: string) => void;
+
+  // Subtask callbacks (ephemeral, block-scoped)
+  /** Callback to add a new subtask */
+  onAddSubtask?: () => void;
+  /** Callback when a subtask is toggled */
+  onToggleSubtask?: (subtaskId: string) => void;
+  /** Callback when subtask text is updated */
+  onUpdateSubtask?: (subtaskId: string, text: string) => void;
+  /** Callback to delete a subtask */
+  onDeleteSubtask?: (subtaskId: string) => void;
+
+  // Goal task callbacks (only for goal blocks)
+  /** Callback when a goal task is toggled */
+  onToggleGoalTask?: (taskId: string) => void;
+  /** Available tasks from the goal that can be assigned */
+  availableGoalTasks?: BlockGoalTask[];
+  /** Callback to assign a goal task to this block */
+  onAssignTask?: (taskId: string) => void;
+  /** Callback to unassign a goal task from this block */
+  onUnassignTask?: (taskId: string) => void;
 }
 
 function BlockSidebar({
   block,
-  onToggleTask,
   onClose,
   onTitleChange,
   onDateChange,
   onStartTimeChange,
   onEndTimeChange,
   onNotesChange,
+  onAddSubtask,
+  onToggleSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+  onToggleGoalTask,
+  availableGoalTasks,
+  onAssignTask,
+  onUnassignTask,
   className,
   ...props
 }: BlockSidebarProps) {
+  const isGoalBlock = block.blockType === "goal";
   return (
     <div
       className={cn(
@@ -305,44 +409,99 @@ function BlockSidebar({
           </div>
         </BlockSidebarSection>
 
+        {/* Goal Tasks (only for goal blocks) - shown before notes */}
+        {isGoalBlock && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <RiCheckLine className="size-3.5" />
+                <span>Tasks</span>
+              </div>
+              {onAssignTask && availableGoalTasks && availableGoalTasks.length > 0 && (
+                <button
+                  onClick={() => {
+                    // For now, assign the first available task
+                    // In a full implementation, this would open a picker
+                    const firstUnassigned = availableGoalTasks[0];
+                    if (firstUnassigned) {
+                      onAssignTask(firstUnassigned.id);
+                    }
+                  }}
+                  className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <RiAddLine className="size-3" />
+                  <span>Assign</span>
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col">
+              {block.goalTasks.length > 0 ? (
+                block.goalTasks.map((task) => (
+                  <BlockGoalTaskRow
+                    key={task.id}
+                    task={task}
+                    onToggle={onToggleGoalTask}
+                  />
+                ))
+              ) : (
+                <p className="pl-5 text-sm text-muted-foreground">
+                  No tasks assigned
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Notes */}
         <BlockSidebarSection
           icon={<RiFileTextLine className="size-3.5" />}
           label="Notes"
         >
-          {onNotesChange ? (
-            <AutoResizeTextarea
-              value={block.notes || ""}
-              onChange={(e) => onNotesChange(e.target.value)}
-              placeholder="Add notes..."
-              className={cn(
-                "w-full min-h-[24px] bg-transparent text-sm text-foreground leading-relaxed",
-                "outline-none placeholder:text-muted-foreground/60",
-              )}
-            />
-          ) : (
-            <p className="text-sm text-foreground leading-relaxed">
-              {block.notes || "No notes"}
-            </p>
-          )}
-        </BlockSidebarSection>
-
-        {/* Tasks */}
-        <BlockSidebarSection
-          icon={<RiCheckLine className="size-3.5" />}
-          label="Tasks"
-        >
-          <div className="flex flex-col">
-            {block.tasks.length > 0 ? (
-              block.tasks.map((task) => (
-                <BlockSidebarTaskRow
-                  key={task.id}
-                  task={task}
-                  onToggle={onToggleTask}
-                />
-              ))
+          <div className="flex flex-col gap-2">
+            {onNotesChange ? (
+              <AutoResizeTextarea
+                value={block.notes || ""}
+                onChange={(e) => onNotesChange(e.target.value)}
+                placeholder="Add notes..."
+                className={cn(
+                  "w-full min-h-[24px] bg-transparent text-sm text-foreground leading-relaxed",
+                  "outline-none placeholder:text-muted-foreground/60",
+                )}
+              />
             ) : (
-              <p className="pl-5 text-sm text-muted-foreground">No tasks</p>
+              <p className="text-sm text-foreground leading-relaxed">
+                {block.notes || "No notes"}
+              </p>
+            )}
+
+            {/* Subtasks (only for task blocks) */}
+            {!isGoalBlock && (
+              <>
+                {block.subtasks.length > 0 && (
+                  <div className="flex flex-col gap-0.5 pt-1">
+                    {block.subtasks.map((subtask) => (
+                      <BlockSubtaskRow
+                        key={subtask.id}
+                        subtask={subtask}
+                        onToggle={onToggleSubtask}
+                        onChange={onUpdateSubtask}
+                        onDelete={onDeleteSubtask}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Add subtask button */}
+                {onAddSubtask && (
+                  <button
+                    onClick={onAddSubtask}
+                    className="flex items-center gap-1.5 py-1 text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+                  >
+                    <RiAddLine className="size-3.5" />
+                    <span>Add subtask</span>
+                  </button>
+                )}
+              </>
             )}
           </div>
         </BlockSidebarSection>
@@ -351,10 +510,12 @@ function BlockSidebar({
   );
 }
 
-export { BlockSidebar, BlockSidebarTaskRow, BlockSidebarSection };
+export { BlockSidebar, BlockGoalTaskRow, BlockSubtaskRow, BlockSidebarSection };
 export type {
   BlockSidebarProps,
   BlockSidebarData,
-  BlockSidebarTask,
+  BlockType,
+  BlockGoalTask,
+  BlockSubtask,
   BlockSidebarGoal,
 };
