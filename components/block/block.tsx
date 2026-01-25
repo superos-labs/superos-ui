@@ -96,7 +96,7 @@ function Block({
           className={cn(
             "flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium shadow-sm",
             isCompact
-              ? "absolute bottom-1 left-1/2 -translate-x-1/2"
+              ? "absolute top-1/2 right-1.5 -translate-y-1/2"
               : "absolute bottom-1.5 right-1.5",
           )}
         >
