@@ -17,7 +17,18 @@ import {
 } from "@remixicon/react";
 import type { CalendarEvent } from "@/components/calendar";
 import type { ScheduleGoal, ScheduleCommitment } from "@/hooks/use-unified-schedule";
-import type { BacklogItem } from "@/components/backlog";
+
+// =============================================================================
+// Data Set Types
+// =============================================================================
+
+export type DataSetId = "sample" | "empty";
+
+export interface DataSet {
+  commitments: ScheduleCommitment[];
+  goals: ScheduleGoal[];
+  events: CalendarEvent[];
+}
 
 // =============================================================================
 // Commitments (recurring essentials)
@@ -145,3 +156,28 @@ export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = [
   { id: "shell-blueprint-1", title: "Deep focus time", dayIndex: 5, startMinutes: hoursToMinutes(14), durationMinutes: 180, color: "sky", status: "blueprint" },
   { id: "shell-blueprint-2", title: "Weekly review", dayIndex: 6, startMinutes: hoursToMinutes(15), durationMinutes: 60, color: "slate", status: "blueprint" },
 ];
+
+// =============================================================================
+// Empty Data Set (clean slate)
+// =============================================================================
+
+export const EMPTY_COMMITMENTS: ScheduleCommitment[] = [];
+export const EMPTY_GOALS: ScheduleGoal[] = [];
+export const EMPTY_CALENDAR_EVENTS: CalendarEvent[] = [];
+
+// =============================================================================
+// Data Set Configuration
+// =============================================================================
+
+export const DATA_SETS: Record<DataSetId, DataSet> = {
+  sample: {
+    commitments: SHELL_COMMITMENTS,
+    goals: SHELL_GOALS,
+    events: SHELL_CALENDAR_EVENTS,
+  },
+  empty: {
+    commitments: EMPTY_COMMITMENTS,
+    goals: EMPTY_GOALS,
+    events: EMPTY_CALENDAR_EVENTS,
+  },
+};

@@ -23,9 +23,8 @@ import type { IconComponent } from "@/lib/types"
 
 // Sample data from fixtures
 import {
-  SHELL_COMMITMENTS,
-  SHELL_GOALS,
-  SHELL_CALENDAR_EVENTS,
+  DATA_SETS,
+  type DataSetId,
 } from "@/lib/fixtures/shell-data"
 
 import {
@@ -33,6 +32,7 @@ import {
   KnobsToggle,
   KnobsPanel,
   KnobBoolean,
+  KnobSelect,
 } from "@/components/knobs"
 import {
   RiArrowLeftSLine,
@@ -70,13 +70,21 @@ function toAnalyticsItems(
 // Components
 // =============================================================================
 
-function ShellDemoContent() {
+interface ShellDemoContentProps {
+  dataSetId: DataSetId;
+  onDataSetChange: (id: DataSetId) => void;
+}
+
+function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps) {
   const [showPlanWeek, setShowPlanWeek] = React.useState(true)
   const [showCalendar, setShowCalendar] = React.useState(true)
   const [showSidebar, setShowSidebar] = React.useState(true)
   const [showRightSidebar, setShowRightSidebar] = React.useState(false)
   const [showTasks, setShowTasks] = React.useState(true)
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
+
+  // Get the data set based on the ID
+  const dataSet = DATA_SETS[dataSetId]
 
   // Clipboard for copy/paste
   const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard()
@@ -99,9 +107,9 @@ function ShellDemoContent() {
     hoverPosition,
     calendarHandlers,
   } = useUnifiedSchedule({
-    initialGoals: SHELL_GOALS,
-    initialCommitments: SHELL_COMMITMENTS,
-    initialEvents: SHELL_CALENDAR_EVENTS,
+    initialGoals: dataSet.goals,
+    initialCommitments: dataSet.commitments,
+    initialEvents: dataSet.events,
     onCopy: copy,
     onPaste: paste,
     hasClipboardContent,
@@ -327,6 +335,15 @@ function ShellDemoContent() {
       <DragGhost />
       <KnobsToggle />
       <KnobsPanel>
+        <KnobSelect
+          label="Data Set"
+          value={dataSetId}
+          onChange={onDataSetChange}
+          options={[
+            { label: "Sample Data", value: "sample" },
+            { label: "Empty", value: "empty" },
+          ]}
+        />
         <KnobBoolean
           label="Show Sidebar"
           value={showSidebar}
@@ -353,9 +370,16 @@ function ShellDemoContent() {
 }
 
 function ShellDemo() {
+  const [dataSetId, setDataSetId] = React.useState<DataSetId>("sample")
+
   return (
     <DragProvider>
-      <ShellDemoContent />
+      {/* Key forces remount when data set changes, resetting all state */}
+      <ShellDemoContent 
+        key={dataSetId}
+        dataSetId={dataSetId}
+        onDataSetChange={setDataSetId}
+      />
     </DragProvider>
   )
 }
