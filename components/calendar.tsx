@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Block,
@@ -10,6 +11,13 @@ import {
   type BlockColor,
   type BlockStatus,
 } from "@/components/block";
+
+// Subtle scale-in animation for newly created blocks
+const blockEnterAnimation = {
+  initial: { scale: 0.96, opacity: 0.8 },
+  animate: { scale: 1, opacity: 1 },
+  transition: { duration: 0.12, ease: "easeOut" as const },
+};
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -503,39 +511,44 @@ function DayView({
               // In day view, drag only changes time (vertical), not day
               if (onEventDragEnd && dayColumnWidth > 0) {
                 return (
-                  <DraggableBlockWrapper
+                  <motion.div
                     key={event.id}
                     className="absolute right-1 left-1"
                     style={{
                       top: `${topPercent}%`,
                       height: `${heightPercent}%`,
                     }}
-                    startMinutes={event.startMinutes}
-                    dayIndex={selectedDayIndex}
-                    durationMinutes={event.durationMinutes}
-                    pixelsPerMinute={PIXELS_PER_MINUTE}
-                    dayColumnWidth={dayColumnWidth}
-                    minDayIndex={selectedDayIndex}
-                    maxDayIndex={selectedDayIndex}
-                    onDragEnd={(newDay, newStart) =>
-                      onEventDragEnd(event.id, newDay, newStart)
-                    }
-                    onDoubleClick={(e) => e.stopPropagation()}
+                    {...blockEnterAnimation}
                   >
-                    {({ isDragging, previewPosition }) => {
-                      const previewStart = isDragging && previewPosition 
-                        ? previewPosition.startMinutes 
-                        : undefined;
-                      return wrapWithResize(createBlockContent(previewStart));
-                    }}
-                  </DraggableBlockWrapper>
+                    <DraggableBlockWrapper
+                      className="h-full"
+                      startMinutes={event.startMinutes}
+                      dayIndex={selectedDayIndex}
+                      durationMinutes={event.durationMinutes}
+                      pixelsPerMinute={PIXELS_PER_MINUTE}
+                      dayColumnWidth={dayColumnWidth}
+                      minDayIndex={selectedDayIndex}
+                      maxDayIndex={selectedDayIndex}
+                      onDragEnd={(newDay, newStart) =>
+                        onEventDragEnd(event.id, newDay, newStart)
+                      }
+                      onDoubleClick={(e) => e.stopPropagation()}
+                    >
+                      {({ isDragging, previewPosition }) => {
+                        const previewStart = isDragging && previewPosition 
+                          ? previewPosition.startMinutes 
+                          : undefined;
+                        return wrapWithResize(createBlockContent(previewStart));
+                      }}
+                    </DraggableBlockWrapper>
+                  </motion.div>
                 );
               }
 
               // Resize only (no drag)
               if (onEventResize) {
                 return (
-                  <div
+                  <motion.div
                     key={event.id}
                     className="absolute right-1 left-1 z-10"
                     style={{
@@ -543,14 +556,15 @@ function DayView({
                       height: `${heightPercent}%`,
                     }}
                     onDoubleClick={(e) => e.stopPropagation()}
+                    {...blockEnterAnimation}
                   >
                     {wrapWithResize(createBlockContent())}
-                  </div>
+                  </motion.div>
                 );
               }
 
               return (
-                <div
+                <motion.div
                   key={event.id}
                   className="absolute right-1 left-1 z-10"
                   style={{
@@ -558,9 +572,10 @@ function DayView({
                     height: `${heightPercent}%`,
                   }}
                   onDoubleClick={(e) => e.stopPropagation()}
+                  {...blockEnterAnimation}
                 >
                   {createBlockContent()}
-                </div>
+                </motion.div>
               );
             })}
 
@@ -818,37 +833,42 @@ function WeekView({
                   // Add drag capability if callbacks provided
                   if (onEventDragEnd && dayColumnWidth > 0) {
                     return (
-                      <DraggableBlockWrapper
+                      <motion.div
                         key={event.id}
                         className="absolute right-1 left-1"
                         style={{
                           top: `${topPercent}%`,
                           height: `${heightPercent}%`,
                         }}
-                        startMinutes={event.startMinutes}
-                        dayIndex={dayIndex}
-                        durationMinutes={event.durationMinutes}
-                        pixelsPerMinute={PIXELS_PER_MINUTE}
-                        dayColumnWidth={dayColumnWidth}
-                        onDragEnd={(newDay, newStart) =>
-                          onEventDragEnd(event.id, newDay, newStart)
-                        }
-                        onDoubleClick={(e) => e.stopPropagation()}
+                        {...blockEnterAnimation}
                       >
-                        {({ isDragging, previewPosition }) => {
-                          const previewStart = isDragging && previewPosition 
-                            ? previewPosition.startMinutes 
-                            : undefined;
-                          return wrapWithResize(createBlockContent(previewStart));
-                        }}
-                      </DraggableBlockWrapper>
+                        <DraggableBlockWrapper
+                          className="h-full"
+                          startMinutes={event.startMinutes}
+                          dayIndex={dayIndex}
+                          durationMinutes={event.durationMinutes}
+                          pixelsPerMinute={PIXELS_PER_MINUTE}
+                          dayColumnWidth={dayColumnWidth}
+                          onDragEnd={(newDay, newStart) =>
+                            onEventDragEnd(event.id, newDay, newStart)
+                          }
+                          onDoubleClick={(e) => e.stopPropagation()}
+                        >
+                          {({ isDragging, previewPosition }) => {
+                            const previewStart = isDragging && previewPosition 
+                              ? previewPosition.startMinutes 
+                              : undefined;
+                            return wrapWithResize(createBlockContent(previewStart));
+                          }}
+                        </DraggableBlockWrapper>
+                      </motion.div>
                     );
                   }
 
                   // Resize only (no drag)
                   if (onEventResize) {
                     return (
-                      <div
+                      <motion.div
                         key={event.id}
                         className="absolute right-1 left-1 z-10"
                         style={{
@@ -856,14 +876,15 @@ function WeekView({
                           height: `${heightPercent}%`,
                         }}
                         onDoubleClick={(e) => e.stopPropagation()}
+                        {...blockEnterAnimation}
                       >
                         {wrapWithResize(createBlockContent())}
-                      </div>
+                      </motion.div>
                     );
                   }
 
                   return (
-                    <div
+                    <motion.div
                       key={event.id}
                       className="absolute right-1 left-1 z-10"
                       style={{
@@ -871,9 +892,10 @@ function WeekView({
                         height: `${heightPercent}%`,
                       }}
                       onDoubleClick={(e) => e.stopPropagation()}
+                      {...blockEnterAnimation}
                     >
                       {createBlockContent()}
-                    </div>
+                    </motion.div>
                   );
                 })}
 
