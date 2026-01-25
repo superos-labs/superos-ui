@@ -8,6 +8,7 @@ export { CalendarDayHeader } from "./calendar-day-header";
 export { CurrentTimeLine } from "./current-time-line";
 export { DayView } from "./day-view";
 export { WeekView } from "./week-view";
+export { TimeColumn } from "./time-column";
 export { BlockContextMenu, EmptySpaceContextMenu } from "./calendar-context-menu";
 
 // Hooks
@@ -34,10 +35,12 @@ export type {
   CalendarMode,
   CalendarEvent,
   CalendarDayHeaderProps,
+  CalendarDensity,
   BlockStyle,
   BlockStatus,
   DayViewProps,
   WeekViewProps,
+  TimeColumnProps,
 } from "./calendar-types";
 
 // Constants (for advanced use cases)
@@ -47,7 +50,13 @@ export {
   GRID_HEIGHT_PX,
   PIXELS_PER_MINUTE,
   SNAP_MINUTES,
+  COMPACT_LAYOUT_THRESHOLD_PX,
+  DENSITY_HEIGHTS,
+  DEFAULT_DENSITY,
 } from "./calendar-types";
+
+// Density helpers
+export { getGridHeight, getPixelsPerMinute } from "./calendar-types";
 
 // Status helpers (for advanced use cases)
 export {
@@ -79,4 +88,5 @@ export {
   isToday,
   isCurrentHour,
   snapToGrid,
+  blockAnimations,
 } from "./calendar-utils";

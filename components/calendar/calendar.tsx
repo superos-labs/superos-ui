@@ -13,6 +13,7 @@ export function Calendar({
   showHourLabels = true,
   headerIsVisible = true,
   events = [],
+  density,
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
@@ -40,6 +41,7 @@ export function Calendar({
         headerIsVisible={headerIsVisible}
         events={events}
         mode={mode}
+        density={density}
         setBlockStyle={setBlockStyle}
         onEventResize={onEventResize}
         onEventResizeEnd={onEventResizeEnd}
@@ -64,6 +66,7 @@ export function Calendar({
       showHourLabels={showHourLabels}
       events={events}
       mode={mode}
+      density={density}
       setBlockStyle={setBlockStyle}
       onEventResize={onEventResize}
       onEventResizeEnd={onEventResizeEnd}

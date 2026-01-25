@@ -12,6 +12,7 @@ import {
   statusOnPaste,
   type CalendarView,
   type CalendarMode,
+  type CalendarDensity,
   type CalendarEvent,
   type BlockStyle,
   type BlockStatus,
@@ -202,6 +203,7 @@ const INITIAL_EVENTS: CalendarEvent[] = [
 export function CalendarExample() {
   const [view, setView] = React.useState<CalendarView>("week");
   const [mode, setMode] = React.useState<CalendarMode>("schedule");
+  const [density, setDensity] = React.useState<CalendarDensity>("default");
   const [showHourLabels, setShowHourLabels] = React.useState(true);
   const [headerIsVisible, setHeaderIsVisible] = React.useState(true);
   const [showEvents, setShowEvents] = React.useState(false);
@@ -383,6 +385,7 @@ export function CalendarExample() {
         <Calendar
           view={view}
           mode={mode}
+          density={density}
           showHourLabels={showHourLabels}
           headerIsVisible={headerIsVisible}
           events={showEvents ? events : []}
@@ -423,6 +426,16 @@ export function CalendarExample() {
           options={[
             { label: "Schedule", value: "schedule" },
             { label: "Blueprint", value: "blueprint" },
+          ]}
+        />
+        <KnobSelect
+          label="Density"
+          value={density}
+          onChange={setDensity}
+          options={[
+            { label: "Compact", value: "compact" },
+            { label: "Default", value: "default" },
+            { label: "Comfortable", value: "comfortable" },
           ]}
         />
         <KnobBoolean

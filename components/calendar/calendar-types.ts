@@ -7,12 +7,54 @@ export type { BlockStatus };
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 export const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-// Fixed grid height in pixels (min-h-[1536px] = 1536px for 24 hours)
-export const GRID_HEIGHT_PX = 1536;
-export const PIXELS_PER_MINUTE = GRID_HEIGHT_PX / (24 * 60);
-
 // Snap to 15-minute intervals for precise click positioning
 export const SNAP_MINUTES = 15;
+
+// Minimum height in pixels for a block to display full content (title + time subline)
+// Below this threshold, blocks use compact layout (centered title only)
+// Set to 44px so that 30-min blocks only use full layout at "comfortable" density (48px)
+export const COMPACT_LAYOUT_THRESHOLD_PX = 44;
+
+// ============================================================================
+// Density configuration
+// ============================================================================
+
+/**
+ * Calendar density presets that control vertical spacing.
+ * - compact: Denser layout, more content visible (56px/hour)
+ * - default: Balanced readability (80px/hour) - recommended
+ * - comfortable: Spacious layout, best for small blocks (120px/hour)
+ */
+export type CalendarDensity = "compact" | "default" | "comfortable";
+
+/** Grid height in pixels for each density preset (for 24 hours) */
+export const DENSITY_HEIGHTS: Record<CalendarDensity, number> = {
+  compact: 1344,     // 56px/hour, 14px per 15-min
+  default: 1920,     // 80px/hour, 20px per 15-min
+  comfortable: 2880, // 120px/hour, 30px per 15-min
+};
+
+/** Default density for the calendar */
+export const DEFAULT_DENSITY: CalendarDensity = "default";
+
+/**
+ * Get the grid height in pixels for a given density.
+ */
+export function getGridHeight(density: CalendarDensity = DEFAULT_DENSITY): number {
+  return DENSITY_HEIGHTS[density];
+}
+
+/**
+ * Get pixels per minute for a given density.
+ * Used for positioning events and drag/resize calculations.
+ */
+export function getPixelsPerMinute(density: CalendarDensity = DEFAULT_DENSITY): number {
+  return DENSITY_HEIGHTS[density] / (24 * 60);
+}
+
+// Legacy constants for backward compatibility (use getGridHeight/getPixelsPerMinute instead)
+export const GRID_HEIGHT_PX = DENSITY_HEIGHTS[DEFAULT_DENSITY];
+export const PIXELS_PER_MINUTE = getPixelsPerMinute(DEFAULT_DENSITY);
 
 // Types
 export type CalendarView = "week" | "day";
@@ -38,6 +80,8 @@ export interface CalendarProps {
   headerIsVisible?: boolean;
   /** Events to display on the calendar */
   events?: CalendarEvent[];
+  /** Density preset controlling vertical spacing (default: "default") */
+  density?: CalendarDensity;
   setBlockStyle?: BlockStyle;
   /** Called when an event is being resized */
   onEventResize?: (
@@ -100,6 +144,8 @@ export interface DayViewProps {
   events?: CalendarEvent[];
   mode?: CalendarMode;
   setBlockStyle?: BlockStyle;
+  /** Density preset controlling vertical spacing (default: "default") */
+  density?: CalendarDensity;
   onEventResize?: (
     eventId: string,
     newStartMinutes: number,
@@ -139,6 +185,8 @@ export interface WeekViewProps {
   events?: CalendarEvent[];
   mode?: CalendarMode;
   setBlockStyle?: BlockStyle;
+  /** Density preset controlling vertical spacing (default: "default") */
+  density?: CalendarDensity;
   onEventResize?: (
     eventId: string,
     newStartMinutes: number,
@@ -166,6 +214,68 @@ export interface WeekViewProps {
   onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
   onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   hasClipboardContent?: boolean;
+  onEventHover?: (event: CalendarEvent | null) => void;
+  onGridPositionHover?: (
+    position: { dayIndex: number; startMinutes: number } | null,
+  ) => void;
+}
+
+/**
+ * Props for the TimeColumn component - a shared component for rendering
+ * a single day column with events, used by both DayView and WeekView.
+ */
+export interface TimeColumnProps {
+  /** The day index for this column (0 = Monday, 6 = Sunday) */
+  dayIndex: number;
+  /** Whether this day is today (for highlighting) */
+  isToday?: boolean;
+  /** Event segments to render in this column */
+  segments: EventDaySegment[];
+  /** Width of the day column in pixels (for drag calculations) */
+  dayColumnWidth: number;
+  /** Pixels per minute for positioning calculations (derived from density) */
+  pixelsPerMinute: number;
+  /** Calendar mode for styling */
+  mode?: CalendarMode;
+  /** Override style for all blocks */
+  setBlockStyle?: BlockStyle;
+  /** Whether a drag-to-create is in progress */
+  isCreatingBlock?: boolean;
+  /** Preview for drag-to-create */
+  createPreview?: {
+    dayIndex: number;
+    startMinutes: number;
+    durationMinutes: number;
+  } | null;
+  /** Minimum day index for drag constraints (DayView uses this) */
+  minDayIndex?: number;
+  /** Maximum day index for drag constraints (DayView uses this) */
+  maxDayIndex?: number;
+  /** Whether the clipboard has content (enables paste) */
+  hasClipboardContent?: boolean;
+  // Callbacks
+  onPointerDown?: (e: React.PointerEvent, dayIndex: number, minutes: number) => void;
+  onEventResize?: (
+    eventId: string,
+    newStartMinutes: number,
+    newDurationMinutes: number,
+  ) => void;
+  onEventResizeEnd?: (eventId: string) => void;
+  onEventDragEnd?: (
+    eventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
+  onEventDuplicate?: (
+    sourceEventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
+  onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
+  onEventCopy?: (event: CalendarEvent) => void;
+  onEventDelete?: (eventId: string) => void;
+  onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
+  onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   onEventHover?: (event: CalendarEvent | null) => void;
   onGridPositionHover?: (
     position: { dayIndex: number; startMinutes: number } | null,

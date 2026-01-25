@@ -32,6 +32,12 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   fillContainer?: boolean;
   /** Position within an overnight block for corner styling */
   segmentPosition?: SegmentPosition;
+  /** 
+   * Override compact layout detection. When provided, this takes precedence 
+   * over the duration-based calculation. Use when the actual rendered height 
+   * is known (e.g., in calendar context with variable density).
+   */
+  compactLayout?: boolean;
 }
 
 function Block({
@@ -45,6 +51,7 @@ function Block({
   showOutlinedActions = true,
   fillContainer = false,
   segmentPosition = "only",
+  compactLayout,
   className,
   style,
   ...props
@@ -60,7 +67,8 @@ function Block({
     ? undefined
     : (duration / 30) * HEIGHT_PER_30_MIN;
 
-  const isCompact = duration <= 30;
+  // Use explicit compactLayout if provided, otherwise fall back to duration-based detection
+  const isCompact = compactLayout ?? duration <= 30;
 
   // Corner styling based on segment position for overnight blocks
   const cornerStyles = {

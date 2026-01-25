@@ -1,4 +1,16 @@
+import type { Transition } from "framer-motion";
 import { DAYS, SNAP_MINUTES } from "./calendar-types";
+
+/**
+ * Subtle scale animation for block enter/exit transitions.
+ * Used by both DayView and WeekView for consistent animation behavior.
+ */
+export const blockAnimations = {
+  initial: { scale: 0.96, opacity: 0.8 },
+  animate: { scale: 1, opacity: 1 },
+  exit: { scale: 0.96, opacity: 0 },
+  transition: { duration: 0.12, ease: "easeOut" } satisfies Transition,
+};
 
 /**
  * Get an array of Date objects for each day of the week containing the reference date.
