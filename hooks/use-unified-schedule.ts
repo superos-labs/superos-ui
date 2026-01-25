@@ -70,9 +70,19 @@ export interface DeadlineTask {
 // Hook Options & Return Types
 // ============================================================================
 
+/** Commitment in the backlog (simpler than goals, no tasks) */
+export interface ScheduleCommitment {
+  id: string;
+  label: string;
+  icon: IconComponent;
+  color: GoalColor;
+}
+
 export interface UseUnifiedScheduleOptions {
   /** Initial goals for the backlog */
   initialGoals: ScheduleGoal[];
+  /** Initial commitments for the backlog */
+  initialCommitments: ScheduleCommitment[];
   /** Initial calendar events */
   initialEvents: CalendarEvent[];
   /** Clipboard copy function (from useCalendarClipboard) */
@@ -86,10 +96,12 @@ export interface UseUnifiedScheduleOptions {
 export interface UseUnifiedScheduleReturn {
   // Data
   goals: ScheduleGoal[];
+  commitments: ScheduleCommitment[];
   events: CalendarEvent[];
 
   // Computed data accessors
   getGoalStats: (goalId: string) => GoalStats;
+  getCommitmentStats: (commitmentId: string) => GoalStats;
   getTaskSchedule: (taskId: string) => TaskScheduleInfo | null;
   getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
@@ -102,6 +114,11 @@ export interface UseUnifiedScheduleReturn {
   scheduleTask: (
     goalId: string,
     taskId: string,
+    dayIndex: number,
+    startMinutes: number
+  ) => void;
+  scheduleCommitment: (
+    commitmentId: string,
     dayIndex: number,
     startMinutes: number
   ) => void;
@@ -164,12 +181,14 @@ export interface UseUnifiedScheduleReturn {
 
 export function useUnifiedSchedule({
   initialGoals,
+  initialCommitments,
   initialEvents,
   onCopy,
   onPaste,
   hasClipboardContent = false,
 }: UseUnifiedScheduleOptions): UseUnifiedScheduleReturn {
   const [goals, setGoals] = React.useState<ScheduleGoal[]>(initialGoals);
+  const [commitments, setCommitments] = React.useState<ScheduleCommitment[]>(initialCommitments);
   const [events, setEvents] = React.useState<CalendarEvent[]>(initialEvents);
 
   // Hover state for keyboard shortcuts
@@ -196,6 +215,25 @@ export function useUnifiedSchedule({
         0
       );
       const completedMinutes = goalEvents
+        .filter((e) => e.status === "completed")
+        .reduce((sum, e) => sum + e.durationMinutes, 0);
+
+      return {
+        plannedHours: Math.round((plannedMinutes / 60) * 10) / 10,
+        completedHours: Math.round((completedMinutes / 60) * 10) / 10,
+      };
+    },
+    [events]
+  );
+
+  const getCommitmentStats = React.useCallback(
+    (commitmentId: string): GoalStats => {
+      const commitmentEvents = events.filter((e) => e.sourceCommitmentId === commitmentId);
+      const plannedMinutes = commitmentEvents.reduce(
+        (sum, e) => sum + e.durationMinutes,
+        0
+      );
+      const completedMinutes = commitmentEvents
         .filter((e) => e.status === "completed")
         .reduce((sum, e) => sum + e.durationMinutes, 0);
 
@@ -350,6 +388,27 @@ export function useUnifiedSchedule({
     [goals, events]
   );
 
+  const scheduleCommitment = React.useCallback(
+    (commitmentId: string, dayIndex: number, startMinutes: number) => {
+      const commitment = commitments.find((c) => c.id === commitmentId);
+      if (!commitment) return;
+
+      const newEvent: CalendarEvent = {
+        id: crypto.randomUUID(),
+        title: commitment.label,
+        dayIndex,
+        startMinutes,
+        durationMinutes: 60, // 1 hour for commitments
+        color: commitment.color,
+        blockType: "commitment",
+        sourceCommitmentId: commitmentId,
+        status: "planned",
+      };
+      setEvents((prev) => [...prev, newEvent]);
+    },
+    [commitments]
+  );
+
   // -------------------------------------------------------------------------
   // Deadline Actions
   // -------------------------------------------------------------------------
@@ -410,22 +469,24 @@ export function useUnifiedSchedule({
     (item: DragItem, position: DropPosition, weekDates: Date[]) => {
       if (position.dropTarget === "day-header") {
         // Deadline drop - only for tasks
-        if (item.taskId) {
+        if (item.type === "task" && item.taskId && item.goalId) {
           const isoDate = weekDates[position.dayIndex].toISOString().split("T")[0];
           setTaskDeadline(item.goalId, item.taskId, isoDate);
         }
-        // Goals dropped on header are ignored (only tasks can have deadlines)
+        // Goals and commitments dropped on header are ignored (only tasks can have deadlines)
       } else {
         // Time grid drop
         const startMinutes = position.startMinutes ?? 0;
-        if (item.type === "goal") {
+        if (item.type === "goal" && item.goalId) {
           scheduleGoal(item.goalId, position.dayIndex, startMinutes);
-        } else if (item.taskId) {
+        } else if (item.type === "task" && item.taskId && item.goalId) {
           scheduleTask(item.goalId, item.taskId, position.dayIndex, startMinutes);
+        } else if (item.type === "commitment" && item.commitmentId) {
+          scheduleCommitment(item.commitmentId, position.dayIndex, startMinutes);
         }
       }
     },
-    [scheduleGoal, scheduleTask, setTaskDeadline]
+    [scheduleGoal, scheduleTask, scheduleCommitment, setTaskDeadline]
   );
 
   // -------------------------------------------------------------------------
@@ -706,14 +767,17 @@ export function useUnifiedSchedule({
 
   return {
     goals,
+    commitments,
     events,
     getGoalStats,
+    getCommitmentStats,
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
     toggleTaskComplete,
     scheduleGoal,
     scheduleTask,
+    scheduleCommitment,
     setTaskDeadline,
     clearTaskDeadline,
     handleDrop,

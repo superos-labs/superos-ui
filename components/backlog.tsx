@@ -227,6 +227,8 @@ interface BacklogItemRowProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled (requires DragProvider) */
   draggable?: boolean;
+  /** Type of drag item to create ("goal" for goals, "commitment" for commitments) */
+  dragType?: "goal" | "commitment";
   className?: string;
 }
 
@@ -240,6 +242,7 @@ function BacklogItemRow({
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
+  dragType = "goal",
   className,
 }: BacklogItemRowProps) {
   const IconComponent = item.icon;
@@ -253,12 +256,20 @@ function BacklogItemRow({
   const dragContext = useDragContextOptional();
   const canDrag = draggable && dragContext;
   
-  const dragItem: DragItem = {
-    type: "goal",
-    goalId: item.id,
-    goalLabel: item.label,
-    goalColor: item.color,
-  };
+  // Create the appropriate drag item based on dragType
+  const dragItem: DragItem = dragType === "commitment"
+    ? {
+        type: "commitment",
+        commitmentId: item.id,
+        commitmentLabel: item.label,
+        commitmentColor: item.color,
+      }
+    : {
+        type: "goal",
+        goalId: item.id,
+        goalLabel: item.label,
+        goalColor: item.color,
+      };
   
   const { draggableProps, isDragging } = useDraggable({
     item: dragItem,
@@ -349,14 +360,16 @@ interface BacklogSectionProps {
   goalDisplayMode?: GoalDisplayMode;
   onAddItem?: () => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
-  /** Function to get computed stats for a goal */
-  getGoalStats?: (goalId: string) => GoalStats;
+  /** Function to get computed stats for a goal/commitment */
+  getItemStats?: (itemId: string) => GoalStats;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled */
   draggable?: boolean;
+  /** Type of drag item to create ("goal" for goals, "commitment" for commitments) */
+  dragType?: "goal" | "commitment";
   className?: string;
 }
 
@@ -369,18 +382,19 @@ function BacklogSection({
   goalDisplayMode = "goal",
   onAddItem,
   onToggleTask,
-  getGoalStats,
+  getItemStats,
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
+  dragType = "goal",
   className,
 }: BacklogSectionProps) {
   // Calculate totals from stats if available, otherwise use legacy props
   const totals = React.useMemo(() => {
-    if (getGoalStats) {
+    if (getItemStats) {
       return items.reduce(
         (acc, item) => {
-          const stats = getGoalStats(item.id);
+          const stats = getItemStats(item.id);
           return {
             planned: acc.planned + stats.plannedHours,
             completed: acc.completed + stats.completedHours,
@@ -393,7 +407,7 @@ function BacklogSection({
       planned: items.reduce((sum, item) => sum + (item.plannedHours || 0), 0),
       completed: items.reduce((sum, item) => sum + (item.completedHours || 0), 0),
     };
-  }, [items, getGoalStats]);
+  }, [items, getItemStats]);
 
   return (
     <div className={cn("flex flex-col px-3", className)}>
@@ -422,7 +436,7 @@ function BacklogSection({
           <BacklogItemRow
             key={item.id}
             item={item}
-            stats={getGoalStats?.(item.id)}
+            stats={getItemStats?.(item.id)}
             showHours={showHours}
             showTasks={showTasks}
             goalDisplayMode={goalDisplayMode}
@@ -430,6 +444,7 @@ function BacklogSection({
             getTaskSchedule={getTaskSchedule}
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
+            dragType={dragType}
           />
         ))}
       </div>
@@ -464,6 +479,8 @@ interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onToggleGoalTask?: (goalId: string, taskId: string) => void;
   /** Function to get computed stats for a goal (enables computed hours display) */
   getGoalStats?: (goalId: string) => GoalStats;
+  /** Function to get computed stats for a commitment (enables computed hours display) */
+  getCommitmentStats?: (commitmentId: string) => GoalStats;
   /** Function to get schedule info for a task (enables time pill display) */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task (enables deadline pill display) */
@@ -483,6 +500,7 @@ function Backlog({
   onAddGoal,
   onToggleGoalTask,
   getGoalStats,
+  getCommitmentStats,
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
@@ -506,10 +524,11 @@ function Backlog({
             items={commitments}
             showHours={showHours}
             onAddItem={onAddCommitment}
-            getGoalStats={getGoalStats}
+            getItemStats={getCommitmentStats}
             getTaskSchedule={getTaskSchedule}
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
+            dragType="commitment"
             className="py-2"
           />
         )}
@@ -523,10 +542,11 @@ function Backlog({
           goalDisplayMode={goalDisplayMode}
           onAddItem={onAddGoal}
           onToggleTask={onToggleGoalTask}
-          getGoalStats={getGoalStats}
+          getItemStats={getGoalStats}
           getTaskSchedule={getTaskSchedule}
           getTaskDeadline={getTaskDeadline}
           draggable={draggable}
+          dragType="goal"
           className="py-2"
         />
       </div>

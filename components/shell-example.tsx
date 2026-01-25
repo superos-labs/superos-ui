@@ -16,7 +16,7 @@ import { Backlog, type BacklogItem } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
 import { useUnifiedSchedule } from "@/hooks/use-unified-schedule"
-import { getDefaultDuration, getDragItemTitle } from "@/lib/drag-types"
+import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types"
 import type { GoalColor } from "@/lib/colors"
 import { getIconColorClass } from "@/lib/colors"
 import type { IconComponent } from "@/lib/types"
@@ -77,17 +77,18 @@ function ShellDemoContent() {
   const [showRightSidebar, setShowRightSidebar] = React.useState(false)
   const [showTasks, setShowTasks] = React.useState(true)
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
-  const [commitments] = React.useState<BacklogItem[]>(SHELL_COMMITMENTS)
 
   // Clipboard for copy/paste
   const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard()
 
-  // Unified schedule hook manages both goals and events with bidirectional sync
+  // Unified schedule hook manages goals, commitments, and events with bidirectional sync
   // Also provides hover state for keyboard shortcuts
   const {
     goals,
+    commitments,
     events: calendarEvents,
     getGoalStats,
+    getCommitmentStats,
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
@@ -99,6 +100,7 @@ function ShellDemoContent() {
     calendarHandlers,
   } = useUnifiedSchedule({
     initialGoals: SHELL_GOALS,
+    initialCommitments: SHELL_COMMITMENTS,
     initialEvents: SHELL_CALENDAR_EVENTS,
     onCopy: copy,
     onPaste: paste,
@@ -129,11 +131,14 @@ function ShellDemoContent() {
     }
     const item = dragContext.state.item
     const pos = dragContext.state.previewPosition
+    const color = getDragItemColor(item)
+    // Bail if we can't determine the color
+    if (!color) return null
     return {
       dayIndex: pos.dayIndex,
       startMinutes: pos.startMinutes ?? 0,
       durationMinutes: getDefaultDuration(item.type),
-      color: item.goalColor,
+      color,
       title: getDragItemTitle(item),
     }
   }, [dragContext?.state])
@@ -191,8 +196,8 @@ function ShellDemoContent() {
 
   // Derive analytics data
   const analyticsCommitments = React.useMemo(() => 
-    toAnalyticsItems(commitments, () => ({ plannedHours: 0, completedHours: 0 })), 
-    [commitments]
+    toAnalyticsItems(commitments, getCommitmentStats), 
+    [commitments, getCommitmentStats]
   )
   const analyticsGoals = React.useMemo(() => 
     toAnalyticsItems(goals, getGoalStats), 
@@ -274,13 +279,14 @@ function ShellDemoContent() {
             }`}
           >
             <Backlog 
-              commitments={commitments}
+              commitments={commitments as BacklogItem[]}
               goals={goals as BacklogItem[]}
               className="h-full w-[420px] max-w-none" 
               showTasks={showTasks}
               showCommitments={true}
               onToggleGoalTask={toggleTaskComplete}
               getGoalStats={getGoalStats}
+              getCommitmentStats={getCommitmentStats}
               getTaskSchedule={getTaskSchedule}
               getTaskDeadline={getTaskDeadline}
               draggable={true}

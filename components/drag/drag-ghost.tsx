@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Block } from "@/components/block";
-import { getDefaultDuration, getDragItemTitle } from "@/lib/drag-types";
+import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types";
 import { useDragContext } from "./drag-context";
 
 // ============================================================================
@@ -22,6 +22,7 @@ export function DragGhost() {
 
   const duration = getDefaultDuration(state.item.type);
   const title = getDragItemTitle(state.item);
+  const color = getDragItemColor(state.item);
 
   return (
     <div
@@ -37,7 +38,7 @@ export function DragGhost() {
       <div className="opacity-90 shadow-lg rounded-md">
         <Block
           title={title}
-          color={state.item.goalColor}
+          color={color}
           duration={duration as 30 | 60}
           status="planned"
         />

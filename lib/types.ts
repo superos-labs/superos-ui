@@ -11,9 +11,9 @@ import type React from "react";
 
 /**
  * Block type determines whether a calendar block represents
- * a goal work session or a specific task.
+ * a goal work session, a specific task, or a commitment.
  */
-export type BlockType = "goal" | "task";
+export type BlockType = "goal" | "task" | "commitment";
 
 /**
  * Block status determines the visual state and behavior of a block.

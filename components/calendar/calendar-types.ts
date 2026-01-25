@@ -91,12 +91,14 @@ export interface CalendarEvent {
   status?: BlockStatus; // "planned" | "completed" | "blueprint"
   
   // Block identity and source tracking
-  /** Whether this block is for a goal work session or a specific task */
+  /** Whether this block is for a goal work session, a specific task, or a commitment */
   blockType?: BlockType;
-  /** The goal this block is associated with (always present for scheduled blocks) */
+  /** The goal this block is associated with (for goal/task blocks) */
   sourceGoalId?: string;
   /** For task blocks, which specific task this represents */
   sourceTaskId?: string;
+  /** The commitment this block is associated with (for commitment blocks) */
+  sourceCommitmentId?: string;
 }
 
 // =============================================================================

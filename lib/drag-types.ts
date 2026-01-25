@@ -9,18 +9,24 @@ import type { GoalColor } from "./colors";
  * Represents an item being dragged from the backlog or deadline tray to the calendar.
  */
 export interface DragItem {
-  /** Whether dragging a goal or a task */
-  type: "goal" | "task";
-  /** The goal ID (always present) */
-  goalId: string;
-  /** Goal label for display */
-  goalLabel: string;
-  /** Goal color (inherited by blocks) */
-  goalColor: GoalColor;
+  /** Whether dragging a goal, task, or commitment */
+  type: "goal" | "task" | "commitment";
+  /** The goal ID (for goal/task drags) */
+  goalId?: string;
+  /** Goal label for display (for goal/task drags) */
+  goalLabel?: string;
+  /** Goal color (inherited by blocks, for goal/task drags) */
+  goalColor?: GoalColor;
   /** Task ID (only for task drags) */
   taskId?: string;
   /** Task label (only for task drags) */
   taskLabel?: string;
+  /** The commitment ID (for commitment drags) */
+  commitmentId?: string;
+  /** Commitment label for display (for commitment drags) */
+  commitmentLabel?: string;
+  /** Commitment color (for commitment drags) */
+  commitmentColor?: GoalColor;
   /** ISO date string if dragging an existing deadline from the tray */
   sourceDeadline?: string;
 }
@@ -47,14 +53,26 @@ export interface DropPosition {
  * Get the default duration for a drag item type.
  * Goals: 60 minutes (1 hour)
  * Tasks: 30 minutes
+ * Commitments: 60 minutes (1 hour)
  */
 export function getDefaultDuration(type: DragItem["type"]): number {
-  return type === "goal" ? 60 : 30;
+  if (type === "task") return 30;
+  return 60; // goal and commitment default to 1 hour
 }
 
 /**
  * Get the display title for a drag item.
  */
 export function getDragItemTitle(item: DragItem): string {
-  return item.type === "task" ? item.taskLabel ?? item.goalLabel : item.goalLabel;
+  if (item.type === "task") return item.taskLabel ?? item.goalLabel ?? "";
+  if (item.type === "commitment") return item.commitmentLabel ?? "";
+  return item.goalLabel ?? "";
+}
+
+/**
+ * Get the color for a drag item.
+ */
+export function getDragItemColor(item: DragItem): GoalColor | undefined {
+  if (item.type === "commitment") return item.commitmentColor;
+  return item.goalColor;
 }

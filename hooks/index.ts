@@ -6,6 +6,7 @@ export type {
   UseUnifiedScheduleReturn,
   ScheduleGoal,
   ScheduleTask,
+  ScheduleCommitment,
   GoalStats,
   TaskScheduleInfo,
   TaskDeadlineInfo,

@@ -16,14 +16,14 @@ import {
   RiPenNibLine,
 } from "@remixicon/react";
 import type { CalendarEvent } from "@/components/calendar";
-import type { ScheduleGoal } from "@/hooks/use-unified-schedule";
+import type { ScheduleGoal, ScheduleCommitment } from "@/hooks/use-unified-schedule";
 import type { BacklogItem } from "@/components/backlog";
 
 // =============================================================================
 // Commitments (recurring essentials)
 // =============================================================================
 
-export const SHELL_COMMITMENTS: BacklogItem[] = [
+export const SHELL_COMMITMENTS: ScheduleCommitment[] = [
   { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo" },
   { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber" },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "slate" },
@@ -94,6 +94,20 @@ export const SHELL_GOALS: ScheduleGoal[] = [
 const hoursToMinutes = (hours: number) => hours * 60;
 
 export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = [
+  // Commitment blocks - Sleep (recurring throughout the week)
+  { id: "shell-sleep-0", title: "Sleep", dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(6.5), color: "indigo", status: "completed", blockType: "commitment", sourceCommitmentId: "sleep" },
+  { id: "shell-sleep-1", title: "Sleep", dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", status: "completed", blockType: "commitment", sourceCommitmentId: "sleep" },
+  { id: "shell-sleep-2", title: "Sleep", dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(6.5), color: "indigo", status: "completed", blockType: "commitment", sourceCommitmentId: "sleep" },
+  { id: "shell-sleep-3", title: "Sleep", dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", status: "completed", blockType: "commitment", sourceCommitmentId: "sleep" },
+  { id: "shell-sleep-4", title: "Sleep", dayIndex: 4, startMinutes: 0, durationMinutes: hoursToMinutes(6.5), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+  { id: "shell-sleep-5", title: "Sleep", dayIndex: 5, startMinutes: 0, durationMinutes: hoursToMinutes(8), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+  { id: "shell-sleep-6", title: "Sleep", dayIndex: 6, startMinutes: 0, durationMinutes: hoursToMinutes(8), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+
+  // Commitment blocks - Exercise
+  { id: "shell-exercise-0", title: "Exercise", dayIndex: 0, startMinutes: hoursToMinutes(6.5), durationMinutes: 60, color: "green", status: "completed", blockType: "commitment", sourceCommitmentId: "exercise" },
+  { id: "shell-exercise-2", title: "Exercise", dayIndex: 2, startMinutes: hoursToMinutes(6.5), durationMinutes: 60, color: "green", status: "completed", blockType: "commitment", sourceCommitmentId: "exercise" },
+  { id: "shell-exercise-4", title: "Exercise", dayIndex: 4, startMinutes: hoursToMinutes(6.5), durationMinutes: 60, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
+
   // Morning routine (not linked to goals)
   { id: "shell-1", title: "Morning workout", dayIndex: 0, startMinutes: hoursToMinutes(7), durationMinutes: 60, color: "emerald", status: "completed" },
 
