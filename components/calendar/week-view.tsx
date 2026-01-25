@@ -16,7 +16,8 @@ import {
   HOURS,
   PIXELS_PER_MINUTE,
   blockStyleToStatus,
-  modeToStatus,
+  isVisibleInMode,
+  canMarkComplete,
   type WeekViewProps,
 } from "./calendar-types";
 import {
@@ -153,7 +154,10 @@ export function WeekView({
           {DAYS.map((day, dayIndex) => {
             const date = weekDates[dayIndex];
             const today = isToday(date);
-            const dayEvents = events.filter((e) => e.dayIndex === dayIndex);
+            // Filter events by day AND by mode visibility
+            const dayEvents = events.filter(
+              (e) => e.dayIndex === dayIndex && isVisibleInMode(e.status, mode),
+            );
 
             return (
               <div
@@ -230,11 +234,7 @@ export function WeekView({
                         status={
                           setBlockStyle
                             ? blockStyleToStatus(setBlockStyle)
-                            : event.status === "completed"
-                              ? "completed"
-                              : event.status === "outlined"
-                                ? "blueprint"
-                                : modeToStatus(mode, dayIndex)
+                            : event.status ?? "planned"
                         }
                         duration={event.durationMinutes as 30 | 60 | 240}
                         taskCount={event.taskCount}
@@ -291,11 +291,17 @@ export function WeekView({
                           );
                         }}
                         onDelete={() => onEventDelete?.(event.id)}
-                        onToggleComplete={() => {
-                          const newStatus =
-                            event.status === "completed" ? "base" : "completed";
-                          onEventStatusChange?.(event.id, newStatus);
-                        }}
+                        onToggleComplete={
+                          canMarkComplete(event.status) && onEventStatusChange
+                            ? () => {
+                                const newStatus =
+                                  event.status === "completed"
+                                    ? "planned"
+                                    : "completed";
+                                onEventStatusChange(event.id, newStatus);
+                              }
+                            : undefined
+                        }
                       >
                         {content}
                       </BlockContextMenu>

@@ -8,11 +8,13 @@ import {
   type HoverPosition,
 } from "./use-calendar-keyboard";
 import { KeyboardToast } from "./keyboard-toast";
-import type {
-  CalendarView,
-  CalendarMode,
-  CalendarEvent,
-  BlockStyle,
+import {
+  statusOnPaste,
+  type CalendarView,
+  type CalendarMode,
+  type CalendarEvent,
+  type BlockStyle,
+  type BlockStatus,
 } from "./calendar-types";
 import {
   KnobsProvider,
@@ -157,7 +159,7 @@ const INITIAL_EVENTS: CalendarEvent[] = [
     startMinutes: hoursToMinutes(10),
     durationMinutes: 180,
     color: "lime",
-    status: "outlined",
+    status: "blueprint",
   },
   {
     id: "16",
@@ -166,7 +168,7 @@ const INITIAL_EVENTS: CalendarEvent[] = [
     startMinutes: hoursToMinutes(9),
     durationMinutes: 120,
     color: "slate",
-    status: "outlined",
+    status: "blueprint",
   },
 ];
 
@@ -210,6 +212,7 @@ export function CalendarExample() {
           id: crypto.randomUUID(),
           dayIndex: newDayIndex,
           startMinutes: newStartMinutes,
+          status: statusOnPaste(source.status),
           taskCount: undefined,
         };
         return [...prev, duplicate];
@@ -219,7 +222,7 @@ export function CalendarExample() {
       setEvents((prev) => prev.filter((e) => e.id !== eventId));
     },
     onToggleComplete: (eventId, currentStatus) => {
-      const newStatus = currentStatus === "completed" ? "base" : "completed";
+      const newStatus = currentStatus === "completed" ? "planned" : "completed";
       setEvents((prev) =>
         prev.map((e) => (e.id === eventId ? { ...e, status: newStatus } : e)),
       );
@@ -270,6 +273,8 @@ export function CalendarExample() {
           id: crypto.randomUUID(),
           dayIndex: newDayIndex,
           startMinutes: newStartMinutes,
+          // Completed/blueprint blocks become planned when duplicated
+          status: statusOnPaste(source.status),
           // Strip task-related properties
           taskCount: undefined,
         };
@@ -326,7 +331,7 @@ export function CalendarExample() {
 
   // Handle event status change - toggles complete/incomplete
   const handleEventStatusChange = React.useCallback(
-    (eventId: string, status: "base" | "completed" | "outlined") => {
+    (eventId: string, status: BlockStatus) => {
       setEvents((prev) =>
         prev.map((e) => (e.id === eventId ? { ...e, status } : e)),
       );

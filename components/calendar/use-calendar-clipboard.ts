@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent } from "./calendar-types";
+import { statusOnPaste, type CalendarEvent } from "./calendar-types";
 
 interface CalendarClipboard {
   event: CalendarEvent | null;
@@ -39,16 +39,18 @@ function useCalendarClipboard(): UseCalendarClipboardReturn {
       if (!clipboard.event) return null;
 
       // Create a new event with a new ID at the specified position
+      // Completed/blueprint blocks become planned when pasted
       return {
         ...clipboard.event,
         id: crypto.randomUUID(),
         dayIndex,
         startMinutes,
+        status: statusOnPaste(clipboard.event.status),
         // Strip task-related properties on paste
         taskCount: undefined,
       };
     },
-    [clipboard.event]
+    [clipboard.event],
   );
 
   const clear = React.useCallback(() => {

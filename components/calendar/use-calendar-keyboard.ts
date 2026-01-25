@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent } from "./calendar-types";
+import { canMarkComplete, type CalendarEvent } from "./calendar-types";
 
 export interface HoverPosition {
   dayIndex: number;
@@ -108,8 +108,10 @@ export function useCalendarKeyboard({
         return;
       }
 
-      // ⌘Enter - Toggle complete
+      // ⌘Enter - Toggle complete (only for non-blueprint blocks)
       if (isMeta && e.key === "Enter" && isHoveringBlock && onToggleComplete) {
+        // Blueprint blocks cannot be marked complete/incomplete
+        if (!canMarkComplete(hoveredEvent.status)) return;
         e.preventDefault();
         const isCompleted = hoveredEvent.status === "completed";
         onToggleComplete(hoveredEvent.id, hoveredEvent.status);

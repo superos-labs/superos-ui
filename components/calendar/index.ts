@@ -35,6 +35,7 @@ export type {
   CalendarEvent,
   CalendarDayHeaderProps,
   BlockStyle,
+  BlockStatus,
   DayViewProps,
   WeekViewProps,
 } from "./calendar-types";
@@ -46,6 +47,14 @@ export {
   GRID_HEIGHT_PX,
   PIXELS_PER_MINUTE,
   SNAP_MINUTES,
+} from "./calendar-types";
+
+// Status helpers (for advanced use cases)
+export {
+  canMarkComplete,
+  statusOnPaste,
+  isVisibleInMode,
+  blockStyleToStatus,
 } from "./calendar-types";
 
 // Utilities (for advanced use cases)

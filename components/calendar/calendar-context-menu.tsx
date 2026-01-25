@@ -29,12 +29,14 @@ interface BlockContextMenuProps {
   onCopy: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  onToggleComplete: () => void;
+  /** When undefined, the mark complete/incomplete action is hidden (e.g., for blueprint blocks) */
+  onToggleComplete?: () => void;
 }
 
 /**
  * Context menu for calendar block events.
  * Provides copy, duplicate, delete, and mark complete actions.
+ * The mark complete action is hidden when onToggleComplete is undefined.
  */
 function BlockContextMenu({
   children,
@@ -60,12 +62,16 @@ function BlockContextMenu({
           Duplicate
           <ContextMenuShortcut>⌘D</ContextMenuShortcut>
         </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem onClick={onToggleComplete}>
-          <RiCheckLine className="size-4" />
-          {isCompleted ? "Mark incomplete" : "Mark complete"}
-          <ContextMenuShortcut>⌘⏎</ContextMenuShortcut>
-        </ContextMenuItem>
+        {onToggleComplete && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem onClick={onToggleComplete}>
+              <RiCheckLine className="size-4" />
+              {isCompleted ? "Mark incomplete" : "Mark complete"}
+              <ContextMenuShortcut>⌘⏎</ContextMenuShortcut>
+            </ContextMenuItem>
+          </>
+        )}
         <ContextMenuSeparator />
         <ContextMenuItem variant="destructive" onClick={onDelete}>
           <RiDeleteBinLine className="size-4" />

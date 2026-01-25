@@ -121,8 +121,8 @@ const SAMPLE_CALENDAR_EVENTS: CalendarEvent[] = [
   { id: "shell-12", title: "Focus time", dayIndex: 4, startMinutes: hoursToMinutes(8), durationMinutes: 120, color: "violet" },
   { id: "shell-13", title: "All-hands", dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 60, color: "fuchsia" },
   { id: "shell-14", title: "Project retro", dayIndex: 4, startMinutes: hoursToMinutes(15), durationMinutes: 60, color: "green", taskCount: 4 },
-  { id: "shell-15", title: "Side project", dayIndex: 5, startMinutes: hoursToMinutes(10), durationMinutes: 180, color: "lime", status: "outlined" },
-  { id: "shell-16", title: "Reading", dayIndex: 6, startMinutes: hoursToMinutes(9), durationMinutes: 120, color: "slate", status: "outlined" },
+  { id: "shell-15", title: "Side project", dayIndex: 5, startMinutes: hoursToMinutes(10), durationMinutes: 180, color: "lime", status: "blueprint" },
+  { id: "shell-16", title: "Reading", dayIndex: 6, startMinutes: hoursToMinutes(9), durationMinutes: 120, color: "slate", status: "blueprint" },
 ]
 import {
   KnobsProvider,

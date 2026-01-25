@@ -1,5 +1,8 @@
 import type { BlockColor, BlockStatus } from "@/components/block";
 
+// Re-export BlockStatus for convenience
+export type { BlockStatus };
+
 // Constants
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 export const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -24,7 +27,7 @@ export interface CalendarEvent {
   durationMinutes: number;
   color: BlockColor;
   taskCount?: number;
-  status?: "base" | "completed" | "outlined";
+  status?: BlockStatus; // "planned" | "completed" | "blueprint"
 }
 
 export interface CalendarProps {
@@ -69,10 +72,7 @@ export interface CalendarProps {
   /** Called when an event is deleted via context menu */
   onEventDelete?: (eventId: string) => void;
   /** Called when an event's status is changed (complete/incomplete) */
-  onEventStatusChange?: (
-    eventId: string,
-    status: "base" | "completed" | "outlined",
-  ) => void;
+  onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
   /** Called when user triggers paste via context menu */
   onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   /** Whether the clipboard has content (enables/disables paste) */
@@ -124,10 +124,7 @@ export interface DayViewProps {
   ) => void;
   onEventCopy?: (event: CalendarEvent) => void;
   onEventDelete?: (eventId: string) => void;
-  onEventStatusChange?: (
-    eventId: string,
-    status: "base" | "completed" | "outlined",
-  ) => void;
+  onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
   onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   hasClipboardContent?: boolean;
   onEventHover?: (event: CalendarEvent | null) => void;
@@ -166,10 +163,7 @@ export interface WeekViewProps {
   ) => void;
   onEventCopy?: (event: CalendarEvent) => void;
   onEventDelete?: (eventId: string) => void;
-  onEventStatusChange?: (
-    eventId: string,
-    status: "base" | "completed" | "outlined",
-  ) => void;
+  onEventStatusChange?: (eventId: string, status: BlockStatus) => void;
   onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   hasClipboardContent?: boolean;
   onEventHover?: (event: CalendarEvent | null) => void;
@@ -183,10 +177,38 @@ export function blockStyleToStatus(style: BlockStyle): BlockStatus {
   return style;
 }
 
-// Helper to determine block status based on mode and day
-export function modeToStatus(mode: CalendarMode, dayIndex?: number): BlockStatus {
-  if (mode === "blueprint") return "blueprint";
-  // Monday (0), Tuesday (1), Wednesday (2) show as completed
-  if (dayIndex !== undefined && dayIndex <= 2) return "completed";
-  return "planned";
+// ============================================================================
+// Status-based helpers
+// ============================================================================
+
+/**
+ * Check if a block can be marked complete/incomplete.
+ * Blueprint blocks cannot be marked complete.
+ */
+export function canMarkComplete(status: BlockStatus | undefined): boolean {
+  return status !== "blueprint";
+}
+
+/**
+ * Determine the status for a pasted or duplicated block.
+ * Completed and blueprint blocks become planned when pasted.
+ */
+export function statusOnPaste(sourceStatus: BlockStatus | undefined): BlockStatus {
+  if (sourceStatus === "completed") return "planned";
+  if (sourceStatus === "blueprint") return "planned";
+  return sourceStatus ?? "planned";
+}
+
+/**
+ * Check if an event should be visible in the given calendar mode.
+ * - Schedule mode: shows planned and completed, hides blueprint
+ * - Blueprint mode: shows only blueprint blocks
+ */
+export function isVisibleInMode(
+  status: BlockStatus | undefined,
+  mode: CalendarMode,
+): boolean {
+  if (mode === "blueprint") return status === "blueprint";
+  // Schedule mode: show planned and completed, hide blueprint
+  return status !== "blueprint";
 }
