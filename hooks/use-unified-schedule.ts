@@ -76,13 +76,17 @@ export interface ScheduleCommitment {
   label: string;
   icon: IconComponent;
   color: GoalColor;
+  /** If true, commitment cannot be disabled by the user */
+  mandatory?: boolean;
 }
 
 export interface UseUnifiedScheduleOptions {
   /** Initial goals for the backlog */
   initialGoals: ScheduleGoal[];
-  /** Initial commitments for the backlog */
-  initialCommitments: ScheduleCommitment[];
+  /** All available commitments (includes mandatory flag) */
+  allCommitments: ScheduleCommitment[];
+  /** Initial set of enabled commitment IDs (defaults to all) */
+  initialEnabledCommitmentIds?: string[];
   /** Initial calendar events */
   initialEvents: CalendarEvent[];
   /** Clipboard copy function (from useCalendarClipboard) */
@@ -96,8 +100,28 @@ export interface UseUnifiedScheduleOptions {
 export interface UseUnifiedScheduleReturn {
   // Data
   goals: ScheduleGoal[];
+  /** Filtered commitments (only enabled ones) */
   commitments: ScheduleCommitment[];
+  /** All available commitments (for edit mode) */
+  allCommitments: ScheduleCommitment[];
+  /** Filtered events (excludes disabled commitment blocks) */
   events: CalendarEvent[];
+
+  // Commitment visibility management
+  /** Current set of enabled commitment IDs */
+  enabledCommitmentIds: Set<string>;
+  /** Draft enabled IDs during editing (null when not editing) */
+  draftEnabledCommitmentIds: Set<string> | null;
+  /** Set of mandatory commitment IDs (cannot be disabled) */
+  mandatoryCommitmentIds: Set<string>;
+  /** Toggle a commitment's enabled state (works on draft) */
+  toggleCommitmentEnabled: (id: string) => void;
+  /** Start editing commitments (creates draft from current state) */
+  startEditingCommitments: () => void;
+  /** Save draft to actual enabled state */
+  saveCommitmentChanges: () => void;
+  /** Discard draft changes */
+  cancelCommitmentChanges: () => void;
 
   // Computed data accessors
   getGoalStats: (goalId: string) => GoalStats;
@@ -181,19 +205,108 @@ export interface UseUnifiedScheduleReturn {
 
 export function useUnifiedSchedule({
   initialGoals,
-  initialCommitments,
+  allCommitments: allCommitmentsInput,
+  initialEnabledCommitmentIds,
   initialEvents,
   onCopy,
   onPaste,
   hasClipboardContent = false,
 }: UseUnifiedScheduleOptions): UseUnifiedScheduleReturn {
   const [goals, setGoals] = React.useState<ScheduleGoal[]>(initialGoals);
-  const [commitments, setCommitments] = React.useState<ScheduleCommitment[]>(initialCommitments);
+  const [allCommitments] = React.useState<ScheduleCommitment[]>(allCommitmentsInput);
   const [events, setEvents] = React.useState<CalendarEvent[]>(initialEvents);
 
   // Hover state for keyboard shortcuts
   const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
   const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
+
+  // -------------------------------------------------------------------------
+  // Commitment Visibility Management
+  // -------------------------------------------------------------------------
+
+  // Compute mandatory IDs from allCommitments
+  const mandatoryCommitmentIds = React.useMemo(
+    () => new Set(allCommitments.filter((c) => c.mandatory).map((c) => c.id)),
+    [allCommitments]
+  );
+
+  // Enabled commitment IDs (committed state)
+  // Always ensure mandatory commitments are included
+  const [enabledCommitmentIds, setEnabledCommitmentIds] = React.useState<Set<string>>(
+    () => {
+      const mandatoryIds = allCommitments.filter((c) => c.mandatory).map((c) => c.id);
+      const initialIds = initialEnabledCommitmentIds ?? allCommitments.map((c) => c.id);
+      // Combine initial with mandatory to ensure mandatory are always included
+      return new Set([...mandatoryIds, ...initialIds]);
+    }
+  );
+
+  // Draft state for editing (null when not editing)
+  const [draftEnabledCommitmentIds, setDraftEnabledCommitmentIds] = React.useState<Set<string> | null>(null);
+
+  // Start editing: create draft from current state
+  const startEditingCommitments = React.useCallback(() => {
+    setDraftEnabledCommitmentIds(new Set(enabledCommitmentIds));
+  }, [enabledCommitmentIds]);
+
+  // Toggle commitment enabled state (works on draft if editing, otherwise on committed state)
+  const toggleCommitmentEnabled = React.useCallback(
+    (id: string) => {
+      // Cannot toggle mandatory commitments
+      if (mandatoryCommitmentIds.has(id)) return;
+
+      if (draftEnabledCommitmentIds !== null) {
+        // Editing mode: update draft
+        setDraftEnabledCommitmentIds((prev) => {
+          if (!prev) return prev;
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        });
+      } else {
+        // Not editing: update committed state directly
+        setEnabledCommitmentIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        });
+      }
+    },
+    [mandatoryCommitmentIds, draftEnabledCommitmentIds]
+  );
+
+  // Save draft to committed state
+  const saveCommitmentChanges = React.useCallback(() => {
+    if (draftEnabledCommitmentIds !== null) {
+      setEnabledCommitmentIds(draftEnabledCommitmentIds);
+      setDraftEnabledCommitmentIds(null);
+    }
+  }, [draftEnabledCommitmentIds]);
+
+  // Discard draft changes
+  const cancelCommitmentChanges = React.useCallback(() => {
+    setDraftEnabledCommitmentIds(null);
+  }, []);
+
+  // Filtered commitments: only enabled ones
+  const commitments = React.useMemo(
+    () => allCommitments.filter((c) => enabledCommitmentIds.has(c.id)),
+    [allCommitments, enabledCommitmentIds]
+  );
+
+  // Filtered events: exclude blocks from disabled commitments
+  const filteredEvents = React.useMemo(
+    () =>
+      events.filter((event) => {
+        // Keep all non-commitment blocks
+        if (event.blockType !== "commitment") return true;
+        // For commitment blocks, only keep if commitment is enabled
+        return event.sourceCommitmentId && enabledCommitmentIds.has(event.sourceCommitmentId);
+      }),
+    [events, enabledCommitmentIds]
+  );
 
   // -------------------------------------------------------------------------
   // Event Management
@@ -228,7 +341,7 @@ export function useUnifiedSchedule({
 
   const getCommitmentStats = React.useCallback(
     (commitmentId: string): GoalStats => {
-      const commitmentEvents = events.filter((e) => e.sourceCommitmentId === commitmentId);
+      const commitmentEvents = filteredEvents.filter((e) => e.sourceCommitmentId === commitmentId);
       const plannedMinutes = commitmentEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
         0
@@ -242,7 +355,7 @@ export function useUnifiedSchedule({
         completedHours: Math.round((completedMinutes / 60) * 10) / 10,
       };
     },
-    [events]
+    [filteredEvents]
   );
 
   const getTaskSchedule = React.useCallback(
@@ -768,7 +881,17 @@ export function useUnifiedSchedule({
   return {
     goals,
     commitments,
-    events,
+    allCommitments,
+    events: filteredEvents,
+    // Commitment visibility management
+    enabledCommitmentIds,
+    draftEnabledCommitmentIds,
+    mandatoryCommitmentIds,
+    toggleCommitmentEnabled,
+    startEditingCommitments,
+    saveCommitmentChanges,
+    cancelCommitmentChanges,
+    // Computed data accessors
     getGoalStats,
     getCommitmentStats,
     getTaskSchedule,

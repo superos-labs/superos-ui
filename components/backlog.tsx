@@ -9,6 +9,9 @@ import {
   RiFlagLine,
   RiCheckLine,
   RiTimeLine,
+  RiPencilLine,
+  RiCloseLine,
+  RiLockLine,
 } from "@remixicon/react";
 import type { GoalColor } from "@/lib/colors";
 import { getIconColorClass } from "@/lib/colors";
@@ -44,7 +47,12 @@ interface BacklogItem {
   milestone?: string;
   /** Tasks associated with this item */
   tasks?: BacklogTask[];
+  /** If true, commitment cannot be disabled (only for commitments) */
+  mandatory?: boolean;
 }
+
+/** Mode for the backlog display */
+type BacklogMode = "view" | "edit-commitments";
 
 interface BacklogGroup {
   id: string;
@@ -370,6 +378,8 @@ interface BacklogSectionProps {
   draggable?: boolean;
   /** Type of drag item to create ("goal" for goals, "commitment" for commitments) */
   dragType?: "goal" | "commitment";
+  /** Callback to enter edit mode (only for commitments section) */
+  onEdit?: () => void;
   className?: string;
 }
 
@@ -387,6 +397,7 @@ function BacklogSection({
   getTaskDeadline,
   draggable = false,
   dragType = "goal",
+  onEdit,
   className,
 }: BacklogSectionProps) {
   // Calculate totals from stats if available, otherwise use legacy props
@@ -411,24 +422,35 @@ function BacklogSection({
 
   return (
     <div className={cn("flex flex-col px-3", className)}>
-      <div className="flex items-center justify-between px-3 py-2">
+      <div className="group/section flex items-center justify-between px-3 py-2">
         <div className="flex flex-col">
           <h3 className="text-sm font-semibold text-foreground">{title}</h3>
           {description && (
             <p className="text-xs text-muted-foreground">{description}</p>
           )}
         </div>
-        {showHours && totals.planned > 0 && (
-          <div className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-            <span className="tabular-nums text-foreground">
-              {totals.completed}h
-            </span>
-            <span className="text-muted-foreground/50">/</span>
-            <span className="tabular-nums text-muted-foreground">
-              {totals.planned}h
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {showHours && totals.planned > 0 && (
+            <div className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
+              <span className="tabular-nums text-foreground">
+                {totals.completed}h
+              </span>
+              <span className="text-muted-foreground/50">/</span>
+              <span className="tabular-nums text-muted-foreground">
+                {totals.planned}h
+              </span>
+            </div>
+          )}
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="flex h-6 w-0 items-center justify-center overflow-hidden rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground group-hover/section:w-6"
+              title="Edit commitments"
+            >
+              <RiPencilLine className="size-3.5 shrink-0" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col gap-0.5">
@@ -464,8 +486,130 @@ function BacklogSection({
   );
 }
 
+// =============================================================================
+// Edit Commitments View
+// =============================================================================
+
+interface EditCommitmentsViewProps {
+  allCommitments: BacklogItem[];
+  enabledIds: Set<string>;
+  mandatoryIds: Set<string>;
+  onToggle: (id: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+function EditCommitmentsView({
+  allCommitments,
+  enabledIds,
+  mandatoryIds,
+  onToggle,
+  onSave,
+  onCancel,
+}: EditCommitmentsViewProps) {
+  return (
+    <div className="flex flex-col px-3 py-2">
+      <div className="flex items-center justify-between px-3 py-2">
+        <div className="flex flex-col">
+          <h3 className="text-sm font-semibold text-foreground">Edit Commitments</h3>
+          <p className="text-xs text-muted-foreground">Choose which to track</p>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onSave}
+            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-emerald-500/10 hover:text-emerald-600"
+            title="Save changes"
+          >
+            <RiCheckLine className="size-4" />
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
+            title="Cancel"
+          >
+            <RiCloseLine className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-0.5">
+        {allCommitments.map((commitment) => {
+          const isMandatory = mandatoryIds.has(commitment.id);
+          const isEnabled = enabledIds.has(commitment.id);
+          const IconComponent = commitment.icon;
+
+          return (
+            <button
+              key={commitment.id}
+              onClick={() => !isMandatory && onToggle(commitment.id)}
+              disabled={isMandatory}
+              className={cn(
+                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
+                isMandatory
+                  ? "cursor-default"
+                  : "cursor-pointer hover:bg-muted/60",
+              )}
+            >
+              {/* Checkbox */}
+              <div
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
+                  isMandatory
+                    ? "bg-muted text-muted-foreground"
+                    : isEnabled
+                      ? "bg-foreground text-background"
+                      : "bg-muted/60 text-transparent",
+                )}
+              >
+                {isMandatory ? (
+                  <RiLockLine className="size-3" />
+                ) : (
+                  <RiCheckLine className="size-3" />
+                )}
+              </div>
+
+              {/* Icon */}
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+                <IconComponent
+                  className={cn(
+                    "size-4",
+                    isEnabled
+                      ? getIconColorClass(commitment.color)
+                      : "text-muted-foreground",
+                  )}
+                />
+              </div>
+
+              {/* Label */}
+              <span
+                className={cn(
+                  "flex-1 text-left text-sm font-medium",
+                  isEnabled ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {commitment.label}
+              </span>
+
+              {/* Required badge */}
+              {isMandatory && (
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  Required
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Backlog Component
+// =============================================================================
+
 interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Array of commitment items to display */
+  /** Array of commitment items to display (filtered by enabled state) */
   commitments: BacklogItem[];
   /** Array of goal items to display */
   goals: BacklogItem[];
@@ -487,6 +631,24 @@ interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Enable drag-and-drop (requires DragProvider wrapper) */
   draggable?: boolean;
+  
+  // Edit commitments mode props
+  /** Current display mode */
+  mode?: BacklogMode;
+  /** All available commitments (for edit mode) */
+  allCommitments?: BacklogItem[];
+  /** Set of enabled commitment IDs (for edit mode, uses draft during editing) */
+  enabledCommitmentIds?: Set<string>;
+  /** Set of mandatory commitment IDs (cannot be disabled) */
+  mandatoryCommitmentIds?: Set<string>;
+  /** Toggle commitment enabled state */
+  onToggleCommitmentEnabled?: (id: string) => void;
+  /** Enter edit mode */
+  onEditCommitments?: () => void;
+  /** Save and exit edit mode */
+  onSaveCommitments?: () => void;
+  /** Cancel and exit edit mode */
+  onCancelEditCommitments?: () => void;
 }
 
 function Backlog({
@@ -504,9 +666,20 @@ function Backlog({
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
+  // Edit commitments props
+  mode = "view",
+  allCommitments,
+  enabledCommitmentIds,
+  mandatoryCommitmentIds,
+  onToggleCommitmentEnabled,
+  onEditCommitments,
+  onSaveCommitments,
+  onCancelEditCommitments,
   className,
   ...props
 }: BacklogProps) {
+  const isEditingCommitments = mode === "edit-commitments";
+
   return (
     <div
       className={cn(
@@ -518,19 +691,31 @@ function Backlog({
       {/* Content */}
       <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto">
         {showCommitments && (
-          <BacklogSection
-            title="Commitments"
-            description="Time for essentials"
-            items={commitments}
-            showHours={showHours}
-            onAddItem={onAddCommitment}
-            getItemStats={getCommitmentStats}
-            getTaskSchedule={getTaskSchedule}
-            getTaskDeadline={getTaskDeadline}
-            draggable={draggable}
-            dragType="commitment"
-            className="py-2"
-          />
+          isEditingCommitments && allCommitments && enabledCommitmentIds && mandatoryCommitmentIds && onToggleCommitmentEnabled && onSaveCommitments && onCancelEditCommitments ? (
+            <EditCommitmentsView
+              allCommitments={allCommitments}
+              enabledIds={enabledCommitmentIds}
+              mandatoryIds={mandatoryCommitmentIds}
+              onToggle={onToggleCommitmentEnabled}
+              onSave={onSaveCommitments}
+              onCancel={onCancelEditCommitments}
+            />
+          ) : (
+            <BacklogSection
+              title="Commitments"
+              description="Time for essentials"
+              items={commitments}
+              showHours={showHours}
+              onAddItem={onAddCommitment}
+              getItemStats={getCommitmentStats}
+              getTaskSchedule={getTaskSchedule}
+              getTaskDeadline={getTaskDeadline}
+              draggable={draggable}
+              dragType="commitment"
+              onEdit={onEditCommitments}
+              className="py-2"
+            />
+          )
         )}
 
         <BacklogSection
@@ -568,6 +753,7 @@ export type {
   BacklogTask,
   BacklogGroup,
   GoalDisplayMode,
+  BacklogMode,
 };
 // Re-export types from use-unified-schedule for convenience
 export type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/hooks/use-unified-schedule";

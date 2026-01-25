@@ -34,14 +34,29 @@ export interface DataSet {
 // Commitments (recurring essentials)
 // =============================================================================
 
-export const SHELL_COMMITMENTS: ScheduleCommitment[] = [
-  { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo" },
-  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber" },
+/**
+ * All available commitments with mandatory flag.
+ * Mandatory commitments (Sleep, Eat) cannot be disabled by the user.
+ */
+export const ALL_COMMITMENTS: ScheduleCommitment[] = [
+  { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo", mandatory: true },
+  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber", mandatory: true },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "slate" },
   { id: "exercise", label: "Exercise", icon: RiRunLine, color: "green" },
   { id: "hygiene", label: "Hygiene", icon: RiDropLine, color: "cyan" },
   { id: "chores", label: "Chores", icon: RiHome4Line, color: "orange" },
 ];
+
+/** @deprecated Use ALL_COMMITMENTS instead */
+export const SHELL_COMMITMENTS: ScheduleCommitment[] = ALL_COMMITMENTS;
+
+/** Default enabled commitment IDs (all enabled by default) */
+export const DEFAULT_ENABLED_COMMITMENT_IDS = ALL_COMMITMENTS.map(c => c.id);
+
+/** Mandatory commitment IDs that cannot be disabled */
+export const MANDATORY_COMMITMENT_IDS = new Set(
+  ALL_COMMITMENTS.filter(c => c.mandatory).map(c => c.id)
+);
 
 // =============================================================================
 // Goals with Tasks

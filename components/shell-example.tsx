@@ -12,7 +12,7 @@ import {
   type CalendarMode,
 } from "@/components/calendar"
 import type { DeadlineTask } from "@/hooks/use-unified-schedule"
-import { Backlog, type BacklogItem } from "@/components/backlog"
+import { Backlog, type BacklogItem, type BacklogMode } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
 import { useUnifiedSchedule } from "@/hooks/use-unified-schedule"
@@ -24,6 +24,8 @@ import type { IconComponent } from "@/lib/types"
 // Sample data from fixtures
 import {
   DATA_SETS,
+  ALL_COMMITMENTS,
+  MANDATORY_COMMITMENT_IDS,
   type DataSetId,
 } from "@/lib/fixtures/shell-data"
 
@@ -82,6 +84,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   const [showRightSidebar, setShowRightSidebar] = React.useState(false)
   const [showTasks, setShowTasks] = React.useState(true)
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
+  const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view")
 
   // Get the data set based on the ID
   const dataSet = DATA_SETS[dataSetId]
@@ -94,7 +97,17 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   const {
     goals,
     commitments,
+    allCommitments,
     events: calendarEvents,
+    // Commitment visibility management
+    enabledCommitmentIds,
+    draftEnabledCommitmentIds,
+    mandatoryCommitmentIds,
+    toggleCommitmentEnabled,
+    startEditingCommitments,
+    saveCommitmentChanges,
+    cancelCommitmentChanges,
+    // Stats and other
     getGoalStats,
     getCommitmentStats,
     getTaskSchedule,
@@ -108,7 +121,8 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     calendarHandlers,
   } = useUnifiedSchedule({
     initialGoals: dataSet.goals,
-    initialCommitments: dataSet.commitments,
+    allCommitments: ALL_COMMITMENTS,
+    initialEnabledCommitmentIds: dataSetId === "empty" ? [] : undefined,
     initialEvents: dataSet.events,
     onCopy: copy,
     onPaste: paste,
@@ -298,6 +312,24 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
               getTaskSchedule={getTaskSchedule}
               getTaskDeadline={getTaskDeadline}
               draggable={true}
+              // Commitment editing props
+              mode={backlogMode}
+              allCommitments={allCommitments as BacklogItem[]}
+              enabledCommitmentIds={draftEnabledCommitmentIds ?? enabledCommitmentIds}
+              mandatoryCommitmentIds={mandatoryCommitmentIds}
+              onToggleCommitmentEnabled={toggleCommitmentEnabled}
+              onEditCommitments={() => {
+                startEditingCommitments()
+                setBacklogMode("edit-commitments")
+              }}
+              onSaveCommitments={() => {
+                saveCommitmentChanges()
+                setBacklogMode("view")
+              }}
+              onCancelEditCommitments={() => {
+                cancelCommitmentChanges()
+                setBacklogMode("view")
+              }}
             />
           </div>
           <ShellContent className="overflow-hidden">
