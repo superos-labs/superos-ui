@@ -77,6 +77,12 @@ export interface CalendarProps {
   onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   /** Whether the clipboard has content (enables/disables paste) */
   hasClipboardContent?: boolean;
+  /** Called when mouse enters/leaves an event block (for keyboard shortcuts) */
+  onEventHover?: (event: CalendarEvent | null) => void;
+  /** Called when mouse moves over the grid (for paste position) */
+  onGridPositionHover?: (
+    position: { dayIndex: number; startMinutes: number } | null,
+  ) => void;
 }
 
 export interface CalendarDayHeaderProps {
@@ -124,6 +130,10 @@ export interface DayViewProps {
   ) => void;
   onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   hasClipboardContent?: boolean;
+  onEventHover?: (event: CalendarEvent | null) => void;
+  onGridPositionHover?: (
+    position: { dayIndex: number; startMinutes: number } | null,
+  ) => void;
 }
 
 export interface WeekViewProps {
@@ -162,6 +172,10 @@ export interface WeekViewProps {
   ) => void;
   onEventPaste?: (dayIndex: number, startMinutes: number) => void;
   hasClipboardContent?: boolean;
+  onEventHover?: (event: CalendarEvent | null) => void;
+  onGridPositionHover?: (
+    position: { dayIndex: number; startMinutes: number } | null,
+  ) => void;
 }
 
 // Helper to convert BlockStyle to BlockStatus

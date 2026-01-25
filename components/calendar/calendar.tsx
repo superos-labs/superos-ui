@@ -25,6 +25,8 @@ export function Calendar({
   onEventStatusChange,
   onEventPaste,
   hasClipboardContent,
+  onEventHover,
+  onGridPositionHover,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -50,6 +52,8 @@ export function Calendar({
         onEventStatusChange={onEventStatusChange}
         onEventPaste={onEventPaste}
         hasClipboardContent={hasClipboardContent}
+        onEventHover={onEventHover}
+        onGridPositionHover={onGridPositionHover}
       />
     );
   }
@@ -72,6 +76,8 @@ export function Calendar({
       onEventStatusChange={onEventStatusChange}
       onEventPaste={onEventPaste}
       hasClipboardContent={hasClipboardContent}
+      onEventHover={onEventHover}
+      onGridPositionHover={onGridPositionHover}
     />
   );
 }

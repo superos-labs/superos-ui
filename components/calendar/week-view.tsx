@@ -55,6 +55,8 @@ export function WeekView({
   onEventStatusChange,
   onEventPaste,
   hasClipboardContent = false,
+  onEventHover,
+  onGridPositionHover,
 }: WeekViewProps) {
   const headerCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
@@ -186,6 +188,13 @@ export function WeekView({
                         onPointerDown={(e) =>
                           handleGridPointerDown(e, dayIndex, hour * 60)
                         }
+                        onMouseEnter={() =>
+                          onGridPositionHover?.({
+                            dayIndex,
+                            startMinutes: hourStartMinutes,
+                          })
+                        }
+                        onMouseLeave={() => onGridPositionHover?.(null)}
                         onDoubleClick={(e) => {
                           if (isCreatingBlock || !onGridDoubleClick) return;
                           const rect = e.currentTarget.getBoundingClientRect();
@@ -305,6 +314,8 @@ export function WeekView({
                           top: `${topPercent}%`,
                           height: `${heightPercent}%`,
                         }}
+                        onMouseEnter={() => onEventHover?.(event)}
+                        onMouseLeave={() => onEventHover?.(null)}
                         {...blockEnterAnimation}
                       >
                         <DraggableBlockWrapper
@@ -352,6 +363,8 @@ export function WeekView({
                           top: `${topPercent}%`,
                           height: `${heightPercent}%`,
                         }}
+                        onMouseEnter={() => onEventHover?.(event)}
+                        onMouseLeave={() => onEventHover?.(null)}
                         onDoubleClick={(e) => e.stopPropagation()}
                         {...blockEnterAnimation}
                       >
@@ -368,6 +381,8 @@ export function WeekView({
                         top: `${topPercent}%`,
                         height: `${heightPercent}%`,
                       }}
+                      onMouseEnter={() => onEventHover?.(event)}
+                      onMouseLeave={() => onEventHover?.(null)}
                       onDoubleClick={(e) => e.stopPropagation()}
                       {...blockEnterAnimation}
                     >

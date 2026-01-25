@@ -3,6 +3,11 @@
 import * as React from "react";
 import { Calendar } from "./calendar";
 import { useCalendarClipboard } from "./use-calendar-clipboard";
+import {
+  useCalendarKeyboard,
+  type HoverPosition,
+} from "./use-calendar-keyboard";
+import { KeyboardToast } from "./keyboard-toast";
 import type {
   CalendarView,
   CalendarMode,
@@ -177,6 +182,50 @@ export function CalendarExample() {
   // Clipboard for copy/paste functionality
   const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard();
 
+  // Hover state for keyboard shortcuts
+  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(
+    null,
+  );
+  const [hoverPosition, setHoverPosition] =
+    React.useState<HoverPosition | null>(null);
+
+  // Keyboard shortcuts hook
+  const { toastMessage } = useCalendarKeyboard({
+    hoveredEvent,
+    hoverPosition,
+    hasClipboardContent,
+    onCopy: (event) => copy(event),
+    onPaste: (dayIndex, startMinutes) => {
+      const pastedEvent = paste(dayIndex, startMinutes);
+      if (pastedEvent) {
+        setEvents((prev) => [...prev, pastedEvent]);
+      }
+    },
+    onDuplicate: (eventId, newDayIndex, newStartMinutes) => {
+      setEvents((prev) => {
+        const source = prev.find((e) => e.id === eventId);
+        if (!source) return prev;
+        const duplicate: CalendarEvent = {
+          ...source,
+          id: crypto.randomUUID(),
+          dayIndex: newDayIndex,
+          startMinutes: newStartMinutes,
+          taskCount: undefined,
+        };
+        return [...prev, duplicate];
+      });
+    },
+    onDelete: (eventId) => {
+      setEvents((prev) => prev.filter((e) => e.id !== eventId));
+    },
+    onToggleComplete: (eventId, currentStatus) => {
+      const newStatus = currentStatus === "completed" ? "base" : "completed";
+      setEvents((prev) =>
+        prev.map((e) => (e.id === eventId ? { ...e, status: newStatus } : e)),
+      );
+    },
+  });
+
   // Handle event resize - updates the event's start time and duration
   const handleEventResize = React.useCallback(
     (eventId: string, newStartMinutes: number, newDurationMinutes: number) => {
@@ -316,8 +365,13 @@ export function CalendarExample() {
           onEventStatusChange={handleEventStatusChange}
           onEventPaste={handleEventPaste}
           hasClipboardContent={hasClipboardContent}
+          onEventHover={setHoveredEvent}
+          onGridPositionHover={setHoverPosition}
         />
       </div>
+
+      {/* Keyboard shortcut feedback toast */}
+      <KeyboardToast message={toastMessage} />
 
       <KnobsToggle />
       <KnobsPanel>

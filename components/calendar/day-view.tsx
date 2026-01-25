@@ -55,6 +55,8 @@ export function DayView({
   onEventStatusChange,
   onEventPaste,
   hasClipboardContent = false,
+  onEventHover,
+  onGridPositionHover,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -178,6 +180,13 @@ export function DayView({
                     onPointerDown={(e) =>
                       handleGridPointerDown(e, selectedDayIndex, hour * 60)
                     }
+                    onMouseEnter={() =>
+                      onGridPositionHover?.({
+                        dayIndex: selectedDayIndex,
+                        startMinutes: hourStartMinutes,
+                      })
+                    }
+                    onMouseLeave={() => onGridPositionHover?.(null)}
                     onDoubleClick={(e) => {
                       if (isCreatingBlock || !onGridDoubleClick) return;
                       const rect = e.currentTarget.getBoundingClientRect();
@@ -284,6 +293,8 @@ export function DayView({
                       top: `${topPercent}%`,
                       height: `${heightPercent}%`,
                     }}
+                    onMouseEnter={() => onEventHover?.(event)}
+                    onMouseLeave={() => onEventHover?.(null)}
                     {...blockEnterAnimation}
                   >
                     <DraggableBlockWrapper
@@ -331,6 +342,8 @@ export function DayView({
                       top: `${topPercent}%`,
                       height: `${heightPercent}%`,
                     }}
+                    onMouseEnter={() => onEventHover?.(event)}
+                    onMouseLeave={() => onEventHover?.(null)}
                     onDoubleClick={(e) => e.stopPropagation()}
                     {...blockEnterAnimation}
                   >
@@ -347,6 +360,8 @@ export function DayView({
                     top: `${topPercent}%`,
                     height: `${heightPercent}%`,
                   }}
+                  onMouseEnter={() => onEventHover?.(event)}
+                  onMouseLeave={() => onEventHover?.(null)}
                   onDoubleClick={(e) => e.stopPropagation()}
                   {...blockEnterAnimation}
                 >

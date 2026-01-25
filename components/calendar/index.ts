@@ -17,6 +17,16 @@ export type {
   CalendarClipboard,
 } from "./use-calendar-clipboard";
 
+export { useCalendarKeyboard } from "./use-calendar-keyboard";
+export type {
+  UseCalendarKeyboardOptions,
+  UseCalendarKeyboardReturn,
+  HoverPosition,
+} from "./use-calendar-keyboard";
+
+// Keyboard feedback
+export { KeyboardToast } from "./keyboard-toast";
+
 // Types
 export type {
   CalendarProps,
