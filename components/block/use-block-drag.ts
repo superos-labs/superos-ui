@@ -2,6 +2,11 @@
 
 import * as React from "react";
 
+/** Pixel distance pointer must move before drag activates */
+const DRAG_THRESHOLD = 4;
+
+type DragState = "idle" | "pending" | "dragging";
+
 interface UseBlockDragOptions {
   startMinutes: number;
   dayIndex: number;
@@ -20,6 +25,8 @@ interface UseBlockDragOptions {
   minStartMinutes?: number;
   /** Maximum end time in minutes from midnight (default: 1440 = 24 hours) */
   maxEndMinutes?: number;
+  /** Pixel distance before drag activates (default: 4) */
+  dragThreshold?: number;
   /** Called when drag operation ends with the final position */
   onDragEnd?: (newDayIndex: number, newStartMinutes: number) => void;
 }
@@ -50,9 +57,10 @@ export function useBlockDrag({
   maxDayIndex = 6,
   minStartMinutes = 0,
   maxEndMinutes = 1440,
+  dragThreshold = DRAG_THRESHOLD,
   onDragEnd,
 }: UseBlockDragOptions): UseBlockDragReturn {
-  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragState, setDragState] = React.useState<DragState>("idle");
   const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
   const [previewPosition, setPreviewPosition] = React.useState<DragPreviewPosition | null>(null);
 
@@ -77,7 +85,8 @@ export function useBlockDrag({
       e.stopPropagation();
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
-      setIsDragging(true);
+      // Enter pending state - NOT dragging yet until threshold is exceeded
+      setDragState("pending");
       setDragOffset({ x: 0, y: 0 });
       startPos.current = { x: e.clientX, y: e.clientY };
       startValues.current = { dayIndex, startMinutes };
@@ -88,10 +97,21 @@ export function useBlockDrag({
 
   const handlePointerMove = React.useCallback(
     (e: React.PointerEvent) => {
-      if (!isDragging) return;
+      if (dragState === "idle") return;
 
       const deltaX = e.clientX - startPos.current.x;
       const deltaY = e.clientY - startPos.current.y;
+
+      // Check if we should transition from pending to dragging
+      if (dragState === "pending") {
+        const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+        if (distance < dragThreshold) {
+          // Still under threshold, don't activate drag visuals
+          return;
+        }
+        // Threshold exceeded, now we're actually dragging
+        setDragState("dragging");
+      }
 
       // Update visual offset for smooth dragging feedback
       setDragOffset({ x: deltaX, y: deltaY });
@@ -119,7 +139,8 @@ export function useBlockDrag({
       setPreviewPosition({ dayIndex: newDayIndex, startMinutes: newStartMinutes });
     },
     [
-      isDragging,
+      dragState,
+      dragThreshold,
       dayColumnWidth,
       pixelsPerMinute,
       snapToInterval,
@@ -133,7 +154,7 @@ export function useBlockDrag({
 
   const handlePointerUp = React.useCallback(
     (e: React.PointerEvent) => {
-      if (!isDragging) return;
+      if (dragState === "idle") return;
 
       try {
         (e.target as HTMLElement).releasePointerCapture(e.pointerId);
@@ -141,20 +162,26 @@ export function useBlockDrag({
         // Pointer capture may have been lost
       }
 
+      const wasDragging = dragState === "dragging";
       const { dayIndex: newDayIndex, startMinutes: newStartMinutes } = currentPosition.current;
       
-      setIsDragging(false);
+      setDragState("idle");
       setDragOffset({ x: 0, y: 0 });
       setPreviewPosition(null);
       
-      // Only call onDragEnd with position if it actually changed
-      if (newDayIndex !== startValues.current.dayIndex || 
-          newStartMinutes !== startValues.current.startMinutes) {
+      // Only call onDragEnd if we were actually dragging (not just clicking)
+      // and the position actually changed
+      if (wasDragging && 
+          (newDayIndex !== startValues.current.dayIndex || 
+           newStartMinutes !== startValues.current.startMinutes)) {
         onDragEnd?.(newDayIndex, newStartMinutes);
       }
     },
-    [isDragging, onDragEnd],
+    [dragState, onDragEnd],
   );
+
+  // isDragging is true only when actively dragging (threshold exceeded)
+  const isDragging = dragState === "dragging";
 
   return {
     isDragging,
