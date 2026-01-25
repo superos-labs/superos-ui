@@ -498,7 +498,7 @@ function Backlog({
       {...props}
     >
       {/* Content */}
-      <div className="flex min-h-0 flex-1 flex-col divide-y divide-border">
+      <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto">
         {showCommitments && (
           <BacklogSection
             title="Commitments"
@@ -532,7 +532,7 @@ function Backlog({
       </div>
 
       {/* Footer */}
-      <div className="mt-auto border-t border-border bg-muted/30 px-4 py-3">
+      <div className="shrink-0 border-t border-border bg-background px-4 py-3">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">168 hours in a week</span>
         </div>

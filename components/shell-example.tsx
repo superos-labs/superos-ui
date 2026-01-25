@@ -276,9 +276,9 @@ function ShellDemoContent() {
             <Backlog 
               commitments={commitments}
               goals={goals as BacklogItem[]}
-              className="h-full w-[420px] max-w-none overflow-y-auto" 
+              className="h-full w-[420px] max-w-none" 
               showTasks={showTasks}
-              showCommitments={false}
+              showCommitments={true}
               onToggleGoalTask={toggleTaskComplete}
               getGoalStats={getGoalStats}
               getTaskSchedule={getTaskSchedule}
