@@ -43,6 +43,7 @@ export function WeekView({
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
+  onEventDuplicate,
   onGridDoubleClick,
   onGridDragCreate,
 }: WeekViewProps) {
@@ -227,7 +228,7 @@ export function WeekView({
                   };
 
                   // Add drag capability if callbacks provided
-                  if (onEventDragEnd && dayColumnWidth > 0) {
+                  if ((onEventDragEnd || onEventDuplicate) && dayColumnWidth > 0) {
                     return (
                       <motion.div
                         key={event.id}
@@ -245,8 +246,17 @@ export function WeekView({
                           durationMinutes={event.durationMinutes}
                           pixelsPerMinute={PIXELS_PER_MINUTE}
                           dayColumnWidth={dayColumnWidth}
-                          onDragEnd={(newDay, newStart) =>
-                            onEventDragEnd(event.id, newDay, newStart)
+                          onDragEnd={
+                            onEventDragEnd
+                              ? (newDay, newStart) =>
+                                  onEventDragEnd(event.id, newDay, newStart)
+                              : undefined
+                          }
+                          onDuplicate={
+                            onEventDuplicate
+                              ? (newDay, newStart) =>
+                                  onEventDuplicate(event.id, newDay, newStart)
+                              : undefined
                           }
                           onDoubleClick={(e) => e.stopPropagation()}
                         >

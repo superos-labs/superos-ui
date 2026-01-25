@@ -27,8 +27,10 @@ interface UseBlockDragOptions {
   maxEndMinutes?: number;
   /** Pixel distance before drag activates (default: 4) */
   dragThreshold?: number;
-  /** Called when drag operation ends with the final position */
+  /** Called when drag operation ends with the final position (move) */
   onDragEnd?: (newDayIndex: number, newStartMinutes: number) => void;
+  /** Called when drag operation ends with Option key held (duplicate) */
+  onDuplicate?: (newDayIndex: number, newStartMinutes: number) => void;
 }
 
 interface DragPreviewPosition {
@@ -38,6 +40,8 @@ interface DragPreviewPosition {
 
 interface UseBlockDragReturn {
   isDragging: boolean;
+  /** Whether the Option/Alt key is currently held during drag */
+  isOptionHeld: boolean;
   dragOffset: { x: number; y: number };
   /** The projected position during drag (null when not dragging) */
   previewPosition: DragPreviewPosition | null;
@@ -59,15 +63,50 @@ export function useBlockDrag({
   maxEndMinutes = 1440,
   dragThreshold = DRAG_THRESHOLD,
   onDragEnd,
+  onDuplicate,
 }: UseBlockDragOptions): UseBlockDragReturn {
   const [dragState, setDragState] = React.useState<DragState>("idle");
   const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
   const [previewPosition, setPreviewPosition] = React.useState<DragPreviewPosition | null>(null);
+  const [isOptionHeld, setIsOptionHeld] = React.useState(false);
 
   const startPos = React.useRef({ x: 0, y: 0 });
   const startValues = React.useRef({ dayIndex: 0, startMinutes: 0 });
   // Track the current calculated position for use in pointerUp
   const currentPosition = React.useRef({ dayIndex: 0, startMinutes: 0 });
+  // Track Option key state in a ref for use in pointerUp (avoids stale closure)
+  const isOptionHeldRef = React.useRef(false);
+
+  // Track Option/Alt key state during drag
+  React.useEffect(() => {
+    if (dragState === "idle") {
+      // Reset Option state when not dragging
+      setIsOptionHeld(false);
+      isOptionHeldRef.current = false;
+      return;
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Alt") {
+        setIsOptionHeld(true);
+        isOptionHeldRef.current = true;
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Alt") {
+        setIsOptionHeld(false);
+        isOptionHeldRef.current = false;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [dragState]);
 
   const snapToInterval = React.useCallback(
     (minutes: number) => {
@@ -84,6 +123,12 @@ export function useBlockDrag({
       e.preventDefault();
       e.stopPropagation();
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+      // Check if Option/Alt is already held when drag starts
+      if (e.altKey) {
+        setIsOptionHeld(true);
+        isOptionHeldRef.current = true;
+      }
 
       // Enter pending state - NOT dragging yet until threshold is exceeded
       setDragState("pending");
@@ -164,20 +209,28 @@ export function useBlockDrag({
 
       const wasDragging = dragState === "dragging";
       const { dayIndex: newDayIndex, startMinutes: newStartMinutes } = currentPosition.current;
+      // Use ref to get current Option state (avoids stale closure issues)
+      const wasOptionHeld = isOptionHeldRef.current;
       
       setDragState("idle");
       setDragOffset({ x: 0, y: 0 });
       setPreviewPosition(null);
       
-      // Only call onDragEnd if we were actually dragging (not just clicking)
-      // and the position actually changed
-      if (wasDragging && 
-          (newDayIndex !== startValues.current.dayIndex || 
-           newStartMinutes !== startValues.current.startMinutes)) {
-        onDragEnd?.(newDayIndex, newStartMinutes);
+      // Only call callbacks if we were actually dragging (not just clicking)
+      if (wasDragging) {
+        if (wasOptionHeld && onDuplicate) {
+          // Option was held - duplicate to new position
+          onDuplicate(newDayIndex, newStartMinutes);
+        } else if (
+          newDayIndex !== startValues.current.dayIndex ||
+          newStartMinutes !== startValues.current.startMinutes
+        ) {
+          // No Option - move to new position (only if position changed)
+          onDragEnd?.(newDayIndex, newStartMinutes);
+        }
       }
     },
-    [dragState, onDragEnd],
+    [dragState, onDragEnd, onDuplicate],
   );
 
   // isDragging is true only when actively dragging (threshold exceeded)
@@ -185,6 +238,7 @@ export function useBlockDrag({
 
   return {
     isDragging,
+    isOptionHeld,
     dragOffset,
     previewPosition,
     handlePointerDown,

@@ -50,6 +50,12 @@ export interface CalendarProps {
     newDayIndex: number,
     newStartMinutes: number,
   ) => void;
+  /** Called when drag operation ends with Option key held (duplicate) */
+  onEventDuplicate?: (
+    sourceEventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
   /** Called when user double-clicks on an empty area of the calendar grid */
   onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
   /** Called when user drags on an empty area of the calendar grid to create a block */
@@ -86,6 +92,11 @@ export interface DayViewProps {
     newDayIndex: number,
     newStartMinutes: number,
   ) => void;
+  onEventDuplicate?: (
+    sourceEventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
   onGridDoubleClick?: (dayIndex: number, startMinutes: number) => void;
   onGridDragCreate?: (
     dayIndex: number,
@@ -108,6 +119,11 @@ export interface WeekViewProps {
   onEventResizeEnd?: (eventId: string) => void;
   onEventDragEnd?: (
     eventId: string,
+    newDayIndex: number,
+    newStartMinutes: number,
+  ) => void;
+  onEventDuplicate?: (
+    sourceEventId: string,
     newDayIndex: number,
     newStartMinutes: number,
   ) => void;

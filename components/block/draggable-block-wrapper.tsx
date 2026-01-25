@@ -7,6 +7,8 @@ import { useBlockDrag, type DragPreviewPosition } from "./use-block-drag";
 /** Props passed to the render function */
 interface DragRenderProps {
   isDragging: boolean;
+  /** Whether the Option/Alt key is currently held during drag */
+  isOptionHeld: boolean;
   /** The projected position during drag (null when not dragging) */
   previewPosition: DragPreviewPosition | null;
 }
@@ -28,8 +30,10 @@ interface DraggableBlockWrapperProps
   minDayIndex?: number;
   /** Maximum day index (default: 6 = Sunday) */
   maxDayIndex?: number;
-  /** Called when drag operation ends with the final position */
+  /** Called when drag operation ends with the final position (move) */
   onDragEnd?: (newDayIndex: number, newStartMinutes: number) => void;
+  /** Called when drag operation ends with Option key held (duplicate) */
+  onDuplicate?: (newDayIndex: number, newStartMinutes: number) => void;
 }
 
 export function DraggableBlockWrapper({
@@ -43,12 +47,14 @@ export function DraggableBlockWrapper({
   minDayIndex = 0,
   maxDayIndex = 6,
   onDragEnd,
+  onDuplicate,
   className,
   style,
   ...rest
 }: DraggableBlockWrapperProps) {
   const {
     isDragging,
+    isOptionHeld,
     dragOffset,
     previewPosition,
     handlePointerDown,
@@ -64,44 +70,105 @@ export function DraggableBlockWrapper({
     minDayIndex,
     maxDayIndex,
     onDragEnd,
+    onDuplicate,
   });
 
-  // Support both render prop and regular children
-  const content =
+  // For duplicate (Option held): original stays in place, ghost follows cursor
+  // For move: original follows cursor
+  const isDuplicating = isDragging && isOptionHeld;
+  const isMoving = isDragging && !isOptionHeld;
+
+  // When duplicating, we need two versions of the content:
+  // - Original: static (no preview position, shows original time)
+  // - Ghost: dynamic (with preview position, shows new time)
+  // When moving or idle, we just need one version with the current state.
+  const originalContent =
     typeof children === "function"
-      ? children({ isDragging, previewPosition })
+      ? children({
+          isDragging,
+          isOptionHeld,
+          // Original block shows static time when duplicating
+          previewPosition: isDuplicating ? null : previewPosition,
+        })
       : children;
 
+  const ghostContent =
+    typeof children === "function"
+      ? children({ isDragging, isOptionHeld, previewPosition })
+      : children;
+
+  // Get the bounding rect for positioning the ghost
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const [ghostRect, setGhostRect] = React.useState<DOMRect | null>(null);
+
+  // Capture the rect when drag starts for ghost positioning
+  React.useEffect(() => {
+    if (isDragging && wrapperRef.current) {
+      setGhostRect(wrapperRef.current.getBoundingClientRect());
+    } else if (!isDragging) {
+      setGhostRect(null);
+    }
+  }, [isDragging]);
+
   return (
-    <div
-      {...rest}
-      className={cn(
-        "group/drag relative touch-none",
-        isDragging ? "cursor-grabbing z-50" : "cursor-grab z-10",
-        className,
-      )}
-      style={{
-        ...style,
-        // Apply visual offset during drag for smooth feedback
-        transform: isDragging
-          ? `translate(${dragOffset.x}px, ${dragOffset.y}px)`
-          : undefined,
-        transition: isDragging ? "none" : "box-shadow 0.15s ease",
-      }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-    >
-      {/* Drag visual feedback overlay */}
+    <>
       <div
+        ref={wrapperRef}
+        {...rest}
         className={cn(
-          "pointer-events-none absolute inset-0 rounded-md transition-all duration-150",
-          isDragging && "ring-2 ring-primary/30 shadow-lg",
+          "group/drag relative touch-none",
+          isDragging
+            ? isOptionHeld
+              ? "cursor-copy z-10"
+              : "cursor-grabbing z-50"
+            : "cursor-grab z-10",
+          className,
         )}
-      />
-      {content}
-    </div>
+        style={{
+          ...style,
+          // Only apply transform when moving (not duplicating)
+          transform: isMoving
+            ? `translate(${dragOffset.x}px, ${dragOffset.y}px)`
+            : undefined,
+          transition: isDragging ? "none" : "box-shadow 0.15s ease",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        {/* Drag visual feedback overlay */}
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 rounded-md transition-all duration-150",
+            isMoving && "ring-2 ring-primary/30 shadow-lg",
+          )}
+        />
+        {originalContent}
+      </div>
+
+      {/* Ghost preview when duplicating (Option+drag) */}
+      {isDuplicating && ghostRect && (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{
+            top: ghostRect.top,
+            left: ghostRect.left,
+            width: ghostRect.width,
+            height: ghostRect.height,
+            transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`,
+          }}
+        >
+          <div className="relative h-full w-full">
+            {/* Ghost overlay ring */}
+            <div className="pointer-events-none absolute inset-0 rounded-md ring-2 ring-emerald-500/40 shadow-lg" />
+            <div className="h-full w-full opacity-80">
+              {ghostContent}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

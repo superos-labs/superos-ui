@@ -17,6 +17,7 @@ export function Calendar({
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
+  onEventDuplicate,
   onGridDoubleClick,
   onGridDragCreate,
 }: CalendarProps) {
@@ -36,6 +37,7 @@ export function Calendar({
         onEventResize={onEventResize}
         onEventResizeEnd={onEventResizeEnd}
         onEventDragEnd={onEventDragEnd}
+        onEventDuplicate={onEventDuplicate}
         onGridDoubleClick={onGridDoubleClick}
         onGridDragCreate={onGridDragCreate}
       />
@@ -52,6 +54,7 @@ export function Calendar({
       onEventResize={onEventResize}
       onEventResizeEnd={onEventResizeEnd}
       onEventDragEnd={onEventDragEnd}
+      onEventDuplicate={onEventDuplicate}
       onGridDoubleClick={onGridDoubleClick}
       onGridDragCreate={onGridDragCreate}
     />

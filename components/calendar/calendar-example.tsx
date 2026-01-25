@@ -205,6 +205,27 @@ export function CalendarExample() {
     [],
   );
 
+  // Handle event duplicate - creates a copy of the event at the new position (Option+drag)
+  const handleEventDuplicate = React.useCallback(
+    (sourceEventId: string, newDayIndex: number, newStartMinutes: number) => {
+      setEvents((prev) => {
+        const source = prev.find((e) => e.id === sourceEventId);
+        if (!source) return prev;
+
+        const duplicate: CalendarEvent = {
+          ...source,
+          id: crypto.randomUUID(),
+          dayIndex: newDayIndex,
+          startMinutes: newStartMinutes,
+          // Strip task-related properties
+          taskCount: undefined,
+        };
+        return [...prev, duplicate];
+      });
+    },
+    [],
+  );
+
   // Handle double-click on empty grid area - creates a new 1-hour block
   const handleGridDoubleClick = React.useCallback(
     (dayIndex: number, startMinutes: number) => {
@@ -249,6 +270,7 @@ export function CalendarExample() {
           setBlockStyle={blockStyle || undefined}
           onEventResize={handleEventResize}
           onEventDragEnd={handleEventDragEnd}
+          onEventDuplicate={handleEventDuplicate}
           onGridDoubleClick={handleGridDoubleClick}
           onGridDragCreate={handleGridDragCreate}
         />

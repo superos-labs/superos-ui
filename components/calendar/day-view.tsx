@@ -43,6 +43,7 @@ export function DayView({
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
+  onEventDuplicate,
   onGridDoubleClick,
   onGridDragCreate,
 }: DayViewProps) {
@@ -219,7 +220,7 @@ export function DayView({
 
               // Add drag capability if callbacks provided
               // In day view, drag only changes time (vertical), not day
-              if (onEventDragEnd && dayColumnWidth > 0) {
+              if ((onEventDragEnd || onEventDuplicate) && dayColumnWidth > 0) {
                 return (
                   <motion.div
                     key={event.id}
@@ -239,8 +240,17 @@ export function DayView({
                       dayColumnWidth={dayColumnWidth}
                       minDayIndex={selectedDayIndex}
                       maxDayIndex={selectedDayIndex}
-                      onDragEnd={(newDay, newStart) =>
-                        onEventDragEnd(event.id, newDay, newStart)
+                      onDragEnd={
+                        onEventDragEnd
+                          ? (newDay, newStart) =>
+                              onEventDragEnd(event.id, newDay, newStart)
+                          : undefined
+                      }
+                      onDuplicate={
+                        onEventDuplicate
+                          ? (newDay, newStart) =>
+                              onEventDuplicate(event.id, newDay, newStart)
+                          : undefined
                       }
                       onDoubleClick={(e) => e.stopPropagation()}
                     >
