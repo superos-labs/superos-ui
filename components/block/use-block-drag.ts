@@ -5,6 +5,9 @@ import * as React from "react";
 /** Pixel distance pointer must move before drag activates */
 const DRAG_THRESHOLD = 4;
 
+/** Maximum duration for events (just under 48 hours, spanning at most 2 days) */
+const MAX_EVENT_DURATION_MINUTES = 2879;
+
 type DragState = "idle" | "pending" | "dragging";
 
 interface UseBlockDragOptions {
@@ -23,8 +26,8 @@ interface UseBlockDragOptions {
   maxDayIndex?: number;
   /** Minimum start time in minutes from midnight (default: 0) */
   minStartMinutes?: number;
-  /** Maximum end time in minutes from midnight (default: 1440 = 24 hours) */
-  maxEndMinutes?: number;
+  /** Maximum start time in minutes from midnight (default: 1440 - allows overnight events) */
+  maxStartMinutes?: number;
   /** Pixel distance before drag activates (default: 4) */
   dragThreshold?: number;
   /** Called when drag operation ends with the final position (move) */
@@ -60,7 +63,7 @@ export function useBlockDrag({
   minDayIndex = 0,
   maxDayIndex = 6,
   minStartMinutes = 0,
-  maxEndMinutes = 1440,
+  maxStartMinutes = 1440, // Max start time (allows overnight events to start late in day)
   dragThreshold = DRAG_THRESHOLD,
   onDragEnd,
   onDuplicate,
@@ -172,12 +175,11 @@ export function useBlockDrag({
         startValues.current.startMinutes + minutesDelta,
       );
 
-      // Constrain to valid time range
+      // Constrain start time to valid range
+      // For overnight events, start can be anywhere from 0 to maxStartMinutes
+      // The event will naturally extend into the next day
       newStartMinutes = Math.max(minStartMinutes, newStartMinutes);
-      // Ensure the block doesn't extend past the end boundary
-      if (newStartMinutes + durationMinutes > maxEndMinutes) {
-        newStartMinutes = snapToInterval(maxEndMinutes - durationMinutes);
-      }
+      newStartMinutes = Math.min(maxStartMinutes, newStartMinutes);
 
       // Store for use in pointerUp and update preview state
       currentPosition.current = { dayIndex: newDayIndex, startMinutes: newStartMinutes };
@@ -192,8 +194,7 @@ export function useBlockDrag({
       minDayIndex,
       maxDayIndex,
       minStartMinutes,
-      maxEndMinutes,
-      durationMinutes,
+      maxStartMinutes,
     ],
   );
 

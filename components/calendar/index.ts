@@ -57,6 +57,18 @@ export {
   blockStyleToStatus,
 } from "./calendar-types";
 
+// Overnight block helpers (for advanced use cases)
+export {
+  MAX_EVENT_DURATION_MINUTES,
+  isOvernightEvent,
+  getEventEndDayIndex,
+  getEventEndMinutes,
+  clampEventDuration,
+  getSegmentsForDay,
+} from "./calendar-types";
+
+export type { SegmentPosition, EventDaySegment } from "./calendar-types";
+
 // Utilities (for advanced use cases)
 export {
   getWeekDates,

@@ -7,6 +7,14 @@ import { BLOCK_COLORS, type BlockColor } from "./block-colors";
 type BlockStatus = "planned" | "completed" | "blueprint";
 type BlockDuration = 30 | 60 | 240;
 
+/**
+ * Segment position for overnight blocks.
+ * - 'only': Single-day event (full rounded corners)
+ * - 'start': First day of overnight event (rounded top, flat bottom)
+ * - 'end': Second day of overnight event (flat top, rounded bottom)
+ */
+type SegmentPosition = "only" | "start" | "end";
+
 // Height in pixels per 30 minutes
 const HEIGHT_PER_30_MIN = 40;
 
@@ -22,6 +30,8 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   showOutlinedActions?: boolean;
   /** When true, Block fills its container height instead of calculating its own */
   fillContainer?: boolean;
+  /** Position within an overnight block for corner styling */
+  segmentPosition?: SegmentPosition;
 }
 
 function Block({
@@ -34,6 +44,7 @@ function Block({
   taskCount,
   showOutlinedActions = true,
   fillContainer = false,
+  segmentPosition = "only",
   className,
   style,
   ...props
@@ -51,16 +62,27 @@ function Block({
 
   const isCompact = duration <= 30;
 
+  // Corner styling based on segment position for overnight blocks
+  const cornerStyles = {
+    only: "rounded-md",
+    start: "rounded-t-md rounded-b-none", // Flat bottom for overnight start
+    end: "rounded-t-none rounded-b-md", // Flat top for overnight end
+  };
+
   return (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-md px-2.5 text-sm",
+        "group relative flex flex-col overflow-hidden px-2.5 text-sm",
+        cornerStyles[segmentPosition],
         isCompact ? "justify-center py-1" : "py-2",
         "cursor-pointer transition-all",
         fillContainer && "h-full",
         isOutlined
           ? [
               "border border-dashed",
+              // For overnight blueprint blocks, adjust border on connected edges
+              segmentPosition === "start" && "border-b-0",
+              segmentPosition === "end" && "border-t-0",
               colorStyles.outlinedBorder,
               colorStyles.outlinedBg,
               colorStyles.outlinedBgHover,
@@ -139,4 +161,4 @@ function Block({
 }
 
 export { Block };
-export type { BlockProps, BlockStatus, BlockDuration };
+export type { BlockProps, BlockStatus, BlockDuration, SegmentPosition };

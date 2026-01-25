@@ -1,6 +1,6 @@
 // Public API for the Block component family
 export { Block } from "./block";
-export type { BlockProps, BlockStatus, BlockDuration } from "./block";
+export type { BlockProps, BlockStatus, BlockDuration, SegmentPosition } from "./block";
 
 export { BLOCK_COLORS } from "./block-colors";
 export type { BlockColor } from "./block-colors";

@@ -2,6 +2,9 @@
 
 import * as React from "react";
 
+/** Maximum duration for events (just under 48 hours, spanning at most 2 days) */
+const MAX_EVENT_DURATION_MINUTES = 2879;
+
 interface UseGridDragCreateOptions {
   /** Pixels per minute in the calendar grid */
   pixelsPerMinute: number;
@@ -9,6 +12,8 @@ interface UseGridDragCreateOptions {
   snapInterval?: number;
   /** Minimum duration in minutes to create a block (default: 15) */
   minDuration?: number;
+  /** Maximum duration in minutes (default: 2879 for overnight support) */
+  maxDuration?: number;
   /** Minimum pixels to drag before treating as drag vs click (default: 5) */
   dragThreshold?: number;
   /** Called when a block should be created */
@@ -46,6 +51,7 @@ export function useGridDragCreate({
   pixelsPerMinute,
   snapInterval = 15,
   minDuration = 15,
+  maxDuration = MAX_EVENT_DURATION_MINUTES,
   dragThreshold = 5,
   onCreate,
 }: UseGridDragCreateOptions): UseGridDragCreateReturn {
@@ -110,13 +116,29 @@ export function useGridDragCreate({
       const deltaMinutes = deltaY / pixelsPerMinute;
       const currentMinutes = snapToInterval(drag.anchorMinutes + deltaMinutes);
 
-      // Clamp to valid range (0-1440)
-      const clampedMinutes = Math.max(0, Math.min(1440, currentMinutes));
+      // Allow extending past midnight for overnight blocks
+      // Start time must be within day (0-1440), but duration can extend past
+      const clampedStart = Math.max(0, Math.min(1440, drag.anchorMinutes));
+      
+      // For downward drags (positive delta), allow going past 1440
+      // For upward drags (negative delta), clamp end to anchor
+      let startMinutes: number;
+      let endMinutes: number;
+      
+      if (currentMinutes >= drag.anchorMinutes) {
+        // Dragging downward
+        startMinutes = clampedStart;
+        // Allow end time to extend past 1440 (for overnight blocks)
+        endMinutes = Math.max(currentMinutes, drag.anchorMinutes);
+      } else {
+        // Dragging upward
+        startMinutes = Math.max(0, currentMinutes);
+        endMinutes = drag.anchorMinutes;
+      }
 
-      // Compute preview: handle both downward (positive) and upward (negative) drags
-      const startMinutes = Math.min(drag.anchorMinutes, clampedMinutes);
-      const endMinutes = Math.max(drag.anchorMinutes, clampedMinutes);
-      const durationMinutes = Math.max(minDuration, endMinutes - startMinutes);
+      // Calculate duration and clamp to max
+      let durationMinutes = Math.max(minDuration, endMinutes - startMinutes);
+      durationMinutes = Math.min(durationMinutes, maxDuration);
 
       setPreview({
         dayIndex: drag.dayIndex,
@@ -124,7 +146,7 @@ export function useGridDragCreate({
         durationMinutes,
       });
     },
-    [pixelsPerMinute, snapToInterval, dragThreshold, minDuration],
+    [pixelsPerMinute, snapToInterval, dragThreshold, minDuration, maxDuration],
   );
 
   const handlePointerUp = React.useCallback(

@@ -2,6 +2,9 @@
 
 import * as React from "react";
 
+/** Maximum duration for events (just under 48 hours, spanning at most 2 days) */
+const MAX_EVENT_DURATION_MINUTES = 2879;
+
 interface UseBlockResizeOptions {
   startMinutes: number;
   durationMinutes: number;
@@ -11,8 +14,8 @@ interface UseBlockResizeOptions {
   snapInterval?: number;
   /** Minimum duration in minutes (default: 15) */
   minDuration?: number;
-  /** Maximum end time in minutes from midnight (default: 1440 = 24 hours) */
-  maxEndMinutes?: number;
+  /** Maximum duration in minutes (default: 2879 = just under 48 hours for overnight support) */
+  maxDuration?: number;
   /** Called during resize with new values */
   onResize?: (newStartMinutes: number, newDurationMinutes: number) => void;
   /** Called when resize operation ends */
@@ -33,7 +36,7 @@ export function useBlockResize({
   pixelsPerMinute,
   snapInterval = 15,
   minDuration = 15,
-  maxEndMinutes = 1440,
+  maxDuration = MAX_EVENT_DURATION_MINUTES,
   onResize,
   onResizeEnd,
 }: UseBlockResizeOptions): UseBlockResizeReturn {
@@ -97,10 +100,8 @@ export function useBlockResize({
         // Dragging bottom edge: adjust duration only
         const proposedDuration = startValues.current.duration + deltaMinutes;
         newDuration = Math.max(minDuration, snapToInterval(proposedDuration));
-        // Ensure we don't exceed day boundary
-        if (newStart + newDuration > maxEndMinutes) {
-          newDuration = snapToInterval(maxEndMinutes - newStart);
-        }
+        // Clamp to maximum duration (supports overnight blocks up to ~48 hours)
+        newDuration = Math.min(newDuration, maxDuration);
       }
 
       onResize?.(newStart, newDuration);
@@ -111,7 +112,7 @@ export function useBlockResize({
       pixelsPerMinute,
       snapToInterval,
       minDuration,
-      maxEndMinutes,
+      maxDuration,
       onResize,
     ],
   );

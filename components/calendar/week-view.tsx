@@ -16,8 +16,9 @@ import {
   HOURS,
   PIXELS_PER_MINUTE,
   blockStyleToStatus,
-  isVisibleInMode,
   canMarkComplete,
+  getSegmentsForDay,
+  isOvernightEvent,
   type WeekViewProps,
 } from "./calendar-types";
 import {
@@ -155,10 +156,8 @@ export function WeekView({
           {DAYS.map((day, dayIndex) => {
             const date = weekDates[dayIndex];
             const today = isToday(date);
-            // Filter events by day AND by mode visibility
-            const dayEvents = events.filter(
-              (e) => e.dayIndex === dayIndex && isVisibleInMode(e.status, mode),
-            );
+            // Get segments for this day (handles overnight events automatically)
+            const daySegments = getSegmentsForDay(events, dayIndex, mode);
 
             return (
               <div
@@ -216,156 +215,231 @@ export function WeekView({
                   );
                 })}
 
-                {/* Events */}
+                {/* Event Segments */}
                 <AnimatePresence>
-                  {dayEvents.map((event) => {
-                  const topPercent = (event.startMinutes / (24 * 60)) * 100;
-                  const heightPercent =
-                    (event.durationMinutes / (24 * 60)) * 100;
+                  {daySegments.map((segment) => {
+                    const { event, startMinutes, endMinutes, position } = segment;
+                    const segmentKey = `${event.id}-${position}`;
+                    const segmentDuration = endMinutes - startMinutes;
+                    
+                    const topPercent = (startMinutes / 1440) * 100;
+                    const heightPercent = (segmentDuration / 1440) * 100;
 
-                  // Helper to create block content with optional preview times
-                  const createBlockContent = (previewStartMinutes?: number) => {
-                    const displayStart =
-                      previewStartMinutes ?? event.startMinutes;
-                    const displayEnd = displayStart + event.durationMinutes;
+                    // Helper to get display times for the segment
+                    const getDisplayTimes = (previewStartMinutes?: number) => {
+                      // For overnight events, show full event times
+                      // For single-day events, show segment times
+                      const isOvernight = isOvernightEvent(event);
+                      
+                      if (isOvernight) {
+                        // Show full event times (e.g., "10p – 6a")
+                        // Calculate end time from preview start + duration (both update during drag)
+                        const eventStart = previewStartMinutes ?? event.startMinutes;
+                        const eventEnd = eventStart + event.durationMinutes;
+                        return {
+                          startTime: formatTimeFromMinutes(eventStart),
+                          endTime: formatTimeFromMinutes(eventEnd),
+                        };
+                      }
+                      
+                      // Single-day event
+                      const displayStart = previewStartMinutes ?? startMinutes;
+                      const displayEnd = displayStart + segmentDuration;
+                      return {
+                        startTime: formatTimeFromMinutes(displayStart),
+                        endTime: formatTimeFromMinutes(displayEnd),
+                      };
+                    };
 
-                    return (
-                      <Block
-                        title={event.title}
-                        startTime={formatTimeFromMinutes(displayStart)}
-                        endTime={formatTimeFromMinutes(displayEnd)}
-                        color={event.color}
-                        status={
-                          setBlockStyle
-                            ? blockStyleToStatus(setBlockStyle)
-                            : (event.status ?? "planned")
-                        }
-                        duration={event.durationMinutes as 30 | 60 | 240}
-                        taskCount={event.taskCount}
-                        fillContainer
-                      />
-                    );
-                  };
+                    // Helper to create block content with optional preview times
+                    const createBlockContent = (previewStartMinutes?: number) => {
+                      const times = getDisplayTimes(previewStartMinutes);
 
-                  // Helper to wrap with resize if needed
-                  const wrapWithResize = (blockContent: React.ReactNode) => {
-                    if (onEventResize) {
                       return (
-                        <ResizableBlockWrapper
-                          className="h-full"
-                          startMinutes={event.startMinutes}
-                          durationMinutes={event.durationMinutes}
-                          pixelsPerMinute={PIXELS_PER_MINUTE}
-                          onResize={(newStart, newDuration) =>
-                            onEventResize(event.id, newStart, newDuration)
+                        <Block
+                          title={event.title}
+                          startTime={times.startTime}
+                          endTime={times.endTime}
+                          color={event.color}
+                          status={
+                            setBlockStyle
+                              ? blockStyleToStatus(setBlockStyle)
+                              : (event.status ?? "planned")
                           }
-                          onResizeEnd={() => onEventResizeEnd?.(event.id)}
-                        >
-                          {blockContent}
-                        </ResizableBlockWrapper>
+                          duration={segmentDuration as 30 | 60 | 240}
+                          taskCount={position === "start" || position === "only" ? event.taskCount : undefined}
+                          segmentPosition={position}
+                          fillContainer
+                        />
                       );
-                    }
-                    return blockContent;
-                  };
+                    };
 
-                  // Helper to wrap content with context menu
-                  const wrapWithContextMenu = (
-                    content: React.ReactNode,
-                    key: string,
-                  ) => {
-                    if (
-                      !onEventCopy &&
-                      !onEventDelete &&
-                      !onEventStatusChange
-                    ) {
-                      return content;
-                    }
-                    return (
-                      <BlockContextMenu
-                        key={key}
-                        event={event}
-                        onCopy={() => onEventCopy?.(event)}
-                        onDuplicate={() => {
-                          // Duplicate to same time slot on next day
-                          const nextDay = (event.dayIndex + 1) % 7;
-                          onEventDuplicate?.(
-                            event.id,
-                            nextDay,
-                            event.startMinutes,
-                          );
-                        }}
-                        onDelete={() => onEventDelete?.(event.id)}
-                        onToggleComplete={
-                          canMarkComplete(event.status) && onEventStatusChange
-                            ? () => {
-                                const newStatus =
-                                  event.status === "completed"
-                                    ? "planned"
-                                    : "completed";
-                                onEventStatusChange(event.id, newStatus);
-                              }
-                            : undefined
-                        }
-                      >
-                        {content}
-                      </BlockContextMenu>
-                    );
-                  };
+                    // Helper to wrap with resize if needed
+                    // For overnight blocks: only top resize on 'start', only bottom resize on 'end'
+                    const wrapWithResize = (blockContent: React.ReactNode) => {
+                      if (onEventResize) {
+                        // Determine which edges are resizable based on segment position
+                        const canResizeTop = position === "only" || position === "start";
+                        const canResizeBottom = position === "only" || position === "end";
+                        
+                        return (
+                          <ResizableBlockWrapper
+                            className="h-full"
+                            startMinutes={event.startMinutes}
+                            durationMinutes={event.durationMinutes}
+                            pixelsPerMinute={PIXELS_PER_MINUTE}
+                            enableTopResize={canResizeTop}
+                            enableBottomResize={canResizeBottom}
+                            onResize={(newStart, newDuration) =>
+                              onEventResize(event.id, newStart, newDuration)
+                            }
+                            onResizeEnd={() => onEventResizeEnd?.(event.id)}
+                          >
+                            {blockContent}
+                          </ResizableBlockWrapper>
+                        );
+                      }
+                      return blockContent;
+                    };
 
-                  // Add drag capability if callbacks provided
-                  if (
-                    (onEventDragEnd || onEventDuplicate) &&
-                    dayColumnWidth > 0
-                  ) {
-                    return wrapWithContextMenu(
-                      <motion.div
-                        className="absolute right-1 left-1"
-                        style={{
-                          top: `${topPercent}%`,
-                          height: `${heightPercent}%`,
-                        }}
-                        onMouseEnter={() => onEventHover?.(event)}
-                        onMouseLeave={() => onEventHover?.(null)}
-                        {...blockAnimations}
-                      >
-                        <DraggableBlockWrapper
-                          className="h-full"
-                          startMinutes={event.startMinutes}
-                          dayIndex={dayIndex}
-                          durationMinutes={event.durationMinutes}
-                          pixelsPerMinute={PIXELS_PER_MINUTE}
-                          dayColumnWidth={dayColumnWidth}
-                          onDragEnd={
-                            onEventDragEnd
-                              ? (newDay, newStart) =>
-                                  onEventDragEnd(event.id, newDay, newStart)
-                              : undefined
-                          }
-                          onDuplicate={
-                            onEventDuplicate
-                              ? (newDay, newStart) =>
-                                  onEventDuplicate(event.id, newDay, newStart)
-                              : undefined
-                          }
-                          onDoubleClick={(e) => e.stopPropagation()}
-                        >
-                          {({ isDragging, previewPosition }) => {
-                            const previewStart =
-                              isDragging && previewPosition
-                                ? previewPosition.startMinutes
-                                : undefined;
-                            return wrapWithResize(
-                              createBlockContent(previewStart),
+                    // Helper to wrap content with context menu
+                    const wrapWithContextMenu = (
+                      content: React.ReactNode,
+                      key: string,
+                    ) => {
+                      if (
+                        !onEventCopy &&
+                        !onEventDelete &&
+                        !onEventStatusChange
+                      ) {
+                        return content;
+                      }
+                      return (
+                        <BlockContextMenu
+                          key={key}
+                          event={event}
+                          onCopy={() => onEventCopy?.(event)}
+                          onDuplicate={() => {
+                            // Duplicate to same time slot on next day
+                            const nextDay = (event.dayIndex + 1) % 7;
+                            onEventDuplicate?.(
+                              event.id,
+                              nextDay,
+                              event.startMinutes,
                             );
                           }}
-                        </DraggableBlockWrapper>
-                      </motion.div>,
-                      event.id,
-                    );
-                  }
+                          onDelete={() => onEventDelete?.(event.id)}
+                          onToggleComplete={
+                            canMarkComplete(event.status) && onEventStatusChange
+                              ? () => {
+                                  const newStatus =
+                                    event.status === "completed"
+                                      ? "planned"
+                                      : "completed";
+                                  onEventStatusChange(event.id, newStatus);
+                                }
+                              : undefined
+                          }
+                        >
+                          {content}
+                        </BlockContextMenu>
+                      );
+                    };
 
-                  // Resize only (no drag)
-                  if (onEventResize) {
+                    // Add drag capability if callbacks provided
+                    // Only allow dragging from the 'start' or 'only' segment
+                    if (
+                      (onEventDragEnd || onEventDuplicate) &&
+                      dayColumnWidth > 0 &&
+                      (position === "only" || position === "start")
+                    ) {
+                      return wrapWithContextMenu(
+                        <motion.div
+                          className="absolute right-1 left-1"
+                          style={{
+                            top: `${topPercent}%`,
+                            height: `${heightPercent}%`,
+                          }}
+                          onMouseEnter={() => onEventHover?.(event)}
+                          onMouseLeave={() => onEventHover?.(null)}
+                          {...blockAnimations}
+                        >
+                          <DraggableBlockWrapper
+                            className="h-full"
+                            startMinutes={event.startMinutes}
+                            dayIndex={event.dayIndex}
+                            durationMinutes={event.durationMinutes}
+                            pixelsPerMinute={PIXELS_PER_MINUTE}
+                            dayColumnWidth={dayColumnWidth}
+                            onDragEnd={
+                              onEventDragEnd
+                                ? (newDay, newStart) =>
+                                    onEventDragEnd(event.id, newDay, newStart)
+                                : undefined
+                            }
+                            onDuplicate={
+                              onEventDuplicate
+                                ? (newDay, newStart) =>
+                                    onEventDuplicate(event.id, newDay, newStart)
+                                : undefined
+                            }
+                            onDoubleClick={(e) => e.stopPropagation()}
+                          >
+                            {({ isDragging, previewPosition }) => {
+                              const previewStart =
+                                isDragging && previewPosition
+                                  ? previewPosition.startMinutes
+                                  : undefined;
+                              return wrapWithResize(
+                                createBlockContent(previewStart),
+                              );
+                            }}
+                          </DraggableBlockWrapper>
+                        </motion.div>,
+                        segmentKey,
+                      );
+                    }
+
+                    // 'end' segment of overnight blocks - resize only (bottom edge)
+                    if (position === "end" && onEventResize) {
+                      return wrapWithContextMenu(
+                        <motion.div
+                          className="absolute right-1 left-1 z-10"
+                          style={{
+                            top: `${topPercent}%`,
+                            height: `${heightPercent}%`,
+                          }}
+                          onMouseEnter={() => onEventHover?.(event)}
+                          onMouseLeave={() => onEventHover?.(null)}
+                          onDoubleClick={(e) => e.stopPropagation()}
+                          {...blockAnimations}
+                        >
+                          {wrapWithResize(createBlockContent())}
+                        </motion.div>,
+                        segmentKey,
+                      );
+                    }
+
+                    // Resize only (no drag)
+                    if (onEventResize) {
+                      return wrapWithContextMenu(
+                        <motion.div
+                          className="absolute right-1 left-1 z-10"
+                          style={{
+                            top: `${topPercent}%`,
+                            height: `${heightPercent}%`,
+                          }}
+                          onMouseEnter={() => onEventHover?.(event)}
+                          onMouseLeave={() => onEventHover?.(null)}
+                          onDoubleClick={(e) => e.stopPropagation()}
+                          {...blockAnimations}
+                        >
+                          {wrapWithResize(createBlockContent())}
+                        </motion.div>,
+                        segmentKey,
+                      );
+                    }
+
                     return wrapWithContextMenu(
                       <motion.div
                         className="absolute right-1 left-1 z-10"
@@ -378,28 +452,10 @@ export function WeekView({
                         onDoubleClick={(e) => e.stopPropagation()}
                         {...blockAnimations}
                       >
-                        {wrapWithResize(createBlockContent())}
+                        {createBlockContent()}
                       </motion.div>,
-                      event.id,
+                      segmentKey,
                     );
-                  }
-
-                  return wrapWithContextMenu(
-                    <motion.div
-                      className="absolute right-1 left-1 z-10"
-                      style={{
-                        top: `${topPercent}%`,
-                        height: `${heightPercent}%`,
-                      }}
-                      onMouseEnter={() => onEventHover?.(event)}
-                      onMouseLeave={() => onEventHover?.(null)}
-                      onDoubleClick={(e) => e.stopPropagation()}
-                      {...blockAnimations}
-                    >
-                      {createBlockContent()}
-                    </motion.div>,
-                    event.id,
-                  );
                   })}
                 </AnimatePresence>
 

@@ -13,8 +13,10 @@ interface DragRenderProps {
   previewPosition: DragPreviewPosition | null;
 }
 
-interface DraggableBlockWrapperProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, "children" | "onDragEnd"> {
+interface DraggableBlockWrapperProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "children" | "onDragEnd"
+> {
   /** Render prop that receives drag state for customizing content during drag */
   children: React.ReactNode | ((props: DragRenderProps) => React.ReactNode);
   startMinutes: number;
@@ -162,9 +164,7 @@ export function DraggableBlockWrapper({
           <div className="relative h-full w-full">
             {/* Ghost overlay ring */}
             <div className="pointer-events-none absolute inset-0 rounded-md ring-2 ring-emerald-500/40 shadow-lg" />
-            <div className="h-full w-full opacity-80">
-              {ghostContent}
-            </div>
+            <div className="h-full w-full opacity-80">{ghostContent}</div>
           </div>
         </div>
       )}

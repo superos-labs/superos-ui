@@ -212,3 +212,106 @@ export function isVisibleInMode(
   // Schedule mode: show planned and completed, hide blueprint
   return status !== "blueprint";
 }
+
+// ============================================================================
+// Overnight block helpers
+// ============================================================================
+
+/** Maximum duration for events (just under 48 hours, spanning at most 2 days) */
+export const MAX_EVENT_DURATION_MINUTES = 2879;
+
+/**
+ * Check if an event spans across midnight into the next day.
+ */
+export function isOvernightEvent(event: CalendarEvent): boolean {
+  return event.startMinutes + event.durationMinutes > 1440;
+}
+
+/**
+ * Get the day index where the event ends (0-6).
+ * For overnight events, this is the next day (with week wrapping).
+ */
+export function getEventEndDayIndex(event: CalendarEvent): number {
+  if (!isOvernightEvent(event)) return event.dayIndex;
+  return (event.dayIndex + 1) % 7;
+}
+
+/**
+ * Get the end time in minutes within the end day (0-1440).
+ * For overnight events, this is the time on day 2.
+ */
+export function getEventEndMinutes(event: CalendarEvent): number {
+  const rawEnd = event.startMinutes + event.durationMinutes;
+  return isOvernightEvent(event) ? rawEnd - 1440 : rawEnd;
+}
+
+/**
+ * Clamp event duration to the maximum allowed (2 days).
+ */
+export function clampEventDuration(durationMinutes: number): number {
+  return Math.min(durationMinutes, MAX_EVENT_DURATION_MINUTES);
+}
+
+/**
+ * Segment position for styling overnight blocks.
+ * - 'only': Single-day event (full rounded corners)
+ * - 'start': First day of overnight event (rounded top, flat bottom)
+ * - 'end': Second day of overnight event (flat top, rounded bottom)
+ */
+export type SegmentPosition = "only" | "start" | "end";
+
+/**
+ * Represents a visible segment of an event for a specific day.
+ * Overnight events produce two segments (one per day).
+ */
+export interface EventDaySegment {
+  event: CalendarEvent;
+  dayIndex: number;
+  startMinutes: number; // 0-1440 within this day
+  endMinutes: number; // 0-1440 within this day
+  position: SegmentPosition;
+}
+
+/**
+ * Get all event segments that should be rendered for a specific day.
+ * Single-day events produce one segment; overnight events may produce
+ * a 'start' segment on day 1 and/or an 'end' segment on day 2.
+ */
+export function getSegmentsForDay(
+  events: CalendarEvent[],
+  targetDayIndex: number,
+  mode: CalendarMode = "schedule",
+): EventDaySegment[] {
+  const segments: EventDaySegment[] = [];
+
+  for (const event of events) {
+    // Skip events not visible in current mode
+    if (!isVisibleInMode(event.status, mode)) continue;
+
+    const isOvernight = isOvernightEvent(event);
+    const endDayIndex = getEventEndDayIndex(event);
+
+    // Check if this day is the start day
+    if (event.dayIndex === targetDayIndex) {
+      segments.push({
+        event,
+        dayIndex: targetDayIndex,
+        startMinutes: event.startMinutes,
+        endMinutes: isOvernight ? 1440 : event.startMinutes + event.durationMinutes,
+        position: isOvernight ? "start" : "only",
+      });
+    }
+    // Check if this day is the end day (for overnight events only)
+    else if (isOvernight && endDayIndex === targetDayIndex) {
+      segments.push({
+        event,
+        dayIndex: targetDayIndex,
+        startMinutes: 0,
+        endMinutes: getEventEndMinutes(event),
+        position: "end",
+      });
+    }
+  }
+
+  return segments;
+}

@@ -170,6 +170,33 @@ const INITIAL_EVENTS: CalendarEvent[] = [
     color: "slate",
     status: "blueprint",
   },
+  // Overnight events (spanning across midnight)
+  {
+    id: "17",
+    title: "Sleep",
+    dayIndex: 0, // Monday night
+    startMinutes: hoursToMinutes(22), // 10:00 PM
+    durationMinutes: 480, // 8 hours (ends 6:00 AM Tuesday)
+    color: "indigo",
+    status: "completed",
+  },
+  {
+    id: "18",
+    title: "Sleep",
+    dayIndex: 1, // Tuesday night
+    startMinutes: hoursToMinutes(22.5), // 10:30 PM
+    durationMinutes: 450, // 7.5 hours (ends 6:00 AM Wednesday)
+    color: "indigo",
+    status: "completed",
+  },
+  {
+    id: "19",
+    title: "Sleep",
+    dayIndex: 2, // Wednesday night
+    startMinutes: hoursToMinutes(23), // 11:00 PM
+    durationMinutes: 420, // 7 hours (ends 6:00 AM Thursday)
+    color: "indigo",
+  },
 ];
 
 export function CalendarExample() {

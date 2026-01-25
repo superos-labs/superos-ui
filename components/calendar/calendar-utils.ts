@@ -76,10 +76,13 @@ export function formatEventTime(hour: number, minutes: number = 0): string {
 }
 
 /**
- * Format total minutes from midnight to a compact time string
+ * Format total minutes from midnight to a compact time string.
+ * Handles values > 1440 (next day) by normalizing to 0-1440 range.
  */
 export function formatTimeFromMinutes(totalMinutes: number): string {
-  const hour = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
+  // Normalize to 0-1440 range to handle overnight times
+  const normalizedMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+  const hour = Math.floor(normalizedMinutes / 60);
+  const minutes = normalizedMinutes % 60;
   return formatEventTime(hour, minutes);
 }

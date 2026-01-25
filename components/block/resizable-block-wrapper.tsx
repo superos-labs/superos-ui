@@ -14,6 +14,10 @@ interface ResizableBlockWrapperProps {
   snapInterval?: number;
   /** Minimum duration in minutes (default: 15) */
   minDuration?: number;
+  /** Enable top edge resizing (default: true) */
+  enableTopResize?: boolean;
+  /** Enable bottom edge resizing (default: true) */
+  enableBottomResize?: boolean;
   /** Called during resize with new values */
   onResize?: (newStartMinutes: number, newDurationMinutes: number) => void;
   /** Called when resize operation ends */
@@ -61,6 +65,8 @@ export function ResizableBlockWrapper({
   pixelsPerMinute,
   snapInterval = 15,
   minDuration = 15,
+  enableTopResize = true,
+  enableBottomResize = true,
   onResize,
   onResizeEnd,
   className,
@@ -91,21 +97,25 @@ export function ResizableBlockWrapper({
       onPointerCancel={handlePointerUp}
     >
       {/* Top resize handle */}
-      <ResizeHandle
-        edge="top"
-        isActive={activeEdge === "top"}
-        onPointerDown={(e) => handlePointerDown(e, "top")}
-      />
+      {enableTopResize && (
+        <ResizeHandle
+          edge="top"
+          isActive={activeEdge === "top"}
+          onPointerDown={(e) => handlePointerDown(e, "top")}
+        />
+      )}
 
       {/* Block content */}
       {children}
 
       {/* Bottom resize handle */}
-      <ResizeHandle
-        edge="bottom"
-        isActive={activeEdge === "bottom"}
-        onPointerDown={(e) => handlePointerDown(e, "bottom")}
-      />
+      {enableBottomResize && (
+        <ResizeHandle
+          edge="bottom"
+          isActive={activeEdge === "bottom"}
+          onPointerDown={(e) => handlePointerDown(e, "bottom")}
+        />
+      )}
     </div>
   );
 }
