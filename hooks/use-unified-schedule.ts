@@ -131,6 +131,7 @@ export interface UseUnifiedScheduleReturn {
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
 
   // Backlog actions
+  addGoal: (goal: ScheduleGoal) => void;
   toggleTaskComplete: (goalId: string, taskId: string) => void;
 
   // Scheduling actions (from drag-drop)
@@ -709,6 +710,13 @@ export function useUnifiedSchedule({
   // Backlog Actions
   // -------------------------------------------------------------------------
 
+  const addGoal = React.useCallback(
+    (goal: ScheduleGoal) => {
+      setGoals((prev) => [...prev, goal]);
+    },
+    []
+  );
+
   const toggleTaskComplete = React.useCallback(
     (goalId: string, taskId: string) => {
       // Find the current task state
@@ -897,6 +905,7 @@ export function useUnifiedSchedule({
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
+    addGoal,
     toggleTaskComplete,
     scheduleGoal,
     scheduleTask,

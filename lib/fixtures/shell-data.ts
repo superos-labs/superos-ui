@@ -14,7 +14,20 @@ import {
   RiCodeLine,
   RiMedalLine,
   RiPenNibLine,
+  RiBriefcaseLine,
+  RiHeartLine,
+  RiBookLine,
+  RiMoneyDollarCircleLine,
+  RiUserHeartLine,
+  RiStarLine,
+  RiFlagLine,
+  RiGlobalLine,
+  RiLightbulbLine,
+  RiMusic2Line,
+  RiPaletteLine,
+  RiPlantLine,
 } from "@remixicon/react";
+import type { IconComponent } from "@/lib/types";
 import type { CalendarEvent } from "@/components/calendar";
 import type { ScheduleGoal, ScheduleCommitment } from "@/hooks/use-unified-schedule";
 
@@ -29,6 +42,49 @@ export interface DataSet {
   goals: ScheduleGoal[];
   events: CalendarEvent[];
 }
+
+// =============================================================================
+// Life Areas (for categorizing goals)
+// =============================================================================
+
+export interface LifeArea {
+  id: string;
+  label: string;
+  icon: IconComponent;
+  color: import("@/lib/colors").GoalColor;
+}
+
+export const LIFE_AREAS: LifeArea[] = [
+  { id: "career", label: "Career", icon: RiBriefcaseLine, color: "violet" },
+  { id: "health", label: "Health", icon: RiHeartLine, color: "rose" },
+  { id: "learning", label: "Learning", icon: RiBookLine, color: "blue" },
+  { id: "creative", label: "Creative", icon: RiPenNibLine, color: "teal" },
+  { id: "financial", label: "Financial", icon: RiMoneyDollarCircleLine, color: "amber" },
+  { id: "relationships", label: "Relationships", icon: RiUserHeartLine, color: "pink" },
+];
+
+// =============================================================================
+// Goal Icons (curated list for goal creation)
+// =============================================================================
+
+export const GOAL_ICONS: { icon: IconComponent; label: string }[] = [
+  { icon: RiRocketLine, label: "Rocket" },
+  { icon: RiMedalLine, label: "Medal" },
+  { icon: RiPenNibLine, label: "Pen" },
+  { icon: RiCodeLine, label: "Code" },
+  { icon: RiHeartLine, label: "Heart" },
+  { icon: RiMoneyDollarCircleLine, label: "Money" },
+  { icon: RiFlagLine, label: "Flag" },
+  { icon: RiStarLine, label: "Star" },
+  { icon: RiBookLine, label: "Book" },
+  { icon: RiGlobalLine, label: "Globe" },
+  { icon: RiLightbulbLine, label: "Idea" },
+  { icon: RiMusic2Line, label: "Music" },
+  { icon: RiPaletteLine, label: "Art" },
+  { icon: RiPlantLine, label: "Plant" },
+  { icon: RiRunLine, label: "Run" },
+  { icon: RiBriefcaseLine, label: "Briefcase" },
+];
 
 // =============================================================================
 // Commitments (recurring essentials)

@@ -12,7 +12,7 @@ import {
   type CalendarMode,
 } from "@/components/calendar"
 import type { DeadlineTask } from "@/hooks/use-unified-schedule"
-import { Backlog, type BacklogItem, type BacklogMode } from "@/components/backlog"
+import { Backlog, type BacklogItem, type BacklogMode, type NewGoalData } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
 import { useUnifiedSchedule } from "@/hooks/use-unified-schedule"
@@ -26,6 +26,8 @@ import {
   DATA_SETS,
   ALL_COMMITMENTS,
   MANDATORY_COMMITMENT_IDS,
+  LIFE_AREAS,
+  GOAL_ICONS,
   type DataSetId,
 } from "@/lib/fixtures/shell-data"
 
@@ -113,6 +115,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
+    addGoal,
     toggleTaskComplete,
     clearTaskDeadline,
     handleDrop,
@@ -226,6 +229,17 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     [goals, getGoalStats]
   )
 
+  // Handle goal creation from the backlog
+  const handleCreateGoal = React.useCallback((data: NewGoalData) => {
+    addGoal({
+      id: crypto.randomUUID(),
+      label: data.label,
+      icon: data.icon,
+      color: data.color,
+      tasks: [],
+    })
+  }, [addGoal])
+
   const isPlanning = calendarMode === "blueprint"
 
   const handlePlanWeekClick = () => {
@@ -330,6 +344,10 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 cancelCommitmentChanges()
                 setBacklogMode("view")
               }}
+              // Goal creation props
+              onCreateGoal={handleCreateGoal}
+              lifeAreas={LIFE_AREAS}
+              goalIcons={GOAL_ICONS}
             />
           </div>
           <ShellContent className="overflow-hidden">
