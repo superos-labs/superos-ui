@@ -1046,6 +1046,7 @@ function BlockSidebar({
         )}
 
         {/* Focus mode: show timer when focused, or start button when not */}
+        {/* Hide focus controls for completed and blueprint blocks */}
         {isFocused ? (
           <FocusTimer
             elapsedMs={focusElapsedMs ?? 0}
@@ -1055,7 +1056,7 @@ function BlockSidebar({
             onResume={onResumeFocus}
             onStop={onEndFocus}
           />
-        ) : onStartFocus ? (
+        ) : onStartFocus && block.status !== "completed" && block.status !== "blueprint" ? (
           <StartFocusButton
             onClick={onStartFocus}
             disabled={focusDisabled}

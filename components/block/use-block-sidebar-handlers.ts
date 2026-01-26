@@ -37,6 +37,8 @@ export interface UseBlockSidebarHandlersOptions {
   >;
   /** Callback when toast message should be shown */
   onToast?: (message: string) => void;
+  /** Callback to end any active focus session (called when marking block complete) */
+  onEndFocus?: () => void;
 }
 
 export interface UseBlockSidebarHandlersReturn {
@@ -87,6 +89,7 @@ export function useBlockSidebarHandlers({
   weekDates,
   schedule,
   onToast,
+  onEndFocus,
 }: UseBlockSidebarHandlersOptions): UseBlockSidebarHandlersReturn {
   const {
     updateEvent,
@@ -304,9 +307,11 @@ export function useBlockSidebarHandlers({
 
   const handleMarkComplete = React.useCallback(() => {
     if (!selectedEvent) return;
+    // End focus session if this block is being focused
+    onEndFocus?.();
     calendarHandlers.onEventStatusChange(selectedEvent.id, "completed");
     onToast?.("Marked complete");
-  }, [selectedEvent, calendarHandlers, onToast]);
+  }, [selectedEvent, calendarHandlers, onToast, onEndFocus]);
 
   const handleMarkIncomplete = React.useCallback(() => {
     if (!selectedEvent) return;

@@ -268,6 +268,8 @@ function ShellDemoContent({
       calendarHandlers,
     },
     onToast: setSidebarToastMessage,
+    // End focus session when marking the focused block as complete
+    onEndFocus: focusSession?.blockId === selectedEvent?.id ? endFocus : undefined,
   });
 
   // -------------------------------------------------------------------------
