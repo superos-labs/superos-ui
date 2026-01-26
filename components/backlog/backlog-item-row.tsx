@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn, formatHours } from "@/lib/utils";
 import {
   RiMoreLine,
   RiShiningLine,
@@ -153,11 +153,11 @@ export function BacklogItemRow({
         {showHours && hasHoursData && (
           <div className="flex shrink-0 items-center gap-1.5 text-xs">
             <span className="tabular-nums text-foreground">
-              {completedHours}h
+              {formatHours(completedHours)}h
             </span>
             <span className="text-muted-foreground/50">/</span>
             <span className="tabular-nums text-muted-foreground">
-              {plannedHours}h
+              {formatHours(plannedHours)}h
             </span>
           </div>
         )}

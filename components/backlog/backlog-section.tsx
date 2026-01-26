@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn, formatHours } from "@/lib/utils";
 import {
   RiAddLine,
   RiPencilLine,
@@ -122,11 +122,11 @@ export function BacklogSection({
           {showHours && totals.planned > 0 && (
             <div className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
               <span className="tabular-nums text-foreground">
-                {totals.completed}h
+                {formatHours(totals.completed)}h
               </span>
               <span className="text-muted-foreground/50">/</span>
               <span className="tabular-nums text-muted-foreground">
-                {totals.planned}h
+                {formatHours(totals.planned)}h
               </span>
             </div>
           )}
