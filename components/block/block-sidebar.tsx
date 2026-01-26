@@ -10,6 +10,7 @@ import {
   RiCloseLine,
   RiFlagLine,
   RiAddLine,
+  RiArrowDownSLine,
 } from "@remixicon/react";
 import type { BlockColor } from "./block-colors";
 import type { BlockType, IconComponent } from "@/lib/types";
@@ -241,6 +242,131 @@ function BlockSidebarSection({
   );
 }
 
+// Inline task creator for goal blocks (matches backlog InlineTaskCreator pattern)
+interface InlineBlockTaskCreatorProps {
+  onSave: (label: string) => void;
+}
+
+function InlineBlockTaskCreator({ onSave }: InlineBlockTaskCreatorProps) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && value.trim()) {
+      e.preventDefault();
+      onSave(value.trim());
+      setValue("");
+      // Keep focus for rapid entry
+      inputRef.current?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setValue("");
+      setIsEditing(false);
+    }
+  };
+
+  const handleBlur = () => {
+    if (value.trim()) {
+      onSave(value.trim());
+    }
+    setValue("");
+    setIsEditing(false);
+  };
+
+  if (!isEditing) {
+    return (
+      <button
+        onClick={() => setIsEditing(true)}
+        className="group flex w-full items-center gap-2.5 rounded-lg py-2 px-2 text-left transition-all hover:bg-muted/60"
+      >
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/30 text-muted-foreground/40 transition-colors group-hover:border-muted-foreground/50 group-hover:text-muted-foreground/60">
+          <RiAddLine className="size-3" />
+        </div>
+        <span className="text-sm text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
+          Add task...
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg py-2 px-2">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/40 text-muted-foreground/50">
+        <RiAddLine className="size-3" />
+      </div>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        placeholder="Task name..."
+        className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+      />
+    </div>
+  );
+}
+
+// Collapsible list of available tasks that can be assigned to this block
+interface AvailableTasksListProps {
+  tasks: BlockGoalTask[];
+  onAssign: (taskId: string) => void;
+}
+
+function AvailableTasksList({ tasks, onAssign }: AvailableTasksListProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  if (tasks.length === 0) return null;
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="group flex w-full items-center gap-2.5 rounded-lg py-2 px-2 text-left transition-all hover:bg-muted/60"
+      >
+        <div className="flex size-5 shrink-0 items-center justify-center">
+          <RiArrowDownSLine
+            className={cn(
+              "size-4 text-muted-foreground/50 transition-transform group-hover:text-muted-foreground/70",
+              isExpanded && "rotate-180",
+            )}
+          />
+        </div>
+        <span className="text-sm text-muted-foreground/60 transition-colors group-hover:text-muted-foreground/80">
+          Show available tasks ({tasks.length})
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="flex flex-col">
+          {tasks.map((task) => (
+            <button
+              key={task.id}
+              onClick={() => onAssign(task.id)}
+              className="group flex items-center gap-2.5 rounded-lg py-2 px-2 text-left transition-all hover:bg-muted/60"
+            >
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/20 text-muted-foreground/30 transition-colors group-hover:border-muted-foreground/40 group-hover:text-muted-foreground/50">
+                <RiAddLine className="size-3" />
+              </div>
+              <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+                {task.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Main component
 interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Block data to display */
@@ -271,9 +397,11 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   // Goal task callbacks (only for goal blocks)
   /** Callback when a goal task is toggled */
   onToggleGoalTask?: (taskId: string) => void;
-  /** Available tasks from the goal that can be assigned */
+  /** Callback to create a new task and assign it to this block */
+  onCreateTask?: (label: string) => void;
+  /** Available tasks from the goal that can be assigned (should be filtered to unscheduled, incomplete tasks) */
   availableGoalTasks?: BlockGoalTask[];
-  /** Callback to assign a goal task to this block */
+  /** Callback to assign an existing goal task to this block */
   onAssignTask?: (taskId: string) => void;
   /** Callback to unassign a goal task from this block */
   onUnassignTask?: (taskId: string) => void;
@@ -292,6 +420,7 @@ function BlockSidebar({
   onUpdateSubtask,
   onDeleteSubtask,
   onToggleGoalTask,
+  onCreateTask,
   availableGoalTasks,
   onAssignTask,
   onUnassignTask: _onUnassignTask,
@@ -457,29 +586,15 @@ function BlockSidebar({
         {/* Goal Tasks (only for goal blocks) - shown before notes */}
         {isGoalBlock && (
           <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                <RiCheckLine className="size-3.5" />
-                <span>Tasks</span>
-              </div>
-              {onAssignTask && availableGoalTasks && availableGoalTasks.length > 0 && (
-                <button
-                  onClick={() => {
-                    // For now, assign the first available task
-                    // In a full implementation, this would open a picker
-                    const firstUnassigned = availableGoalTasks[0];
-                    if (firstUnassigned) {
-                      onAssignTask(firstUnassigned.id);
-                    }
-                  }}
-                  className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <RiAddLine className="size-3" />
-                  <span>Assign</span>
-                </button>
-              )}
+            {/* Section header */}
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <RiCheckLine className="size-3.5" />
+              <span>Tasks</span>
             </div>
+
+            {/* Task list container */}
             <div className="flex flex-col">
+              {/* Assigned tasks */}
               {block.goalTasks.length > 0 ? (
                 block.goalTasks.map((task) => (
                   <BlockGoalTaskRow
@@ -489,10 +604,23 @@ function BlockSidebar({
                   />
                 ))
               ) : (
-                <p className="pl-5 text-sm text-muted-foreground">
-                  No tasks assigned
+                <p className="px-2 py-1 text-xs text-muted-foreground/60">
+                  No tasks assigned yet
                 </p>
               )}
+
+              {/* Inline task creator */}
+              {onCreateTask && <InlineBlockTaskCreator onSave={onCreateTask} />}
+
+              {/* Available tasks from goal (collapsible) */}
+              {availableGoalTasks &&
+                availableGoalTasks.length > 0 &&
+                onAssignTask && (
+                  <AvailableTasksList
+                    tasks={availableGoalTasks}
+                    onAssign={onAssignTask}
+                  />
+                )}
             </div>
           </div>
         )}

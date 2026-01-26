@@ -109,11 +109,21 @@ export function BlockSidebarExample() {
     }
   }, [goalTasks]);
 
+  // Create a new task and assign it to this block
+  const handleCreateTask = useCallback((label: string) => {
+    const newTask: BlockGoalTask = {
+      id: `task-${Date.now()}`,
+      label,
+      completed: false,
+    };
+    setGoalTasks((prev) => [...prev, newTask]);
+  }, []);
+
   // Subtask handlers
-  const handleAddSubtask = useCallback(() => {
+  const handleAddSubtask = useCallback((label: string) => {
     const newSubtask: BlockSubtask = {
       id: `sub-${Date.now()}`,
-      text: "",
+      text: label,
       done: false,
     };
     setSubtasks((prev) => [...prev, newSubtask]);
@@ -170,6 +180,7 @@ export function BlockSidebarExample() {
         onDeleteSubtask={handleDeleteSubtask}
         // Goal task handlers
         onToggleGoalTask={handleToggleGoalTask}
+        onCreateTask={handleCreateTask}
         availableGoalTasks={availableTasks}
         onAssignTask={handleAssignTask}
         onUnassignTask={handleUnassignTask}

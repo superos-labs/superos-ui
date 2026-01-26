@@ -99,7 +99,7 @@ interface EventToSidebarResult {
 /** Convert CalendarEvent to BlockSidebarData */
 function eventToBlockSidebarData(
   event: CalendarEvent,
-  goals: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor; tasks?: Array<{ id: string; label: string; completed?: boolean; subtasks?: Array<{ id: string; label: string; completed: boolean }> }> }>,
+  goals: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor; tasks?: Array<{ id: string; label: string; completed?: boolean; scheduledBlockId?: string; subtasks?: Array<{ id: string; label: string; completed: boolean }> }> }>,
   commitments: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor }>,
   weekDates: Date[]
 ): EventToSidebarResult {
@@ -141,10 +141,16 @@ function eventToBlockSidebarData(
       : []
 
   // Build available tasks (not yet assigned) for goal blocks
+  // Filter out: already assigned, completed, or scheduled to other blocks
   const availableGoalTasks: BlockGoalTask[] =
     sourceGoal && event.blockType === "goal"
       ? (sourceGoal.tasks ?? [])
-          .filter((t) => !assignedTaskIds.includes(t.id))
+          .filter(
+            (t) =>
+              !assignedTaskIds.includes(t.id) && // not already assigned to this block
+              !t.completed && // not completed
+              !t.scheduledBlockId // not scheduled to another block
+          )
           .map((t) => ({
             id: t.id,
             label: t.label,
@@ -444,6 +450,20 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     [selectedEvent, unassignTaskFromBlock]
   )
 
+  // Create a new task and assign it to the current block
+  const handleSidebarCreateTask = React.useCallback(
+    (label: string) => {
+      if (!selectedEvent?.sourceGoalId) return
+      // Create the task in the goal
+      const newTaskId = addTask(selectedEvent.sourceGoalId, label)
+      // Assign it to this block
+      if (newTaskId) {
+        assignTaskToBlock(selectedEvent.id, newTaskId)
+      }
+    },
+    [selectedEvent, addTask, assignTaskToBlock]
+  )
+
   // Drag context for external drag preview
   const dragContext = useDragContextOptional()
   
@@ -712,6 +732,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 onEndTimeChange={handleSidebarEndTimeChange}
                 onNotesChange={handleSidebarNotesChange}
                 onToggleGoalTask={handleSidebarToggleGoalTask}
+                onCreateTask={handleSidebarCreateTask}
                 onAddSubtask={handleSidebarAddSubtask}
                 onToggleSubtask={handleSidebarToggleSubtask}
                 onUpdateSubtask={handleSidebarUpdateSubtask}

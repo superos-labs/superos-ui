@@ -148,7 +148,7 @@ export interface UseUnifiedScheduleReturn {
   toggleTaskComplete: (goalId: string, taskId: string) => void;
 
   // Task CRUD actions
-  addTask: (goalId: string, label: string) => void;
+  addTask: (goalId: string, label: string) => string;
   updateTask: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
   deleteTask: (goalId: string, taskId: string) => void;
 
@@ -1010,7 +1010,7 @@ export function useUnifiedSchedule({
   // -------------------------------------------------------------------------
 
   const addTask = React.useCallback(
-    (goalId: string, label: string) => {
+    (goalId: string, label: string): string => {
       const newTask: ScheduleTask = {
         id: crypto.randomUUID(),
         label,
@@ -1023,6 +1023,7 @@ export function useUnifiedSchedule({
             : g
         )
       );
+      return newTask.id;
     },
     []
   );
