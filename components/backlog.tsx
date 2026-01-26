@@ -420,7 +420,7 @@ interface SubtaskRowProps {
 
 function SubtaskRow({ subtask, onToggle, onDelete }: SubtaskRowProps) {
   return (
-    <div className="group ml-[-22px] flex items-center gap-2 py-0.5">
+    <div className="group flex items-center gap-2 py-0.5">
       <button
         onClick={() => onToggle?.(subtask.id)}
         className={cn(
@@ -505,7 +505,7 @@ function InlineSubtaskCreator({ onSave }: InlineSubtaskCreatorProps) {
   }
 
   return (
-    <div className="ml-[-22px] flex items-center gap-2 py-0.5">
+    <div className="flex items-center gap-2 py-0.5">
       {/* Empty checkbox to match SubtaskRow appearance */}
       <div className="flex size-3.5 shrink-0 items-center justify-center rounded border border-border bg-transparent" />
       <input
