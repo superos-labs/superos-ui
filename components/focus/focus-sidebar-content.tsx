@@ -67,41 +67,6 @@ function AutoResizeTextarea({
 }
 
 // =============================================================================
-// Focus Task Row (simplified version for focus mode)
-// =============================================================================
-
-interface FocusTaskRowProps {
-  task: ScheduleTask;
-  onToggle?: (id: string) => void;
-}
-
-function FocusTaskRow({ task, onToggle }: FocusTaskRowProps) {
-  return (
-    <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
-      <button
-        onClick={() => onToggle?.(task.id)}
-        className={cn(
-          "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
-          task.completed
-            ? "bg-primary text-primary-foreground"
-            : "border border-border bg-background hover:bg-muted"
-        )}
-      >
-        {task.completed && <RiCheckLine className="size-3" />}
-      </button>
-      <span
-        className={cn(
-          "flex-1 text-sm",
-          task.completed ? "text-muted-foreground line-through" : "text-foreground"
-        )}
-      >
-        {task.label}
-      </span>
-    </div>
-  );
-}
-
-// =============================================================================
 // Inline Task Creator (for focus mode)
 // =============================================================================
 
