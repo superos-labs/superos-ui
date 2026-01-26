@@ -174,6 +174,7 @@ export function eventToBlockSidebarData(
       id: event.id,
       title: event.title,
       blockType: event.blockType ?? "goal",
+      status: event.status,
       date: isoStartDate,
       endDate: isoEndDate,
       startTime,

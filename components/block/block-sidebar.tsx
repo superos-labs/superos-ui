@@ -10,6 +10,7 @@ import {
   RiCloseLine,
   RiAddLine,
   RiArrowDownSLine,
+  RiCheckboxCircleFill,
 } from "@remixicon/react";
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import type { BlockColor } from "./block-colors";
-import type { BlockType, IconComponent } from "@/lib/types";
+import type { BlockType, BlockStatus, IconComponent } from "@/lib/types";
 import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
 
@@ -54,6 +55,8 @@ interface BlockSidebarData {
   title: string;
   /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'commitment' shows notes only */
   blockType: BlockType;
+  /** Block status: 'planned', 'completed', or 'blueprint' */
+  status?: BlockStatus;
   /** Start date in ISO format (YYYY-MM-DD) */
   date: string;
   /** End date in ISO format (YYYY-MM-DD) - only differs from date for overnight blocks */
@@ -752,6 +755,10 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   block: BlockSidebarData;
   /** Callback when close button is clicked */
   onClose?: () => void;
+  /** Callback when block is marked complete */
+  onMarkComplete?: () => void;
+  /** Callback when block is marked incomplete */
+  onMarkIncomplete?: () => void;
   /** Callback when title is updated */
   onTitleChange?: (title: string) => void;
   /** Callback when date is updated */
@@ -807,6 +814,8 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 function BlockSidebar({
   block,
   onClose,
+  onMarkComplete,
+  onMarkIncomplete,
   onTitleChange,
   onDateChange,
   onStartTimeChange,
@@ -891,15 +900,30 @@ function BlockSidebar({
     >
       {/* Header */}
       <div className="flex flex-col gap-3 px-4 pt-4 pb-2">
-        {/* Close button row */}
-        {onClose && (
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <RiCloseLine className="size-4" />
-            </button>
+        {/* Header actions row */}
+        {(onClose || (block.status === "completed" && onMarkIncomplete)) && (
+          <div className="flex justify-end gap-1">
+            {/* Mark incomplete button - only when completed */}
+            {block.status === "completed" && onMarkIncomplete && (
+              <button
+                onClick={onMarkIncomplete}
+                aria-label="Mark incomplete"
+                title="Mark incomplete"
+                className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <RiCheckboxCircleFill className="size-4" />
+              </button>
+            )}
+            {/* Close button */}
+            {onClose && (
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <RiCloseLine className="size-4" />
+              </button>
+            )}
           </div>
         )}
 
@@ -936,6 +960,17 @@ function BlockSidebar({
           isGoalBlock && availableGoals && availableGoals.length > 0 && onGoalSelect && (
             <GoalSelector goals={availableGoals} onSelect={onGoalSelect} />
           )
+        )}
+
+        {/* Mark Complete action - only for planned blocks (not completed or blueprint) */}
+        {block.status !== "completed" && block.status !== "blueprint" && onMarkComplete && (
+          <button
+            onClick={onMarkComplete}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+          >
+            <RiCheckLine className="size-4" />
+            <span>Mark complete</span>
+          </button>
         )}
       </div>
 

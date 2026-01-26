@@ -504,6 +504,19 @@ function ShellDemoContent({
     [selectedEvent, goals, updateEvent],
   );
 
+  // Mark complete/incomplete handlers
+  const handleSidebarMarkComplete = React.useCallback(() => {
+    if (!selectedEvent) return;
+    calendarHandlers.onEventStatusChange(selectedEvent.id, "completed");
+    setSidebarToastMessage("Marked complete");
+  }, [selectedEvent, calendarHandlers]);
+
+  const handleSidebarMarkIncomplete = React.useCallback(() => {
+    if (!selectedEvent) return;
+    calendarHandlers.onEventStatusChange(selectedEvent.id, "planned");
+    setSidebarToastMessage("Marked incomplete");
+  }, [selectedEvent, calendarHandlers]);
+
   // Drag context for external drag preview
   const dragContext = useDragContextOptional();
 
@@ -582,6 +595,11 @@ function ShellDemoContent({
     string | null
   >(null);
 
+  // Sidebar toast state (for mark complete/incomplete actions)
+  const [sidebarToastMessage, setSidebarToastMessage] = React.useState<
+    string | null
+  >(null);
+
   // Auto-clear deadline toast
   React.useEffect(() => {
     if (deadlineToastMessage) {
@@ -589,6 +607,14 @@ function ShellDemoContent({
       return () => clearTimeout(timer);
     }
   }, [deadlineToastMessage]);
+
+  // Auto-clear sidebar toast
+  React.useEffect(() => {
+    if (sidebarToastMessage) {
+      const timer = setTimeout(() => setSidebarToastMessage(null), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [sidebarToastMessage]);
 
   // Deadline keyboard shortcuts
   useDeadlineKeyboard({
@@ -598,8 +624,8 @@ function ShellDemoContent({
     showToast: setDeadlineToastMessage,
   });
 
-  // Combined toast message (calendar takes precedence)
-  const toastMessage = calendarToastMessage ?? deadlineToastMessage;
+  // Combined toast message (calendar takes precedence, then sidebar, then deadline)
+  const toastMessage = calendarToastMessage ?? sidebarToastMessage ?? deadlineToastMessage;
 
   // Derive analytics data
   const analyticsCommitments = React.useMemo(
@@ -798,6 +824,8 @@ function ShellDemoContent({
               <BlockSidebar
                 block={sidebarDataToRender.block}
                 onClose={handleCloseSidebar}
+                onMarkComplete={handleSidebarMarkComplete}
+                onMarkIncomplete={handleSidebarMarkIncomplete}
                 onTitleChange={handleSidebarTitleChange}
                 onDateChange={handleSidebarDateChange}
                 onStartTimeChange={handleSidebarStartTimeChange}
