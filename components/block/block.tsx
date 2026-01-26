@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiCheckLine, RiCloseLine } from "@remixicon/react";
+import { RiCheckLine, RiCircleLine, RiCloseLine } from "@remixicon/react";
 import { BLOCK_COLORS, type BlockColor } from "./block-colors";
 import type { BlockStatus } from "@/lib/types";
 
@@ -26,7 +26,10 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   color?: BlockColor;
   status?: BlockStatus;
   duration?: BlockDuration;
-  taskCount?: number;
+  /** Number of incomplete tasks assigned to this block */
+  pendingTaskCount?: number;
+  /** Number of completed tasks assigned to this block */
+  completedTaskCount?: number;
   /** Show action buttons on hover for outlined variant (default: true) */
   showOutlinedActions?: boolean;
   /** When true, Block fills its container height instead of calculating its own */
@@ -52,7 +55,8 @@ function Block({
   color = "indigo",
   status = "planned",
   duration = 30,
-  taskCount,
+  pendingTaskCount,
+  completedTaskCount,
   showOutlinedActions = true,
   fillContainer = false,
   segmentPosition = "only",
@@ -131,19 +135,32 @@ function Block({
       {timeDisplay && !isCompact && (
         <span className="mt-0.5 truncate text-[11px]">{timeDisplay}</span>
       )}
-      {taskCount !== undefined && taskCount > 0 && !isOutlined && (
-        <div
-          className={cn(
-            "flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium shadow-sm",
-            isCompact
-              ? "absolute top-1/2 right-1.5 -translate-y-1/2"
-              : "absolute bottom-1.5 right-1.5",
-          )}
-        >
-          <RiCheckLine className="size-3" />
-          <span>{taskCount}</span>
-        </div>
-      )}
+      {(() => {
+        const pending = pendingTaskCount ?? 0;
+        const completed = completedTaskCount ?? 0;
+        const total = pending + completed;
+        const allCompleted = total > 0 && pending === 0;
+
+        if (total === 0 || isOutlined) return null;
+
+        return (
+          <div
+            className={cn(
+              "flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium shadow-sm",
+              isCompact
+                ? "absolute top-1/2 right-1.5 -translate-y-1/2"
+                : "absolute bottom-1.5 right-1.5",
+            )}
+          >
+            {allCompleted ? (
+              <RiCheckLine className="size-3" />
+            ) : (
+              <RiCircleLine className="size-3" />
+            )}
+            <span>{allCompleted ? total : pending}</span>
+          </div>
+        );
+      })()}
       {isOutlined && showOutlinedActions && (
         <div
           className={cn(

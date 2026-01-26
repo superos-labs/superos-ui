@@ -48,7 +48,7 @@ const INITIAL_EVENTS: CalendarEvent[] = [
     startMinutes: hoursToMinutes(14),
     durationMinutes: 90,
     color: "blue",
-    taskCount: 3,
+    completedTaskCount: 3,
     status: "completed",
   },
   {
@@ -76,7 +76,7 @@ const INITIAL_EVENTS: CalendarEvent[] = [
     startMinutes: hoursToMinutes(15),
     durationMinutes: 120,
     color: "indigo",
-    taskCount: 5,
+    completedTaskCount: 5,
     status: "completed",
   },
   {
@@ -104,7 +104,7 @@ const INITIAL_EVENTS: CalendarEvent[] = [
     startMinutes: hoursToMinutes(10),
     durationMinutes: 60,
     color: "cyan",
-    taskCount: 2,
+    pendingTaskCount: 2,
   },
   {
     id: "10",
@@ -145,7 +145,7 @@ const INITIAL_EVENTS: CalendarEvent[] = [
     startMinutes: hoursToMinutes(15),
     durationMinutes: 60,
     color: "green",
-    taskCount: 4,
+    pendingTaskCount: 4,
   },
   {
     id: "15",

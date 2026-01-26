@@ -380,9 +380,14 @@ export function TimeColumn({
                     : (event.status ?? "planned")
                 }
                 duration={segmentDuration as 30 | 60 | 240}
-                taskCount={
+                pendingTaskCount={
                   position === "start" || position === "only"
-                    ? (event.assignedTaskIds?.length ?? event.taskCount)
+                    ? event.pendingTaskCount
+                    : undefined
+                }
+                completedTaskCount={
+                  position === "start" || position === "only"
+                    ? event.completedTaskCount
                     : undefined
                 }
                 segmentPosition={position}

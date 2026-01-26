@@ -46,8 +46,10 @@ function useCalendarClipboard(): UseCalendarClipboardReturn {
         dayIndex,
         startMinutes,
         status: statusOnPaste(clipboard.event.status),
-        // Strip task-related properties on paste
-        taskCount: undefined,
+        // Don't copy task assignments to pasted events
+        assignedTaskIds: undefined,
+        pendingTaskCount: undefined,
+        completedTaskCount: undefined,
       };
     },
     [clipboard.event],

@@ -87,7 +87,10 @@ export interface CalendarEvent {
   startMinutes: number; // Minutes from midnight (0-1440)
   durationMinutes: number;
   color: BlockColor;
-  taskCount?: number;
+  /** Number of incomplete tasks assigned to this block */
+  pendingTaskCount?: number;
+  /** Number of completed tasks assigned to this block */
+  completedTaskCount?: number;
   status?: BlockStatus; // "planned" | "completed" | "blueprint"
   
   // Block identity and source tracking

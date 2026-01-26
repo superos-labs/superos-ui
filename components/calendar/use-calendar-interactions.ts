@@ -99,7 +99,10 @@ export function useCalendarInteractions({
           dayIndex: newDayIndex,
           startMinutes: newStartMinutes,
           status: statusOnPaste(source.status),
-          taskCount: undefined,
+          // Don't copy task assignments to duplicates
+          assignedTaskIds: undefined,
+          pendingTaskCount: undefined,
+          completedTaskCount: undefined,
         };
         return [...prev, duplicate];
       });
@@ -166,8 +169,10 @@ export function useCalendarInteractions({
           startMinutes: newStartMinutes,
           // Completed/blueprint blocks become planned when duplicated
           status: statusOnPaste(source.status),
-          // Strip task-related properties
-          taskCount: undefined,
+          // Don't copy task assignments to duplicates
+          assignedTaskIds: undefined,
+          pendingTaskCount: undefined,
+          completedTaskCount: undefined,
         };
         return [...prev, duplicate];
       });

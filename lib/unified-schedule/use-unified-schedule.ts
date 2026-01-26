@@ -135,6 +135,61 @@ export function useUnifiedSchedule({
   }, []);
 
   // -------------------------------------------------------------------------
+  // Sync Task Counts on Events
+  // -------------------------------------------------------------------------
+
+  // Keep event.pendingTaskCount and event.completedTaskCount in sync with goals
+  React.useEffect(() => {
+    setEvents((currentEvents) => {
+      let hasChanges = false;
+      const updatedEvents = currentEvents.map((event) => {
+        if (!event.assignedTaskIds?.length) {
+          // No assigned tasks - ensure counts are undefined
+          if (
+            event.pendingTaskCount !== undefined ||
+            event.completedTaskCount !== undefined
+          ) {
+            hasChanges = true;
+            return {
+              ...event,
+              pendingTaskCount: undefined,
+              completedTaskCount: undefined,
+            };
+          }
+          return event;
+        }
+
+        // Find the goal for this event
+        const goal = goals.find((g) => g.id === event.sourceGoalId);
+        if (!goal?.tasks) return event;
+
+        // Compute counts from assigned tasks
+        const assignedTasks = goal.tasks.filter((t) =>
+          event.assignedTaskIds!.includes(t.id)
+        );
+        const pendingCount = assignedTasks.filter((t) => !t.completed).length;
+        const completedCount = assignedTasks.filter((t) => t.completed).length;
+
+        // Only update if counts changed
+        if (
+          event.pendingTaskCount !== pendingCount ||
+          event.completedTaskCount !== completedCount
+        ) {
+          hasChanges = true;
+          return {
+            ...event,
+            pendingTaskCount: pendingCount,
+            completedTaskCount: completedCount,
+          };
+        }
+        return event;
+      });
+
+      return hasChanges ? updatedEvents : currentEvents;
+    });
+  }, [goals]);
+
+  // -------------------------------------------------------------------------
   // Computed Stats
   // -------------------------------------------------------------------------
 
@@ -1037,7 +1092,10 @@ export function useUnifiedSchedule({
           dayIndex: newDayIndex,
           startMinutes: newStartMinutes,
           status: statusOnPaste(source.status),
-          taskCount: undefined,
+          // Don't copy task assignments to duplicates - they start fresh
+          assignedTaskIds: undefined,
+          pendingTaskCount: undefined,
+          completedTaskCount: undefined,
         };
         return [...prev, duplicate];
       });
