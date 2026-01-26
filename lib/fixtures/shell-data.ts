@@ -126,8 +126,24 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     color: "violet",
     milestone: "Ship billing integration",
     tasks: [
-      { id: "superos-1", label: "Set up Stripe webhook handlers", completed: true, scheduledBlockId: "shell-superos-task-1" },
-      { id: "superos-2", label: "Build subscription management UI", completed: false },
+      { 
+        id: "superos-1", 
+        label: "Set up Stripe webhook handlers", 
+        completed: true, 
+        scheduledBlockId: "shell-superos-task-1",
+        description: "Handle subscription.created, subscription.updated, and payment_failed events.",
+      },
+      { 
+        id: "superos-2", 
+        label: "Build subscription management UI", 
+        completed: false,
+        description: "Allow users to view their current plan, upgrade/downgrade, and cancel.",
+        subtasks: [
+          { id: "superos-2-1", label: "Design plan comparison table", completed: true },
+          { id: "superos-2-2", label: "Implement plan selector component", completed: false },
+          { id: "superos-2-3", label: "Add confirmation modal", completed: false },
+        ],
+      },
       { id: "superos-3", label: "Add invoice generation", completed: false },
     ],
   },
@@ -139,7 +155,12 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     milestone: "Complete 10K under 50min",
     tasks: [
       { id: "marathon-1", label: "Run 5K three times this week", completed: true },
-      { id: "marathon-2", label: "Do interval training on Saturday", completed: false },
+      { 
+        id: "marathon-2", 
+        label: "Do interval training on Saturday", 
+        completed: false,
+        description: "8x400m repeats with 90s recovery. Target pace: 1:45 per 400m.",
+      },
     ],
   },
   {
@@ -151,7 +172,16 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     tasks: [
       { id: "book-1", label: "Outline the main conflict", completed: true },
       { id: "book-2", label: "Write the opening scene", completed: true },
-      { id: "book-3", label: "Develop supporting characters", completed: false },
+      { 
+        id: "book-3", 
+        label: "Develop supporting characters", 
+        completed: false,
+        description: "Focus on the mentor figure and the antagonist's backstory.",
+        subtasks: [
+          { id: "book-3-1", label: "Write character backstory for mentor", completed: false },
+          { id: "book-3-2", label: "Define antagonist motivations", completed: false },
+        ],
+      },
     ],
   },
   {

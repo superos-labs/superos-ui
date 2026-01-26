@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Backlog, BacklogItem, GoalDisplayMode } from "@/components/backlog"
+import type { ScheduleTask, Subtask } from "@/hooks/use-unified-schedule"
 import {
   KnobsProvider,
   KnobsToggle,
@@ -42,7 +43,16 @@ const INITIAL_GOALS: BacklogItem[] = [
     milestone: "Ship billing integration",
     tasks: [
       { id: "superos-1", label: "Set up Stripe webhook handlers", completed: true },
-      { id: "superos-2", label: "Build subscription management UI", completed: false },
+      { 
+        id: "superos-2", 
+        label: "Build subscription management UI", 
+        completed: false,
+        description: "Allow users to view their current plan and upgrade/downgrade.",
+        subtasks: [
+          { id: "superos-2-1", label: "Design plan comparison table", completed: true },
+          { id: "superos-2-2", label: "Implement plan selector", completed: false },
+        ],
+      },
       { id: "superos-3", label: "Add invoice generation", completed: false },
     ]
   },
@@ -116,6 +126,107 @@ export function BacklogExample() {
     )
   }, [])
 
+  const handleAddTask = React.useCallback((goalId: string, label: string) => {
+    const newTask: ScheduleTask = {
+      id: crypto.randomUUID(),
+      label,
+      completed: false,
+    }
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === goalId
+          ? { ...goal, tasks: [...(goal.tasks ?? []), newTask] }
+          : goal
+      )
+    )
+  }, [])
+
+  const handleUpdateTask = React.useCallback((goalId: string, taskId: string, updates: Partial<ScheduleTask>) => {
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === goalId
+          ? {
+              ...goal,
+              tasks: goal.tasks?.map((task) =>
+                task.id === taskId ? { ...task, ...updates } : task
+              ),
+            }
+          : goal
+      )
+    )
+  }, [])
+
+  const handleAddSubtask = React.useCallback((goalId: string, taskId: string, label: string) => {
+    const newSubtask: Subtask = {
+      id: crypto.randomUUID(),
+      label,
+      completed: false,
+    }
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === goalId
+          ? {
+              ...goal,
+              tasks: goal.tasks?.map((task) =>
+                task.id === taskId
+                  ? { ...task, subtasks: [...(task.subtasks ?? []), newSubtask] }
+                  : task
+              ),
+            }
+          : goal
+      )
+    )
+  }, [])
+
+  const handleToggleSubtask = React.useCallback((goalId: string, taskId: string, subtaskId: string) => {
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === goalId
+          ? {
+              ...goal,
+              tasks: goal.tasks?.map((task) =>
+                task.id === taskId
+                  ? {
+                      ...task,
+                      subtasks: task.subtasks?.map((s) =>
+                        s.id === subtaskId ? { ...s, completed: !s.completed } : s
+                      ),
+                    }
+                  : task
+              ),
+            }
+          : goal
+      )
+    )
+  }, [])
+
+  const handleDeleteSubtask = React.useCallback((goalId: string, taskId: string, subtaskId: string) => {
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === goalId
+          ? {
+              ...goal,
+              tasks: goal.tasks?.map((task) =>
+                task.id === taskId
+                  ? { ...task, subtasks: task.subtasks?.filter((s) => s.id !== subtaskId) }
+                  : task
+              ),
+            }
+          : goal
+      )
+    )
+  }, [])
+
+  const handleDeleteTask = React.useCallback((goalId: string, taskId: string) => {
+    setGoals((prev) =>
+      prev.map((goal) =>
+        goal.id === goalId
+          ? { ...goal, tasks: goal.tasks?.filter((task) => task.id !== taskId) }
+          : goal
+      )
+    )
+  }, [])
+
   return (
     <KnobsProvider>
       <Backlog
@@ -126,6 +237,12 @@ export function BacklogExample() {
         showCommitments={showCommitments}
         goalDisplayMode={goalDisplayMode}
         onToggleGoalTask={handleToggleGoalTask}
+        onAddTask={handleAddTask}
+        onUpdateTask={handleUpdateTask}
+        onAddSubtask={handleAddSubtask}
+        onToggleSubtask={handleToggleSubtask}
+        onDeleteSubtask={handleDeleteSubtask}
+        onDeleteTask={handleDeleteTask}
       />
 
       <KnobsToggle />

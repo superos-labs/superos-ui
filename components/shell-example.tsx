@@ -117,6 +117,14 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     getWeekDeadlines,
     addGoal,
     toggleTaskComplete,
+    // Task CRUD
+    addTask,
+    updateTask,
+    deleteTask,
+    // Subtask CRUD
+    addSubtask,
+    toggleSubtaskComplete,
+    deleteSubtask,
     clearTaskDeadline,
     handleDrop,
     hoveredEvent,
@@ -321,6 +329,12 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
               showTasks={showTasks}
               showCommitments={true}
               onToggleGoalTask={toggleTaskComplete}
+              onAddTask={addTask}
+              onUpdateTask={updateTask}
+              onAddSubtask={addSubtask}
+              onToggleSubtask={toggleSubtaskComplete}
+              onDeleteSubtask={deleteSubtask}
+              onDeleteTask={deleteTask}
               getGoalStats={getGoalStats}
               getCommitmentStats={getCommitmentStats}
               getTaskSchedule={getTaskSchedule}

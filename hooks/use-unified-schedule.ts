@@ -11,6 +11,13 @@ import { statusOnPaste } from "@/components/calendar";
 // Types
 // ============================================================================
 
+/** Subtask within a task */
+export interface Subtask {
+  id: string;
+  label: string;
+  completed: boolean;
+}
+
 /** Task within a goal */
 export interface ScheduleTask {
   id: string;
@@ -20,6 +27,10 @@ export interface ScheduleTask {
   scheduledBlockId?: string;
   /** ISO date string for deadline (e.g., "2026-01-25") - mutually exclusive with scheduledBlockId */
   deadline?: string;
+  /** Optional description for additional context */
+  description?: string;
+  /** Optional subtasks (simple checkboxes, not schedulable) */
+  subtasks?: Subtask[];
 }
 
 /** Goal in the backlog */
@@ -133,6 +144,16 @@ export interface UseUnifiedScheduleReturn {
   // Backlog actions
   addGoal: (goal: ScheduleGoal) => void;
   toggleTaskComplete: (goalId: string, taskId: string) => void;
+
+  // Task CRUD actions
+  addTask: (goalId: string, label: string) => void;
+  updateTask: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
+  deleteTask: (goalId: string, taskId: string) => void;
+
+  // Subtask CRUD actions
+  addSubtask: (goalId: string, taskId: string, label: string) => void;
+  toggleSubtaskComplete: (goalId: string, taskId: string, subtaskId: string) => void;
+  deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
   // Scheduling actions (from drag-drop)
   scheduleGoal: (goalId: string, dayIndex: number, startMinutes: number) => void;
@@ -756,6 +777,160 @@ export function useUnifiedSchedule({
   );
 
   // -------------------------------------------------------------------------
+  // Task CRUD Actions
+  // -------------------------------------------------------------------------
+
+  const addTask = React.useCallback(
+    (goalId: string, label: string) => {
+      const newTask: ScheduleTask = {
+        id: crypto.randomUUID(),
+        label,
+        completed: false,
+      };
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? { ...g, tasks: [...(g.tasks ?? []), newTask] }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  const updateTask = React.useCallback(
+    (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                tasks: g.tasks?.map((t) =>
+                  t.id === taskId ? { ...t, ...updates } : t
+                ),
+              }
+            : g
+        )
+      );
+
+      // If updating the label, also update the calendar event title
+      const newLabel = updates.label;
+      if (newLabel) {
+        const goal = goals.find((g) => g.id === goalId);
+        const task = goal?.tasks?.find((t) => t.id === taskId);
+        if (task?.scheduledBlockId) {
+          setEvents((prev) =>
+            prev.map((e) =>
+              e.id === task.scheduledBlockId
+                ? { ...e, title: newLabel }
+                : e
+            )
+          );
+        }
+      }
+    },
+    [goals]
+  );
+
+  const deleteTask = React.useCallback(
+    (goalId: string, taskId: string) => {
+      const goal = goals.find((g) => g.id === goalId);
+      const task = goal?.tasks?.find((t) => t.id === taskId);
+
+      // Remove associated calendar event if exists
+      if (task?.scheduledBlockId) {
+        setEvents((prev) => prev.filter((e) => e.id !== task.scheduledBlockId));
+      }
+
+      // Remove the task from the goal
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? { ...g, tasks: g.tasks?.filter((t) => t.id !== taskId) }
+            : g
+        )
+      );
+    },
+    [goals]
+  );
+
+  // -------------------------------------------------------------------------
+  // Subtask CRUD Actions
+  // -------------------------------------------------------------------------
+
+  const addSubtask = React.useCallback(
+    (goalId: string, taskId: string, label: string) => {
+      const newSubtask: Subtask = {
+        id: crypto.randomUUID(),
+        label,
+        completed: false,
+      };
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                tasks: g.tasks?.map((t) =>
+                  t.id === taskId
+                    ? { ...t, subtasks: [...(t.subtasks ?? []), newSubtask] }
+                    : t
+                ),
+              }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  const toggleSubtaskComplete = React.useCallback(
+    (goalId: string, taskId: string, subtaskId: string) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                tasks: g.tasks?.map((t) =>
+                  t.id === taskId
+                    ? {
+                        ...t,
+                        subtasks: t.subtasks?.map((s) =>
+                          s.id === subtaskId
+                            ? { ...s, completed: !s.completed }
+                            : s
+                        ),
+                      }
+                    : t
+                ),
+              }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  const deleteSubtask = React.useCallback(
+    (goalId: string, taskId: string, subtaskId: string) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                tasks: g.tasks?.map((t) =>
+                  t.id === taskId
+                    ? { ...t, subtasks: t.subtasks?.filter((s) => s.id !== subtaskId) }
+                    : t
+                ),
+              }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  // -------------------------------------------------------------------------
   // Calendar Handlers (for spreading onto Calendar component)
   // -------------------------------------------------------------------------
 
@@ -907,6 +1082,14 @@ export function useUnifiedSchedule({
     getWeekDeadlines,
     addGoal,
     toggleTaskComplete,
+    // Task CRUD
+    addTask,
+    updateTask,
+    deleteTask,
+    // Subtask CRUD
+    addSubtask,
+    toggleSubtaskComplete,
+    deleteSubtask,
     scheduleGoal,
     scheduleTask,
     scheduleCommitment,
