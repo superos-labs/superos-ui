@@ -205,7 +205,7 @@ export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = [
   // =============================================================================
   // Sleep - 12a-7a (7 hours) every day
   // =============================================================================
-  { id: "shell-sleep-0", title: "Sleep", dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+  { id: "shell-sleep-0", title: "Sleep", dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep", status: "completed" },
   { id: "shell-sleep-1", title: "Sleep", dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
   { id: "shell-sleep-2", title: "Sleep", dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
   { id: "shell-sleep-3", title: "Sleep", dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
@@ -217,7 +217,7 @@ export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = [
   // SuperOS Goal - Morning blocks
   // M/W/F: 8a-10:45a (165 min), Tu/Th: 8a-12:30p (270 min)
   // =============================================================================
-  { id: "shell-superos-am-0", title: "Get SuperOS to $1M ARR", dayIndex: 0, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+  { id: "shell-superos-am-0", title: "Get SuperOS to $1M ARR", dayIndex: 0, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
   { id: "shell-superos-am-1", title: "Get SuperOS to $1M ARR", dayIndex: 1, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
   { id: "shell-superos-am-2", title: "Get SuperOS to $1M ARR", dayIndex: 2, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
   { id: "shell-superos-am-3", title: "Get SuperOS to $1M ARR", dayIndex: 3, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
@@ -226,23 +226,23 @@ export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = [
   // =============================================================================
   // Exercise - 11a-12:30p (90 min) on M/W/F
   // =============================================================================
-  { id: "shell-exercise-0", title: "Exercise", dayIndex: 0, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
+  { id: "shell-exercise-0", title: "Exercise", dayIndex: 0, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise", status: "completed" },
   { id: "shell-exercise-2", title: "Exercise", dayIndex: 2, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
   { id: "shell-exercise-4", title: "Exercise", dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
 
   // =============================================================================
-  // Eat (Lunch) - 1p-2p (60 min) Mon-Fri
+  // Eat (Lunch) - 12:30p-1p on Mon (completed), 1p-2p Tu-Fri
   // =============================================================================
-  { id: "shell-eat-lunch-0", title: "Eat", dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+  { id: "shell-eat-lunch-0", title: "Eat", dayIndex: 0, startMinutes: hoursToMinutes(12.5), durationMinutes: 30, color: "amber", blockType: "commitment", sourceCommitmentId: "eat", status: "completed" },
   { id: "shell-eat-lunch-1", title: "Eat", dayIndex: 1, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
   { id: "shell-eat-lunch-2", title: "Eat", dayIndex: 2, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
   { id: "shell-eat-lunch-3", title: "Eat", dayIndex: 3, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
   { id: "shell-eat-lunch-4", title: "Eat", dayIndex: 4, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
 
   // =============================================================================
-  // SuperOS Goal - Afternoon blocks (2p-6p = 240 min) Mon-Fri
+  // SuperOS Goal - Afternoon blocks (1p-6p = 300 min on Mon, 2p-6p = 240 min Tu-Fri)
   // =============================================================================
-  { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", dayIndex: 0, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+  { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 300, color: "violet", blockType: "goal", sourceGoalId: "superos" },
   { id: "shell-superos-pm-1", title: "Get SuperOS to $1M ARR", dayIndex: 1, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
   { id: "shell-superos-pm-2", title: "Get SuperOS to $1M ARR", dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
   { id: "shell-superos-pm-3", title: "Get SuperOS to $1M ARR", dayIndex: 3, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
