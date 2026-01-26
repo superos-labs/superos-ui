@@ -255,18 +255,25 @@ export function TaskRow({
   // Hover state for keyboard shortcuts
   const [isHovered, setIsHovered] = React.useState(false);
   const rowRef = React.useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Handle keyboard shortcuts when hovered
   React.useEffect(() => {
-    if (!isHovered || !onDeleteTask) return;
+    if (!isHovered) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't delete if editing title or if target is an input/textarea
-      if (isEditingTitle) return;
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      const isInInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
 
-      if (e.key === "Delete" || e.key === "Backspace") {
+      // ESC to collapse expanded task (if not editing)
+      if (e.key === "Escape" && isExpanded && !isEditingTitle && !isInInput) {
+        e.preventDefault();
+        onExpand?.(task.id);
+        return;
+      }
+
+      // Delete/Backspace to delete task
+      if ((e.key === "Delete" || e.key === "Backspace") && !isEditingTitle && !isInInput && onDeleteTask) {
         e.preventDefault();
         onDeleteTask();
       }
@@ -274,7 +281,29 @@ export function TaskRow({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isHovered, isEditingTitle, onDeleteTask]);
+  }, [isHovered, isExpanded, isEditingTitle, onDeleteTask, onExpand, task.id]);
+
+  // Handle click outside to collapse expanded task
+  React.useEffect(() => {
+    if (!isExpanded) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      // Don't collapse if clicking inside the task container
+      if (containerRef.current?.contains(e.target as Node)) return;
+      
+      onExpand?.(task.id);
+    };
+
+    // Use setTimeout to avoid immediate collapse from the click that expanded
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [isExpanded, onExpand, task.id]);
   
   const dragItem: DragItem = {
     type: "task",
@@ -316,6 +345,7 @@ export function TaskRow({
 
   return (
     <div 
+      ref={containerRef}
       className={cn(
         "flex flex-col",
         isExpanded && "rounded-lg bg-muted/40",
