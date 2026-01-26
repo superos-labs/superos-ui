@@ -89,15 +89,28 @@ function parseTimeToMinutes(time: string): number {
   return hours * 60 + mins
 }
 
+/** Result of converting a CalendarEvent to BlockSidebarData */
+interface EventToSidebarResult {
+  block: BlockSidebarData;
+  /** Available tasks from the goal that haven't been assigned yet (for goal blocks) */
+  availableGoalTasks: BlockGoalTask[];
+}
+
 /** Convert CalendarEvent to BlockSidebarData */
 function eventToBlockSidebarData(
   event: CalendarEvent,
   goals: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor; tasks?: Array<{ id: string; label: string; completed?: boolean; subtasks?: Array<{ id: string; label: string; completed: boolean }> }> }>,
+  commitments: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor }>,
   weekDates: Date[]
-): BlockSidebarData {
+): EventToSidebarResult {
   // Find source goal for goal/task blocks
   const sourceGoal = event.sourceGoalId
     ? goals.find((g) => g.id === event.sourceGoalId)
+    : undefined
+
+  // Find source commitment for commitment blocks
+  const sourceCommitment = event.sourceCommitmentId
+    ? commitments.find((c) => c.id === event.sourceCommitmentId)
     : undefined
 
   // Find source task (for task blocks)
@@ -114,14 +127,29 @@ function eventToBlockSidebarData(
   const startTime = formatMinutesToTime(event.startMinutes)
   const endTime = formatMinutesToTime(event.startMinutes + event.durationMinutes)
 
-  // Build goal tasks for goal blocks
+  // Build goal tasks for goal blocks - only show assigned tasks
+  const assignedTaskIds = event.assignedTaskIds ?? []
   const goalTasks: BlockGoalTask[] =
     sourceGoal && event.blockType === "goal"
-      ? (sourceGoal.tasks ?? []).map((t) => ({
-          id: t.id,
-          label: t.label,
-          completed: t.completed ?? false,
-        }))
+      ? (sourceGoal.tasks ?? [])
+          .filter((t) => assignedTaskIds.includes(t.id))
+          .map((t) => ({
+            id: t.id,
+            label: t.label,
+            completed: t.completed ?? false,
+          }))
+      : []
+
+  // Build available tasks (not yet assigned) for goal blocks
+  const availableGoalTasks: BlockGoalTask[] =
+    sourceGoal && event.blockType === "goal"
+      ? (sourceGoal.tasks ?? [])
+          .filter((t) => !assignedTaskIds.includes(t.id))
+          .map((t) => ({
+            id: t.id,
+            label: t.label,
+            completed: t.completed ?? false,
+          }))
       : []
 
   // Build subtasks for task blocks
@@ -133,24 +161,35 @@ function eventToBlockSidebarData(
     })) ?? []
 
   return {
-    id: event.id,
-    title: event.title,
-    blockType: event.blockType ?? "goal",
-    date: isoDate,
-    startTime,
-    endTime,
-    notes: event.notes ?? "",
-    subtasks,
-    goalTasks,
-    color: event.color,
-    goal: sourceGoal
-      ? {
-          id: sourceGoal.id,
-          label: sourceGoal.label,
-          icon: sourceGoal.icon,
-          color: getIconColorClass(sourceGoal.color),
-        }
-      : undefined,
+    block: {
+      id: event.id,
+      title: event.title,
+      blockType: event.blockType ?? "goal",
+      date: isoDate,
+      startTime,
+      endTime,
+      notes: event.notes ?? "",
+      subtasks,
+      goalTasks,
+      color: event.color,
+      goal: sourceGoal
+        ? {
+            id: sourceGoal.id,
+            label: sourceGoal.label,
+            icon: sourceGoal.icon,
+            color: getIconColorClass(sourceGoal.color),
+          }
+        : undefined,
+      commitment: sourceCommitment
+        ? {
+            id: sourceCommitment.id,
+            label: sourceCommitment.label,
+            icon: sourceCommitment.icon,
+            color: getIconColorClass(sourceCommitment.color),
+          }
+        : undefined,
+    },
+    availableGoalTasks,
   }
 }
 
@@ -216,6 +255,8 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     hoverPosition,
     calendarHandlers,
     updateEvent,
+    assignTaskToBlock,
+    unassignTaskFromBlock,
   } = useUnifiedSchedule({
     initialGoals: dataSet.goals,
     allCommitments: ALL_COMMITMENTS,
@@ -241,6 +282,12 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   const selectedEvent = selectedEventId
     ? calendarEvents.find((e) => e.id === selectedEventId) ?? null
     : null
+
+  // Compute sidebar data for the selected event (memoized)
+  const sidebarData = React.useMemo(() => {
+    if (!selectedEvent) return null
+    return eventToBlockSidebarData(selectedEvent, goals, commitments, weekDates)
+  }, [selectedEvent, goals, commitments, weekDates])
 
   // Handle event click - select the block to show sidebar
   const handleEventClick = React.useCallback((event: CalendarEvent) => {
@@ -357,6 +404,23 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
       )
     },
     [selectedEvent, deleteSubtask]
+  )
+
+  // Task assignment handlers for goal blocks
+  const handleSidebarAssignTask = React.useCallback(
+    (taskId: string) => {
+      if (!selectedEvent) return
+      assignTaskToBlock(selectedEvent.id, taskId)
+    },
+    [selectedEvent, assignTaskToBlock]
+  )
+
+  const handleSidebarUnassignTask = React.useCallback(
+    (taskId: string) => {
+      if (!selectedEvent) return
+      unassignTaskFromBlock(selectedEvent.id, taskId)
+    },
+    [selectedEvent, unassignTaskFromBlock]
   )
 
   // Drag context for external drag preview
@@ -610,9 +674,9 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
               selectedEvent || showRightSidebar ? "w-[380px] opacity-100" : "w-0 opacity-0"
             }`}
           >
-            {selectedEvent ? (
+            {selectedEvent && sidebarData ? (
               <BlockSidebar
-                block={eventToBlockSidebarData(selectedEvent, goals, weekDates)}
+                block={sidebarData.block}
                 onClose={handleCloseSidebar}
                 onTitleChange={handleSidebarTitleChange}
                 onDateChange={handleSidebarDateChange}
@@ -623,6 +687,9 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 onAddSubtask={handleSidebarAddSubtask}
                 onToggleSubtask={handleSidebarToggleSubtask}
                 onDeleteSubtask={handleSidebarDeleteSubtask}
+                availableGoalTasks={sidebarData.availableGoalTasks}
+                onAssignTask={handleSidebarAssignTask}
+                onUnassignTask={handleSidebarUnassignTask}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : (

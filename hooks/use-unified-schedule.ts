@@ -182,6 +182,10 @@ export interface UseUnifiedScheduleReturn {
   markEventComplete: (eventId: string) => void;
   markEventIncomplete: (eventId: string) => void;
 
+  // Task assignment to blocks (for goal blocks)
+  assignTaskToBlock: (blockId: string, taskId: string) => void;
+  unassignTaskFromBlock: (blockId: string, taskId: string) => void;
+
   // Handler to process drops from drag context (supports both grid and header drops)
   handleDrop: (item: DragItem, position: DropPosition, weekDates: Date[]) => void;
 
@@ -734,6 +738,39 @@ export function useUnifiedSchedule({
     []
   );
 
+  // Assign a task to a goal block
+  const assignTaskToBlock = React.useCallback(
+    (blockId: string, taskId: string) => {
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === blockId
+            ? { ...e, assignedTaskIds: [...(e.assignedTaskIds ?? []), taskId] }
+            : e
+        )
+      );
+    },
+    []
+  );
+
+  // Unassign a task from a goal block
+  const unassignTaskFromBlock = React.useCallback(
+    (blockId: string, taskId: string) => {
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === blockId
+            ? {
+                ...e,
+                assignedTaskIds: (e.assignedTaskIds ?? []).filter(
+                  (id) => id !== taskId
+                ),
+              }
+            : e
+        )
+      );
+    },
+    []
+  );
+
   // -------------------------------------------------------------------------
   // Backlog Actions
   // -------------------------------------------------------------------------
@@ -1111,6 +1148,8 @@ export function useUnifiedSchedule({
     deleteEvent,
     markEventComplete,
     markEventIncomplete,
+    assignTaskToBlock,
+    unassignTaskFromBlock,
     hoveredEvent,
     hoverPosition,
     calendarHandlers: {

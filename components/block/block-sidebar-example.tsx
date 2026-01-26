@@ -63,7 +63,15 @@ const SAMPLE_BLOCK: BlockSidebarData = {
 const BLOCK_TYPE_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "goal", label: "Goal Block" },
   { value: "task", label: "Task Block" },
+  { value: "commitment", label: "Commitment Block" },
 ];
+
+const SAMPLE_COMMITMENT: BlockSidebarGoal = {
+  id: "commitment-1",
+  label: "Exercise",
+  icon: RiRocketLine, // In real use, this would be a different icon
+  color: "text-green-500",
+};
 
 export function BlockSidebarExample() {
   const [blockType, setBlockType] = useState<BlockType>("goal");
@@ -138,10 +146,11 @@ export function BlockSidebarExample() {
     date,
     startTime,
     endTime,
-    goalTasks,
-    subtasks,
+    goalTasks: blockType === "goal" ? goalTasks : [],
+    subtasks: blockType === "task" ? subtasks : [],
     notes,
-    goal: blockType === "goal" ? SAMPLE_GOAL : undefined,
+    goal: blockType === "goal" || blockType === "task" ? SAMPLE_GOAL : undefined,
+    commitment: blockType === "commitment" ? SAMPLE_COMMITMENT : undefined,
   };
 
   return (

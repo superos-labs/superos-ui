@@ -20,6 +20,7 @@ export type {
   BlockSidebarData,
   BlockGoalTask,
   BlockSubtask,
+  BlockSidebarSource,
   BlockSidebarGoal,
 } from "./block-sidebar";
 

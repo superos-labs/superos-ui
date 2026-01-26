@@ -13,6 +13,7 @@ import {
 } from "@remixicon/react";
 import type { BlockColor } from "./block-colors";
 import type { BlockType, IconComponent } from "@/lib/types";
+import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
 
 // Types
 
@@ -30,17 +31,21 @@ interface BlockSubtask {
   done: boolean;
 }
 
-interface BlockSidebarGoal {
+/** Associated goal or commitment for the block */
+interface BlockSidebarSource {
   id: string;
   label: string;
   icon: IconComponent;
   color: string;
 }
 
+/** @deprecated Use BlockSidebarSource instead */
+type BlockSidebarGoal = BlockSidebarSource;
+
 interface BlockSidebarData {
   id: string;
   title: string;
-  /** Block type: 'goal' shows goal tasks section, 'task' does not */
+  /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'commitment' shows notes only */
   blockType: BlockType;
   /** Date in ISO format (YYYY-MM-DD) */
   date: string;
@@ -50,14 +55,16 @@ interface BlockSidebarData {
   endTime: string;
   /** Optional notes for the block */
   notes?: string;
-  /** Ephemeral subtasks, deleted with block */
+  /** Subtasks for task blocks (synced with the source task) */
   subtasks: BlockSubtask[];
   /** Assigned tasks from the goal (only when blockType === 'goal') */
   goalTasks: BlockGoalTask[];
   /** Color theme for the block */
   color: BlockColor;
-  /** Associated goal (only when blockType === 'goal') */
-  goal?: BlockSidebarGoal;
+  /** Associated goal (for goal/task blocks) */
+  goal?: BlockSidebarSource;
+  /** Associated commitment (for commitment blocks) */
+  commitment?: BlockSidebarSource;
 }
 
 // Helper to format date for display
@@ -293,6 +300,12 @@ function BlockSidebar({
 }: BlockSidebarProps) {
   // Note: _onUnassignTask is reserved for future use (unassign task from block)
   const isGoalBlock = block.blockType === "goal";
+  const isTaskBlock = block.blockType === "task";
+  const isCommitmentBlock = block.blockType === "commitment";
+  
+  // Get the source info (goal or commitment)
+  const sourceInfo = block.goal ?? block.commitment;
+  
   return (
     <div
       className={cn(
@@ -334,15 +347,15 @@ function BlockSidebar({
           </h2>
         )}
 
-        {/* Associated goal */}
-        {block.goal && (
+        {/* Associated goal or commitment */}
+        {sourceInfo && (
           <div className="flex items-center gap-2">
             <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
-              <block.goal.icon className={cn("size-3", block.goal.color)} />
+              <sourceInfo.icon className={cn("size-3", sourceInfo.color)} />
             </div>
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <RiFlagLine className="size-3" />
-              <span>{block.goal.label}</span>
+              <span>{sourceInfo.label}</span>
             </div>
           </div>
         )}
@@ -473,19 +486,27 @@ function BlockSidebar({
             )}
 
             {/* Subtasks (only for task blocks) */}
-            {!isGoalBlock && (
+            {isTaskBlock && (
               <>
                 {block.subtasks.length > 0 && (
                   <div className="flex flex-col gap-0.5 pt-1">
-                    {block.subtasks.map((subtask) => (
-                      <BlockSubtaskRow
-                        key={subtask.id}
-                        subtask={subtask}
-                        onToggle={onToggleSubtask}
-                        onChange={onUpdateSubtask}
-                        onDelete={onDeleteSubtask}
-                      />
-                    ))}
+                    {block.subtasks.map((subtask) => {
+                      // Map BlockSubtask to SubtaskRowData
+                      const rowData: SubtaskRowData = {
+                        id: subtask.id,
+                        label: subtask.text,
+                        completed: subtask.done,
+                      };
+                      return (
+                        <SubtaskRow
+                          key={subtask.id}
+                          subtask={rowData}
+                          onToggle={onToggleSubtask}
+                          onTextChange={onUpdateSubtask}
+                          onDelete={onDeleteSubtask}
+                        />
+                      );
+                    })}
                   </div>
                 )}
 
@@ -514,6 +535,7 @@ export type {
   BlockSidebarData,
   BlockGoalTask,
   BlockSubtask,
+  BlockSidebarSource,
   BlockSidebarGoal,
 };
 // Re-export BlockType for backward compatibility

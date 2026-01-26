@@ -6,7 +6,6 @@ import {
   RiCheckLine,
   RiTimeLine,
   RiFlagLine,
-  RiCloseLine,
   RiAddLine,
 } from "@remixicon/react";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
@@ -14,50 +13,11 @@ import type { DragItem } from "@/lib/drag-types";
 import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask, Subtask } from "@/hooks/use-unified-schedule";
 import type { BacklogItem, BacklogTask } from "./backlog-types";
 import { formatScheduledTime, formatDeadlineDate } from "./backlog-utils";
+import { SubtaskRow } from "@/components/ui/subtask-row";
 
-// =============================================================================
-// Subtask Row
-// =============================================================================
-
-interface SubtaskRowProps {
-  subtask: Subtask;
-  onToggle?: (subtaskId: string) => void;
-  onDelete?: (subtaskId: string) => void;
-}
-
-export function SubtaskRow({ subtask, onToggle, onDelete }: SubtaskRowProps) {
-  return (
-    <div className="group flex items-center gap-2 py-0.5">
-      <button
-        onClick={() => onToggle?.(subtask.id)}
-        className={cn(
-          "flex size-3.5 shrink-0 items-center justify-center rounded border transition-colors",
-          subtask.completed
-            ? "border-muted-foreground/30 bg-muted text-muted-foreground"
-            : "border-border bg-transparent hover:border-muted-foreground/50"
-        )}
-      >
-        {subtask.completed && <RiCheckLine className="size-2.5" />}
-      </button>
-      <span
-        className={cn(
-          "flex-1 text-xs",
-          subtask.completed && "text-muted-foreground line-through"
-        )}
-      >
-        {subtask.label}
-      </span>
-      {onDelete && (
-        <button
-          onClick={() => onDelete(subtask.id)}
-          className="flex size-4 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-opacity hover:text-muted-foreground group-hover:opacity-100"
-        >
-          <RiCloseLine className="size-3" />
-        </button>
-      )}
-    </div>
-  );
-}
+// SubtaskRow is imported from @/components/ui/subtask-row
+// Re-export for backward compatibility
+export { SubtaskRow } from "@/components/ui/subtask-row";
 
 // =============================================================================
 // Inline Subtask Creator
@@ -181,6 +141,7 @@ function ExpandedTaskDetail({
               subtask={subtask}
               onToggle={onToggleSubtask}
               onDelete={onDeleteSubtask}
+              size="compact"
             />
           ))}
           {onAddSubtask && (

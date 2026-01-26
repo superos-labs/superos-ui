@@ -101,6 +101,8 @@ export interface CalendarEvent {
   sourceCommitmentId?: string;
   /** Optional notes for this block */
   notes?: string;
+  /** For goal blocks: task IDs explicitly assigned to this block (empty by default) */
+  assignedTaskIds?: string[];
 }
 
 // =============================================================================
