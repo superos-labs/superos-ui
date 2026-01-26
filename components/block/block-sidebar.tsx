@@ -14,16 +14,17 @@ import {
 } from "@remixicon/react";
 import type { BlockColor } from "./block-colors";
 import type { BlockType, IconComponent } from "@/lib/types";
+import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
 
 // Types
 
-/** Goal task - synced from the goal's master task list */
-interface BlockGoalTask {
-  id: string;
-  label: string;
-  completed?: boolean;
-}
+/**
+ * Goal task - synced from the goal's master task list.
+ * This is an alias for ScheduleTask to maintain backward compatibility.
+ * Use ScheduleTask directly for new code.
+ */
+type BlockGoalTask = ScheduleTask;
 
 /** Ephemeral subtask - block-scoped, deleted with block */
 interface BlockSubtask {
@@ -116,52 +117,356 @@ function AutoResizeTextarea({
   );
 }
 
-// Goal task row component (prominent checkbox style)
-interface BlockGoalTaskRowProps {
-  task: BlockGoalTask;
-  onToggle?: (id: string) => void;
-  onUnassign?: (id: string) => void;
+// =============================================================================
+// Inline Subtask Creator (for expanded goal task detail)
+// =============================================================================
+
+interface InlineGoalSubtaskCreatorProps {
+  onSave: (label: string) => void;
 }
 
-function BlockGoalTaskRow({ task, onToggle, onUnassign }: BlockGoalTaskRowProps) {
+function InlineGoalSubtaskCreator({ onSave }: InlineGoalSubtaskCreatorProps) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && value.trim()) {
+      e.preventDefault();
+      onSave(value.trim());
+      setValue("");
+      inputRef.current?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setValue("");
+      setIsEditing(false);
+    }
+  };
+
+  const handleBlur = () => {
+    if (value.trim()) {
+      onSave(value.trim());
+    }
+    setValue("");
+    setIsEditing(false);
+  };
+
+  if (!isEditing) {
+    return (
+      <button
+        onClick={() => setIsEditing(true)}
+        className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+      >
+        <RiAddLine className="size-3" />
+        <span>Add subtask...</span>
+      </button>
+    );
+  }
+
   return (
-    <div
+    <div className="flex items-center gap-2 py-0.5">
+      <div className="flex size-4 shrink-0 items-center justify-center rounded border border-muted-foreground/40" />
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        placeholder="Subtask..."
+        className="h-5 min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+      />
+    </div>
+  );
+}
+
+// =============================================================================
+// Expanded Goal Task Detail
+// =============================================================================
+
+interface ExpandedGoalTaskDetailProps {
+  task: ScheduleTask;
+  onUpdateTask?: (updates: Partial<ScheduleTask>) => void;
+  onAddSubtask?: (label: string) => void;
+  onToggleSubtask?: (subtaskId: string) => void;
+  onUpdateSubtask?: (subtaskId: string, label: string) => void;
+  onDeleteSubtask?: (subtaskId: string) => void;
+}
+
+function ExpandedGoalTaskDetail({
+  task,
+  onUpdateTask,
+  onAddSubtask,
+  onToggleSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+}: ExpandedGoalTaskDetailProps) {
+  const [descriptionValue, setDescriptionValue] = React.useState(task.description ?? "");
+
+  // Sync description when task changes externally
+  React.useEffect(() => {
+    setDescriptionValue(task.description ?? "");
+  }, [task.description]);
+
+  const handleDescriptionBlur = () => {
+    if (descriptionValue !== (task.description ?? "")) {
+      onUpdateTask?.({ description: descriptionValue || undefined });
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2 pb-2 pl-7 pr-2">
+      {/* Notes textarea */}
+      <textarea
+        value={descriptionValue}
+        onChange={(e) => setDescriptionValue(e.target.value)}
+        onBlur={handleDescriptionBlur}
+        placeholder="Add notes..."
+        className="min-h-[32px] resize-none rounded-md bg-muted/40 px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-border"
+      />
+
+      {/* Subtasks list */}
+      {(task.subtasks?.length || onAddSubtask) && (
+        <div className="flex flex-col gap-0.5">
+          {task.subtasks?.map((subtask) => (
+            <SubtaskRow
+              key={subtask.id}
+              subtask={subtask}
+              onToggle={onToggleSubtask}
+              onTextChange={onUpdateSubtask}
+              onDelete={onDeleteSubtask}
+              size="default"
+            />
+          ))}
+          {onAddSubtask && (
+            <InlineGoalSubtaskCreator onSave={onAddSubtask} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Goal Task Row (expandable with inline editing)
+// =============================================================================
+
+interface BlockGoalTaskRowProps {
+  task: ScheduleTask;
+  /** Whether this task is expanded to show details */
+  isExpanded?: boolean;
+  /** Callback to toggle expansion */
+  onExpand?: (taskId: string) => void;
+  onToggle?: (id: string) => void;
+  onUnassign?: (id: string) => void;
+  // Task context callbacks
+  onUpdateTask?: (updates: Partial<ScheduleTask>) => void;
+  onAddSubtask?: (label: string) => void;
+  onToggleSubtask?: (subtaskId: string) => void;
+  onUpdateSubtask?: (subtaskId: string, label: string) => void;
+  onDeleteSubtask?: (subtaskId: string) => void;
+}
+
+function BlockGoalTaskRow({ 
+  task, 
+  isExpanded = false,
+  onExpand,
+  onToggle, 
+  onUnassign,
+  onUpdateTask,
+  onAddSubtask,
+  onToggleSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+}: BlockGoalTaskRowProps) {
+  // Inline title editing state
+  const [isEditingTitle, setIsEditingTitle] = React.useState(false);
+  const [titleValue, setTitleValue] = React.useState(task.label);
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Focus input when entering edit mode
+  React.useEffect(() => {
+    if (isEditingTitle) {
+      titleInputRef.current?.focus();
+      titleInputRef.current?.select();
+    }
+  }, [isEditingTitle]);
+
+  // Sync title value when task.label changes externally
+  React.useEffect(() => {
+    if (!isEditingTitle) {
+      setTitleValue(task.label);
+    }
+  }, [task.label, isEditingTitle]);
+
+  const commitTitleChange = () => {
+    if (titleValue.trim() && titleValue.trim() !== task.label) {
+      onUpdateTask?.({ label: titleValue.trim() });
+    } else {
+      setTitleValue(task.label);
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      commitTitleChange();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setTitleValue(task.label);
+      setIsEditingTitle(false);
+    }
+  };
+
+  // Click row to expand, click label when expanded to edit
+  const handleRowClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('[data-checkbox]')) return;
+    if ((e.target as HTMLElement).closest('[data-label]')) return;
+    if ((e.target as HTMLElement).closest('[data-unassign]')) return;
+    onExpand?.(task.id);
+  };
+
+  const handleLabelClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isExpanded && onUpdateTask) {
+      setIsEditingTitle(true);
+    } else {
+      onExpand?.(task.id);
+    }
+  };
+
+  // Handle click outside to collapse expanded task
+  React.useEffect(() => {
+    if (!isExpanded) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current?.contains(e.target as Node)) return;
+      onExpand?.(task.id);
+    };
+
+    // Use setTimeout to avoid immediate collapse from the click that expanded
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [isExpanded, onExpand, task.id]);
+
+  // Handle ESC to collapse expanded task
+  React.useEffect(() => {
+    if (!isExpanded) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isEditingTitle) {
+        onExpand?.(task.id);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isExpanded, isEditingTitle, onExpand, task.id]);
+
+  return (
+    <div 
+      ref={containerRef}
       className={cn(
-        "group relative flex items-center gap-2.5 rounded-lg py-2 px-2 transition-all",
-        "hover:bg-muted/60",
+        "flex flex-col",
+        isExpanded && "rounded-lg bg-muted/30",
       )}
     >
-      <button
-        onClick={() => onToggle?.(task.id)}
+      {/* Task header row */}
+      <div
         className={cn(
-          "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
-          task.completed
-            ? "bg-primary text-primary-foreground"
-            : "border border-border bg-background hover:bg-muted",
+          "group relative flex items-center gap-2.5 rounded-lg py-2 px-2 transition-all",
+          !isExpanded && "hover:bg-muted/60",
+          onExpand && "cursor-pointer",
         )}
+        onClick={handleRowClick}
       >
-        {task.completed && <RiCheckLine className="size-3" />}
-      </button>
-      <span
-        className={cn(
-          "flex-1 text-sm",
-          task.completed
-            ? "text-muted-foreground line-through"
-            : "text-foreground",
-        )}
-      >
-        {task.label}
-      </span>
-      {onUnassign && (
+        {/* Checkbox */}
         <button
+          data-checkbox
           onClick={(e) => {
             e.stopPropagation();
-            onUnassign(task.id);
+            onToggle?.(task.id);
           }}
-          className="flex size-5 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-all hover:text-muted-foreground group-hover:opacity-100"
+          className={cn(
+            "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
+            task.completed
+              ? "bg-primary text-primary-foreground"
+              : "border border-border bg-background hover:bg-muted",
+          )}
         >
-          <RiCloseLine className="size-3.5" />
+          {task.completed && <RiCheckLine className="size-3" />}
         </button>
+
+        {/* Label (editable when expanded) */}
+        {isEditingTitle ? (
+          <input
+            ref={titleInputRef}
+            type="text"
+            value={titleValue}
+            onChange={(e) => setTitleValue(e.target.value)}
+            onKeyDown={handleTitleKeyDown}
+            onBlur={commitTitleChange}
+            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              "flex-1 min-w-0 bg-transparent text-sm outline-none",
+              task.completed ? "text-muted-foreground" : "text-foreground",
+            )}
+          />
+        ) : (
+          <span
+            data-label
+            onClick={handleLabelClick}
+            className={cn(
+              "flex-1 text-sm",
+              task.completed
+                ? "text-muted-foreground line-through"
+                : "text-foreground",
+              isExpanded && onUpdateTask && "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",
+            )}
+          >
+            {task.label}
+          </span>
+        )}
+
+        {/* Unassign button */}
+        {onUnassign && (
+          <button
+            data-unassign
+            onClick={(e) => {
+              e.stopPropagation();
+              onUnassign(task.id);
+            }}
+            className="flex size-5 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-all hover:text-muted-foreground group-hover:opacity-100"
+          >
+            <RiCloseLine className="size-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Expanded detail */}
+      {isExpanded && (
+        <ExpandedGoalTaskDetail
+          task={task}
+          onUpdateTask={onUpdateTask}
+          onAddSubtask={onAddSubtask}
+          onToggleSubtask={onToggleSubtask}
+          onUpdateSubtask={onUpdateSubtask}
+          onDeleteSubtask={onDeleteSubtask}
+        />
       )}
     </div>
   );
@@ -417,6 +722,18 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onAssignTask?: (taskId: string) => void;
   /** Callback to unassign a goal task from this block */
   onUnassignTask?: (taskId: string) => void;
+
+  // Goal task context callbacks (for viewing/editing task details within goal blocks)
+  /** Callback to update a goal task's properties (label, description) */
+  onUpdateGoalTask?: (taskId: string, updates: Partial<ScheduleTask>) => void;
+  /** Callback to add a subtask to a goal task */
+  onAddGoalTaskSubtask?: (taskId: string, label: string) => void;
+  /** Callback to toggle a goal task's subtask completion */
+  onToggleGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
+  /** Callback to update a goal task's subtask label */
+  onUpdateGoalTaskSubtask?: (taskId: string, subtaskId: string, label: string) => void;
+  /** Callback to delete a goal task's subtask */
+  onDeleteGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
 }
 
 function BlockSidebar({
@@ -436,6 +753,12 @@ function BlockSidebar({
   availableGoalTasks,
   onAssignTask,
   onUnassignTask,
+  // Goal task context callbacks
+  onUpdateGoalTask,
+  onAddGoalTaskSubtask,
+  onToggleGoalTaskSubtask,
+  onUpdateGoalTaskSubtask,
+  onDeleteGoalTaskSubtask,
   className,
   ...props
 }: BlockSidebarProps) {
@@ -445,6 +768,13 @@ function BlockSidebar({
   
   // Get the source info (goal or commitment)
   const sourceInfo = block.goal ?? block.commitment;
+
+  // Goal task expansion state (accordion - one at a time)
+  const [expandedGoalTaskId, setExpandedGoalTaskId] = React.useState<string | null>(null);
+
+  const handleGoalTaskExpand = React.useCallback((taskId: string) => {
+    setExpandedGoalTaskId(prev => prev === taskId ? null : taskId);
+  }, []);
 
   // Inline subtask creation state
   const [isCreatingSubtask, setIsCreatingSubtask] = React.useState(false);
@@ -611,8 +941,15 @@ function BlockSidebar({
                   <BlockGoalTaskRow
                     key={task.id}
                     task={task}
+                    isExpanded={expandedGoalTaskId === task.id}
+                    onExpand={handleGoalTaskExpand}
                     onToggle={onToggleGoalTask}
                     onUnassign={onUnassignTask}
+                    onUpdateTask={onUpdateGoalTask ? (updates) => onUpdateGoalTask(task.id, updates) : undefined}
+                    onAddSubtask={onAddGoalTaskSubtask ? (label) => onAddGoalTaskSubtask(task.id, label) : undefined}
+                    onToggleSubtask={onToggleGoalTaskSubtask ? (subtaskId) => onToggleGoalTaskSubtask(task.id, subtaskId) : undefined}
+                    onUpdateSubtask={onUpdateGoalTaskSubtask ? (subtaskId, label) => onUpdateGoalTaskSubtask(task.id, subtaskId, label) : undefined}
+                    onDeleteSubtask={onDeleteGoalTaskSubtask ? (subtaskId) => onDeleteGoalTaskSubtask(task.id, subtaskId) : undefined}
                   />
                 ))
               ) : (

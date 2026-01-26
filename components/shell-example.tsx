@@ -15,10 +15,7 @@ import {
 import type { DeadlineTask } from "@/lib/unified-schedule"
 import { Backlog, type BacklogItem, type BacklogMode, type NewGoalData } from "@/components/backlog"
 import { WeeklyAnalytics } from "@/components/weekly-analytics"
-import {
-  BlockSidebar,
-  type BlockGoalTask,
-} from "@/components/block"
+import { BlockSidebar } from "@/components/block"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
 import { useUnifiedSchedule } from "@/lib/unified-schedule"
 import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types"
@@ -324,6 +321,47 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     [selectedEvent, addTask, assignTaskToBlock]
   )
 
+  // Goal task context handlers (for expanding tasks in goal blocks)
+  const handleSidebarUpdateGoalTask = React.useCallback(
+    (taskId: string, updates: Partial<{ label: string; description?: string }>) => {
+      if (!selectedEvent?.sourceGoalId) return
+      updateTask(selectedEvent.sourceGoalId, taskId, updates)
+    },
+    [selectedEvent, updateTask]
+  )
+
+  const handleSidebarAddGoalTaskSubtask = React.useCallback(
+    (taskId: string, label: string) => {
+      if (!selectedEvent?.sourceGoalId) return
+      addSubtask(selectedEvent.sourceGoalId, taskId, label)
+    },
+    [selectedEvent, addSubtask]
+  )
+
+  const handleSidebarToggleGoalTaskSubtask = React.useCallback(
+    (taskId: string, subtaskId: string) => {
+      if (!selectedEvent?.sourceGoalId) return
+      toggleSubtaskComplete(selectedEvent.sourceGoalId, taskId, subtaskId)
+    },
+    [selectedEvent, toggleSubtaskComplete]
+  )
+
+  const handleSidebarUpdateGoalTaskSubtask = React.useCallback(
+    (taskId: string, subtaskId: string, label: string) => {
+      if (!selectedEvent?.sourceGoalId) return
+      updateSubtask(selectedEvent.sourceGoalId, taskId, subtaskId, label)
+    },
+    [selectedEvent, updateSubtask]
+  )
+
+  const handleSidebarDeleteGoalTaskSubtask = React.useCallback(
+    (taskId: string, subtaskId: string) => {
+      if (!selectedEvent?.sourceGoalId) return
+      deleteSubtask(selectedEvent.sourceGoalId, taskId, subtaskId)
+    },
+    [selectedEvent, deleteSubtask]
+  )
+
   // Drag context for external drag preview
   const dragContext = useDragContextOptional()
   
@@ -600,6 +638,12 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 availableGoalTasks={sidebarData.availableGoalTasks}
                 onAssignTask={handleSidebarAssignTask}
                 onUnassignTask={handleSidebarUnassignTask}
+                // Goal task context callbacks
+                onUpdateGoalTask={handleSidebarUpdateGoalTask}
+                onAddGoalTaskSubtask={handleSidebarAddGoalTaskSubtask}
+                onToggleGoalTaskSubtask={handleSidebarToggleGoalTaskSubtask}
+                onUpdateGoalTaskSubtask={handleSidebarUpdateGoalTaskSubtask}
+                onDeleteGoalTaskSubtask={handleSidebarDeleteGoalTaskSubtask}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : (

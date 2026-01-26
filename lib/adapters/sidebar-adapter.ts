@@ -27,6 +27,8 @@ export interface SidebarGoal {
     label: string;
     completed?: boolean;
     scheduledBlockId?: string;
+    /** Optional description for additional context */
+    description?: string;
     subtasks?: Array<{
       id: string;
       label: string;
@@ -96,6 +98,7 @@ export function eventToBlockSidebarData(
   const endTime = formatMinutesToTime(event.startMinutes + event.durationMinutes);
 
   // Build goal tasks for goal blocks - only show assigned tasks
+  // Pass full task objects to support expansion with notes/subtasks
   const assignedTaskIds = event.assignedTaskIds ?? [];
   const goalTasks: BlockGoalTask[] =
     sourceGoal && event.blockType === "goal"
@@ -105,11 +108,18 @@ export function eventToBlockSidebarData(
             id: t.id,
             label: t.label,
             completed: t.completed ?? false,
+            description: t.description,
+            subtasks: t.subtasks?.map((s) => ({
+              id: s.id,
+              label: s.label,
+              completed: s.completed,
+            })),
           }))
       : [];
 
   // Build available tasks (not yet assigned) for goal blocks
   // Filter out: already assigned, completed, or scheduled to other blocks
+  // Pass full task objects for consistency
   const availableGoalTasks: BlockGoalTask[] =
     sourceGoal && event.blockType === "goal"
       ? (sourceGoal.tasks ?? [])
@@ -123,6 +133,12 @@ export function eventToBlockSidebarData(
             id: t.id,
             label: t.label,
             completed: t.completed ?? false,
+            description: t.description,
+            subtasks: t.subtasks?.map((s) => ({
+              id: s.id,
+              label: s.label,
+              completed: s.completed,
+            })),
           }))
       : [];
 

@@ -24,6 +24,9 @@ export type {
   BlockSidebarGoal,
 } from "./block-sidebar";
 
+// Re-export ScheduleTask for consumers working with goal task data
+export type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
+
 export { ResizableBlockWrapper } from "./resizable-block-wrapper";
 export type { ResizableBlockWrapperProps } from "./resizable-block-wrapper";
 
