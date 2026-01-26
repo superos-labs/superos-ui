@@ -54,11 +54,13 @@ interface BlockSidebarData {
   title: string;
   /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'commitment' shows notes only */
   blockType: BlockType;
-  /** Date in ISO format (YYYY-MM-DD) */
+  /** Start date in ISO format (YYYY-MM-DD) */
   date: string;
+  /** End date in ISO format (YYYY-MM-DD) - only differs from date for overnight blocks */
+  endDate?: string;
   /** Start time in 24h format (HH:MM) */
   startTime: string;
-  /** End time in 24h format (HH:MM) */
+  /** End time in 24h format (HH:MM) - always within 00:00-23:59 */
   endTime: string;
   /** Optional notes for the block */
   notes?: string;
@@ -83,6 +85,11 @@ function formatDateDisplay(dateStr: string): string {
     month: "long",
     day: "numeric",
   });
+}
+
+// Helper to check if block spans overnight (ends on a different day)
+function isOvernightBlock(block: BlockSidebarData): boolean {
+  return !!block.endDate && block.endDate !== block.date;
 }
 
 // Helper to format time for display
@@ -968,15 +975,22 @@ function BlockSidebar({
                     )}
                   />
                   <span className="text-sm text-muted-foreground">to</span>
-                  <input
-                    type="time"
-                    value={block.endTime}
-                    onChange={(e) => onEndTimeChange(e.target.value)}
-                    className={cn(
-                      "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                      "outline-none focus:bg-muted",
+                  <div className="flex flex-1 items-center gap-1.5">
+                    <input
+                      type="time"
+                      value={block.endTime}
+                      onChange={(e) => onEndTimeChange(e.target.value)}
+                      className={cn(
+                        "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
+                        "outline-none focus:bg-muted",
+                      )}
+                    />
+                    {isOvernightBlock(block) && (
+                      <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        +1
+                      </span>
                     )}
-                  />
+                  </div>
                 </>
               ) : (
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -984,6 +998,11 @@ function BlockSidebar({
                   <span>
                     {formatTimeDisplay(block.startTime)} –{" "}
                     {formatTimeDisplay(block.endTime)}
+                    {isOvernightBlock(block) && (
+                      <span className="ml-1 text-xs text-muted-foreground/60">
+                        (+1 day)
+                      </span>
+                    )}
                   </span>
                 </div>
               )}

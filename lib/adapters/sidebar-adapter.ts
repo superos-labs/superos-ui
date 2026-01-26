@@ -4,6 +4,11 @@
  */
 
 import type { CalendarEvent } from "@/components/calendar";
+import {
+  isOvernightEvent,
+  getEventEndDayIndex,
+  getEventEndMinutes,
+} from "@/components/calendar";
 import type { BlockSidebarData, BlockGoalTask, BlockSubtask } from "@/components/block";
 import type { IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
@@ -89,13 +94,27 @@ export function eventToBlockSidebarData(
       ? sourceGoal.tasks?.find((t) => t.id === event.sourceTaskId)
       : undefined;
 
-  // Calculate date from dayIndex + weekDates
-  const date = weekDates[event.dayIndex];
-  const isoDate = date ? date.toISOString().split("T")[0] : "";
+  // Calculate start date from dayIndex + weekDates
+  const startDate = weekDates[event.dayIndex];
+  const isoStartDate = startDate ? startDate.toISOString().split("T")[0] : "";
+
+  // Handle overnight blocks - calculate end date and normalized end time
+  const isOvernight = isOvernightEvent(event);
+  let isoEndDate: string | undefined;
+  let endMinutes: number;
+
+  if (isOvernight) {
+    const endDayIndex = getEventEndDayIndex(event);
+    const endDate = weekDates[endDayIndex];
+    isoEndDate = endDate ? endDate.toISOString().split("T")[0] : undefined;
+    endMinutes = getEventEndMinutes(event); // Returns 0-1440 for the end day
+  } else {
+    endMinutes = event.startMinutes + event.durationMinutes;
+  }
 
   // Convert minutes to time strings
   const startTime = formatMinutesToTime(event.startMinutes);
-  const endTime = formatMinutesToTime(event.startMinutes + event.durationMinutes);
+  const endTime = formatMinutesToTime(endMinutes);
 
   // Build goal tasks for goal blocks - only show assigned tasks
   // Pass full task objects to support expansion with notes/subtasks
@@ -155,7 +174,8 @@ export function eventToBlockSidebarData(
       id: event.id,
       title: event.title,
       blockType: event.blockType ?? "goal",
-      date: isoDate,
+      date: isoStartDate,
+      endDate: isoEndDate,
       startTime,
       endTime,
       notes: event.notes ?? "",
