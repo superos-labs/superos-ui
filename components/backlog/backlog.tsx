@@ -7,6 +7,7 @@ import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { BacklogItem, BacklogMode, GoalDisplayMode, NewGoalData } from "./backlog-types";
 import { BacklogSection } from "./backlog-section";
 import { EditCommitmentsView } from "./edit-commitments-view";
+import { BacklogGoalList } from "./backlog-goal-list";
 
 export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of commitment items to display (filtered by enabled state) */
@@ -71,6 +72,14 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   lifeAreas?: LifeArea[];
   /** Available icons for goal creation */
   goalIcons?: GoalIconOption[];
+  
+  // Goal detail mode props
+  /** Currently selected goal ID (for goal-detail mode) */
+  selectedGoalId?: string | null;
+  /** Callback when a goal is selected (for goal-detail mode) */
+  onSelectGoal?: (goalId: string) => void;
+  /** Callback to browse templates (for goal-detail mode) */
+  onBrowseTemplates?: () => void;
 }
 
 export function Backlog({
@@ -108,10 +117,33 @@ export function Backlog({
   onCreateGoal,
   lifeAreas,
   goalIcons,
+  // Goal detail mode props
+  selectedGoalId,
+  onSelectGoal,
+  onBrowseTemplates,
   className,
   ...props
 }: BacklogProps) {
   const isEditingCommitments = mode === "edit-commitments";
+  const isGoalDetailMode = mode === "goal-detail";
+
+  // Goal detail mode: render simplified goal list
+  if (isGoalDetailMode) {
+    return (
+      <BacklogGoalList
+        goals={goals}
+        selectedGoalId={selectedGoalId}
+        onSelectGoal={onSelectGoal}
+        getGoalStats={getGoalStats}
+        onCreateGoal={onCreateGoal}
+        lifeAreas={lifeAreas}
+        goalIcons={goalIcons}
+        onBrowseTemplates={onBrowseTemplates}
+        className={className}
+        {...props}
+      />
+    );
+  }
 
   return (
     <div
@@ -159,6 +191,7 @@ export function Backlog({
           showTasks={showTasks}
           goalDisplayMode={goalDisplayMode}
           onAddItem={onAddGoal}
+          onItemClick={onSelectGoal}
           onToggleTask={onToggleGoalTask}
           onAddTask={onAddTask}
           onUpdateTask={onUpdateTask}

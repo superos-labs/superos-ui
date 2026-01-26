@@ -37,7 +37,7 @@ export interface BacklogItem {
 }
 
 /** Mode for the backlog display */
-export type BacklogMode = "view" | "edit-commitments";
+export type BacklogMode = "view" | "edit-commitments" | "goal-detail";
 
 /** How to display goals - by goal name or milestone */
 export type GoalDisplayMode = "goal" | "milestone";

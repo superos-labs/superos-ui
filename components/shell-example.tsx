@@ -22,6 +22,8 @@ import {
 } from "@/components/backlog";
 import { WeeklyAnalytics } from "@/components/weekly-analytics";
 import { BlockSidebar, useBlockSidebarHandlers, type UseBlockSidebarHandlersReturn } from "@/components/block";
+import { GoalDetail } from "@/components/goal-detail";
+import type { ScheduleGoal } from "@/lib/unified-schedule";
 import { FocusIndicator } from "@/components/focus";
 import { useFocusSession } from "@/lib/focus";
 import {
@@ -87,6 +89,10 @@ function ShellDemoContent({
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule");
   const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view");
   const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null);
+  
+  // Goal detail mode state
+  const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(null);
+  const [goalNotes, setGoalNotes] = React.useState<Record<string, string>>({});
 
   // -------------------------------------------------------------------------
   // Week Navigation
@@ -420,16 +426,60 @@ function ShellDemoContent({
   // -------------------------------------------------------------------------
   const handleCreateGoal = React.useCallback(
     (data: NewGoalData) => {
+      const newGoalId = crypto.randomUUID();
       addGoal({
-        id: crypto.randomUUID(),
+        id: newGoalId,
         label: data.label,
         icon: data.icon,
         color: data.color,
         tasks: [],
       });
+      // Optionally select the newly created goal
+      if (backlogMode === "goal-detail") {
+        setSelectedGoalId(newGoalId);
+      }
     },
-    [addGoal]
+    [addGoal, backlogMode]
   );
+
+  // -------------------------------------------------------------------------
+  // Goal Detail Mode
+  // -------------------------------------------------------------------------
+  const isGoalDetailMode = backlogMode === "goal-detail";
+  
+  // Get the currently selected goal
+  const selectedGoal = selectedGoalId
+    ? (goals.find((g) => g.id === selectedGoalId) as ScheduleGoal | undefined)
+    : undefined;
+
+  // Life area lookup would go here when goals store lifeAreaId
+  // For now, goals don't persist their life area, so we don't show it
+  const selectedGoalLifeArea = undefined;
+
+  // Get stats for selected goal
+  const selectedGoalStats = selectedGoalId ? getGoalStats(selectedGoalId) : { plannedHours: 0, completedHours: 0 };
+
+  // Enter goal detail mode
+  const handleSelectGoal = React.useCallback((goalId: string) => {
+    setSelectedGoalId(goalId);
+    setBacklogMode("goal-detail");
+    // Close any open right sidebar content
+    setSelectedEventId(null);
+    setShowRightSidebar(false);
+  }, []);
+
+  // Exit goal detail mode
+  const handleCloseGoalDetail = React.useCallback(() => {
+    setSelectedGoalId(null);
+    setBacklogMode("view");
+  }, []);
+
+  // Handle goal notes change
+  const handleGoalNotesChange = React.useCallback((notes: string) => {
+    if (selectedGoalId) {
+      setGoalNotes((prev) => ({ ...prev, [selectedGoalId]: notes }));
+    }
+  }, [selectedGoalId]);
 
   // -------------------------------------------------------------------------
   // Plan Week Toggle
@@ -584,12 +634,35 @@ function ShellDemoContent({
               onCreateGoal={handleCreateGoal}
               lifeAreas={LIFE_AREAS}
               goalIcons={GOAL_ICONS}
+              // Goal detail mode props
+              selectedGoalId={selectedGoalId}
+              onSelectGoal={handleSelectGoal}
             />
           </div>
 
-          {/* Main Content - Calendar */}
+          {/* Main Content - Calendar or Goal Detail */}
           <ShellContent className="overflow-hidden">
-            {showCalendar && (
+            {isGoalDetailMode && selectedGoal ? (
+              <GoalDetail
+                goal={selectedGoal}
+                lifeArea={selectedGoalLifeArea}
+                stats={selectedGoalStats}
+                notes={goalNotes[selectedGoal.id] ?? ""}
+                onNotesChange={handleGoalNotesChange}
+                getTaskSchedule={getTaskSchedule}
+                getTaskDeadline={getTaskDeadline}
+                onToggleTask={(taskId) => toggleTaskComplete(selectedGoal.id, taskId)}
+                onAddTask={(label) => addTask(selectedGoal.id, label)}
+                onUpdateTask={(taskId, updates) => updateTask(selectedGoal.id, taskId, updates)}
+                onDeleteTask={(taskId) => deleteTask(selectedGoal.id, taskId)}
+                onAddSubtask={(taskId, label) => addSubtask(selectedGoal.id, taskId, label)}
+                onToggleSubtask={(taskId, subtaskId) => toggleSubtaskComplete(selectedGoal.id, taskId, subtaskId)}
+                onUpdateSubtask={(taskId, subtaskId, label) => updateSubtask(selectedGoal.id, taskId, subtaskId, label)}
+                onDeleteSubtask={(taskId, subtaskId) => deleteSubtask(selectedGoal.id, taskId, subtaskId)}
+                onClose={handleCloseGoalDetail}
+                className="h-full"
+              />
+            ) : showCalendar ? (
               <Calendar
                 selectedDate={selectedDate}
                 events={calendarEvents}
@@ -605,7 +678,7 @@ function ShellDemoContent({
                 onDeadlineUnassign={clearTaskDeadline}
                 onDeadlineHover={setHoveredDeadline}
               />
-            )}
+            ) : null}
           </ShellContent>
 
           {/* Right Sidebar - Block Details / Analytics */}

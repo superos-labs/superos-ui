@@ -20,6 +20,9 @@ export type { InlineTaskCreatorProps, InlineGoalCreatorProps } from "./inline-cr
 export { EditCommitmentsView } from "./edit-commitments-view";
 export type { EditCommitmentsViewProps } from "./edit-commitments-view";
 
+export { BacklogGoalList } from "./backlog-goal-list";
+export type { BacklogGoalListProps } from "./backlog-goal-list";
+
 // Types
 export type {
   BacklogItem,

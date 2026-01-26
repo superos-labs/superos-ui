@@ -23,6 +23,8 @@ export interface BacklogItemRowProps {
   showTasks?: boolean;
   /** For goals with milestones, which should be the primary title */
   goalDisplayMode?: GoalDisplayMode;
+  /** Callback when the item row is clicked (for entering goal-detail mode) */
+  onItemClick?: (itemId: string) => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
   /** Callback to add a new task to this goal */
   onAddTask?: (goalId: string, label: string) => void;
@@ -55,6 +57,7 @@ export function BacklogItemRow({
   showHours = true,
   showTasks = true,
   goalDisplayMode = "goal",
+  onItemClick,
   onToggleTask,
   onAddTask,
   onUpdateTask,
@@ -110,6 +113,11 @@ export function BacklogItemRow({
   const primaryText = showMilestoneAsPrimary ? item.milestone : item.label;
   const secondaryText = showMilestoneAsPrimary ? item.label : item.milestone;
 
+  // Handle row click
+  const handleRowClick = React.useCallback(() => {
+    onItemClick?.(item.id);
+  }, [onItemClick, item.id]);
+
   return (
     <div className={cn("flex flex-col", className)}>
       <div
@@ -117,7 +125,9 @@ export function BacklogItemRow({
           "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
           "hover:bg-muted/60",
           isDragging && "opacity-50",
+          onItemClick && "cursor-pointer",
         )}
+        onClick={handleRowClick}
         {...(canDrag ? draggableProps : {})}
       >
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">

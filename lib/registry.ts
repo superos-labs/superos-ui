@@ -56,6 +56,15 @@ export const registry: ComponentEntry[] = [
       }))
     ),
   },
+  {
+    slug: "goal-detail",
+    name: "Goal Detail",
+    component: lazy(() =>
+      import("@/components/goal-detail/goal-detail-example").then((m) => ({
+        default: m.GoalDetailExample,
+      }))
+    ),
+  },
 ];
 
 export function getComponent(slug: string): ComponentEntry | undefined {

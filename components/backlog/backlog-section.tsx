@@ -20,6 +20,8 @@ export interface BacklogSectionProps {
   showTasks?: boolean;
   goalDisplayMode?: GoalDisplayMode;
   onAddItem?: () => void;
+  /** Callback when an item row is clicked (for entering goal-detail mode) */
+  onItemClick?: (itemId: string) => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
   /** Callback to add a new task to a goal */
   onAddTask?: (goalId: string, label: string) => void;
@@ -64,6 +66,7 @@ export function BacklogSection({
   showTasks = true,
   goalDisplayMode = "goal",
   onAddItem,
+  onItemClick,
   onToggleTask,
   onAddTask,
   onUpdateTask,
@@ -170,6 +173,7 @@ export function BacklogSection({
             showHours={showHours}
             showTasks={showTasks}
             goalDisplayMode={goalDisplayMode}
+            onItemClick={onItemClick}
             onToggleTask={onToggleTask}
             onAddTask={onAddTask}
             onUpdateTask={onUpdateTask}
