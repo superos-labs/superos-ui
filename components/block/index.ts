@@ -49,3 +49,9 @@ export type {
   UseGridDragCreateReturn,
   DragPreview,
 } from "./use-grid-drag-create";
+
+export { useBlockSidebarHandlers } from "./use-block-sidebar-handlers";
+export type {
+  UseBlockSidebarHandlersOptions,
+  UseBlockSidebarHandlersReturn,
+} from "./use-block-sidebar-handlers";

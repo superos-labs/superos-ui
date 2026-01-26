@@ -1,7 +1,23 @@
 // Public API for the unified schedule system
 
-// Main hook
+// Main orchestration hook
 export { useUnifiedSchedule } from "./use-unified-schedule";
+
+// Composable sub-hooks (for advanced/custom use cases)
+export { useGoalState } from "./use-goal-state";
+export type { UseGoalStateOptions, UseGoalStateReturn } from "./use-goal-state";
+
+export { useCommitmentVisibility } from "./use-commitment-visibility";
+export type { UseCommitmentVisibilityOptions, UseCommitmentVisibilityReturn } from "./use-commitment-visibility";
+
+export { useEventState } from "./use-event-state";
+export type { UseEventStateOptions, UseEventStateReturn } from "./use-event-state";
+
+export { useScheduleStats } from "./use-schedule-stats";
+export type { UseScheduleStatsOptions, UseScheduleStatsReturn } from "./use-schedule-stats";
+
+export { useScheduling } from "./use-scheduling";
+export type { UseSchedulingOptions, UseSchedulingReturn } from "./use-scheduling";
 
 // Week navigation hook
 export { useWeekNavigation } from "./use-week-navigation";

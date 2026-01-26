@@ -1,25 +1,32 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent, BlockStatus, HoverPosition } from "@/components/calendar";
-import { statusOnPaste } from "@/components/calendar";
+import type { CalendarEvent, BlockStatus } from "@/components/calendar";
 import type {
-  Subtask,
   ScheduleTask,
-  ScheduleGoal,
-  ScheduleCommitment,
-  GoalStats,
-  TaskScheduleInfo,
-  TaskDeadlineInfo,
-  DeadlineTask,
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
 } from "./types";
+
+// Import composable hooks
+import { useGoalState } from "./use-goal-state";
+import { useCommitmentVisibility } from "./use-commitment-visibility";
+import { useEventState } from "./use-event-state";
+import { useScheduleStats } from "./use-schedule-stats";
+import { useScheduling } from "./use-scheduling";
 
 // ============================================================================
 // Hook Implementation
 // ============================================================================
 
+/**
+ * Unified schedule hook that composes smaller, focused hooks for:
+ * - Goal state management (goals, tasks, subtasks)
+ * - Commitment visibility management
+ * - Event state management (calendar events)
+ * - Schedule statistics (computed hours, task schedules, deadlines)
+ * - Scheduling actions (drop handlers, scheduling operations)
+ */
 export function useUnifiedSchedule({
   initialGoals,
   allCommitments: allCommitmentsInput,
@@ -31,123 +38,104 @@ export function useUnifiedSchedule({
   hasClipboardContent = false,
   onEventCreated,
 }: UseUnifiedScheduleOptions): UseUnifiedScheduleReturn {
-  const [goals, setGoals] = React.useState<ScheduleGoal[]>(initialGoals);
-  const [allCommitments] = React.useState<ScheduleCommitment[]>(allCommitmentsInput);
-  const [events, setEvents] = React.useState<CalendarEvent[]>(initialEvents);
-
-  // Hover state for keyboard shortcuts
-  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
-  const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
-
-  // Memoize week boundaries for filtering
-  const weekStart = React.useMemo(
-    () => weekDates[0].toISOString().split("T")[0],
-    [weekDates]
-  );
-  const weekEnd = React.useMemo(
-    () => weekDates[6].toISOString().split("T")[0],
-    [weekDates]
-  );
+  // -------------------------------------------------------------------------
+  // Compose Goal State
+  // -------------------------------------------------------------------------
+  const {
+    goals,
+    setGoals,
+    addGoal,
+    toggleTaskComplete: baseToggleTaskComplete,
+    addTask,
+    updateTask: baseUpdateTask,
+    deleteTask: baseDeleteTask,
+    addSubtask,
+    updateSubtask,
+    toggleSubtaskComplete,
+    deleteSubtask,
+    findTask,
+  } = useGoalState({ initialGoals });
 
   // -------------------------------------------------------------------------
-  // Commitment Visibility Management
+  // Compose Commitment Visibility
   // -------------------------------------------------------------------------
-
-  // Compute mandatory IDs from allCommitments
-  const mandatoryCommitmentIds = React.useMemo(
-    () => new Set(allCommitments.filter((c) => c.mandatory).map((c) => c.id)),
-    [allCommitments]
-  );
-
-  // Enabled commitment IDs (committed state)
-  // Always ensure mandatory commitments are included
-  const [enabledCommitmentIds, setEnabledCommitmentIds] = React.useState<Set<string>>(
-    () => {
-      const mandatoryIds = allCommitments.filter((c) => c.mandatory).map((c) => c.id);
-      const initialIds = initialEnabledCommitmentIds ?? allCommitments.map((c) => c.id);
-      // Combine initial with mandatory to ensure mandatory are always included
-      return new Set([...mandatoryIds, ...initialIds]);
-    }
-  );
-
-  // Draft state for editing (null when not editing)
-  const [draftEnabledCommitmentIds, setDraftEnabledCommitmentIds] = React.useState<Set<string> | null>(null);
-
-  // Start editing: create draft from current state
-  const startEditingCommitments = React.useCallback(() => {
-    setDraftEnabledCommitmentIds(new Set(enabledCommitmentIds));
-  }, [enabledCommitmentIds]);
-
-  // Toggle commitment enabled state (works on draft if editing, otherwise on committed state)
-  const toggleCommitmentEnabled = React.useCallback(
-    (id: string) => {
-      // Cannot toggle mandatory commitments
-      if (mandatoryCommitmentIds.has(id)) return;
-
-      if (draftEnabledCommitmentIds !== null) {
-        // Editing mode: update draft
-        setDraftEnabledCommitmentIds((prev) => {
-          if (!prev) return prev;
-          const next = new Set(prev);
-          if (next.has(id)) next.delete(id);
-          else next.add(id);
-          return next;
-        });
-      } else {
-        // Not editing: update committed state directly
-        setEnabledCommitmentIds((prev) => {
-          const next = new Set(prev);
-          if (next.has(id)) next.delete(id);
-          else next.add(id);
-          return next;
-        });
-      }
-    },
-    [mandatoryCommitmentIds, draftEnabledCommitmentIds]
-  );
-
-  // Save draft to committed state
-  const saveCommitmentChanges = React.useCallback(() => {
-    if (draftEnabledCommitmentIds !== null) {
-      setEnabledCommitmentIds(draftEnabledCommitmentIds);
-      setDraftEnabledCommitmentIds(null);
-    }
-  }, [draftEnabledCommitmentIds]);
-
-  // Discard draft changes
-  const cancelCommitmentChanges = React.useCallback(() => {
-    setDraftEnabledCommitmentIds(null);
-  }, []);
-
-  // Filtered commitments: only enabled ones
-  const commitments = React.useMemo(
-    () => allCommitments.filter((c) => enabledCommitmentIds.has(c.id)),
-    [allCommitments, enabledCommitmentIds]
-  );
-
-  // Filtered events: exclude blocks from disabled commitments AND filter to current week
-  const filteredEvents = React.useMemo(
-    () =>
-      events.filter((event) => {
-        // Filter by week (events must have a date in the current week)
-        if (event.date && (event.date < weekStart || event.date > weekEnd)) {
-          return false;
-        }
-        // Keep all non-commitment blocks
-        if (event.blockType !== "commitment") return true;
-        // For commitment blocks, only keep if commitment is enabled
-        return event.sourceCommitmentId && enabledCommitmentIds.has(event.sourceCommitmentId);
-      }),
-    [events, enabledCommitmentIds, weekStart, weekEnd]
-  );
+  const {
+    allCommitments,
+    commitments,
+    enabledCommitmentIds,
+    draftEnabledCommitmentIds,
+    mandatoryCommitmentIds,
+    toggleCommitmentEnabled,
+    startEditingCommitments,
+    saveCommitmentChanges,
+    cancelCommitmentChanges,
+  } = useCommitmentVisibility({
+    allCommitments: allCommitmentsInput,
+    initialEnabledCommitmentIds,
+  });
 
   // -------------------------------------------------------------------------
-  // Event Management
+  // Compose Event State
   // -------------------------------------------------------------------------
+  const {
+    allEvents,
+    setEvents,
+    hoveredEvent,
+    hoverPosition,
+    addEvent,
+    updateEvent,
+    deleteEvent: baseDeleteEvent,
+    markEventComplete: baseMarkEventComplete,
+    markEventIncomplete: baseMarkEventIncomplete,
+    calendarHandlers: baseCalendarHandlers,
+  } = useEventState({
+    initialEvents,
+    weekDates,
+    onCopy,
+    onPaste,
+    hasClipboardContent,
+    onEventCreated,
+  });
 
-  const addEvent = React.useCallback((event: CalendarEvent) => {
-    setEvents((prev) => [...prev, event]);
-  }, []);
+  // -------------------------------------------------------------------------
+  // Compose Schedule Stats
+  // -------------------------------------------------------------------------
+  const {
+    getGoalStats,
+    getCommitmentStats,
+    getTaskSchedule,
+    getTaskDeadline,
+    getWeekDeadlines,
+    filteredEvents,
+  } = useScheduleStats({
+    goals,
+    events: allEvents,
+    weekDates,
+    enabledCommitmentIds,
+  });
+
+  // -------------------------------------------------------------------------
+  // Compose Scheduling Actions
+  // -------------------------------------------------------------------------
+  const {
+    scheduleGoal,
+    scheduleTask,
+    scheduleCommitment,
+    setTaskDeadline,
+    clearTaskDeadline,
+    assignTaskToBlock,
+    unassignTaskFromBlock,
+    assignTaskToGoalBlock,
+    convertTaskBlockToGoalBlock,
+    handleDrop,
+  } = useScheduling({
+    goals,
+    allCommitments,
+    events: allEvents,
+    weekDates,
+    setGoals,
+    setEvents,
+  });
 
   // -------------------------------------------------------------------------
   // Sync Task Counts on Events
@@ -202,1006 +190,153 @@ export function useUnifiedSchedule({
 
       return hasChanges ? updatedEvents : currentEvents;
     });
-  }, [goals]);
+  }, [goals, setEvents]);
 
   // -------------------------------------------------------------------------
-  // Computed Stats
+  // Bidirectional Sync: Task ↔ Event
   // -------------------------------------------------------------------------
 
-  const getGoalStats = React.useCallback(
-    (goalId: string): GoalStats => {
-      // Filter to goal AND current week
-      const goalEvents = events.filter(
-        (e) =>
-          e.sourceGoalId === goalId &&
-          (!e.date || (e.date >= weekStart && e.date <= weekEnd))
-      );
-      const plannedMinutes = goalEvents.reduce(
-        (sum, e) => sum + e.durationMinutes,
-        0
-      );
-      const completedMinutes = goalEvents
-        .filter((e) => e.status === "completed")
-        .reduce((sum, e) => sum + e.durationMinutes, 0);
-
-      return {
-        plannedHours: Math.round((plannedMinutes / 60) * 10) / 10,
-        completedHours: Math.round((completedMinutes / 60) * 10) / 10,
-      };
-    },
-    [events, weekStart, weekEnd]
-  );
-
-  const getCommitmentStats = React.useCallback(
-    (commitmentId: string): GoalStats => {
-      // filteredEvents already includes week filtering, just filter by commitment
-      const commitmentEvents = filteredEvents.filter((e) => e.sourceCommitmentId === commitmentId);
-      const plannedMinutes = commitmentEvents.reduce(
-        (sum, e) => sum + e.durationMinutes,
-        0
-      );
-      const completedMinutes = commitmentEvents
-        .filter((e) => e.status === "completed")
-        .reduce((sum, e) => sum + e.durationMinutes, 0);
-
-      return {
-        plannedHours: Math.round((plannedMinutes / 60) * 10) / 10,
-        completedHours: Math.round((completedMinutes / 60) * 10) / 10,
-      };
-    },
-    [filteredEvents]
-  );
-
-  const getTaskSchedule = React.useCallback(
-    (taskId: string): TaskScheduleInfo | null => {
-      // First check for standalone task blocks
-      const taskBlock = events.find((e) => e.sourceTaskId === taskId);
-      if (taskBlock) {
-        return {
-          blockId: taskBlock.id,
-          dayIndex: taskBlock.dayIndex,
-          startMinutes: taskBlock.startMinutes,
-          durationMinutes: taskBlock.durationMinutes,
-        };
-      }
-
-      // Also check for goal blocks where this task is assigned
-      const goalBlock = events.find((e) => e.assignedTaskIds?.includes(taskId));
-      if (goalBlock) {
-        return {
-          blockId: goalBlock.id,
-          dayIndex: goalBlock.dayIndex,
-          startMinutes: goalBlock.startMinutes,
-          durationMinutes: goalBlock.durationMinutes,
-        };
-      }
-
-      return null;
-    },
-    [events]
-  );
-
-  const getTaskDeadline = React.useCallback(
-    (taskId: string): TaskDeadlineInfo | null => {
-      for (const goal of goals) {
-        const task = goal.tasks?.find((t) => t.id === taskId);
-        if (task?.deadline) {
-          const today = new Date().toISOString().split("T")[0];
-          return {
-            date: task.deadline,
-            isOverdue: task.deadline < today && !task.completed,
-          };
-        }
-      }
-      return null;
-    },
-    [goals]
-  );
-
-  const getWeekDeadlines = React.useCallback(
-    (weekDates: Date[]): Map<string, DeadlineTask[]> => {
-      const result = new Map<string, DeadlineTask[]>();
-      
-      // Get ISO dates for the week
-      const weekISODates = weekDates.map((d) => d.toISOString().split("T")[0]);
-      
-      for (const goal of goals) {
-        if (!goal.tasks) continue;
-        
-        for (const task of goal.tasks) {
-          if (task.deadline && weekISODates.includes(task.deadline)) {
-            const existing = result.get(task.deadline) ?? [];
-            existing.push({
-              taskId: task.id,
-              goalId: goal.id,
-              label: task.label,
-              goalLabel: goal.label,
-              goalColor: goal.color,
-              completed: task.completed ?? false,
-            });
-            result.set(task.deadline, existing);
-          }
-        }
-      }
-      
-      return result;
-    },
-    [goals]
-  );
-
-  // -------------------------------------------------------------------------
-  // Scheduling Actions
-  // -------------------------------------------------------------------------
-
-  const scheduleGoal = React.useCallback(
-    (goalId: string, dayIndex: number, startMinutes: number) => {
-      const goal = goals.find((g) => g.id === goalId);
-      if (!goal) return;
-
-      const newEvent: CalendarEvent = {
-        id: crypto.randomUUID(),
-        title: goal.label,
-        date: weekDates[dayIndex].toISOString().split("T")[0],
-        dayIndex,
-        startMinutes,
-        durationMinutes: 60, // 1 hour for goals
-        color: goal.color,
-        blockType: "goal",
-        sourceGoalId: goalId,
-        status: "planned",
-      };
-      setEvents((prev) => [...prev, newEvent]);
-    },
-    [goals, weekDates]
-  );
-
-  const scheduleTask = React.useCallback(
-    (
-      goalId: string,
-      taskId: string,
-      dayIndex: number,
-      startMinutes: number
-    ) => {
-      const newEventId = crypto.randomUUID();
-      const eventDate = weekDates[dayIndex].toISOString().split("T")[0];
-
-      // Update goals first to get task data and set the new block reference
-      setGoals((currentGoals) => {
-        const goal = currentGoals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
-        if (!goal || !task) return currentGoals;
-
-        // Create new event using current goal/task data
-        const newEvent: CalendarEvent = {
-          id: newEventId,
-          title: task.label,
-          date: eventDate,
-          dayIndex,
-          startMinutes,
-          durationMinutes: 30, // 30 min for tasks
-          color: goal.color, // Inherit from parent goal
-          blockType: "task",
-          sourceGoalId: goalId,
-          sourceTaskId: taskId,
-          status: task.completed ? "completed" : "planned",
-          notes: task.description, // Sync task description to block notes
-        };
-
-        // Update events: remove old (if any), add new
-        setEvents((currentEvents) => {
-          const filtered = currentEvents.filter((e) => e.sourceTaskId !== taskId);
-          return [...filtered, newEvent];
-        });
-
-        // Update task with new block reference and clear deadline (mutually exclusive)
-        return currentGoals.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? { ...t, scheduledBlockId: newEventId, deadline: undefined }
-                    : t
-                ),
-              }
-            : g
-        );
-      });
-    },
-    [weekDates]
-  );
-
-  const scheduleCommitment = React.useCallback(
-    (commitmentId: string, dayIndex: number, startMinutes: number) => {
-      // Find commitment from allCommitments (stable reference)
-      const commitment = allCommitments.find((c) => c.id === commitmentId);
-      if (!commitment) return;
-
-      const newEvent: CalendarEvent = {
-        id: crypto.randomUUID(),
-        title: commitment.label,
-        date: weekDates[dayIndex].toISOString().split("T")[0],
-        dayIndex,
-        startMinutes,
-        durationMinutes: 60, // 1 hour for commitments
-        color: commitment.color,
-        blockType: "commitment",
-        sourceCommitmentId: commitmentId,
-        status: "planned",
-      };
-      setEvents((prev) => [...prev, newEvent]);
-    },
-    [allCommitments, weekDates]
-  );
-
-  // -------------------------------------------------------------------------
-  // Deadline Actions
-  // -------------------------------------------------------------------------
-
-  const setTaskDeadline = React.useCallback(
-    (goalId: string, taskId: string, date: string) => {
-      setGoals((currentGoals) => {
-        const goal = currentGoals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
-        if (!goal || !task) return currentGoals;
-
-        // If task has a scheduled block, remove it (mutually exclusive)
-        if (task.scheduledBlockId) {
-          const blockIdToRemove = task.scheduledBlockId;
-          setEvents((prev) => prev.filter((e) => e.id !== blockIdToRemove));
-        }
-
-        // Update task with deadline and clear scheduledBlockId
-        return currentGoals.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? { ...t, deadline: date, scheduledBlockId: undefined }
-                    : t
-                ),
-              }
-            : g
-        );
-      });
-    },
-    []
-  );
-
-  const clearTaskDeadline = React.useCallback(
-    (goalId: string, taskId: string) => {
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId ? { ...t, deadline: undefined } : t
-                ),
-              }
-            : g
-        )
-      );
-    },
-    []
-  );
-
-  // -------------------------------------------------------------------------
-  // Block Drop Handlers (for dropping tasks onto existing blocks)
-  // -------------------------------------------------------------------------
-
-  /**
-   * Assign a task to an existing goal block.
-   * If task was previously in another block or had a standalone task block, removes it first.
-   */
-  const assignTaskToGoalBlock = React.useCallback(
-    (blockId: string, goalId: string, taskId: string) => {
-      setEvents((prev) => {
-        // First, remove task from any existing block's assignedTaskIds
-        const updated = prev.map((e) => {
-          if (e.assignedTaskIds?.includes(taskId)) {
-            return {
-              ...e,
-              assignedTaskIds: e.assignedTaskIds.filter((id) => id !== taskId),
-            };
-          }
-          return e;
-        });
-
-        // Delete any standalone task block for this task
-        const withoutTaskBlock = updated.filter(
-          (e) => e.sourceTaskId !== taskId
-        );
-
-        // Add to target block's assignedTaskIds
-        return withoutTaskBlock.map((e) =>
-          e.id === blockId
-            ? { ...e, assignedTaskIds: [...(e.assignedTaskIds ?? []), taskId] }
-            : e
-        );
-      });
-
-      // Clear task's scheduledBlockId since it's now part of a goal block
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? { ...t, scheduledBlockId: undefined, deadline: undefined }
-                    : t
-                ),
-              }
-            : g
-        )
-      );
-    },
-    []
-  );
-
-  /**
-   * Convert a task block into a goal block containing both tasks.
-   * Called when dropping a task onto another task's block.
-   */
-  const convertTaskBlockToGoalBlock = React.useCallback(
-    (blockId: string, droppedTaskId: string) => {
-      setEvents((currentEvents) => {
-        const targetBlock = currentEvents.find((e) => e.id === blockId);
-        if (!targetBlock || targetBlock.blockType !== "task") return currentEvents;
-
-        const existingTaskId = targetBlock.sourceTaskId;
-        const goalId = targetBlock.sourceGoalId;
-        if (!existingTaskId || !goalId) return currentEvents;
-
-        // Find goal to get its label
-        const goal = goals.find((g) => g.id === goalId);
-        if (!goal) return currentEvents;
-
-        // Remove the target block (we'll recreate it as a goal block)
-        // Also remove dropped task's standalone block if it exists
-        // Also remove dropped task from any other block's assignedTaskIds
-        const filtered = currentEvents
-          .filter((e) => e.id !== blockId && e.sourceTaskId !== droppedTaskId)
-          .map((e) => {
-            if (e.assignedTaskIds?.includes(droppedTaskId)) {
-              return {
-                ...e,
-                assignedTaskIds: e.assignedTaskIds.filter((id) => id !== droppedTaskId),
-              };
-            }
-            return e;
-          });
-
-        // Create the converted goal block
-        const goalBlock: CalendarEvent = {
-          ...targetBlock,
-          title: goal.label,
-          blockType: "goal",
-          sourceTaskId: undefined, // No longer a task block
-          assignedTaskIds: [existingTaskId, droppedTaskId],
-        };
-
-        return [...filtered, goalBlock];
-      });
-
-      // Clear scheduledBlockId for both tasks
-      setGoals((currentGoals) => {
-        // Find the existing task ID from the block we're converting
-        const targetBlock = events.find((e) => e.id === blockId);
-        const existingTaskId = targetBlock?.sourceTaskId;
-
-        return currentGoals.map((g) => ({
-          ...g,
-          tasks: g.tasks?.map((t) =>
-            t.id === droppedTaskId || t.id === existingTaskId
-              ? { ...t, scheduledBlockId: undefined, deadline: undefined }
-              : t
-          ),
-        }));
-      });
-    },
-    [goals, events]
-  );
-
-  // -------------------------------------------------------------------------
-  // Drop Handler
-  // -------------------------------------------------------------------------
-
-  const handleDrop = React.useCallback(
-    (item: import("@/lib/drag-types").DragItem, position: import("@/lib/drag-types").DropPosition, weekDates: Date[]) => {
-      // Block drop handling - dropping a task onto an existing block
-      if (position.dropTarget === "existing-block" && position.targetBlockId) {
-        // Only tasks can be dropped onto blocks
-        if (item.type !== "task" || !item.taskId || !item.goalId) return;
-
-        const targetBlock = events.find((e) => e.id === position.targetBlockId);
-        if (!targetBlock) return;
-
-        // Validate goal match - can only drop on blocks from the same goal
-        if (targetBlock.sourceGoalId !== item.goalId) return;
-
-        if (targetBlock.blockType === "goal") {
-          // Drop onto goal block → assign task to that block
-          assignTaskToGoalBlock(position.targetBlockId, item.goalId, item.taskId);
-        } else if (targetBlock.blockType === "task") {
-          // Drop onto task block → convert to goal block with both tasks
-          convertTaskBlockToGoalBlock(position.targetBlockId, item.taskId);
-        }
-        // Commitments don't accept drops (filtered by block detection)
-        return;
-      }
-
-      if (position.dropTarget === "day-header") {
-        // Deadline drop - only for tasks
-        if (item.type === "task" && item.taskId && item.goalId) {
-          const isoDate = weekDates[position.dayIndex].toISOString().split("T")[0];
-          setTaskDeadline(item.goalId, item.taskId, isoDate);
-        }
-        // Goals and commitments dropped on header are ignored (only tasks can have deadlines)
-      } else if (position.dropTarget === "time-grid") {
-        // Time grid drop
-        const startMinutes = position.startMinutes ?? 0;
-        if (item.type === "goal" && item.goalId) {
-          scheduleGoal(item.goalId, position.dayIndex, startMinutes);
-        } else if (item.type === "task" && item.taskId && item.goalId) {
-          scheduleTask(item.goalId, item.taskId, position.dayIndex, startMinutes);
-        } else if (item.type === "commitment" && item.commitmentId) {
-          scheduleCommitment(item.commitmentId, position.dayIndex, startMinutes);
-        }
-      }
-    },
-    [events, scheduleGoal, scheduleTask, scheduleCommitment, setTaskDeadline, assignTaskToGoalBlock, convertTaskBlockToGoalBlock]
-  );
-
-  // -------------------------------------------------------------------------
-  // Event Actions
-  // -------------------------------------------------------------------------
-
-  const updateEvent = React.useCallback(
-    (eventId: string, updates: Partial<CalendarEvent>) => {
-      setEvents((prev) =>
-        prev.map((e) => (e.id === eventId ? { ...e, ...updates } : e))
-      );
-    },
-    []
-  );
-
-  const deleteEvent = React.useCallback(
-    (eventId: string) => {
-      setEvents((currentEvents) => {
-        const event = currentEvents.find((e) => e.id === eventId);
-
-        // Clear scheduledBlockId on task if this was a task block
-        if (event?.blockType === "task" && event.sourceTaskId) {
-          const { sourceGoalId, sourceTaskId } = event;
-          setGoals((prev) =>
-            prev.map((g) =>
-              g.id === sourceGoalId
-                ? {
-                    ...g,
-                    tasks: g.tasks?.map((t) =>
-                      t.id === sourceTaskId
-                        ? { ...t, scheduledBlockId: undefined }
-                        : t
-                    ),
-                  }
-                : g
-            )
-          );
-        }
-
-        // Remove the event
-        return currentEvents.filter((e) => e.id !== eventId);
-      });
-    },
-    []
-  );
-
-  const markEventComplete = React.useCallback(
-    (eventId: string) => {
-      setEvents((currentEvents) => {
-        const event = currentEvents.find((e) => e.id === eventId);
-        if (!event) return currentEvents;
-
-        // If it's a task block, also complete the task
-        if (event.blockType === "task" && event.sourceTaskId) {
-          const { sourceGoalId, sourceTaskId } = event;
-          setGoals((prev) =>
-            prev.map((g) =>
-              g.id === sourceGoalId
-                ? {
-                    ...g,
-                    tasks: g.tasks?.map((t) =>
-                      t.id === sourceTaskId ? { ...t, completed: true } : t
-                    ),
-                  }
-                : g
-            )
-          );
-        }
-
-        // If it's a goal block with assigned tasks, complete all of them
-        if (event.blockType === "goal" && event.assignedTaskIds?.length) {
-          const { sourceGoalId, assignedTaskIds } = event;
-          if (sourceGoalId) {
-            setGoals((prev) =>
-              prev.map((g) =>
-                g.id === sourceGoalId
-                  ? {
-                      ...g,
-                      tasks: g.tasks?.map((t) =>
-                        assignedTaskIds.includes(t.id)
-                          ? { ...t, completed: true }
-                          : t
-                      ),
-                    }
-                  : g
-              )
-            );
-          }
-        }
-
-        // Update event status
-        return currentEvents.map((e) =>
-          e.id === eventId ? { ...e, status: "completed" as BlockStatus } : e
-        );
-      });
-    },
-    []
-  );
-
-  const markEventIncomplete = React.useCallback(
-    (eventId: string) => {
-      setEvents((currentEvents) => {
-        const event = currentEvents.find((e) => e.id === eventId);
-        if (!event) return currentEvents;
-
-        // If it's a task block, also un-complete the task
-        if (event.blockType === "task" && event.sourceTaskId) {
-          const { sourceGoalId, sourceTaskId } = event;
-          setGoals((prev) =>
-            prev.map((g) =>
-              g.id === sourceGoalId
-                ? {
-                    ...g,
-                    tasks: g.tasks?.map((t) =>
-                      t.id === sourceTaskId ? { ...t, completed: false } : t
-                    ),
-                  }
-                : g
-            )
-          );
-        }
-
-        // Update event status
-        return currentEvents.map((e) =>
-          e.id === eventId ? { ...e, status: "planned" as BlockStatus } : e
-        );
-      });
-    },
-    []
-  );
-
-  // Assign a task to a goal block
-  const assignTaskToBlock = React.useCallback(
-    (blockId: string, taskId: string) => {
-      setEvents((prev) =>
-        prev.map((e) =>
-          e.id === blockId
-            ? { ...e, assignedTaskIds: [...(e.assignedTaskIds ?? []), taskId] }
-            : e
-        )
-      );
-    },
-    []
-  );
-
-  // Unassign a task from a goal block
-  const unassignTaskFromBlock = React.useCallback(
-    (blockId: string, taskId: string) => {
-      setEvents((prev) =>
-        prev.map((e) =>
-          e.id === blockId
-            ? {
-                ...e,
-                assignedTaskIds: (e.assignedTaskIds ?? []).filter(
-                  (id) => id !== taskId
-                ),
-              }
-            : e
-        )
-      );
-    },
-    []
-  );
-
-  // -------------------------------------------------------------------------
-  // Backlog Actions
-  // -------------------------------------------------------------------------
-
-  const addGoal = React.useCallback(
-    (goal: ScheduleGoal) => {
-      setGoals((prev) => [...prev, goal]);
-    },
-    []
-  );
-
+  // Toggle task complete with event sync
   const toggleTaskComplete = React.useCallback(
     (goalId: string, taskId: string) => {
-      setGoals((currentGoals) => {
-        // Find the current task state
-        const goal = currentGoals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
-        if (!task) return currentGoals;
+      const result = findTask(taskId);
+      const task = result?.task;
 
-        const newCompletedState = !task.completed;
+      // Get the new state that will be set
+      const newCompletedState = task ? !task.completed : undefined;
 
-        // If task has a scheduled block, update its status too
-        if (task.scheduledBlockId) {
-          const blockId = task.scheduledBlockId;
-          const newStatus: BlockStatus = newCompletedState
-            ? "completed"
-            : "planned";
-          setEvents((prev) =>
-            prev.map((e) =>
-              e.id === blockId ? { ...e, status: newStatus } : e
-            )
-          );
-        }
+      // Update the task first
+      baseToggleTaskComplete(goalId, taskId);
 
-        // Update the task
-        return currentGoals.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId ? { ...t, completed: newCompletedState } : t
-                ),
-              }
-            : g
-        );
-      });
+      // If task has a scheduled block, update its status too
+      if (task?.scheduledBlockId) {
+        const blockId = task.scheduledBlockId;
+        const newStatus: BlockStatus = newCompletedState ? "completed" : "planned";
+        updateEvent(blockId, { status: newStatus });
+      }
     },
-    []
+    [findTask, baseToggleTaskComplete, updateEvent]
   );
 
-  // -------------------------------------------------------------------------
-  // Task CRUD Actions
-  // -------------------------------------------------------------------------
-
-  const addTask = React.useCallback(
-    (goalId: string, label: string): string => {
-      const newTask: ScheduleTask = {
-        id: crypto.randomUUID(),
-        label,
-        completed: false,
-      };
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? { ...g, tasks: [...(g.tasks ?? []), newTask] }
-            : g
-        )
-      );
-      return newTask.id;
-    },
-    []
-  );
-
+  // Update task with event sync
   const updateTask = React.useCallback(
     (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => {
-      setGoals((currentGoals) => {
-        const goal = currentGoals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
+      const result = findTask(taskId);
+      const task = result?.task;
 
-        // If updating the label and task has a scheduled block, update the event title
-        const newLabel = updates.label;
-        if (newLabel && task?.scheduledBlockId) {
-          const blockId = task.scheduledBlockId;
-          setEvents((prev) =>
-            prev.map((e) =>
-              e.id === blockId ? { ...e, title: newLabel } : e
-            )
-          );
+      baseUpdateTask(goalId, taskId, updates);
+
+      // Sync label/description changes to event if scheduled
+      if (task?.scheduledBlockId) {
+        const blockId = task.scheduledBlockId;
+        const eventUpdates: Partial<CalendarEvent> = {};
+
+        if (updates.label) {
+          eventUpdates.title = updates.label;
+        }
+        if (updates.description !== undefined) {
+          eventUpdates.notes = updates.description;
         }
 
-        // If updating description and task has a scheduled block, sync to event notes
-        if (updates.description !== undefined && task?.scheduledBlockId) {
-          const blockId = task.scheduledBlockId;
-          setEvents((prev) =>
-            prev.map((e) =>
-              e.id === blockId ? { ...e, notes: updates.description } : e
-            )
-          );
+        if (Object.keys(eventUpdates).length > 0) {
+          updateEvent(blockId, eventUpdates);
         }
-
-        // Update the task
-        return currentGoals.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId ? { ...t, ...updates } : t
-                ),
-              }
-            : g
-        );
-      });
+      }
     },
-    []
+    [findTask, baseUpdateTask, updateEvent]
   );
 
+  // Delete task with event cleanup
   const deleteTask = React.useCallback(
     (goalId: string, taskId: string) => {
-      setGoals((currentGoals) => {
-        const goal = currentGoals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
+      const result = findTask(taskId);
+      const task = result?.task;
 
-        // Remove associated calendar event if exists
-        if (task?.scheduledBlockId) {
-          const blockId = task.scheduledBlockId;
-          setEvents((prev) => prev.filter((e) => e.id !== blockId));
-        }
-
-        // Remove the task from the goal
-        return currentGoals.map((g) =>
-          g.id === goalId
-            ? { ...g, tasks: g.tasks?.filter((t) => t.id !== taskId) }
-            : g
-        );
-      });
-    },
-    []
-  );
-
-  // -------------------------------------------------------------------------
-  // Subtask CRUD Actions
-  // -------------------------------------------------------------------------
-
-  const addSubtask = React.useCallback(
-    (goalId: string, taskId: string, label: string) => {
-      const newSubtask: Subtask = {
-        id: crypto.randomUUID(),
-        label,
-        completed: false,
-      };
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? { ...t, subtasks: [...(t.subtasks ?? []), newSubtask] }
-                    : t
-                ),
-              }
-            : g
-        )
-      );
-    },
-    []
-  );
-
-  const updateSubtask = React.useCallback(
-    (goalId: string, taskId: string, subtaskId: string, label: string) => {
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? {
-                        ...t,
-                        subtasks: t.subtasks?.map((s) =>
-                          s.id === subtaskId ? { ...s, label } : s
-                        ),
-                      }
-                    : t
-                ),
-              }
-            : g
-        )
-      );
-    },
-    []
-  );
-
-  const toggleSubtaskComplete = React.useCallback(
-    (goalId: string, taskId: string, subtaskId: string) => {
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? {
-                        ...t,
-                        subtasks: t.subtasks?.map((s) =>
-                          s.id === subtaskId
-                            ? { ...s, completed: !s.completed }
-                            : s
-                        ),
-                      }
-                    : t
-                ),
-              }
-            : g
-        )
-      );
-    },
-    []
-  );
-
-  const deleteSubtask = React.useCallback(
-    (goalId: string, taskId: string, subtaskId: string) => {
-      setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? { ...t, subtasks: t.subtasks?.filter((s) => s.id !== subtaskId) }
-                    : t
-                ),
-              }
-            : g
-        )
-      );
-    },
-    []
-  );
-
-  // -------------------------------------------------------------------------
-  // Calendar Handlers (for spreading onto Calendar component)
-  // -------------------------------------------------------------------------
-
-  const handleEventResize = React.useCallback(
-    (eventId: string, newStartMinutes: number, newDurationMinutes: number) => {
-      setEvents((prev) =>
-        prev.map((event) =>
-          event.id === eventId
-            ? {
-                ...event,
-                startMinutes: newStartMinutes,
-                durationMinutes: newDurationMinutes,
-              }
-            : event
-        )
-      );
-    },
-    []
-  );
-
-  const handleEventResizeEnd = React.useCallback(() => {
-    // Available for persistence
-  }, []);
-
-  const handleEventDragEnd = React.useCallback(
-    (eventId: string, newDayIndex: number, newStartMinutes: number) => {
-      setEvents((prev) =>
-        prev.map((event) =>
-          event.id === eventId
-            ? {
-                ...event,
-                date: weekDates[newDayIndex].toISOString().split("T")[0],
-                dayIndex: newDayIndex,
-                startMinutes: newStartMinutes,
-              }
-            : event
-        )
-      );
-    },
-    [weekDates]
-  );
-
-  const handleEventDuplicate = React.useCallback(
-    (sourceEventId: string, newDayIndex: number, newStartMinutes: number) => {
-      setEvents((prev) => {
-        const source = prev.find((e) => e.id === sourceEventId);
-        if (!source) return prev;
-
-        const newDate = weekDates[newDayIndex].toISOString().split("T")[0];
-
-        // Only goal blocks can be duplicated (tasks can only have one instance)
-        if (source.blockType === "task") {
-          // Move instead of duplicate for tasks
-          return prev.map((e) =>
-            e.id === sourceEventId
-              ? { ...e, date: newDate, dayIndex: newDayIndex, startMinutes: newStartMinutes }
-              : e
-          );
-        }
-
-        const duplicate: CalendarEvent = {
-          ...source,
-          id: crypto.randomUUID(),
-          date: newDate,
-          dayIndex: newDayIndex,
-          startMinutes: newStartMinutes,
-          status: statusOnPaste(source.status),
-          // Don't copy task assignments to duplicates - they start fresh
-          assignedTaskIds: undefined,
-          pendingTaskCount: undefined,
-          completedTaskCount: undefined,
-        };
-        return [...prev, duplicate];
-      });
-    },
-    [weekDates]
-  );
-
-  const handleGridDoubleClick = React.useCallback(
-    (dayIndex: number, startMinutes: number) => {
-      // Create a generic block (not linked to any goal)
-      const newEvent: CalendarEvent = {
-        id: crypto.randomUUID(),
-        title: "New Block",
-        date: weekDates[dayIndex].toISOString().split("T")[0],
-        dayIndex,
-        startMinutes,
-        durationMinutes: 60,
-        color: "indigo",
-      };
-      setEvents((prev) => [...prev, newEvent]);
-      onEventCreated?.(newEvent);
-    },
-    [onEventCreated, weekDates]
-  );
-
-  const handleGridDragCreate = React.useCallback(
-    (dayIndex: number, startMinutes: number, durationMinutes: number) => {
-      const newEvent: CalendarEvent = {
-        id: crypto.randomUUID(),
-        title: "New Block",
-        date: weekDates[dayIndex].toISOString().split("T")[0],
-        dayIndex,
-        startMinutes,
-        durationMinutes,
-        color: "indigo",
-      };
-      setEvents((prev) => [...prev, newEvent]);
-      onEventCreated?.(newEvent);
-    },
-    [onEventCreated, weekDates]
-  );
-
-  const handleEventCopy = React.useCallback((event: CalendarEvent) => {
-    onCopy?.(event);
-  }, [onCopy]);
-
-  const handleEventPaste = React.useCallback(
-    (dayIndex: number, startMinutes: number) => {
-      const pastedEvent = onPaste?.(dayIndex, startMinutes);
-      if (pastedEvent) {
-        // Add the date for the target position
-        const eventWithDate: CalendarEvent = {
-          ...pastedEvent,
-          date: weekDates[dayIndex].toISOString().split("T")[0],
-        };
-        setEvents((prev) => [...prev, eventWithDate]);
+      // Remove associated calendar event if exists
+      if (task?.scheduledBlockId) {
+        baseDeleteEvent(task.scheduledBlockId);
       }
+
+      baseDeleteTask(goalId, taskId);
     },
-    [onPaste, weekDates]
+    [findTask, baseDeleteTask, baseDeleteEvent]
   );
 
-  const handleEventStatusChange = React.useCallback(
-    (eventId: string, status: BlockStatus) => {
-      if (status === "completed") {
-        markEventComplete(eventId);
-      } else if (status === "planned") {
-        markEventIncomplete(eventId);
-      } else {
-        // Blueprint or other statuses
-        updateEvent(eventId, { status });
+  // Delete event with goal sync
+  const deleteEvent = React.useCallback(
+    (eventId: string) => {
+      const event = allEvents.find((e) => e.id === eventId);
+
+      // Clear scheduledBlockId on task if this was a task block
+      if (event?.blockType === "task" && event.sourceTaskId && event.sourceGoalId) {
+        baseUpdateTask(event.sourceGoalId, event.sourceTaskId, {
+          scheduledBlockId: undefined,
+        });
       }
+
+      baseDeleteEvent(eventId);
     },
-    [markEventComplete, markEventIncomplete, updateEvent]
+    [allEvents, baseUpdateTask, baseDeleteEvent]
+  );
+
+  // Mark event complete with goal sync
+  const markEventComplete = React.useCallback(
+    (eventId: string) => {
+      const event = allEvents.find((e) => e.id === eventId);
+      if (!event) return;
+
+      // If it's a task block, also complete the task
+      if (event.blockType === "task" && event.sourceTaskId && event.sourceGoalId) {
+        baseUpdateTask(event.sourceGoalId, event.sourceTaskId, { completed: true });
+      }
+
+      // If it's a goal block with assigned tasks, complete all of them
+      if (event.blockType === "goal" && event.assignedTaskIds?.length && event.sourceGoalId) {
+        for (const taskId of event.assignedTaskIds) {
+          baseUpdateTask(event.sourceGoalId, taskId, { completed: true });
+        }
+      }
+
+      baseMarkEventComplete(eventId);
+    },
+    [allEvents, baseUpdateTask, baseMarkEventComplete]
+  );
+
+  // Mark event incomplete with goal sync
+  const markEventIncomplete = React.useCallback(
+    (eventId: string) => {
+      const event = allEvents.find((e) => e.id === eventId);
+      if (!event) return;
+
+      // If it's a task block, also un-complete the task
+      if (event.blockType === "task" && event.sourceTaskId && event.sourceGoalId) {
+        baseUpdateTask(event.sourceGoalId, event.sourceTaskId, { completed: false });
+      }
+
+      baseMarkEventIncomplete(eventId);
+    },
+    [allEvents, baseUpdateTask, baseMarkEventIncomplete]
+  );
+
+  // -------------------------------------------------------------------------
+  // Enhanced Calendar Handlers
+  // -------------------------------------------------------------------------
+
+  const calendarHandlers = React.useMemo(
+    () => ({
+      ...baseCalendarHandlers,
+      onEventDelete: deleteEvent,
+      onEventStatusChange: (eventId: string, status: BlockStatus) => {
+        if (status === "completed") {
+          markEventComplete(eventId);
+        } else if (status === "planned") {
+          markEventIncomplete(eventId);
+        } else {
+          updateEvent(eventId, { status });
+        }
+      },
+    }),
+    [baseCalendarHandlers, deleteEvent, markEventComplete, markEventIncomplete, updateEvent]
   );
 
   // -------------------------------------------------------------------------
@@ -1255,20 +390,6 @@ export function useUnifiedSchedule({
     convertTaskBlockToGoalBlock,
     hoveredEvent,
     hoverPosition,
-    calendarHandlers: {
-      onEventResize: handleEventResize,
-      onEventResizeEnd: handleEventResizeEnd,
-      onEventDragEnd: handleEventDragEnd,
-      onEventDuplicate: handleEventDuplicate,
-      onGridDoubleClick: handleGridDoubleClick,
-      onGridDragCreate: handleGridDragCreate,
-      onEventCopy: handleEventCopy,
-      onEventDelete: deleteEvent,
-      onEventStatusChange: handleEventStatusChange,
-      onEventPaste: handleEventPaste,
-      hasClipboardContent,
-      onEventHover: setHoveredEvent,
-      onGridPositionHover: setHoverPosition,
-    },
+    calendarHandlers,
   };
 }

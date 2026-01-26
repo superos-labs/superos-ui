@@ -88,7 +88,26 @@ export type { DragState, DragContextValue, DragItem, DropPosition } from "./drag
 // UI Primitives (re-exported for convenience)
 // -----------------------------------------------------------------------------
 
+// Layout
 export { Shell, ShellToolbar, ShellContent } from "./ui/shell";
-export { Button } from "./ui/button";
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./ui/card";
+export { Separator } from "./ui/separator";
+
+// Forms
+export { Button, buttonVariants } from "./ui/button";
 export { Input } from "./ui/input";
-export { Card } from "./ui/card";
+export { Textarea } from "./ui/textarea";
+export { Label } from "./ui/label";
+export { Field, FieldLabel, FieldDescription, FieldError, FieldGroup, FieldLegend, FieldSeparator, FieldSet, FieldContent, FieldTitle } from "./ui/field";
+export { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton, InputGroupText, InputGroupTextarea } from "./ui/input-group";
+export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator, SelectScrollUpButton, SelectScrollDownButton } from "./ui/select";
+export { Combobox, ComboboxTrigger, ComboboxContent, ComboboxInput, ComboboxEmpty, ComboboxGroup, ComboboxItem, ComboboxSeparator } from "./ui/combobox";
+
+// Display
+export { Badge, badgeVariants } from "./ui/badge";
+export { SubtaskRow } from "./ui/subtask-row";
+
+// Overlays & Menus
+export { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+export { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuShortcut, ContextMenuGroup, ContextMenuPortal, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuRadioGroup } from "./ui/context-menu";
+export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuRadioGroup } from "./ui/dropdown-menu";
