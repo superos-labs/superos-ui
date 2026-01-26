@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Backlog, BacklogItem, GoalDisplayMode } from "@/components/backlog"
+import { Backlog, type BacklogItem, type GoalDisplayMode } from "./index"
 import type { ScheduleTask, Subtask } from "@/hooks/use-unified-schedule"
 import {
   KnobsProvider,

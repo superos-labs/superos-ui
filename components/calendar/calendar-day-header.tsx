@@ -13,9 +13,10 @@ export function CalendarDayHeader({
   className,
   dayIndex,
   fullDate,
-  isDropTarget = false,
+  isDropTarget: _isDropTarget = false,
   onDeadlineDrop,
 }: CalendarDayHeaderProps) {
+  // Note: _isDropTarget is available for styling drop targets in the future
   const dragContext = useDragContextOptional();
   
   // Check if we're actively dragging a task (only tasks can have deadlines)

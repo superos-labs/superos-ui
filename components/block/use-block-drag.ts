@@ -5,9 +5,6 @@ import * as React from "react";
 /** Pixel distance pointer must move before drag activates */
 const DRAG_THRESHOLD = 4;
 
-/** Maximum duration for events (just under 48 hours, spanning at most 2 days) */
-const MAX_EVENT_DURATION_MINUTES = 2879;
-
 type DragState = "idle" | "pending" | "dragging";
 
 interface UseBlockDragOptions {
@@ -56,7 +53,7 @@ interface UseBlockDragReturn {
 export function useBlockDrag({
   startMinutes,
   dayIndex,
-  durationMinutes,
+  durationMinutes: _durationMinutes,
   pixelsPerMinute,
   dayColumnWidth,
   snapInterval = 15,

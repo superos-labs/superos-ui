@@ -27,9 +27,12 @@ import {
   RiPaletteLine,
   RiPlantLine,
 } from "@remixicon/react";
-import type { IconComponent } from "@/lib/types";
+import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { CalendarEvent } from "@/components/calendar";
 import type { ScheduleGoal, ScheduleCommitment } from "@/hooks/use-unified-schedule";
+
+// Re-export types for convenience
+export type { LifeArea, GoalIconOption };
 
 // =============================================================================
 // Data Set Types
@@ -47,13 +50,6 @@ export interface DataSet {
 // Life Areas (for categorizing goals)
 // =============================================================================
 
-export interface LifeArea {
-  id: string;
-  label: string;
-  icon: IconComponent;
-  color: import("@/lib/colors").GoalColor;
-}
-
 export const LIFE_AREAS: LifeArea[] = [
   { id: "career", label: "Career", icon: RiBriefcaseLine, color: "violet" },
   { id: "health", label: "Health", icon: RiHeartLine, color: "rose" },
@@ -67,7 +63,7 @@ export const LIFE_AREAS: LifeArea[] = [
 // Goal Icons (curated list for goal creation)
 // =============================================================================
 
-export const GOAL_ICONS: { icon: IconComponent; label: string }[] = [
+export const GOAL_ICONS: GoalIconOption[] = [
   { icon: RiRocketLine, label: "Rocket" },
   { icon: RiMedalLine, label: "Medal" },
   { icon: RiPenNibLine, label: "Pen" },

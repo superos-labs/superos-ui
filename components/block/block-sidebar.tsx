@@ -81,7 +81,7 @@ function formatTimeDisplay(timeStr: string): string {
 }
 
 // Auto-resizing textarea component
-interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+type AutoResizeTextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 function AutoResizeTextarea({
   className,
@@ -287,10 +287,11 @@ function BlockSidebar({
   onToggleGoalTask,
   availableGoalTasks,
   onAssignTask,
-  onUnassignTask,
+  onUnassignTask: _onUnassignTask,
   className,
   ...props
 }: BlockSidebarProps) {
+  // Note: _onUnassignTask is reserved for future use (unassign task from block)
   const isGoalBlock = block.blockType === "goal";
   return (
     <div

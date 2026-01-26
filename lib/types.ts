@@ -4,6 +4,7 @@
  */
 
 import type React from "react";
+import type { GoalColor } from "./colors";
 
 // =============================================================================
 // Block Types
@@ -32,3 +33,27 @@ export type BlockStatus = "planned" | "completed" | "blueprint";
  * Compatible with Remix Icons and similar icon libraries.
  */
 export type IconComponent = React.ComponentType<{ className?: string }>;
+
+// =============================================================================
+// Goal & Life Area Types
+// =============================================================================
+
+/**
+ * Life area for categorizing goals.
+ * Used in goal creation UI and organization.
+ */
+export interface LifeArea {
+  id: string;
+  label: string;
+  icon: IconComponent;
+  color: GoalColor;
+}
+
+/**
+ * Icon option for the goal icon picker.
+ * Used in goal creation UI.
+ */
+export interface GoalIconOption {
+  icon: IconComponent;
+  label: string;
+}

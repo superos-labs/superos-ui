@@ -25,7 +25,6 @@ import type { IconComponent } from "@/lib/types"
 import {
   DATA_SETS,
   ALL_COMMITMENTS,
-  MANDATORY_COMMITMENT_IDS,
   LIFE_AREAS,
   GOAL_ICONS,
   type DataSetId,
@@ -153,41 +152,46 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   // Drag context for external drag preview
   const dragContext = useDragContextOptional()
   
+  // Destructure drag state for React Compiler compatibility
+  // (The compiler needs explicit primitive/object dependencies, not optional chaining)
+  const dragState = dragContext?.state ?? null
+  const isDragging = dragState?.isDragging ?? false
+  const dragItem = dragState?.item ?? null
+  const previewPosition = dragState?.previewPosition ?? null
+  
   // Build external drag preview from drag context state (only for time-grid drops)
   const externalDragPreview = React.useMemo(() => {
-    if (!dragContext?.state.isDragging || !dragContext.state.item || !dragContext.state.previewPosition) {
+    if (!isDragging || !dragItem || !previewPosition) {
       return null
     }
     // Only show preview for time-grid drops, not header drops
-    if (dragContext.state.previewPosition.dropTarget !== "time-grid") {
+    if (previewPosition.dropTarget !== "time-grid") {
       return null
     }
-    const item = dragContext.state.item
-    const pos = dragContext.state.previewPosition
-    const color = getDragItemColor(item)
+    const color = getDragItemColor(dragItem)
     // Bail if we can't determine the color
     if (!color) return null
     return {
-      dayIndex: pos.dayIndex,
-      startMinutes: pos.startMinutes ?? 0,
-      durationMinutes: getDefaultDuration(item.type),
+      dayIndex: previewPosition.dayIndex,
+      startMinutes: previewPosition.startMinutes ?? 0,
+      durationMinutes: getDefaultDuration(dragItem.type),
       color,
-      title: getDragItemTitle(item),
+      title: getDragItemTitle(dragItem),
     }
-  }, [dragContext?.state])
+  }, [isDragging, dragItem, previewPosition])
   
   // Handle drop from external drag (time-grid)
   const handleExternalDrop = React.useCallback((dayIndex: number, startMinutes: number) => {
-    if (!dragContext?.state.item) return
-    handleDrop(dragContext.state.item, { dayIndex, startMinutes, dropTarget: "time-grid" }, weekDates)
-  }, [dragContext?.state.item, handleDrop, weekDates])
+    if (!dragItem) return
+    handleDrop(dragItem, { dayIndex, startMinutes, dropTarget: "time-grid" }, weekDates)
+  }, [dragItem, handleDrop, weekDates])
   
   // Handle deadline drop (header)
-  const handleDeadlineDrop = React.useCallback((dayIndex: number, date: string) => {
-    if (!dragContext?.state.item) return
-    handleDrop(dragContext.state.item, { dayIndex, dropTarget: "day-header" }, weekDates)
+  const handleDeadlineDrop = React.useCallback((dayIndex: number) => {
+    if (!dragItem || !dragContext) return
+    handleDrop(dragItem, { dayIndex, dropTarget: "day-header" }, weekDates)
     dragContext.endDrag()
-  }, [dragContext, handleDrop, weekDates])
+  }, [dragItem, dragContext, handleDrop, weekDates])
   
   // Keyboard shortcuts - uses hover state from useUnifiedSchedule
   const { toastMessage: calendarToastMessage } = useCalendarKeyboard({

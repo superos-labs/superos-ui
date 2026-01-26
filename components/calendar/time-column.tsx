@@ -97,7 +97,7 @@ export function TimeColumn({
   segments,
   dayColumnWidth,
   pixelsPerMinute,
-  mode = "schedule",
+  mode: _mode = "schedule",
   setBlockStyle,
   isCreatingBlock = false,
   createPreview,

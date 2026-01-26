@@ -33,7 +33,7 @@ export const registry: ComponentEntry[] = [
     slug: "backlog",
     name: "Backlog",
     component: lazy(() =>
-      import("@/components/backlog-example").then((m) => ({
+      import("@/components/backlog/backlog-example").then((m) => ({
         default: m.BacklogExample,
       }))
     ),

@@ -65,7 +65,6 @@ interface WeeklyAnalyticsItemRowProps {
 
 function WeeklyAnalyticsItemRow({ item, className }: WeeklyAnalyticsItemRowProps) {
   const IconComponent = item.icon;
-  const progress = getProgress(item.completedHours, item.plannedHours);
   const isComplete = item.completedHours >= item.plannedHours;
 
   return (
