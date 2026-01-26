@@ -252,7 +252,7 @@ function createSampleEvents(): CalendarEvent[] {
     // =============================================================================
     // SuperOS Goal - Afternoon blocks (1p-6p = 300 min on Mon, 2p-6p = 240 min Tu-Fri)
     // =============================================================================
-    { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 300, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 300, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
     { id: "shell-superos-pm-1", title: "Get SuperOS to $1M ARR", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
     { id: "shell-superos-pm-2", title: "Get SuperOS to $1M ARR", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
     { id: "shell-superos-pm-3", title: "Get SuperOS to $1M ARR", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
