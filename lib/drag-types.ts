@@ -32,21 +32,27 @@ export interface DragItem {
 }
 
 /**
- * Drop target type for distinguishing header vs grid drops.
+ * Drop target type for distinguishing different drop zones.
+ * - time-grid: Empty space on the calendar grid (creates new block)
+ * - day-header: Day header area (sets deadline for tasks)
+ * - existing-block: An existing calendar block (assigns task to block)
  */
-export type DropTarget = "time-grid" | "day-header";
+export type DropTarget = "time-grid" | "day-header" | "existing-block";
 
 /**
  * Position on the calendar for drop preview.
  * For time-grid drops, startMinutes is required.
  * For day-header drops (deadlines), startMinutes is undefined.
+ * For existing-block drops, targetBlockId identifies the block.
  */
 export interface DropPosition {
   dayIndex: number;
-  /** Minutes from midnight (0-1440). Undefined for header drops. */
+  /** Minutes from midnight (0-1440). Undefined for header and block drops. */
   startMinutes?: number;
   /** The type of drop target */
   dropTarget: DropTarget;
+  /** Block ID when dropping onto an existing block */
+  targetBlockId?: string;
 }
 
 /**

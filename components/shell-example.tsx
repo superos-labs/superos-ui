@@ -454,11 +454,17 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     }
   }, [isDragging, dragItem, previewPosition])
   
-  // Handle drop from external drag (time-grid)
+  // Handle drop from external drag (time-grid or existing-block)
   const handleExternalDrop = React.useCallback((dayIndex: number, startMinutes: number) => {
     if (!dragItem) return
-    handleDrop(dragItem, { dayIndex, startMinutes, dropTarget: "time-grid" }, weekDates)
-  }, [dragItem, handleDrop, weekDates])
+    
+    // Use the preview position from drag context if it's a block drop
+    const position = previewPosition && previewPosition.dropTarget === "existing-block"
+      ? previewPosition
+      : { dayIndex, startMinutes, dropTarget: "time-grid" as const }
+    
+    handleDrop(dragItem, position, weekDates)
+  }, [dragItem, previewPosition, handleDrop, weekDates])
   
   // Handle deadline drop (header)
   const handleDeadlineDrop = React.useCallback((dayIndex: number) => {

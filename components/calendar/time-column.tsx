@@ -124,6 +124,52 @@ export function TimeColumn({
   const columnRef = React.useRef<HTMLDivElement>(null);
   const dragContext = useDragContextOptional();
   
+  // Track block element refs for hit detection
+  const blockRefsMap = React.useRef<Map<string, HTMLDivElement>>(new Map());
+  
+  // Register a block element ref
+  const registerBlockRef = React.useCallback((blockId: string, el: HTMLDivElement | null) => {
+    if (el) {
+      blockRefsMap.current.set(blockId, el);
+    } else {
+      blockRefsMap.current.delete(blockId);
+    }
+  }, []);
+  
+  // Check if a point is inside a block's bounding rect
+  const getBlockAtPoint = React.useCallback(
+    (clientX: number, clientY: number): { blockId: string; event: typeof segments[0]["event"] } | null => {
+      const dragItem = dragContext?.state.item;
+      // Only check for task drags
+      if (!dragItem || dragItem.type !== "task") return null;
+      
+      for (const segment of segments) {
+        const event = segment.event;
+        // Skip commitments - they don't accept drops
+        if (event.blockType === "commitment") continue;
+        // Skip if goal doesn't match
+        if (event.sourceGoalId !== dragItem.goalId) continue;
+        // Only goal and task blocks can accept task drops
+        if (event.blockType !== "goal" && event.blockType !== "task") continue;
+        
+        const blockEl = blockRefsMap.current.get(event.id);
+        if (!blockEl) continue;
+        
+        const rect = blockEl.getBoundingClientRect();
+        if (
+          clientX >= rect.left &&
+          clientX <= rect.right &&
+          clientY >= rect.top &&
+          clientY <= rect.bottom
+        ) {
+          return { blockId: event.id, event };
+        }
+      }
+      return null;
+    },
+    [dragContext?.state.item, segments]
+  );
+  
   // Calculate minutes from Y position for external drops
   const getMinutesFromY = React.useCallback(
     (clientY: number): number => {
@@ -142,21 +188,45 @@ export function TimeColumn({
   const handleExternalDragMove = React.useCallback(
     (e: React.PointerEvent) => {
       if (!enableExternalDrop || !dragContext?.state.isDragging) return;
+      
+      // Check if pointer is over a valid block drop target
+      const blockHit = getBlockAtPoint(e.clientX, e.clientY);
+      if (blockHit) {
+        dragContext.setPreviewPosition({
+          dayIndex,
+          dropTarget: "existing-block",
+          targetBlockId: blockHit.blockId,
+        });
+        return;
+      }
+      
+      // Fall back to grid drop
       const startMinutes = getMinutesFromY(e.clientY);
       dragContext.setPreviewPosition({ dayIndex, startMinutes, dropTarget: "time-grid" });
     },
-    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY]
+    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY, getBlockAtPoint]
   );
   
   // Handle pointer up for external drop
   const handleExternalDrop = React.useCallback(
     (e: React.PointerEvent) => {
       if (!enableExternalDrop || !dragContext?.state.isDragging || !dragContext.state.item) return;
+      
+      // Check if dropping on a block
+      const blockHit = getBlockAtPoint(e.clientX, e.clientY);
+      if (blockHit) {
+        // The drop will be handled by the parent via handleDrop with existing-block target
+        onExternalDrop?.(dayIndex, 0); // startMinutes not used for block drops
+        dragContext.endDrag();
+        return;
+      }
+      
+      // Grid drop
       const startMinutes = getMinutesFromY(e.clientY);
       onExternalDrop?.(dayIndex, startMinutes);
       dragContext.endDrag();
     },
-    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY, onExternalDrop]
+    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY, onExternalDrop, getBlockAtPoint]
   );
   
   // Handle pointer leave - clear preview if leaving this column
@@ -250,6 +320,29 @@ export function TimeColumn({
           const segmentHeightPx = segmentDuration * pixelsPerMinute;
           const useCompactLayout = segmentHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
 
+          // Compute drop target state for this block
+          const dragItem = dragContext?.state.item;
+          const previewPos = dragContext?.state.previewPosition;
+          
+          // A block is a valid drop target if:
+          // 1. We're dragging a task
+          // 2. Block type is goal or task (not commitment)
+          // 3. The dragged task's goalId matches this block's sourceGoalId
+          const isValidDropTarget = Boolean(
+            dragContext?.state.isDragging &&
+            dragItem?.type === "task" &&
+            (event.blockType === "goal" || event.blockType === "task") &&
+            event.sourceGoalId &&
+            dragItem.goalId === event.sourceGoalId
+          );
+          
+          // Check if drag is currently over this specific block
+          const isDragOver = Boolean(
+            isValidDropTarget &&
+            previewPos?.dropTarget === "existing-block" &&
+            previewPos?.targetBlockId === event.id
+          );
+
           // Helper to get display times for the segment
           const getDisplayTimes = (previewStartMinutes?: number) => {
             const isOvernight = isOvernightEvent(event);
@@ -295,6 +388,8 @@ export function TimeColumn({
                 segmentPosition={position}
                 compactLayout={useCompactLayout}
                 fillContainer
+                isDropTarget={isValidDropTarget}
+                isDragOver={isDragOver}
               />
             );
           };
@@ -364,6 +459,7 @@ export function TimeColumn({
           ) {
             return wrapWithContextMenu(
               <motion.div
+                ref={(el) => registerBlockRef(event.id, el)}
                 style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
                 onMouseLeave={() => onEventHover?.(null)}
@@ -410,6 +506,7 @@ export function TimeColumn({
           if (position === "end" && onEventResize) {
             return wrapWithContextMenu(
               <motion.div
+                ref={(el) => registerBlockRef(event.id, el)}
                 className="z-10"
                 style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
@@ -428,6 +525,7 @@ export function TimeColumn({
           if (onEventResize) {
             return wrapWithContextMenu(
               <motion.div
+                ref={(el) => registerBlockRef(event.id, el)}
                 className="z-10"
                 style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
@@ -444,6 +542,7 @@ export function TimeColumn({
 
           return wrapWithContextMenu(
             <motion.div
+              ref={(el) => registerBlockRef(event.id, el)}
               className="z-10"
               style={positionStyle}
               onMouseEnter={() => onEventHover?.(event)}

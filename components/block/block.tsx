@@ -39,6 +39,10 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
    * is known (e.g., in calendar context with variable density).
    */
   compactLayout?: boolean;
+  /** Whether this block is a valid drop target for the current drag */
+  isDropTarget?: boolean;
+  /** Whether the drag is currently hovering over this block */
+  isDragOver?: boolean;
 }
 
 function Block({
@@ -53,6 +57,8 @@ function Block({
   fillContainer = false,
   segmentPosition = "only",
   compactLayout,
+  isDropTarget = false,
+  isDragOver = false,
   className,
   style,
   ...props
@@ -113,6 +119,9 @@ function Block({
                 colorStyles.bgHover,
                 colorStyles.text,
               ],
+        // Drop target visual states
+        isDropTarget && !isDragOver && "ring-2 ring-primary/30",
+        isDragOver && "ring-2 ring-primary/60 scale-[1.02] shadow-lg",
         className,
       )}
       style={{ height, ...style }}
