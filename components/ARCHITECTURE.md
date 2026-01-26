@@ -301,8 +301,8 @@ return (
 
 | Type            | Pattern                  | Example                         |
 | --------------- | ------------------------ | ------------------------------- |
-| Core component  | `kebab-case.tsx`         | `floating-toolbar.tsx`          |
-| Example wrapper | `kebab-case-example.tsx` | `floating-toolbar-example.tsx`  |
+| Core component  | `kebab-case.tsx`         | `calendar.tsx`                  |
+| Example wrapper | `kebab-case-example.tsx` | `calendar-example.tsx`          |
 | UI primitive    | `ui/kebab-case.tsx`      | `ui/button.tsx`                 |
 | Types           | PascalCase               | `BacklogProps`, `CalendarEvent` |
 
@@ -405,7 +405,6 @@ Import from the folder path (resolves to `index.ts`):
 // ✅ Correct - imports from public API
 import { Calendar, useCalendarInteractions } from "@/components/calendar";
 import { Block, BlockSidebar, useBlockResize } from "@/components/block";
-import { FloatingToolbar } from "@/components/floating-toolbar";
 import type { CalendarEvent, BlockColor } from "@/components/calendar";
 
 // ❌ Incorrect - bypasses public API

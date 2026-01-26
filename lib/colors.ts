@@ -1,6 +1,6 @@
 /**
  * Centralized color palette for goals and blocks.
- * Single source of truth used by: Backlog, Calendar, Block, BlockSidebar, GoalBrowser
+ * Single source of truth used by: Backlog, Calendar, Block, BlockSidebar
  */
 
 export const GOAL_COLORS = [

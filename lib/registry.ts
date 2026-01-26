@@ -18,15 +18,6 @@ export const registry: ComponentEntry[] = [
     },
   },
   {
-    slug: "floating-toolbar",
-    name: "Floating Toolbar",
-    layout: "bottom",
-    get component() {
-      return require("@/components/floating-toolbar/floating-toolbar-example")
-        .FloatingToolbarExample;
-    },
-  },
-  {
     slug: "shell",
     name: "Shell",
     layout: "full",
@@ -55,13 +46,6 @@ export const registry: ComponentEntry[] = [
     get component() {
       return require("@/components/block/block-sidebar-example")
         .BlockSidebarExample;
-    },
-  },
-  {
-    slug: "goal-browser",
-    name: "Goal Browser",
-    get component() {
-      return require("@/components/goal-browser-example").GoalBrowserExample;
     },
   },
 ];
