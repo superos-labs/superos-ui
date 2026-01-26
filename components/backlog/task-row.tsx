@@ -10,7 +10,12 @@ import {
 } from "@remixicon/react";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
-import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask, Subtask } from "@/lib/unified-schedule";
+import type {
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+  ScheduleTask,
+  Subtask,
+} from "@/lib/unified-schedule";
 import type { BacklogItem, BacklogTask } from "./backlog-types";
 import { formatScheduledTime, formatDeadlineDate } from "./backlog-utils";
 import { SubtaskRow } from "@/components/ui/subtask-row";
@@ -110,7 +115,9 @@ function ExpandedTaskDetail({
   onUpdateSubtask,
   onDeleteSubtask,
 }: ExpandedTaskDetailProps) {
-  const [descriptionValue, setDescriptionValue] = React.useState(task.description ?? "");
+  const [descriptionValue, setDescriptionValue] = React.useState(
+    task.description ?? "",
+  );
 
   // Sync description when task changes externally
   React.useEffect(() => {
@@ -147,9 +154,7 @@ function ExpandedTaskDetail({
               size="compact"
             />
           ))}
-          {onAddSubtask && (
-            <InlineSubtaskCreator onSave={onAddSubtask} />
-          )}
+          {onAddSubtask && <InlineSubtaskCreator onSave={onAddSubtask} />}
         </div>
       )}
     </div>
@@ -189,12 +194,12 @@ export interface TaskRowProps {
   onDeleteTask?: () => void;
 }
 
-export function TaskRow({ 
-  task, 
-  parentGoal, 
-  scheduleInfo, 
+export function TaskRow({
+  task,
+  parentGoal,
+  scheduleInfo,
   deadlineInfo,
-  onToggle, 
+  onToggle,
   draggable = false,
   isExpanded = false,
   onExpand,
@@ -208,7 +213,7 @@ export function TaskRow({
   // Drag context is optional - only use if within DragProvider
   const dragContext = useDragContextOptional();
   const canDrag = draggable && dragContext && !task.completed;
-  
+
   // Inline title editing state
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
   const [titleValue, setTitleValue] = React.useState(task.label);
@@ -263,7 +268,8 @@ export function TaskRow({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const isInInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+      const isInInput =
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA";
 
       // ESC to collapse expanded task (if not editing)
       if (e.key === "Escape" && isExpanded && !isEditingTitle && !isInInput) {
@@ -273,7 +279,12 @@ export function TaskRow({
       }
 
       // Delete/Backspace to delete task
-      if ((e.key === "Delete" || e.key === "Backspace") && !isEditingTitle && !isInInput && onDeleteTask) {
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        !isEditingTitle &&
+        !isInInput &&
+        onDeleteTask
+      ) {
         e.preventDefault();
         onDeleteTask();
       }
@@ -284,27 +295,38 @@ export function TaskRow({
   }, [isHovered, isExpanded, isEditingTitle, onDeleteTask, onExpand, task.id]);
 
   // Handle click outside to collapse expanded task
+  // Uses mousedown to check containment before React re-renders unmount clicked elements
   React.useEffect(() => {
     if (!isExpanded) return;
 
-    const handleClickOutside = (e: MouseEvent) => {
-      // Don't collapse if clicking inside the task container
-      if (containerRef.current?.contains(e.target as Node)) return;
-      
+    // Track whether mousedown was inside the container
+    let clickedInsideRef = false;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // Check containment at mousedown time, before any React re-renders
+      clickedInsideRef =
+        containerRef.current?.contains(e.target as Node) ?? false;
+    };
+
+    const handleClick = () => {
+      // Use the mousedown result to determine if we should collapse
+      if (clickedInsideRef) return;
       onExpand?.(task.id);
     };
 
     // Use setTimeout to avoid immediate collapse from the click that expanded
     const timeoutId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("mousedown", handleMouseDown);
+      document.addEventListener("click", handleClick);
     }, 0);
 
     return () => {
       clearTimeout(timeoutId);
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("click", handleClick);
     };
   }, [isExpanded, onExpand, task.id]);
-  
+
   const dragItem: DragItem = {
     type: "task",
     goalId: parentGoal.id,
@@ -315,7 +337,7 @@ export function TaskRow({
     // Include source deadline if this task has one (for dragging from tray)
     sourceDeadline: task.deadline,
   };
-  
+
   const { draggableProps, isDragging } = useDraggable({
     item: dragItem,
     disabled: !canDrag,
@@ -324,12 +346,12 @@ export function TaskRow({
   // Handle click to expand (avoid checkbox, label editing, and during drag)
   const handleRowClick = (e: React.MouseEvent) => {
     // Don't expand if clicking the checkbox
-    if ((e.target as HTMLElement).closest('[data-checkbox]')) return;
+    if ((e.target as HTMLElement).closest("[data-checkbox]")) return;
     // Don't expand if clicking the label (for editing)
-    if ((e.target as HTMLElement).closest('[data-label]')) return;
+    if ((e.target as HTMLElement).closest("[data-label]")) return;
     // Don't expand if this was a drag operation
     if (dragContext?.state.isDragging) return;
-    
+
     onExpand?.(task.id);
   };
 
@@ -344,12 +366,9 @@ export function TaskRow({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className={cn(
-        "flex flex-col",
-        isExpanded && "rounded-lg bg-muted/40",
-      )}
+      className={cn("flex flex-col", isExpanded && "rounded-lg bg-muted/40")}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -379,7 +398,7 @@ export function TaskRow({
         >
           {task.completed && <RiCheckLine className="size-3" />}
         </button>
-        
+
         {/* Inline editable label */}
         {isEditingTitle ? (
           <input
@@ -392,9 +411,7 @@ export function TaskRow({
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex-1 min-w-0 bg-transparent text-xs focus:outline-none",
-              task.completed
-                ? "text-muted-foreground"
-                : "text-foreground/80",
+              task.completed ? "text-muted-foreground" : "text-foreground/80",
             )}
           />
         ) : (
@@ -406,13 +423,15 @@ export function TaskRow({
               task.completed
                 ? "text-muted-foreground line-through"
                 : "text-foreground/80",
-              isExpanded && onUpdateTask && "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",
+              isExpanded &&
+                onUpdateTask &&
+                "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",
             )}
           >
             {task.label}
           </span>
         )}
-        
+
         {/* Scheduled time pill (mutually exclusive with deadline) */}
         {scheduleInfo && (
           <span className="flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
@@ -420,15 +439,15 @@ export function TaskRow({
             {formatScheduledTime(scheduleInfo)}
           </span>
         )}
-        
+
         {/* Deadline pill (shown when no schedule, but has deadline) */}
         {!scheduleInfo && deadlineInfo && (
-          <span 
+          <span
             className={cn(
               "flex shrink-0 items-center gap-1 text-[10px] tabular-nums",
-              deadlineInfo.isOverdue 
-                ? "text-amber-600 dark:text-amber-500" 
-                : "text-muted-foreground"
+              deadlineInfo.isOverdue
+                ? "text-amber-600 dark:text-amber-500"
+                : "text-muted-foreground",
             )}
           >
             <RiFlagLine className="size-3" />
@@ -436,7 +455,7 @@ export function TaskRow({
           </span>
         )}
       </div>
-      
+
       {/* Expanded task detail */}
       {isExpanded && (
         <ExpandedTaskDetail
