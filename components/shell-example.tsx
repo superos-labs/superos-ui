@@ -32,7 +32,7 @@ import {
   getDragItemTitle,
   getDragItemColor,
 } from "@/lib/drag-types";
-import type { GoalColor } from "@/lib/colors";
+import { getIconColorClass, type GoalColor } from "@/lib/colors";
 import type { IconComponent } from "@/lib/types";
 
 // Adapters for data conversion
@@ -437,6 +437,35 @@ function ShellDemoContent({
     [selectedEvent, deleteSubtask],
   );
 
+  // Goal selection for newly created blocks (without a goal assigned)
+  const availableGoalsForSidebar = React.useMemo(
+    () =>
+      goals.map((g) => ({
+        id: g.id,
+        label: g.label,
+        icon: g.icon,
+        color: getIconColorClass(g.color),
+      })),
+    [goals],
+  );
+
+  const handleSidebarGoalSelect = React.useCallback(
+    (goalId: string) => {
+      if (!selectedEvent) return;
+      const goal = goals.find((g) => g.id === goalId);
+      if (!goal) return;
+
+      // Update the event to link it to the goal
+      updateEvent(selectedEvent.id, {
+        sourceGoalId: goalId,
+        title: goal.label,
+        color: goal.color,
+        blockType: "goal",
+      });
+    },
+    [selectedEvent, goals, updateEvent],
+  );
+
   // Drag context for external drag preview
   const dragContext = useDragContextOptional();
 
@@ -738,6 +767,9 @@ function ShellDemoContent({
                 onToggleGoalTaskSubtask={handleSidebarToggleGoalTaskSubtask}
                 onUpdateGoalTaskSubtask={handleSidebarUpdateGoalTaskSubtask}
                 onDeleteGoalTaskSubtask={handleSidebarDeleteGoalTaskSubtask}
+                // Goal selection for newly created blocks
+                availableGoals={availableGoalsForSidebar}
+                onGoalSelect={handleSidebarGoalSelect}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : renderedContent === "analytics" ? (

@@ -9,14 +9,16 @@ import {
   type BlockSubtask,
   type BlockSidebarGoal,
   type BlockType,
+  type GoalSelectorOption,
 } from "./block-sidebar";
 import {
   KnobsProvider,
   KnobsToggle,
   KnobsPanel,
   KnobSelect,
+  KnobBoolean,
 } from "@/components/_playground/knobs";
-import { RiRocketLine } from "@remixicon/react";
+import { RiRocketLine, RiHeartLine, RiBriefcaseLine } from "@remixicon/react";
 
 const SAMPLE_GOAL: BlockSidebarGoal = {
   id: "goal-1",
@@ -24,6 +26,13 @@ const SAMPLE_GOAL: BlockSidebarGoal = {
   icon: RiRocketLine,
   color: "text-indigo-500",
 };
+
+// Available goals for the goal selector (when block has no goal assigned)
+const AVAILABLE_GOALS: GoalSelectorOption[] = [
+  { id: "goal-1", label: "Launch MVP", icon: RiRocketLine, color: "text-indigo-500" },
+  { id: "goal-2", label: "Improve Health", icon: RiHeartLine, color: "text-rose-500" },
+  { id: "goal-3", label: "Career Growth", icon: RiBriefcaseLine, color: "text-amber-500" },
+];
 
 // Goal tasks that are assigned to this block
 const SAMPLE_GOAL_TASKS: BlockGoalTask[] = [
@@ -83,6 +92,9 @@ export function BlockSidebarExample() {
   const [startTime, setStartTime] = useState(SAMPLE_BLOCK.startTime);
   const [endTime, setEndTime] = useState(SAMPLE_BLOCK.endTime);
   const [notes, setNotes] = useState(SAMPLE_BLOCK.notes || "");
+  // Whether the block has a goal assigned (false simulates a newly created block)
+  const [hasGoalAssigned, setHasGoalAssigned] = useState(true);
+  const [assignedGoal, setAssignedGoal] = useState<BlockSidebarGoal | undefined>(SAMPLE_GOAL);
 
   // Goal task handlers
   const handleToggleGoalTask = useCallback((taskId: string) => {
@@ -149,6 +161,21 @@ export function BlockSidebarExample() {
     console.log("Close sidebar");
   }, []);
 
+  // Goal selection handler (for newly created blocks)
+  const handleGoalSelect = useCallback((goalId: string) => {
+    const goal = AVAILABLE_GOALS.find((g) => g.id === goalId);
+    if (goal) {
+      setAssignedGoal({
+        id: goal.id,
+        label: goal.label,
+        icon: goal.icon,
+        color: goal.color,
+      });
+      setHasGoalAssigned(true);
+      setTitle(goal.label);
+    }
+  }, []);
+
   const block: BlockSidebarData = {
     ...SAMPLE_BLOCK,
     title,
@@ -156,10 +183,10 @@ export function BlockSidebarExample() {
     date,
     startTime,
     endTime,
-    goalTasks: blockType === "goal" ? goalTasks : [],
+    goalTasks: blockType === "goal" && hasGoalAssigned ? goalTasks : [],
     subtasks: blockType === "task" ? subtasks : [],
     notes,
-    goal: blockType === "goal" || blockType === "task" ? SAMPLE_GOAL : undefined,
+    goal: (blockType === "goal" || blockType === "task") && hasGoalAssigned ? assignedGoal : undefined,
     commitment: blockType === "commitment" ? SAMPLE_COMMITMENT : undefined,
   };
 
@@ -184,6 +211,9 @@ export function BlockSidebarExample() {
         availableGoalTasks={availableTasks}
         onAssignTask={handleAssignTask}
         onUnassignTask={handleUnassignTask}
+        // Goal selection (for newly created blocks)
+        availableGoals={AVAILABLE_GOALS}
+        onGoalSelect={handleGoalSelect}
       />
       <KnobsToggle />
       <KnobsPanel>
@@ -192,6 +222,17 @@ export function BlockSidebarExample() {
           value={blockType}
           options={BLOCK_TYPE_OPTIONS}
           onChange={setBlockType}
+        />
+        <KnobBoolean
+          label="Has Goal Assigned"
+          value={hasGoalAssigned}
+          onChange={(v) => {
+            setHasGoalAssigned(v);
+            if (!v) {
+              setAssignedGoal(undefined);
+              setTitle("New Block");
+            }
+          }}
         />
       </KnobsPanel>
     </KnobsProvider>

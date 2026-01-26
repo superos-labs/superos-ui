@@ -22,6 +22,7 @@ export type {
   BlockSubtask,
   BlockSidebarSource,
   BlockSidebarGoal,
+  GoalSelectorOption,
 } from "./block-sidebar";
 
 // Re-export ScheduleTask for consumers working with goal task data

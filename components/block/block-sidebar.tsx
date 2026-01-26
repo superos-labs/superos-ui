@@ -8,10 +8,15 @@ import {
   RiFileTextLine,
   RiCheckLine,
   RiCloseLine,
-  RiFlagLine,
   RiAddLine,
   RiArrowDownSLine,
 } from "@remixicon/react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import type { BlockColor } from "./block-colors";
 import type { BlockType, IconComponent } from "@/lib/types";
 import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
@@ -684,6 +689,56 @@ function AvailableTasksList({ tasks, onAssign }: AvailableTasksListProps) {
   );
 }
 
+// =============================================================================
+// Goal Selector Dropdown (for unassigned blocks)
+// =============================================================================
+
+/** Goal option for the selector dropdown */
+interface GoalSelectorOption {
+  id: string;
+  label: string;
+  icon: IconComponent;
+  color: string;
+}
+
+interface GoalSelectorProps {
+  goals: GoalSelectorOption[];
+  onSelect: (goalId: string) => void;
+}
+
+function GoalSelector({ goals, onSelect }: GoalSelectorProps) {
+  if (goals.length === 0) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="group flex items-center gap-2 transition-colors">
+          <div className="flex size-5 shrink-0 items-center justify-center rounded border border-dashed border-muted-foreground/40 text-muted-foreground/50 transition-colors group-hover:border-muted-foreground/60 group-hover:text-muted-foreground/70">
+            <RiAddLine className="size-3" />
+          </div>
+          <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+            Select goal...
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[240px]">
+        {goals.map((goal) => (
+          <DropdownMenuItem
+            key={goal.id}
+            onClick={() => onSelect(goal.id)}
+            className="gap-2.5 py-2"
+          >
+            <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
+              <goal.icon className={cn("size-3", goal.color)} />
+            </div>
+            <span className="font-medium">{goal.label}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 // Main component
 interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Block data to display */
@@ -734,6 +789,12 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onUpdateGoalTaskSubtask?: (taskId: string, subtaskId: string, label: string) => void;
   /** Callback to delete a goal task's subtask */
   onDeleteGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
+
+  // Goal selection (for newly created blocks without a goal)
+  /** Available goals for selection (shown when block has no goal assigned) */
+  availableGoals?: GoalSelectorOption[];
+  /** Callback when user selects a goal for this block (one-time) */
+  onGoalSelect?: (goalId: string) => void;
 }
 
 function BlockSidebar({
@@ -759,6 +820,9 @@ function BlockSidebar({
   onToggleGoalTaskSubtask,
   onUpdateGoalTaskSubtask,
   onDeleteGoalTaskSubtask,
+  // Goal selection
+  availableGoals,
+  onGoalSelect,
   className,
   ...props
 }: BlockSidebarProps) {
@@ -851,17 +915,20 @@ function BlockSidebar({
           </h2>
         )}
 
-        {/* Associated goal or commitment */}
-        {sourceInfo && (
+        {/* Associated goal or commitment / Goal selector */}
+        {sourceInfo ? (
           <div className="flex items-center gap-2">
             <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
               <sourceInfo.icon className={cn("size-3", sourceInfo.color)} />
             </div>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <RiFlagLine className="size-3" />
-              <span>{sourceInfo.label}</span>
-            </div>
+            <span className={cn("text-sm font-medium", sourceInfo.color)}>
+              {sourceInfo.label}
+            </span>
           </div>
+        ) : (
+          isGoalBlock && availableGoals && availableGoals.length > 0 && onGoalSelect && (
+            <GoalSelector goals={availableGoals} onSelect={onGoalSelect} />
+          )
         )}
       </div>
 
@@ -924,8 +991,8 @@ function BlockSidebar({
           </div>
         </BlockSidebarSection>
 
-        {/* Goal Tasks (only for goal blocks) - shown before notes */}
-        {isGoalBlock && (
+        {/* Goal Tasks (only for goal blocks with assigned goal) - shown before notes */}
+        {isGoalBlock && block.goal && (
           <div className="flex flex-col gap-2">
             {/* Section header */}
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -1064,6 +1131,7 @@ export type {
   BlockSubtask,
   BlockSidebarSource,
   BlockSidebarGoal,
+  GoalSelectorOption,
 };
 // Re-export BlockType for backward compatibility
 export type { BlockType } from "@/lib/types";
