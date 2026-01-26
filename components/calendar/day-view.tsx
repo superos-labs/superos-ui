@@ -18,7 +18,6 @@ import {
   isToday,
   isCurrentHour,
   calculateOverlapLayout,
-  getWeekDates,
 } from "./calendar-utils";
 
 export function DayView({
@@ -63,11 +62,11 @@ export function DayView({
   const selectedDayOfWeek = selectedDate.getDay();
   const selectedDayIndex = selectedDayOfWeek === 0 ? 6 : selectedDayOfWeek - 1;
 
-  // Get week dates for overnight event validation
-  const weekDates = React.useMemo(() => getWeekDates(selectedDate), [selectedDate]);
+  // Get ISO date string for segment matching
+  const selectedDateString = selectedDate.toISOString().split("T")[0];
 
   // Get segments for this day (handles overnight events automatically)
-  const rawSegments = getSegmentsForDay(events, selectedDayIndex, mode, weekDates);
+  const rawSegments = getSegmentsForDay(events, selectedDateString, mode);
   const daySegments = calculateOverlapLayout(rawSegments);
 
   // Measure day column width for drag calculations

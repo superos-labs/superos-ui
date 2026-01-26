@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";
-import { isOvernightEvent } from "@/components/calendar";
+import { isOvernightEvent, getNextDayDate } from "@/components/calendar";
 import type {
   ScheduleGoal,
   GoalStats,
@@ -57,43 +57,47 @@ export function useScheduleStats({
     [weekDates]
   );
 
-  // Calculate the day before weekStart for overnight event inclusion.
-  // Overnight events from this day (e.g., Sunday) spill into the current week's Monday.
-  const dayBeforeWeekStart = React.useMemo(() => {
-    const d = new Date(weekDates[0]);
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().split("T")[0];
-  }, [weekDates]);
+  // Helper to check if an event is visible in the current week
+  // An event is visible if its start date OR end date (for overnight events) falls within the week
+  const isEventInWeek = React.useCallback(
+    (event: CalendarEvent): boolean => {
+      if (!event.date) return true; // No date = always visible
+      
+      // Start date in week?
+      if (event.date >= weekStart && event.date <= weekEnd) return true;
+      
+      // For overnight events, also check if end date is in week
+      if (isOvernightEvent(event)) {
+        const endDate = getNextDayDate(event.date);
+        if (endDate >= weekStart && endDate <= weekEnd) return true;
+      }
+      
+      return false;
+    },
+    [weekStart, weekEnd]
+  );
 
   // Filtered events: exclude blocks from disabled commitments AND filter to current week
   const filteredEvents = React.useMemo(
     () =>
       events.filter((event) => {
-        // Filter by week (events must have a date in the current week)
-        if (event.date && (event.date < weekStart || event.date > weekEnd)) {
-          // Exception: include overnight events from the day before weekStart.
-          // Their AM portion spills into this week's Monday (dayIndex 0).
-          const isOvernightFromPreviousDay =
-            event.date === dayBeforeWeekStart && isOvernightEvent(event);
-          if (!isOvernightFromPreviousDay) {
-            return false;
-          }
+        // Filter by week (events must have start or end date in the current week)
+        if (!isEventInWeek(event)) {
+          return false;
         }
         // Keep all non-commitment blocks
         if (event.blockType !== "commitment") return true;
         // For commitment blocks, only keep if commitment is enabled
         return event.sourceCommitmentId && enabledCommitmentIds.has(event.sourceCommitmentId);
       }),
-    [events, enabledCommitmentIds, weekStart, weekEnd, dayBeforeWeekStart]
+    [events, enabledCommitmentIds, isEventInWeek]
   );
 
   const getGoalStats = React.useCallback(
     (goalId: string): GoalStats => {
-      // Filter to goal AND current week
+      // Filter to goal AND current week (including overnight events spanning into this week)
       const goalEvents = events.filter(
-        (e) =>
-          e.sourceGoalId === goalId &&
-          (!e.date || (e.date >= weekStart && e.date <= weekEnd))
+        (e) => e.sourceGoalId === goalId && isEventInWeek(e)
       );
       const plannedMinutes = goalEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
@@ -108,7 +112,7 @@ export function useScheduleStats({
         completedHours: Math.round((completedMinutes / 60) * 10) / 10,
       };
     },
-    [events, weekStart, weekEnd]
+    [events, isEventInWeek]
   );
 
   const getCommitmentStats = React.useCallback(

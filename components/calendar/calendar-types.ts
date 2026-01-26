@@ -361,10 +361,26 @@ export function isOvernightEvent(event: CalendarEvent): boolean {
 /**
  * Get the day index where the event ends (0-6).
  * For overnight events, this is the next day (with week wrapping).
+ * Note: This uses modulo arithmetic and is mainly for positioning within a week.
+ * For cross-week matching, use getNextDayDate() with actual dates instead.
  */
 export function getEventEndDayIndex(event: CalendarEvent): number {
   if (!isOvernightEvent(event)) return event.dayIndex;
   return (event.dayIndex + 1) % 7;
+}
+
+/**
+ * Get the ISO date string for the day after the given date.
+ * Used for calculating the actual end date of overnight events.
+ */
+export function getNextDayDate(isoDate: string): string {
+  const date = new Date(isoDate + "T00:00:00");
+  date.setDate(date.getDate() + 1);
+  // Use local date parts instead of toISOString() to avoid timezone conversion issues
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 /**
@@ -421,39 +437,40 @@ export interface EventDaySegment {
 }
 
 /**
+ * Get the day index (0-6, Monday-start) from an ISO date string.
+ * Used internally for segment positioning.
+ */
+function getDayIndexFromDateInternal(date: string): number {
+  const d = new Date(date + "T00:00:00");
+  const day = d.getDay();
+  return day === 0 ? 6 : day - 1; // Convert Sunday=0 to Monday-start (Mon=0, Sun=6)
+}
+
+/**
  * Get all event segments that should be rendered for a specific day.
  * Single-day events produce one segment; overnight events may produce
  * a 'start' segment on day 1 and/or an 'end' segment on day 2.
  *
- * @param events - Calendar events to filter
- * @param targetDayIndex - Day index (0-6, Monday-Sunday)
+ * @param events - Array of calendar events to filter
+ * @param targetDate - ISO date string (e.g., "2026-01-20") for the target day
  * @param mode - Calendar mode for visibility filtering
- * @param weekDates - Optional array of dates for the current week. When provided,
- *                    overnight events are validated to ensure the AM segment only
- *                    appears on the actual next calendar day (fixes week boundary issues).
  */
 export function getSegmentsForDay(
   events: CalendarEvent[],
-  targetDayIndex: number,
+  targetDate: string,
   mode: CalendarMode = "schedule",
-  weekDates?: Date[],
 ): EventDaySegment[] {
   const segments: EventDaySegment[] = [];
-
-  // Get the target date for overnight validation (if weekDates provided)
-  const targetDate = weekDates
-    ? weekDates[targetDayIndex].toISOString().split("T")[0]
-    : null;
+  const targetDayIndex = getDayIndexFromDateInternal(targetDate);
 
   for (const event of events) {
     // Skip events not visible in current mode
     if (!isVisibleInMode(event.status, mode)) continue;
 
     const isOvernight = isOvernightEvent(event);
-    const endDayIndex = getEventEndDayIndex(event);
 
-    // Check if this day is the start day
-    if (event.dayIndex === targetDayIndex) {
+    // Check if this day is the start day (match by exact date)
+    if (event.date === targetDate) {
       segments.push({
         event,
         dayIndex: targetDayIndex,
@@ -463,20 +480,8 @@ export function getSegmentsForDay(
       });
     }
     // Check if this day is the end day (for overnight events only)
-    else if (isOvernight && endDayIndex === targetDayIndex) {
-      // When weekDates is provided, verify the actual calendar date matches.
-      // This prevents Sunday overnight events from appearing on Monday of the
-      // same week (they should appear on Monday of the following week).
-      if (targetDate && event.date) {
-        const eventNextDay = new Date(event.date + "T00:00:00");
-        eventNextDay.setDate(eventNextDay.getDate() + 1);
-        const nextDayISO = eventNextDay.toISOString().split("T")[0];
-        if (nextDayISO !== targetDate) {
-          // The event's next day doesn't match the target column's date
-          continue;
-        }
-      }
-
+    // Compare actual dates to avoid cross-week confusion
+    else if (isOvernight && getNextDayDate(event.date) === targetDate) {
       segments.push({
         event,
         dayIndex: targetDayIndex,

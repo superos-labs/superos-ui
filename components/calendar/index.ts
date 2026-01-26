@@ -87,6 +87,7 @@ export {
   isOvernightEvent,
   getEventEndDayIndex,
   getEventEndMinutes,
+  getNextDayDate,
   clampEventDuration,
   getSegmentsForDay,
 } from "./calendar-types";

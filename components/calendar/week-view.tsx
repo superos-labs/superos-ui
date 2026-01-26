@@ -163,7 +163,8 @@ export function WeekView({
           {/* Day Columns */}
           {DAYS.map((day, dayIndex) => {
             const date = weekDates[dayIndex];
-            const rawSegments = getSegmentsForDay(events, dayIndex, mode, weekDates);
+            const dateString = date.toISOString().split("T")[0];
+            const rawSegments = getSegmentsForDay(events, dateString, mode);
             const daySegments = calculateOverlapLayout(rawSegments);
 
             return (
