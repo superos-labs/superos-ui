@@ -250,18 +250,17 @@ function createSampleEvents(): CalendarEvent[] {
     { id: "shell-eat-lunch-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
 
     // =============================================================================
-    // SuperOS Goal - Afternoon blocks (1p-6p = 300 min on Mon, 2p-6p = 240 min Tu-Fri)
+    // SuperOS Goal - Afternoon blocks (1p-7:45p = 405 min on Mon, 2p-6p = 240 min Tu-Fri)
     // =============================================================================
-    { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 300, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
+    { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 405, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
     { id: "shell-superos-pm-1", title: "Get SuperOS to $1M ARR", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
     { id: "shell-superos-pm-2", title: "Get SuperOS to $1M ARR", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
     { id: "shell-superos-pm-3", title: "Get SuperOS to $1M ARR", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
     { id: "shell-superos-pm-4", title: "Get SuperOS to $1M ARR", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
 
     // =============================================================================
-    // Chores - 6:30p-7:30p (60 min) Mon-Fri
+    // Chores - 6:30p-7:30p (60 min) Tu-Fri
     // =============================================================================
-    { id: "shell-chores-0", title: "Chores", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
     { id: "shell-chores-1", title: "Chores", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
     { id: "shell-chores-2", title: "Chores", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
     { id: "shell-chores-3", title: "Chores", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
