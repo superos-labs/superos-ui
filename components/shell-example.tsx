@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell"
+import * as React from "react";
+import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell";
 import {
   Calendar,
   KeyboardToast,
@@ -11,23 +11,36 @@ import {
   getWeekDates,
   type CalendarMode,
   type CalendarEvent,
-} from "@/components/calendar"
-import type { DeadlineTask } from "@/lib/unified-schedule"
-import { Backlog, type BacklogItem, type BacklogMode, type NewGoalData } from "@/components/backlog"
-import { WeeklyAnalytics } from "@/components/weekly-analytics"
-import { BlockSidebar } from "@/components/block"
-import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
-import { useUnifiedSchedule } from "@/lib/unified-schedule"
-import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types"
-import type { GoalColor } from "@/lib/colors"
-import type { IconComponent } from "@/lib/types"
+} from "@/components/calendar";
+import type { DeadlineTask } from "@/lib/unified-schedule";
+import {
+  Backlog,
+  type BacklogItem,
+  type BacklogMode,
+  type NewGoalData,
+} from "@/components/backlog";
+import { WeeklyAnalytics } from "@/components/weekly-analytics";
+import { BlockSidebar } from "@/components/block";
+import {
+  DragProvider,
+  DragGhost,
+  useDragContextOptional,
+} from "@/components/drag";
+import { useUnifiedSchedule } from "@/lib/unified-schedule";
+import {
+  getDefaultDuration,
+  getDragItemTitle,
+  getDragItemColor,
+} from "@/lib/drag-types";
+import type { GoalColor } from "@/lib/colors";
+import type { IconComponent } from "@/lib/types";
 
 // Adapters for data conversion
-import { 
-  eventToBlockSidebarData, 
+import {
+  eventToBlockSidebarData,
   parseTimeToMinutes,
   toAnalyticsItems,
-} from "@/lib/adapters"
+} from "@/lib/adapters";
 
 // Sample data from fixtures
 import {
@@ -36,7 +49,7 @@ import {
   LIFE_AREAS,
   GOAL_ICONS,
   type DataSetId,
-} from "@/lib/fixtures/shell-data"
+} from "@/lib/fixtures/shell-data";
 
 import {
   KnobsProvider,
@@ -44,7 +57,7 @@ import {
   KnobsPanel,
   KnobBoolean,
   KnobSelect,
-} from "@/components/_playground/knobs"
+} from "@/components/_playground/knobs";
 import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
@@ -52,9 +65,8 @@ import {
   RiSideBarLine,
   RiCheckLine,
   RiPieChartLine,
-} from "@remixicon/react"
-import { cn } from "@/lib/utils"
-
+} from "@remixicon/react";
+import { cn } from "@/lib/utils";
 
 // =============================================================================
 // Components
@@ -65,21 +77,36 @@ interface ShellDemoContentProps {
   onDataSetChange: (id: DataSetId) => void;
 }
 
-function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps) {
-  const [showPlanWeek, setShowPlanWeek] = React.useState(true)
-  const [showCalendar, setShowCalendar] = React.useState(true)
-  const [showSidebar, setShowSidebar] = React.useState(true)
-  const [showRightSidebar, setShowRightSidebar] = React.useState(false)
-  const [showTasks, setShowTasks] = React.useState(true)
-  const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
-  const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view")
-  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null)
+function ShellDemoContent({
+  dataSetId,
+  onDataSetChange,
+}: ShellDemoContentProps) {
+  const [showPlanWeek, setShowPlanWeek] = React.useState(true);
+  const [showCalendar, setShowCalendar] = React.useState(true);
+  const [showSidebar, setShowSidebar] = React.useState(true);
+  const [showRightSidebar, setShowRightSidebar] = React.useState(false);
+  const [showTasks, setShowTasks] = React.useState(true);
+  const [calendarMode, setCalendarMode] =
+    React.useState<CalendarMode>("schedule");
+  const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view");
+  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
+    null,
+  );
+
+  // Right sidebar content state - freezes content during collapse animation
+  const [renderedContent, setRenderedContent] = React.useState<
+    "block" | "analytics" | null
+  >(null);
 
   // Get the data set based on the ID
-  const dataSet = DATA_SETS[dataSetId]
+  const dataSet = DATA_SETS[dataSetId];
 
   // Clipboard for copy/paste
-  const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard()
+  const {
+    copy,
+    paste,
+    hasContent: hasClipboardContent,
+  } = useCalendarClipboard();
 
   // Unified schedule hook manages goals, commitments, and events with bidirectional sync
   // Also provides hover state for keyboard shortcuts
@@ -130,288 +157,343 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     onPaste: paste,
     hasClipboardContent,
     onEventCreated: (event) => setSelectedEventId(event.id),
-  })
+  });
 
   // Hover state for deadline keyboard shortcuts
-  const [hoveredDeadline, setHoveredDeadline] = React.useState<DeadlineTask | null>(null)
+  const [hoveredDeadline, setHoveredDeadline] =
+    React.useState<DeadlineTask | null>(null);
 
   // Compute week dates and deadlines for calendar display
-  const weekDates = React.useMemo(() => getWeekDates(new Date()), [])
+  const weekDates = React.useMemo(() => getWeekDates(new Date()), []);
   const weekDeadlines = React.useMemo(
     () => getWeekDeadlines(weekDates),
-    [getWeekDeadlines, weekDates]
-  )
+    [getWeekDeadlines, weekDates],
+  );
 
   // Derive selected event from ID (auto-syncs when events change)
   const selectedEvent = selectedEventId
-    ? calendarEvents.find((e) => e.id === selectedEventId) ?? null
-    : null
+    ? (calendarEvents.find((e) => e.id === selectedEventId) ?? null)
+    : null;
 
   // Compute sidebar data for the selected event (memoized)
   const sidebarData = React.useMemo(() => {
-    if (!selectedEvent) return null
-    return eventToBlockSidebarData(selectedEvent, goals, commitments, weekDates)
-  }, [selectedEvent, goals, commitments, weekDates])
+    if (!selectedEvent) return null;
+    return eventToBlockSidebarData(
+      selectedEvent,
+      goals,
+      commitments,
+      weekDates,
+    );
+  }, [selectedEvent, goals, commitments, weekDates]);
+
+  // Cache sidebar data to survive the collapse animation
+  const [frozenSidebarData, setFrozenSidebarData] = React.useState(sidebarData);
+
+  // Derive target content from current state
+  const targetContent: "block" | "analytics" | null = selectedEvent
+    ? "block"
+    : showRightSidebar
+      ? "analytics"
+      : null;
+
+  // Update rendered content only when opening/switching (not closing)
+  // This keeps the old content visible during the collapse animation
+  React.useEffect(() => {
+    if (targetContent !== null) {
+      setRenderedContent(targetContent);
+    }
+  }, [targetContent]);
+
+  // Freeze sidebar data when valid
+  React.useEffect(() => {
+    if (sidebarData) {
+      setFrozenSidebarData(sidebarData);
+    }
+  }, [sidebarData]);
+
+  // Determine if right sidebar container is open
+  const isRightSidebarOpen = targetContent !== null;
+
+  // Use frozen data during collapse
+  const sidebarDataToRender = selectedEvent ? sidebarData : frozenSidebarData;
 
   // Handle event click - select the block to show sidebar
   const handleEventClick = React.useCallback((event: CalendarEvent) => {
-    setSelectedEventId(event.id)
-  }, [])
+    setSelectedEventId(event.id);
+  }, []);
 
   // Handle closing the block sidebar
   const handleCloseSidebar = React.useCallback(() => {
-    setSelectedEventId(null)
-  }, [])
+    setSelectedEventId(null);
+  }, []);
 
   // Close sidebar on ESC key
   React.useEffect(() => {
-    if (!selectedEventId) return
+    if (!selectedEventId) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setSelectedEventId(null)
+        setSelectedEventId(null);
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [selectedEventId])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedEventId]);
 
   // Sidebar callbacks for editing block properties
   const handleSidebarTitleChange = React.useCallback(
     (title: string) => {
-      if (!selectedEvent) return
-      updateEvent(selectedEvent.id, { title })
+      if (!selectedEvent) return;
+      updateEvent(selectedEvent.id, { title });
       // If task block, also update the task label
       if (selectedEvent.sourceTaskId && selectedEvent.sourceGoalId) {
-        updateTask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, { label: title })
+        updateTask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, {
+          label: title,
+        });
       }
     },
-    [selectedEvent, updateEvent, updateTask]
-  )
+    [selectedEvent, updateEvent, updateTask],
+  );
 
   const handleSidebarDateChange = React.useCallback(
     (newDate: string) => {
-      if (!selectedEvent) return
+      if (!selectedEvent) return;
       const newDayIndex = weekDates.findIndex(
-        (d) => d.toISOString().split("T")[0] === newDate
-      )
+        (d) => d.toISOString().split("T")[0] === newDate,
+      );
       if (newDayIndex >= 0) {
-        updateEvent(selectedEvent.id, { dayIndex: newDayIndex })
+        updateEvent(selectedEvent.id, { dayIndex: newDayIndex });
       }
     },
-    [selectedEvent, weekDates, updateEvent]
-  )
+    [selectedEvent, weekDates, updateEvent],
+  );
 
   const handleSidebarStartTimeChange = React.useCallback(
     (startTime: string) => {
-      if (!selectedEvent) return
-      const newStartMinutes = parseTimeToMinutes(startTime)
-      updateEvent(selectedEvent.id, { startMinutes: newStartMinutes })
+      if (!selectedEvent) return;
+      const newStartMinutes = parseTimeToMinutes(startTime);
+      updateEvent(selectedEvent.id, { startMinutes: newStartMinutes });
     },
-    [selectedEvent, updateEvent]
-  )
+    [selectedEvent, updateEvent],
+  );
 
   const handleSidebarEndTimeChange = React.useCallback(
     (endTime: string) => {
-      if (!selectedEvent) return
-      const newEndMinutes = parseTimeToMinutes(endTime)
-      const newDuration = newEndMinutes - selectedEvent.startMinutes
+      if (!selectedEvent) return;
+      const newEndMinutes = parseTimeToMinutes(endTime);
+      const newDuration = newEndMinutes - selectedEvent.startMinutes;
       if (newDuration > 0) {
-        updateEvent(selectedEvent.id, { durationMinutes: newDuration })
+        updateEvent(selectedEvent.id, { durationMinutes: newDuration });
       }
     },
-    [selectedEvent, updateEvent]
-  )
+    [selectedEvent, updateEvent],
+  );
 
   const handleSidebarNotesChange = React.useCallback(
     (notes: string) => {
-      if (!selectedEvent) return
-      updateEvent(selectedEvent.id, { notes })
+      if (!selectedEvent) return;
+      updateEvent(selectedEvent.id, { notes });
       // Sync notes to task description for task blocks
-      if (selectedEvent.blockType === "task" && selectedEvent.sourceGoalId && selectedEvent.sourceTaskId) {
-        updateTask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, { description: notes })
+      if (
+        selectedEvent.blockType === "task" &&
+        selectedEvent.sourceGoalId &&
+        selectedEvent.sourceTaskId
+      ) {
+        updateTask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, {
+          description: notes,
+        });
       }
     },
-    [selectedEvent, updateEvent, updateTask]
-  )
+    [selectedEvent, updateEvent, updateTask],
+  );
 
   const handleSidebarToggleGoalTask = React.useCallback(
     (taskId: string) => {
-      if (!selectedEvent?.sourceGoalId) return
-      toggleTaskComplete(selectedEvent.sourceGoalId, taskId)
+      if (!selectedEvent?.sourceGoalId) return;
+      toggleTaskComplete(selectedEvent.sourceGoalId, taskId);
     },
-    [selectedEvent, toggleTaskComplete]
-  )
+    [selectedEvent, toggleTaskComplete],
+  );
 
   // Subtask handlers for task blocks
   const handleSidebarAddSubtask = React.useCallback(
     (label: string) => {
-      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
-      addSubtask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, label)
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return;
+      addSubtask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, label);
     },
-    [selectedEvent, addSubtask]
-  )
+    [selectedEvent, addSubtask],
+  );
 
   const handleSidebarToggleSubtask = React.useCallback(
     (subtaskId: string) => {
-      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return;
       toggleSubtaskComplete(
         selectedEvent.sourceGoalId,
         selectedEvent.sourceTaskId,
-        subtaskId
-      )
+        subtaskId,
+      );
     },
-    [selectedEvent, toggleSubtaskComplete]
-  )
+    [selectedEvent, toggleSubtaskComplete],
+  );
 
   const handleSidebarUpdateSubtask = React.useCallback(
     (subtaskId: string, label: string) => {
-      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return;
       updateSubtask(
         selectedEvent.sourceGoalId,
         selectedEvent.sourceTaskId,
         subtaskId,
-        label
-      )
+        label,
+      );
     },
-    [selectedEvent, updateSubtask]
-  )
+    [selectedEvent, updateSubtask],
+  );
 
   const handleSidebarDeleteSubtask = React.useCallback(
     (subtaskId: string) => {
-      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return;
       deleteSubtask(
         selectedEvent.sourceGoalId,
         selectedEvent.sourceTaskId,
-        subtaskId
-      )
+        subtaskId,
+      );
     },
-    [selectedEvent, deleteSubtask]
-  )
+    [selectedEvent, deleteSubtask],
+  );
 
   // Task assignment handlers for goal blocks
   const handleSidebarAssignTask = React.useCallback(
     (taskId: string) => {
-      if (!selectedEvent) return
-      assignTaskToBlock(selectedEvent.id, taskId)
+      if (!selectedEvent) return;
+      assignTaskToBlock(selectedEvent.id, taskId);
     },
-    [selectedEvent, assignTaskToBlock]
-  )
+    [selectedEvent, assignTaskToBlock],
+  );
 
   const handleSidebarUnassignTask = React.useCallback(
     (taskId: string) => {
-      if (!selectedEvent) return
-      unassignTaskFromBlock(selectedEvent.id, taskId)
+      if (!selectedEvent) return;
+      unassignTaskFromBlock(selectedEvent.id, taskId);
     },
-    [selectedEvent, unassignTaskFromBlock]
-  )
+    [selectedEvent, unassignTaskFromBlock],
+  );
 
   // Create a new task and assign it to the current block
   const handleSidebarCreateTask = React.useCallback(
     (label: string) => {
-      if (!selectedEvent?.sourceGoalId) return
+      if (!selectedEvent?.sourceGoalId) return;
       // Create the task in the goal
-      const newTaskId = addTask(selectedEvent.sourceGoalId, label)
+      const newTaskId = addTask(selectedEvent.sourceGoalId, label);
       // Assign it to this block
       if (newTaskId) {
-        assignTaskToBlock(selectedEvent.id, newTaskId)
+        assignTaskToBlock(selectedEvent.id, newTaskId);
       }
     },
-    [selectedEvent, addTask, assignTaskToBlock]
-  )
+    [selectedEvent, addTask, assignTaskToBlock],
+  );
 
   // Goal task context handlers (for expanding tasks in goal blocks)
   const handleSidebarUpdateGoalTask = React.useCallback(
-    (taskId: string, updates: Partial<{ label: string; description?: string }>) => {
-      if (!selectedEvent?.sourceGoalId) return
-      updateTask(selectedEvent.sourceGoalId, taskId, updates)
+    (
+      taskId: string,
+      updates: Partial<{ label: string; description?: string }>,
+    ) => {
+      if (!selectedEvent?.sourceGoalId) return;
+      updateTask(selectedEvent.sourceGoalId, taskId, updates);
     },
-    [selectedEvent, updateTask]
-  )
+    [selectedEvent, updateTask],
+  );
 
   const handleSidebarAddGoalTaskSubtask = React.useCallback(
     (taskId: string, label: string) => {
-      if (!selectedEvent?.sourceGoalId) return
-      addSubtask(selectedEvent.sourceGoalId, taskId, label)
+      if (!selectedEvent?.sourceGoalId) return;
+      addSubtask(selectedEvent.sourceGoalId, taskId, label);
     },
-    [selectedEvent, addSubtask]
-  )
+    [selectedEvent, addSubtask],
+  );
 
   const handleSidebarToggleGoalTaskSubtask = React.useCallback(
     (taskId: string, subtaskId: string) => {
-      if (!selectedEvent?.sourceGoalId) return
-      toggleSubtaskComplete(selectedEvent.sourceGoalId, taskId, subtaskId)
+      if (!selectedEvent?.sourceGoalId) return;
+      toggleSubtaskComplete(selectedEvent.sourceGoalId, taskId, subtaskId);
     },
-    [selectedEvent, toggleSubtaskComplete]
-  )
+    [selectedEvent, toggleSubtaskComplete],
+  );
 
   const handleSidebarUpdateGoalTaskSubtask = React.useCallback(
     (taskId: string, subtaskId: string, label: string) => {
-      if (!selectedEvent?.sourceGoalId) return
-      updateSubtask(selectedEvent.sourceGoalId, taskId, subtaskId, label)
+      if (!selectedEvent?.sourceGoalId) return;
+      updateSubtask(selectedEvent.sourceGoalId, taskId, subtaskId, label);
     },
-    [selectedEvent, updateSubtask]
-  )
+    [selectedEvent, updateSubtask],
+  );
 
   const handleSidebarDeleteGoalTaskSubtask = React.useCallback(
     (taskId: string, subtaskId: string) => {
-      if (!selectedEvent?.sourceGoalId) return
-      deleteSubtask(selectedEvent.sourceGoalId, taskId, subtaskId)
+      if (!selectedEvent?.sourceGoalId) return;
+      deleteSubtask(selectedEvent.sourceGoalId, taskId, subtaskId);
     },
-    [selectedEvent, deleteSubtask]
-  )
+    [selectedEvent, deleteSubtask],
+  );
 
   // Drag context for external drag preview
-  const dragContext = useDragContextOptional()
-  
+  const dragContext = useDragContextOptional();
+
   // Destructure drag state for React Compiler compatibility
   // (The compiler needs explicit primitive/object dependencies, not optional chaining)
-  const dragState = dragContext?.state ?? null
-  const isDragging = dragState?.isDragging ?? false
-  const dragItem = dragState?.item ?? null
-  const previewPosition = dragState?.previewPosition ?? null
-  
+  const dragState = dragContext?.state ?? null;
+  const isDragging = dragState?.isDragging ?? false;
+  const dragItem = dragState?.item ?? null;
+  const previewPosition = dragState?.previewPosition ?? null;
+
   // Build external drag preview from drag context state (only for time-grid drops)
   const externalDragPreview = React.useMemo(() => {
     if (!isDragging || !dragItem || !previewPosition) {
-      return null
+      return null;
     }
     // Only show preview for time-grid drops, not header drops
     if (previewPosition.dropTarget !== "time-grid") {
-      return null
+      return null;
     }
-    const color = getDragItemColor(dragItem)
+    const color = getDragItemColor(dragItem);
     // Bail if we can't determine the color
-    if (!color) return null
+    if (!color) return null;
     return {
       dayIndex: previewPosition.dayIndex,
       startMinutes: previewPosition.startMinutes ?? 0,
       durationMinutes: getDefaultDuration(dragItem.type),
       color,
       title: getDragItemTitle(dragItem),
-    }
-  }, [isDragging, dragItem, previewPosition])
-  
+    };
+  }, [isDragging, dragItem, previewPosition]);
+
   // Handle drop from external drag (time-grid or existing-block)
-  const handleExternalDrop = React.useCallback((dayIndex: number, startMinutes: number) => {
-    if (!dragItem) return
-    
-    // Use the preview position from drag context if it's a block drop
-    const position = previewPosition && previewPosition.dropTarget === "existing-block"
-      ? previewPosition
-      : { dayIndex, startMinutes, dropTarget: "time-grid" as const }
-    
-    handleDrop(dragItem, position, weekDates)
-  }, [dragItem, previewPosition, handleDrop, weekDates])
-  
+  const handleExternalDrop = React.useCallback(
+    (dayIndex: number, startMinutes: number) => {
+      if (!dragItem) return;
+
+      // Use the preview position from drag context if it's a block drop
+      const position =
+        previewPosition && previewPosition.dropTarget === "existing-block"
+          ? previewPosition
+          : { dayIndex, startMinutes, dropTarget: "time-grid" as const };
+
+      handleDrop(dragItem, position, weekDates);
+    },
+    [dragItem, previewPosition, handleDrop, weekDates],
+  );
+
   // Handle deadline drop (header)
-  const handleDeadlineDrop = React.useCallback((dayIndex: number) => {
-    if (!dragItem || !dragContext) return
-    handleDrop(dragItem, { dayIndex, dropTarget: "day-header" }, weekDates)
-    dragContext.endDrag()
-  }, [dragItem, dragContext, handleDrop, weekDates])
-  
+  const handleDeadlineDrop = React.useCallback(
+    (dayIndex: number) => {
+      if (!dragItem || !dragContext) return;
+      handleDrop(dragItem, { dayIndex, dropTarget: "day-header" }, weekDates);
+      dragContext.endDrag();
+    },
+    [dragItem, dragContext, handleDrop, weekDates],
+  );
+
   // Keyboard shortcuts - uses hover state from useUnifiedSchedule
   const { toastMessage: calendarToastMessage } = useCalendarKeyboard({
     hoveredEvent,
@@ -419,25 +501,27 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     hasClipboardContent: calendarHandlers.hasClipboardContent,
     onCopy: calendarHandlers.onEventCopy,
     onPaste: calendarHandlers.onEventPaste,
-    onDuplicate: (eventId, newDayIndex, newStartMinutes) => 
+    onDuplicate: (eventId, newDayIndex, newStartMinutes) =>
       calendarHandlers.onEventDuplicate(eventId, newDayIndex, newStartMinutes),
     onDelete: (eventId) => calendarHandlers.onEventDelete(eventId),
     onToggleComplete: (eventId, currentStatus) => {
-      const newStatus = currentStatus === "completed" ? "planned" : "completed"
-      calendarHandlers.onEventStatusChange(eventId, newStatus)
+      const newStatus = currentStatus === "completed" ? "planned" : "completed";
+      calendarHandlers.onEventStatusChange(eventId, newStatus);
     },
-  })
+  });
 
   // Deadline toast state (separate from calendar toast)
-  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<string | null>(null)
-  
+  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<
+    string | null
+  >(null);
+
   // Auto-clear deadline toast
   React.useEffect(() => {
     if (deadlineToastMessage) {
-      const timer = setTimeout(() => setDeadlineToastMessage(null), 1500)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => setDeadlineToastMessage(null), 1500);
+      return () => clearTimeout(timer);
     }
-  }, [deadlineToastMessage])
+  }, [deadlineToastMessage]);
 
   // Deadline keyboard shortcuts
   useDeadlineKeyboard({
@@ -445,57 +529,60 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     onToggleComplete: toggleTaskComplete,
     onUnassign: clearTaskDeadline,
     showToast: setDeadlineToastMessage,
-  })
+  });
 
   // Combined toast message (calendar takes precedence)
-  const toastMessage = calendarToastMessage ?? deadlineToastMessage
+  const toastMessage = calendarToastMessage ?? deadlineToastMessage;
 
   // Derive analytics data
-  const analyticsCommitments = React.useMemo(() => 
-    toAnalyticsItems(commitments, getCommitmentStats), 
-    [commitments, getCommitmentStats]
-  )
-  const analyticsGoals = React.useMemo(() => 
-    toAnalyticsItems(goals, getGoalStats), 
-    [goals, getGoalStats]
-  )
+  const analyticsCommitments = React.useMemo(
+    () => toAnalyticsItems(commitments, getCommitmentStats),
+    [commitments, getCommitmentStats],
+  );
+  const analyticsGoals = React.useMemo(
+    () => toAnalyticsItems(goals, getGoalStats),
+    [goals, getGoalStats],
+  );
 
   // Handle goal creation from the backlog
-  const handleCreateGoal = React.useCallback((data: NewGoalData) => {
-    addGoal({
-      id: crypto.randomUUID(),
-      label: data.label,
-      icon: data.icon,
-      color: data.color,
-      tasks: [],
-    })
-  }, [addGoal])
+  const handleCreateGoal = React.useCallback(
+    (data: NewGoalData) => {
+      addGoal({
+        id: crypto.randomUUID(),
+        label: data.label,
+        icon: data.icon,
+        color: data.color,
+        tasks: [],
+      });
+    },
+    [addGoal],
+  );
 
-  const isPlanning = calendarMode === "blueprint"
+  const isPlanning = calendarMode === "blueprint";
 
   const handlePlanWeekClick = () => {
-    setCalendarMode(isPlanning ? "schedule" : "blueprint")
-  }
+    setCalendarMode(isPlanning ? "schedule" : "blueprint");
+  };
 
   return (
     <>
       <Shell>
         <ShellToolbar>
           <div className="flex items-center gap-1">
-            <button 
+            <button
               className={cn(
                 "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-                showSidebar ? "text-foreground" : "text-muted-foreground"
+                showSidebar ? "text-foreground" : "text-muted-foreground",
               )}
               onClick={() => setShowSidebar(!showSidebar)}
             >
               <RiSideBarLine className="size-4" />
             </button>
             {showSidebar && (
-              <button 
+              <button
                 className={cn(
                   "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-                  showTasks ? "text-foreground" : "text-muted-foreground"
+                  showTasks ? "text-foreground" : "text-muted-foreground",
                 )}
                 onClick={() => setShowTasks(!showTasks)}
                 title="Toggle tasks"
@@ -517,26 +604,28 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
           </div>
           <div className="flex items-center gap-2">
             {showPlanWeek && (
-              <button 
+              <button
                 className="flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
                 onClick={handlePlanWeekClick}
               >
                 {isPlanning ? "Confirm" : "Plan week"}
               </button>
             )}
-            <button 
+            <button
               className={cn(
                 "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-                showRightSidebar || selectedEvent ? "text-foreground" : "text-muted-foreground"
+                showRightSidebar || selectedEvent
+                  ? "text-foreground"
+                  : "text-muted-foreground",
               )}
               onClick={() => {
                 if (selectedEvent) {
                   // If block is selected, close it and show analytics
-                  setSelectedEventId(null)
-                  setShowRightSidebar(true)
+                  setSelectedEventId(null);
+                  setShowRightSidebar(true);
                 } else {
                   // Toggle analytics
-                  setShowRightSidebar(!showRightSidebar)
+                  setShowRightSidebar(!showRightSidebar);
                 }
               }}
               title="Toggle analytics"
@@ -548,16 +637,18 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
             </button>
           </div>
         </ShellToolbar>
-        <div className={`flex min-h-0 flex-1 ${showSidebar || showRightSidebar || selectedEvent ? "gap-4" : "gap-0"}`}>
-          <div 
+        <div
+          className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen ? "gap-4" : "gap-0"}`}
+        >
+          <div
             className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
               showSidebar ? "w-[420px] opacity-100" : "w-0 opacity-0"
             }`}
           >
-            <Backlog 
+            <Backlog
               commitments={commitments as BacklogItem[]}
               goals={goals as BacklogItem[]}
-              className="h-full w-[420px] max-w-none" 
+              className="h-full w-[420px] max-w-none"
               showTasks={showTasks}
               showCommitments={true}
               onToggleGoalTask={toggleTaskComplete}
@@ -576,20 +667,22 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
               // Commitment editing props
               mode={backlogMode}
               allCommitments={allCommitments as BacklogItem[]}
-              enabledCommitmentIds={draftEnabledCommitmentIds ?? enabledCommitmentIds}
+              enabledCommitmentIds={
+                draftEnabledCommitmentIds ?? enabledCommitmentIds
+              }
               mandatoryCommitmentIds={mandatoryCommitmentIds}
               onToggleCommitmentEnabled={toggleCommitmentEnabled}
               onEditCommitments={() => {
-                startEditingCommitments()
-                setBacklogMode("edit-commitments")
+                startEditingCommitments();
+                setBacklogMode("edit-commitments");
               }}
               onSaveCommitments={() => {
-                saveCommitmentChanges()
-                setBacklogMode("view")
+                saveCommitmentChanges();
+                setBacklogMode("view");
               }}
               onCancelEditCommitments={() => {
-                cancelCommitmentChanges()
-                setBacklogMode("view")
+                cancelCommitmentChanges();
+                setBacklogMode("view");
               }}
               // Goal creation props
               onCreateGoal={handleCreateGoal}
@@ -599,8 +692,8 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
           </div>
           <ShellContent className="overflow-hidden">
             {showCalendar && (
-              <Calendar 
-                events={calendarEvents} 
+              <Calendar
+                events={calendarEvents}
                 mode={calendarMode}
                 {...calendarHandlers}
                 onEventClick={handleEventClick}
@@ -615,14 +708,15 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
               />
             )}
           </ShellContent>
-          <div 
-            className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-              selectedEvent || showRightSidebar ? "w-[380px] opacity-100" : "w-0 opacity-0"
-            }`}
+          <div
+            className={cn(
+              "shrink-0 overflow-hidden transition-all duration-300 ease-out",
+              isRightSidebarOpen ? "w-[380px] opacity-100" : "w-0 opacity-0",
+            )}
           >
-            {selectedEvent && sidebarData ? (
+            {renderedContent === "block" && sidebarDataToRender ? (
               <BlockSidebar
-                block={sidebarData.block}
+                block={sidebarDataToRender.block}
                 onClose={handleCloseSidebar}
                 onTitleChange={handleSidebarTitleChange}
                 onDateChange={handleSidebarDateChange}
@@ -635,7 +729,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 onToggleSubtask={handleSidebarToggleSubtask}
                 onUpdateSubtask={handleSidebarUpdateSubtask}
                 onDeleteSubtask={handleSidebarDeleteSubtask}
-                availableGoalTasks={sidebarData.availableGoalTasks}
+                availableGoalTasks={sidebarDataToRender.availableGoalTasks}
                 onAssignTask={handleSidebarAssignTask}
                 onUnassignTask={handleSidebarUnassignTask}
                 // Goal task context callbacks
@@ -646,14 +740,14 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 onDeleteGoalTaskSubtask={handleSidebarDeleteGoalTaskSubtask}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
-            ) : (
-              <WeeklyAnalytics 
+            ) : renderedContent === "analytics" ? (
+              <WeeklyAnalytics
                 commitments={analyticsCommitments}
                 goals={analyticsGoals}
                 weekLabel="Jan 20 – 26"
-                className="h-full w-[380px] max-w-none overflow-y-auto" 
+                className="h-full w-[380px] max-w-none overflow-y-auto"
               />
-            )}
+            ) : null}
           </div>
         </div>
       </Shell>
@@ -692,22 +786,22 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
         />
       </KnobsPanel>
     </>
-  )
+  );
 }
 
 function ShellDemo() {
-  const [dataSetId, setDataSetId] = React.useState<DataSetId>("sample")
+  const [dataSetId, setDataSetId] = React.useState<DataSetId>("sample");
 
   return (
     <DragProvider>
       {/* Key forces remount when data set changes, resetting all state */}
-      <ShellDemoContent 
+      <ShellDemoContent
         key={dataSetId}
         dataSetId={dataSetId}
         onDataSetChange={setDataSetId}
       />
     </DragProvider>
-  )
+  );
 }
 
 export function ShellExample() {
@@ -715,5 +809,5 @@ export function ShellExample() {
     <KnobsProvider>
       <ShellDemo />
     </KnobsProvider>
-  )
+  );
 }
