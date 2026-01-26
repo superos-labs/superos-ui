@@ -37,6 +37,46 @@ export function getWeekDates(referenceDate: Date = new Date()): Date[] {
 }
 
 /**
+ * Get the ISO date string (YYYY-MM-DD) for a day in the week.
+ */
+export function getDateForDayIndex(weekDates: Date[], dayIndex: number): string {
+  return weekDates[dayIndex].toISOString().split("T")[0];
+}
+
+/**
+ * Get the day index (0-6, Monday-start) from an ISO date string.
+ */
+export function getDayIndexFromDate(date: string): number {
+  const d = new Date(date + "T00:00:00"); // Ensure consistent parsing
+  const day = d.getDay();
+  return day === 0 ? 6 : day - 1; // Convert Sunday=0 to Monday-start (Mon=0, Sun=6)
+}
+
+/**
+ * Check if a date falls within a week (inclusive).
+ */
+export function isDateInWeek(date: string, weekDates: Date[]): boolean {
+  const weekStart = weekDates[0].toISOString().split("T")[0];
+  const weekEnd = weekDates[6].toISOString().split("T")[0];
+  return date >= weekStart && date <= weekEnd;
+}
+
+/**
+ * Format a week range for display, e.g., "Jan 20 – 26" or "Jan 27 – Feb 2"
+ */
+export function formatWeekRange(weekDates: Date[]): string {
+  const start = weekDates[0];
+  const end = weekDates[6];
+  const startMonth = start.toLocaleDateString("en-US", { month: "short" });
+  const endMonth = end.toLocaleDateString("en-US", { month: "short" });
+
+  if (startMonth === endMonth) {
+    return `${startMonth} ${start.getDate()} – ${end.getDate()}`;
+  }
+  return `${startMonth} ${start.getDate()} – ${endMonth} ${end.getDate()}`;
+}
+
+/**
  * Format an hour number (0-23) to a compact string like "12a", "12p", "1a", "1p"
  */
 export function formatHour(hour: number): string {

@@ -25,6 +25,7 @@ export function useUnifiedSchedule({
   allCommitments: allCommitmentsInput,
   initialEnabledCommitmentIds,
   initialEvents,
+  weekDates,
   onCopy,
   onPaste,
   hasClipboardContent = false,
@@ -37,6 +38,16 @@ export function useUnifiedSchedule({
   // Hover state for keyboard shortcuts
   const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
   const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
+
+  // Memoize week boundaries for filtering
+  const weekStart = React.useMemo(
+    () => weekDates[0].toISOString().split("T")[0],
+    [weekDates]
+  );
+  const weekEnd = React.useMemo(
+    () => weekDates[6].toISOString().split("T")[0],
+    [weekDates]
+  );
 
   // -------------------------------------------------------------------------
   // Commitment Visibility Management
@@ -114,16 +125,20 @@ export function useUnifiedSchedule({
     [allCommitments, enabledCommitmentIds]
   );
 
-  // Filtered events: exclude blocks from disabled commitments
+  // Filtered events: exclude blocks from disabled commitments AND filter to current week
   const filteredEvents = React.useMemo(
     () =>
       events.filter((event) => {
+        // Filter by week (events must have a date in the current week)
+        if (event.date && (event.date < weekStart || event.date > weekEnd)) {
+          return false;
+        }
         // Keep all non-commitment blocks
         if (event.blockType !== "commitment") return true;
         // For commitment blocks, only keep if commitment is enabled
         return event.sourceCommitmentId && enabledCommitmentIds.has(event.sourceCommitmentId);
       }),
-    [events, enabledCommitmentIds]
+    [events, enabledCommitmentIds, weekStart, weekEnd]
   );
 
   // -------------------------------------------------------------------------
@@ -195,7 +210,12 @@ export function useUnifiedSchedule({
 
   const getGoalStats = React.useCallback(
     (goalId: string): GoalStats => {
-      const goalEvents = events.filter((e) => e.sourceGoalId === goalId);
+      // Filter to goal AND current week
+      const goalEvents = events.filter(
+        (e) =>
+          e.sourceGoalId === goalId &&
+          (!e.date || (e.date >= weekStart && e.date <= weekEnd))
+      );
       const plannedMinutes = goalEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
         0
@@ -209,11 +229,12 @@ export function useUnifiedSchedule({
         completedHours: Math.round((completedMinutes / 60) * 10) / 10,
       };
     },
-    [events]
+    [events, weekStart, weekEnd]
   );
 
   const getCommitmentStats = React.useCallback(
     (commitmentId: string): GoalStats => {
+      // filteredEvents already includes week filtering, just filter by commitment
       const commitmentEvents = filteredEvents.filter((e) => e.sourceCommitmentId === commitmentId);
       const plannedMinutes = commitmentEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
@@ -320,6 +341,7 @@ export function useUnifiedSchedule({
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
         title: goal.label,
+        date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
         durationMinutes: 60, // 1 hour for goals
@@ -330,7 +352,7 @@ export function useUnifiedSchedule({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [goals]
+    [goals, weekDates]
   );
 
   const scheduleTask = React.useCallback(
@@ -341,6 +363,7 @@ export function useUnifiedSchedule({
       startMinutes: number
     ) => {
       const newEventId = crypto.randomUUID();
+      const eventDate = weekDates[dayIndex].toISOString().split("T")[0];
 
       // Update goals first to get task data and set the new block reference
       setGoals((currentGoals) => {
@@ -352,6 +375,7 @@ export function useUnifiedSchedule({
         const newEvent: CalendarEvent = {
           id: newEventId,
           title: task.label,
+          date: eventDate,
           dayIndex,
           startMinutes,
           durationMinutes: 30, // 30 min for tasks
@@ -384,7 +408,7 @@ export function useUnifiedSchedule({
         );
       });
     },
-    []
+    [weekDates]
   );
 
   const scheduleCommitment = React.useCallback(
@@ -396,6 +420,7 @@ export function useUnifiedSchedule({
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
         title: commitment.label,
+        date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
         durationMinutes: 60, // 1 hour for commitments
@@ -406,7 +431,7 @@ export function useUnifiedSchedule({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [allCommitments]
+    [allCommitments, weekDates]
   );
 
   // -------------------------------------------------------------------------
@@ -1062,12 +1087,17 @@ export function useUnifiedSchedule({
       setEvents((prev) =>
         prev.map((event) =>
           event.id === eventId
-            ? { ...event, dayIndex: newDayIndex, startMinutes: newStartMinutes }
+            ? {
+                ...event,
+                date: weekDates[newDayIndex].toISOString().split("T")[0],
+                dayIndex: newDayIndex,
+                startMinutes: newStartMinutes,
+              }
             : event
         )
       );
     },
-    []
+    [weekDates]
   );
 
   const handleEventDuplicate = React.useCallback(
@@ -1076,12 +1106,14 @@ export function useUnifiedSchedule({
         const source = prev.find((e) => e.id === sourceEventId);
         if (!source) return prev;
 
+        const newDate = weekDates[newDayIndex].toISOString().split("T")[0];
+
         // Only goal blocks can be duplicated (tasks can only have one instance)
         if (source.blockType === "task") {
           // Move instead of duplicate for tasks
           return prev.map((e) =>
             e.id === sourceEventId
-              ? { ...e, dayIndex: newDayIndex, startMinutes: newStartMinutes }
+              ? { ...e, date: newDate, dayIndex: newDayIndex, startMinutes: newStartMinutes }
               : e
           );
         }
@@ -1089,6 +1121,7 @@ export function useUnifiedSchedule({
         const duplicate: CalendarEvent = {
           ...source,
           id: crypto.randomUUID(),
+          date: newDate,
           dayIndex: newDayIndex,
           startMinutes: newStartMinutes,
           status: statusOnPaste(source.status),
@@ -1100,7 +1133,7 @@ export function useUnifiedSchedule({
         return [...prev, duplicate];
       });
     },
-    []
+    [weekDates]
   );
 
   const handleGridDoubleClick = React.useCallback(
@@ -1109,6 +1142,7 @@ export function useUnifiedSchedule({
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
         title: "New Block",
+        date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
         durationMinutes: 60,
@@ -1117,7 +1151,7 @@ export function useUnifiedSchedule({
       setEvents((prev) => [...prev, newEvent]);
       onEventCreated?.(newEvent);
     },
-    [onEventCreated]
+    [onEventCreated, weekDates]
   );
 
   const handleGridDragCreate = React.useCallback(
@@ -1125,6 +1159,7 @@ export function useUnifiedSchedule({
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
         title: "New Block",
+        date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
         durationMinutes,
@@ -1133,7 +1168,7 @@ export function useUnifiedSchedule({
       setEvents((prev) => [...prev, newEvent]);
       onEventCreated?.(newEvent);
     },
-    [onEventCreated]
+    [onEventCreated, weekDates]
   );
 
   const handleEventCopy = React.useCallback((event: CalendarEvent) => {
@@ -1144,10 +1179,15 @@ export function useUnifiedSchedule({
     (dayIndex: number, startMinutes: number) => {
       const pastedEvent = onPaste?.(dayIndex, startMinutes);
       if (pastedEvent) {
-        setEvents((prev) => [...prev, pastedEvent]);
+        // Add the date for the target position
+        const eventWithDate: CalendarEvent = {
+          ...pastedEvent,
+          date: weekDates[dayIndex].toISOString().split("T")[0],
+        };
+        setEvents((prev) => [...prev, eventWithDate]);
       }
     },
-    [onPaste]
+    [onPaste, weekDates]
   );
 
   const handleEventStatusChange = React.useCallback(

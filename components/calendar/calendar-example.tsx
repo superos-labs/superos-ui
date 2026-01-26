@@ -4,6 +4,7 @@ import * as React from "react";
 import { Calendar } from "./calendar";
 import { useCalendarInteractions } from "./use-calendar-interactions";
 import { KeyboardToast } from "./keyboard-toast";
+import { getWeekDates } from "./calendar-utils";
 import {
   type CalendarView,
   type CalendarMode,
@@ -22,177 +23,204 @@ import {
 // Helper to convert hours to minutes for startMinutes
 const hoursToMinutes = (hours: number) => hours * 60;
 
-const INITIAL_EVENTS: CalendarEvent[] = [
-  {
-    id: "1",
-    title: "Morning workout",
-    dayIndex: 0,
-    startMinutes: hoursToMinutes(7),
-    durationMinutes: 60,
-    color: "emerald",
-    status: "completed",
-  },
-  {
-    id: "2",
-    title: "Team standup",
-    dayIndex: 0,
-    startMinutes: hoursToMinutes(9),
-    durationMinutes: 30,
-    color: "violet",
-    status: "completed",
-  },
-  {
-    id: "3",
-    title: "Design review",
-    dayIndex: 0,
-    startMinutes: hoursToMinutes(14),
-    durationMinutes: 90,
-    color: "blue",
-    completedTaskCount: 3,
-    status: "completed",
-  },
-  {
-    id: "4",
-    title: "1:1 with manager",
-    dayIndex: 1,
-    startMinutes: hoursToMinutes(10),
-    durationMinutes: 60,
-    color: "amber",
-    status: "completed",
-  },
-  {
-    id: "5",
-    title: "Lunch break",
-    dayIndex: 1,
-    startMinutes: hoursToMinutes(12),
-    durationMinutes: 60,
-    color: "teal",
-    status: "completed",
-  },
-  {
-    id: "6",
-    title: "Sprint planning",
-    dayIndex: 1,
-    startMinutes: hoursToMinutes(15),
-    durationMinutes: 120,
-    color: "indigo",
-    completedTaskCount: 5,
-    status: "completed",
-  },
-  {
-    id: "7",
-    title: "Deep work",
-    dayIndex: 2,
-    startMinutes: hoursToMinutes(9),
-    durationMinutes: 180,
-    color: "sky",
-    status: "completed",
-  },
-  {
-    id: "8",
-    title: "Product sync",
-    dayIndex: 2,
-    startMinutes: hoursToMinutes(14),
-    durationMinutes: 45,
-    color: "rose",
-    status: "completed",
-  },
-  {
-    id: "9",
-    title: "Code review",
-    dayIndex: 3,
-    startMinutes: hoursToMinutes(10),
-    durationMinutes: 60,
-    color: "cyan",
-    pendingTaskCount: 2,
-  },
-  {
-    id: "10",
-    title: "Team lunch",
-    dayIndex: 3,
-    startMinutes: hoursToMinutes(12),
-    durationMinutes: 90,
-    color: "orange",
-  },
-  {
-    id: "11",
-    title: "Interview",
-    dayIndex: 3,
-    startMinutes: hoursToMinutes(16),
-    durationMinutes: 60,
-    color: "pink",
-  },
-  {
-    id: "12",
-    title: "Focus time",
-    dayIndex: 4,
-    startMinutes: hoursToMinutes(8),
-    durationMinutes: 120,
-    color: "violet",
-  },
-  {
-    id: "13",
-    title: "All-hands",
-    dayIndex: 4,
-    startMinutes: hoursToMinutes(11),
-    durationMinutes: 60,
-    color: "fuchsia",
-  },
-  {
-    id: "14",
-    title: "Project retro",
-    dayIndex: 4,
-    startMinutes: hoursToMinutes(15),
-    durationMinutes: 60,
-    color: "green",
-    pendingTaskCount: 4,
-  },
-  {
-    id: "15",
-    title: "Side project",
-    dayIndex: 5,
-    startMinutes: hoursToMinutes(10),
-    durationMinutes: 180,
-    color: "lime",
-    status: "blueprint",
-  },
-  {
-    id: "16",
-    title: "Reading",
-    dayIndex: 6,
-    startMinutes: hoursToMinutes(9),
-    durationMinutes: 120,
-    color: "slate",
-    status: "blueprint",
-  },
-  // Overnight events (spanning across midnight)
-  {
-    id: "17",
-    title: "Sleep",
-    dayIndex: 0, // Monday night
-    startMinutes: hoursToMinutes(22), // 10:00 PM
-    durationMinutes: 480, // 8 hours (ends 6:00 AM Tuesday)
-    color: "indigo",
-    status: "completed",
-  },
-  {
-    id: "18",
-    title: "Sleep",
-    dayIndex: 1, // Tuesday night
-    startMinutes: hoursToMinutes(22.5), // 10:30 PM
-    durationMinutes: 450, // 7.5 hours (ends 6:00 AM Wednesday)
-    color: "indigo",
-    status: "completed",
-  },
-  {
-    id: "19",
-    title: "Sleep",
-    dayIndex: 2, // Wednesday night
-    startMinutes: hoursToMinutes(23), // 11:00 PM
-    durationMinutes: 420, // 7 hours (ends 6:00 AM Thursday)
-    color: "indigo",
-  },
-];
+// Generate sample events with dates for the current week
+function createSampleEvents(): CalendarEvent[] {
+  const weekDates = getWeekDates(new Date());
+  const getDate = (dayIndex: number) => weekDates[dayIndex].toISOString().split("T")[0];
+
+  return [
+    {
+      id: "1",
+      title: "Morning workout",
+      date: getDate(0),
+      dayIndex: 0,
+      startMinutes: hoursToMinutes(7),
+      durationMinutes: 60,
+      color: "emerald",
+      status: "completed",
+    },
+    {
+      id: "2",
+      title: "Team standup",
+      date: getDate(0),
+      dayIndex: 0,
+      startMinutes: hoursToMinutes(9),
+      durationMinutes: 30,
+      color: "violet",
+      status: "completed",
+    },
+    {
+      id: "3",
+      title: "Design review",
+      date: getDate(0),
+      dayIndex: 0,
+      startMinutes: hoursToMinutes(14),
+      durationMinutes: 90,
+      color: "blue",
+      completedTaskCount: 3,
+      status: "completed",
+    },
+    {
+      id: "4",
+      title: "1:1 with manager",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: hoursToMinutes(10),
+      durationMinutes: 60,
+      color: "amber",
+      status: "completed",
+    },
+    {
+      id: "5",
+      title: "Lunch break",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: hoursToMinutes(12),
+      durationMinutes: 60,
+      color: "teal",
+      status: "completed",
+    },
+    {
+      id: "6",
+      title: "Sprint planning",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: hoursToMinutes(15),
+      durationMinutes: 120,
+      color: "indigo",
+      completedTaskCount: 5,
+      status: "completed",
+    },
+    {
+      id: "7",
+      title: "Deep work",
+      date: getDate(2),
+      dayIndex: 2,
+      startMinutes: hoursToMinutes(9),
+      durationMinutes: 180,
+      color: "sky",
+      status: "completed",
+    },
+    {
+      id: "8",
+      title: "Product sync",
+      date: getDate(2),
+      dayIndex: 2,
+      startMinutes: hoursToMinutes(14),
+      durationMinutes: 45,
+      color: "rose",
+      status: "completed",
+    },
+    {
+      id: "9",
+      title: "Code review",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: hoursToMinutes(10),
+      durationMinutes: 60,
+      color: "cyan",
+      pendingTaskCount: 2,
+    },
+    {
+      id: "10",
+      title: "Team lunch",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: hoursToMinutes(12),
+      durationMinutes: 90,
+      color: "orange",
+    },
+    {
+      id: "11",
+      title: "Interview",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: hoursToMinutes(16),
+      durationMinutes: 60,
+      color: "pink",
+    },
+    {
+      id: "12",
+      title: "Focus time",
+      date: getDate(4),
+      dayIndex: 4,
+      startMinutes: hoursToMinutes(8),
+      durationMinutes: 120,
+      color: "violet",
+    },
+    {
+      id: "13",
+      title: "All-hands",
+      date: getDate(4),
+      dayIndex: 4,
+      startMinutes: hoursToMinutes(11),
+      durationMinutes: 60,
+      color: "fuchsia",
+    },
+    {
+      id: "14",
+      title: "Project retro",
+      date: getDate(4),
+      dayIndex: 4,
+      startMinutes: hoursToMinutes(15),
+      durationMinutes: 60,
+      color: "green",
+      pendingTaskCount: 4,
+    },
+    {
+      id: "15",
+      title: "Side project",
+      date: getDate(5),
+      dayIndex: 5,
+      startMinutes: hoursToMinutes(10),
+      durationMinutes: 180,
+      color: "lime",
+      status: "blueprint",
+    },
+    {
+      id: "16",
+      title: "Reading",
+      date: getDate(6),
+      dayIndex: 6,
+      startMinutes: hoursToMinutes(9),
+      durationMinutes: 120,
+      color: "slate",
+      status: "blueprint",
+    },
+    // Overnight events (spanning across midnight)
+    {
+      id: "17",
+      title: "Sleep",
+      date: getDate(0),
+      dayIndex: 0, // Monday night
+      startMinutes: hoursToMinutes(22), // 10:00 PM
+      durationMinutes: 480, // 8 hours (ends 6:00 AM Tuesday)
+      color: "indigo",
+      status: "completed",
+    },
+    {
+      id: "18",
+      title: "Sleep",
+      date: getDate(1),
+      dayIndex: 1, // Tuesday night
+      startMinutes: hoursToMinutes(22.5), // 10:30 PM
+      durationMinutes: 450, // 7.5 hours (ends 6:00 AM Wednesday)
+      color: "indigo",
+      status: "completed",
+    },
+    {
+      id: "19",
+      title: "Sleep",
+      date: getDate(2),
+      dayIndex: 2, // Wednesday night
+      startMinutes: hoursToMinutes(23), // 11:00 PM
+      durationMinutes: 420, // 7 hours (ends 6:00 AM Thursday)
+      color: "indigo",
+    },
+  ];
+}
+
+const INITIAL_EVENTS: CalendarEvent[] = createSampleEvents();
 
 export function CalendarExample() {
   const [view, setView] = React.useState<CalendarView>("week");

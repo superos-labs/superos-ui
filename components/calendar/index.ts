@@ -108,6 +108,10 @@ export {
 // Utilities (for advanced use cases)
 export {
   getWeekDates,
+  getDateForDayIndex,
+  getDayIndexFromDate,
+  isDateInWeek,
+  formatWeekRange,
   formatHour,
   formatFullDate,
   formatEventTime,

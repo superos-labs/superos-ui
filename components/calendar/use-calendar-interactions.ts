@@ -3,11 +3,14 @@
 import * as React from "react";
 import { useCalendarClipboard } from "./use-calendar-clipboard";
 import { useCalendarKeyboard } from "./use-calendar-keyboard";
+import { getWeekDates } from "./calendar-utils";
 import { statusOnPaste, type CalendarEvent, type BlockStatus, type HoverPosition } from "./calendar-types";
 
 export interface UseCalendarInteractionsOptions {
   /** Initial events to populate the calendar */
   initialEvents?: CalendarEvent[];
+  /** Week dates for positioning (defaults to current week) */
+  weekDates?: Date[];
 }
 
 export interface UseCalendarInteractionsReturn {
@@ -67,8 +70,15 @@ export interface UseCalendarInteractionsReturn {
  */
 export function useCalendarInteractions({
   initialEvents = [],
+  weekDates: weekDatesInput,
 }: UseCalendarInteractionsOptions = {}): UseCalendarInteractionsReturn {
   const [events, setEvents] = React.useState<CalendarEvent[]>(initialEvents);
+
+  // Default to current week if not provided
+  const weekDates = React.useMemo(
+    () => weekDatesInput ?? getWeekDates(new Date()),
+    [weekDatesInput]
+  );
 
   // Clipboard for copy/paste functionality
   const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard();
@@ -147,12 +157,17 @@ export function useCalendarInteractions({
       setEvents((prev) =>
         prev.map((event) =>
           event.id === eventId
-            ? { ...event, dayIndex: newDayIndex, startMinutes: newStartMinutes }
+            ? {
+                ...event,
+                date: weekDates[newDayIndex].toISOString().split("T")[0],
+                dayIndex: newDayIndex,
+                startMinutes: newStartMinutes,
+              }
             : event
         )
       );
     },
-    []
+    [weekDates]
   );
 
   // Handle event duplicate - creates a copy of the event at the new position (Option+drag)
@@ -165,6 +180,7 @@ export function useCalendarInteractions({
         const duplicate: CalendarEvent = {
           ...source,
           id: crypto.randomUUID(),
+          date: weekDates[newDayIndex].toISOString().split("T")[0],
           dayIndex: newDayIndex,
           startMinutes: newStartMinutes,
           // Completed/blueprint blocks become planned when duplicated
@@ -177,7 +193,7 @@ export function useCalendarInteractions({
         return [...prev, duplicate];
       });
     },
-    []
+    [weekDates]
   );
 
   // Handle double-click on empty grid area - creates a new 1-hour block
@@ -186,6 +202,7 @@ export function useCalendarInteractions({
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
         title: "New Block",
+        date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
         durationMinutes: 60,
@@ -193,7 +210,7 @@ export function useCalendarInteractions({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    []
+    [weekDates]
   );
 
   // Handle drag-to-create on empty grid area - creates a block with dragged duration
@@ -202,6 +219,7 @@ export function useCalendarInteractions({
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
         title: "New Block",
+        date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
         durationMinutes,
@@ -209,7 +227,7 @@ export function useCalendarInteractions({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    []
+    [weekDates]
   );
 
   // Handle event copy - copies event to clipboard
@@ -240,10 +258,15 @@ export function useCalendarInteractions({
     (dayIndex: number, startMinutes: number) => {
       const pastedEvent = paste(dayIndex, startMinutes);
       if (pastedEvent) {
-        setEvents((prev) => [...prev, pastedEvent]);
+        // Add the date for the target position
+        const eventWithDate: CalendarEvent = {
+          ...pastedEvent,
+          date: weekDates[dayIndex].toISOString().split("T")[0],
+        };
+        setEvents((prev) => [...prev, eventWithDate]);
       }
     },
-    [paste]
+    [paste, weekDates]
   );
 
   return {

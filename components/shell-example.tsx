@@ -9,6 +9,7 @@ import {
   useCalendarKeyboard,
   useDeadlineKeyboard,
   getWeekDates,
+  formatWeekRange,
   type CalendarMode,
   type CalendarEvent,
 } from "@/components/calendar";
@@ -26,7 +27,7 @@ import {
   DragGhost,
   useDragContextOptional,
 } from "@/components/drag";
-import { useUnifiedSchedule } from "@/lib/unified-schedule";
+import { useUnifiedSchedule, useWeekNavigation } from "@/lib/unified-schedule";
 import {
   getDefaultDuration,
   getDragItemTitle,
@@ -93,6 +94,43 @@ function ShellDemoContent({
     null,
   );
 
+  // Week navigation state
+  const [selectedDate, setSelectedDate] = React.useState(() => new Date());
+
+  // Derive week dates from the selected date
+  const weekDates = React.useMemo(
+    () => getWeekDates(selectedDate),
+    [selectedDate]
+  );
+
+  // Week navigation handlers
+  const goToPreviousWeek = React.useCallback(() => {
+    setSelectedDate((prev) => {
+      const newDate = new Date(prev);
+      newDate.setDate(newDate.getDate() - 7);
+      return newDate;
+    });
+  }, []);
+
+  const goToNextWeek = React.useCallback(() => {
+    setSelectedDate((prev) => {
+      const newDate = new Date(prev);
+      newDate.setDate(newDate.getDate() + 7);
+      return newDate;
+    });
+  }, []);
+
+  const goToToday = React.useCallback(() => {
+    setSelectedDate(new Date());
+  }, []);
+
+  // Keyboard navigation for weeks
+  useWeekNavigation({
+    onPreviousWeek: goToPreviousWeek,
+    onNextWeek: goToNextWeek,
+    onToday: goToToday,
+  });
+
   // Right sidebar content state - freezes content during collapse animation
   const [renderedContent, setRenderedContent] = React.useState<
     "block" | "analytics" | null
@@ -153,6 +191,7 @@ function ShellDemoContent({
     allCommitments: ALL_COMMITMENTS,
     initialEnabledCommitmentIds: dataSetId === "empty" ? [] : undefined,
     initialEvents: dataSet.events,
+    weekDates,
     onCopy: copy,
     onPaste: paste,
     hasClipboardContent,
@@ -163,8 +202,7 @@ function ShellDemoContent({
   const [hoveredDeadline, setHoveredDeadline] =
     React.useState<DeadlineTask | null>(null);
 
-  // Compute week dates and deadlines for calendar display
-  const weekDates = React.useMemo(() => getWeekDates(new Date()), []);
+  // Compute deadlines for the current week
   const weekDeadlines = React.useMemo(
     () => getWeekDeadlines(weekDates),
     [getWeekDeadlines, weekDates],
@@ -263,7 +301,7 @@ function ShellDemoContent({
         (d) => d.toISOString().split("T")[0] === newDate,
       );
       if (newDayIndex >= 0) {
-        updateEvent(selectedEvent.id, { dayIndex: newDayIndex });
+        updateEvent(selectedEvent.id, { date: newDate, dayIndex: newDayIndex });
       }
     },
     [selectedEvent, weekDates, updateEvent],
@@ -621,13 +659,25 @@ function ShellDemoContent({
             )}
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
-            <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
+            <button
+              onClick={goToPreviousWeek}
+              className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+              title="Previous week (←)"
+            >
               <RiArrowLeftSLine className="size-4" />
             </button>
-            <button className="flex h-8 items-center gap-1 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
+            <button
+              onClick={goToToday}
+              className="flex h-8 items-center gap-1 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+              title="Go to today (T)"
+            >
               Today
             </button>
-            <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
+            <button
+              onClick={goToNextWeek}
+              className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+              title="Next week (→)"
+            >
               <RiArrowRightSLine className="size-4" />
             </button>
           </div>
@@ -722,6 +772,7 @@ function ShellDemoContent({
           <ShellContent className="overflow-hidden">
             {showCalendar && (
               <Calendar
+                selectedDate={selectedDate}
                 events={calendarEvents}
                 mode={calendarMode}
                 {...calendarHandlers}
@@ -776,7 +827,7 @@ function ShellDemoContent({
               <WeeklyAnalytics
                 commitments={analyticsCommitments}
                 goals={analyticsGoals}
-                weekLabel="Jan 20 – 26"
+                weekLabel={formatWeekRange(weekDates)}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : null}

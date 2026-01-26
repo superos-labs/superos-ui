@@ -29,6 +29,7 @@ import {
 } from "@remixicon/react";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { CalendarEvent } from "@/components/calendar";
+import { getWeekDates } from "@/components/calendar";
 import type { ScheduleGoal, ScheduleCommitment } from "@/lib/unified-schedule";
 
 // Re-export types for convenience
@@ -201,71 +202,84 @@ export const SHELL_GOALS: ScheduleGoal[] = [
 /** Helper to convert hours to minutes for startMinutes */
 const hoursToMinutes = (hours: number) => hours * 60;
 
-export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = [
-  // =============================================================================
-  // Sleep - 12a-7a (7 hours) every day
-  // =============================================================================
-  { id: "shell-sleep-0", title: "Sleep", dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep", status: "completed" },
-  { id: "shell-sleep-1", title: "Sleep", dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-  { id: "shell-sleep-2", title: "Sleep", dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-  { id: "shell-sleep-3", title: "Sleep", dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-  { id: "shell-sleep-4", title: "Sleep", dayIndex: 4, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-  { id: "shell-sleep-5", title: "Sleep", dayIndex: 5, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-  { id: "shell-sleep-6", title: "Sleep", dayIndex: 6, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+/**
+ * Generate sample events for the current week.
+ * Events are created with dates based on the current week to demonstrate
+ * the week navigation feature.
+ */
+function createSampleEvents(): CalendarEvent[] {
+  const weekDates = getWeekDates(new Date());
+  const getDate = (dayIndex: number) => weekDates[dayIndex].toISOString().split("T")[0];
 
-  // =============================================================================
-  // SuperOS Goal - Morning blocks
-  // M/W/F: 8a-10:45a (165 min), Tu/Th: 8a-12:30p (270 min)
-  // =============================================================================
-  { id: "shell-superos-am-0", title: "Get SuperOS to $1M ARR", dayIndex: 0, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
-  { id: "shell-superos-am-1", title: "Get SuperOS to $1M ARR", dayIndex: 1, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-  { id: "shell-superos-am-2", title: "Get SuperOS to $1M ARR", dayIndex: 2, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-  { id: "shell-superos-am-3", title: "Get SuperOS to $1M ARR", dayIndex: 3, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-  { id: "shell-superos-am-4", title: "Get SuperOS to $1M ARR", dayIndex: 4, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+  return [
+    // =============================================================================
+    // Sleep - 12a-7a (7 hours) every day
+    // =============================================================================
+    { id: "shell-sleep-0", title: "Sleep", date: getDate(0), dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep", status: "completed" },
+    { id: "shell-sleep-1", title: "Sleep", date: getDate(1), dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+    { id: "shell-sleep-2", title: "Sleep", date: getDate(2), dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+    { id: "shell-sleep-3", title: "Sleep", date: getDate(3), dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+    { id: "shell-sleep-4", title: "Sleep", date: getDate(4), dayIndex: 4, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+    { id: "shell-sleep-5", title: "Sleep", date: getDate(5), dayIndex: 5, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+    { id: "shell-sleep-6", title: "Sleep", date: getDate(6), dayIndex: 6, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
 
-  // =============================================================================
-  // Exercise - 11a-12:30p (90 min) on M/W/F
-  // =============================================================================
-  { id: "shell-exercise-0", title: "Exercise", dayIndex: 0, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise", status: "completed" },
-  { id: "shell-exercise-2", title: "Exercise", dayIndex: 2, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
-  { id: "shell-exercise-4", title: "Exercise", dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
+    // =============================================================================
+    // SuperOS Goal - Morning blocks
+    // M/W/F: 8a-10:45a (165 min), Tu/Th: 8a-12:30p (270 min)
+    // =============================================================================
+    { id: "shell-superos-am-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
+    { id: "shell-superos-am-1", title: "Get SuperOS to $1M ARR", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-am-2", title: "Get SuperOS to $1M ARR", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-am-3", title: "Get SuperOS to $1M ARR", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-am-4", title: "Get SuperOS to $1M ARR", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
 
-  // =============================================================================
-  // Eat (Lunch) - 12:30p-1p on Mon (completed), 1p-2p Tu-Fri
-  // =============================================================================
-  { id: "shell-eat-lunch-0", title: "Eat", dayIndex: 0, startMinutes: hoursToMinutes(12.5), durationMinutes: 30, color: "amber", blockType: "commitment", sourceCommitmentId: "eat", status: "completed" },
-  { id: "shell-eat-lunch-1", title: "Eat", dayIndex: 1, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-  { id: "shell-eat-lunch-2", title: "Eat", dayIndex: 2, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-  { id: "shell-eat-lunch-3", title: "Eat", dayIndex: 3, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-  { id: "shell-eat-lunch-4", title: "Eat", dayIndex: 4, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    // =============================================================================
+    // Exercise - 11a-12:30p (90 min) on M/W/F
+    // =============================================================================
+    { id: "shell-exercise-0", title: "Exercise", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise", status: "completed" },
+    { id: "shell-exercise-2", title: "Exercise", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
+    { id: "shell-exercise-4", title: "Exercise", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
 
-  // =============================================================================
-  // SuperOS Goal - Afternoon blocks (1p-6p = 300 min on Mon, 2p-6p = 240 min Tu-Fri)
-  // =============================================================================
-  { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 300, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-  { id: "shell-superos-pm-1", title: "Get SuperOS to $1M ARR", dayIndex: 1, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-  { id: "shell-superos-pm-2", title: "Get SuperOS to $1M ARR", dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-  { id: "shell-superos-pm-3", title: "Get SuperOS to $1M ARR", dayIndex: 3, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-  { id: "shell-superos-pm-4", title: "Get SuperOS to $1M ARR", dayIndex: 4, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    // =============================================================================
+    // Eat (Lunch) - 12:30p-1p on Mon (completed), 1p-2p Tu-Fri
+    // =============================================================================
+    { id: "shell-eat-lunch-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(12.5), durationMinutes: 30, color: "amber", blockType: "commitment", sourceCommitmentId: "eat", status: "completed" },
+    { id: "shell-eat-lunch-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-lunch-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-lunch-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-lunch-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
 
-  // =============================================================================
-  // Chores - 6:30p-7:30p (60 min) Mon-Fri
-  // =============================================================================
-  { id: "shell-chores-0", title: "Chores", dayIndex: 0, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
-  { id: "shell-chores-1", title: "Chores", dayIndex: 1, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
-  { id: "shell-chores-2", title: "Chores", dayIndex: 2, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
-  { id: "shell-chores-3", title: "Chores", dayIndex: 3, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
-  { id: "shell-chores-4", title: "Chores", dayIndex: 4, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
+    // =============================================================================
+    // SuperOS Goal - Afternoon blocks (1p-6p = 300 min on Mon, 2p-6p = 240 min Tu-Fri)
+    // =============================================================================
+    { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 300, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-pm-1", title: "Get SuperOS to $1M ARR", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-pm-2", title: "Get SuperOS to $1M ARR", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-pm-3", title: "Get SuperOS to $1M ARR", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    { id: "shell-superos-pm-4", title: "Get SuperOS to $1M ARR", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
 
-  // =============================================================================
-  // Eat (Dinner) - 8p-9p (60 min) Mon-Fri
-  // =============================================================================
-  { id: "shell-eat-dinner-0", title: "Eat", dayIndex: 0, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-  { id: "shell-eat-dinner-1", title: "Eat", dayIndex: 1, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-  { id: "shell-eat-dinner-2", title: "Eat", dayIndex: 2, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-  { id: "shell-eat-dinner-3", title: "Eat", dayIndex: 3, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-  { id: "shell-eat-dinner-4", title: "Eat", dayIndex: 4, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-];
+    // =============================================================================
+    // Chores - 6:30p-7:30p (60 min) Mon-Fri
+    // =============================================================================
+    { id: "shell-chores-0", title: "Chores", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
+    { id: "shell-chores-1", title: "Chores", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
+    { id: "shell-chores-2", title: "Chores", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
+    { id: "shell-chores-3", title: "Chores", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
+    { id: "shell-chores-4", title: "Chores", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
+
+    // =============================================================================
+    // Eat (Dinner) - 8p-9p (60 min) Mon-Fri
+    // =============================================================================
+    { id: "shell-eat-dinner-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-dinner-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-dinner-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-dinner-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-dinner-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+  ];
+}
+
+// Generate events lazily for the current week
+export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = createSampleEvents();
 
 // =============================================================================
 // Empty Data Set (clean slate)

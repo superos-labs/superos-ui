@@ -83,7 +83,9 @@ export type BlockStyle = "planned" | "completed" | "blueprint";
 export interface CalendarEvent {
   id: string;
   title: string;
-  dayIndex: number; // 0 = Monday, 6 = Sunday
+  /** ISO date string, e.g., "2026-01-22" */
+  date: string;
+  dayIndex: number; // 0 = Monday, 6 = Sunday (derived from date, kept for positioning)
   startMinutes: number; // Minutes from midnight (0-1440)
   durationMinutes: number;
   color: BlockColor;

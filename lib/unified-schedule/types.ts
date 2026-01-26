@@ -105,6 +105,8 @@ export interface UseUnifiedScheduleOptions {
   initialEnabledCommitmentIds?: string[];
   /** Initial calendar events */
   initialEvents: CalendarEvent[];
+  /** Current week dates (required for week-scoped operations) */
+  weekDates: Date[];
   /** Clipboard copy function (from useCalendarClipboard) */
   onCopy?: (event: CalendarEvent) => void;
   /** Clipboard paste function (from useCalendarClipboard) */
