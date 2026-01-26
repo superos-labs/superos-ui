@@ -68,6 +68,15 @@ export type {
   WeeklyAnalyticsItem 
 } from "./weekly-analytics";
 
+// Focus Mode
+export { FocusTimer, StartFocusButton, FocusIndicator, FocusSidebarContent } from "./focus";
+export type {
+  FocusTimerProps,
+  StartFocusButtonProps,
+  FocusIndicatorProps,
+  FocusSidebarContentProps,
+} from "./focus";
+
 // -----------------------------------------------------------------------------
 // Drag and Drop System
 // -----------------------------------------------------------------------------

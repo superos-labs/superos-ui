@@ -22,6 +22,7 @@ import type { BlockColor } from "./block-colors";
 import type { BlockType, BlockStatus, IconComponent } from "@/lib/types";
 import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
+import { FocusTimer, StartFocusButton, FocusSidebarContent } from "@/components/focus";
 
 // Types
 
@@ -809,6 +810,24 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   availableGoals?: GoalSelectorOption[];
   /** Callback when user selects a goal for this block (one-time) */
   onGoalSelect?: (goalId: string) => void;
+
+  // Focus mode props
+  /** Whether this block is currently being focused on */
+  isFocused?: boolean;
+  /** Whether the focus timer is running (not paused) */
+  focusIsRunning?: boolean;
+  /** Elapsed focus time in milliseconds */
+  focusElapsedMs?: number;
+  /** Called when user clicks Start Focus button */
+  onStartFocus?: () => void;
+  /** Called when user clicks Pause button */
+  onPauseFocus?: () => void;
+  /** Called when user clicks Resume button */
+  onResumeFocus?: () => void;
+  /** Called when user clicks Stop button to end focus */
+  onEndFocus?: () => void;
+  /** Whether another block is currently being focused on (disables Start Focus button) */
+  focusDisabled?: boolean;
 }
 
 function BlockSidebar({
@@ -839,6 +858,15 @@ function BlockSidebar({
   // Goal selection
   availableGoals,
   onGoalSelect,
+  // Focus mode
+  isFocused,
+  focusIsRunning,
+  focusElapsedMs,
+  onStartFocus,
+  onPauseFocus,
+  onResumeFocus,
+  onEndFocus,
+  focusDisabled,
   className,
   ...props
 }: BlockSidebarProps) {
@@ -889,6 +917,36 @@ function BlockSidebar({
     setNewSubtaskLabel("");
     setIsCreatingSubtask(false);
   };
+  
+  // Render focus mode layout when this block is being focused
+  if (isFocused) {
+    return (
+      <div
+        className={cn(
+          "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
+          className,
+        )}
+        {...props}
+      >
+        <FocusSidebarContent
+          block={block}
+          elapsedMs={focusElapsedMs ?? 0}
+          isRunning={focusIsRunning ?? false}
+          onPause={onPauseFocus}
+          onResume={onResumeFocus}
+          onEnd={onEndFocus}
+          onClose={onClose}
+          onNotesChange={onNotesChange}
+          onToggleGoalTask={onToggleGoalTask}
+          onCreateTask={onCreateTask}
+          onAddSubtask={onAddSubtask}
+          onToggleSubtask={onToggleSubtask}
+          onUpdateSubtask={onUpdateSubtask}
+          onDeleteSubtask={onDeleteSubtask}
+        />
+      </div>
+    );
+  }
   
   return (
     <div
@@ -972,6 +1030,23 @@ function BlockSidebar({
             <span>Mark complete</span>
           </button>
         )}
+
+        {/* Focus mode: show timer when focused, or start button when not */}
+        {isFocused ? (
+          <FocusTimer
+            elapsedMs={focusElapsedMs ?? 0}
+            isRunning={focusIsRunning ?? false}
+            color={block.color}
+            onPause={onPauseFocus}
+            onResume={onResumeFocus}
+            onStop={onEndFocus}
+          />
+        ) : onStartFocus ? (
+          <StartFocusButton
+            onClick={onStartFocus}
+            disabled={focusDisabled}
+          />
+        ) : null}
       </div>
 
       {/* Content */}

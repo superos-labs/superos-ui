@@ -22,6 +22,8 @@ import {
 } from "@/components/backlog";
 import { WeeklyAnalytics } from "@/components/weekly-analytics";
 import { BlockSidebar } from "@/components/block";
+import { FocusIndicator } from "@/components/focus";
+import { useFocusSession } from "@/lib/focus";
 import {
   DragProvider,
   DragGhost,
@@ -202,6 +204,26 @@ function ShellDemoContent({
   const [hoveredDeadline, setHoveredDeadline] =
     React.useState<DeadlineTask | null>(null);
 
+  // Focus mode session
+  const {
+    session: focusSession,
+    isRunning: focusIsRunning,
+    elapsedMs: focusElapsedMs,
+    start: startFocus,
+    pause: pauseFocus,
+    resume: resumeFocus,
+    end: endFocus,
+  } = useFocusSession({
+    onSessionEnd: (completed) => {
+      // Future: feed into analytics
+      console.log("Focus session completed:", {
+        blockId: completed.blockId,
+        totalMs: completed.totalMs,
+        segments: completed.segments.length,
+      });
+    },
+  });
+
   // Compute deadlines for the current week
   const weekDeadlines = React.useMemo(
     () => getWeekDeadlines(weekDates),
@@ -264,6 +286,26 @@ function ShellDemoContent({
   const handleCloseSidebar = React.useCallback(() => {
     setSelectedEventId(null);
   }, []);
+
+  // Focus mode handlers
+  const handleStartFocus = React.useCallback(() => {
+    if (!selectedEvent) return;
+    startFocus(selectedEvent.id, selectedEvent.title, selectedEvent.color);
+  }, [selectedEvent, startFocus]);
+
+  const handleNavigateToFocusedBlock = React.useCallback(() => {
+    if (focusSession) {
+      setSelectedEventId(focusSession.blockId);
+    }
+  }, [focusSession]);
+
+  // Derived: is the current sidebar block the focused block?
+  const isSidebarBlockFocused = focusSession?.blockId === selectedEventId;
+
+  // Derived: should show focus indicator in toolbar?
+  // Show when: there's an active focus session AND the sidebar is showing a different block
+  const showFocusIndicator =
+    focusSession !== null && selectedEventId !== focusSession.blockId;
 
   // Close sidebar on ESC key
   React.useEffect(() => {
@@ -708,6 +750,18 @@ function ShellDemoContent({
             </button>
           </div>
           <div className="flex items-center gap-2">
+            {/* Focus indicator - shown when focused on a block but viewing different block */}
+            {showFocusIndicator && focusSession && (
+              <FocusIndicator
+                blockTitle={focusSession.blockTitle}
+                blockColor={focusSession.blockColor}
+                elapsedMs={focusElapsedMs}
+                isRunning={focusIsRunning}
+                onPause={pauseFocus}
+                onResume={resumeFocus}
+                onClick={handleNavigateToFocusedBlock}
+              />
+            )}
             {showPlanWeek && (
               <button
                 className="flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
@@ -849,6 +903,15 @@ function ShellDemoContent({
                 // Goal selection for newly created blocks
                 availableGoals={availableGoalsForSidebar}
                 onGoalSelect={handleSidebarGoalSelect}
+                // Focus mode
+                isFocused={isSidebarBlockFocused}
+                focusIsRunning={focusIsRunning}
+                focusElapsedMs={focusElapsedMs}
+                onStartFocus={handleStartFocus}
+                onPauseFocus={pauseFocus}
+                onResumeFocus={resumeFocus}
+                onEndFocus={endFocus}
+                focusDisabled={focusSession !== null && !isSidebarBlockFocused}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : renderedContent === "analytics" ? (
