@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import type { GoalColor } from "@/lib/colors";
-import { getIconColorClass } from "@/lib/colors";
+import { getIconColorClass, getIconBgClass } from "@/lib/colors";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { NewGoalData } from "./backlog-types";
 
@@ -236,7 +236,7 @@ export function InlineGoalCreator({
                   )}
                   title={color}
                 >
-                  <div className={cn("size-4 rounded-full", getIconColorClass(color).replace("text-", "bg-"))} />
+                  <div className={cn("size-4 rounded-full", getIconBgClass(color))} />
                 </button>
               ))}
             </div>
