@@ -2,26 +2,131 @@
 
 This document defines the structure and guidelines for building scalable, maintainable components in this library.
 
-## Directory Structure
+## High-Level Structure
+
+```
+├── components/             # UI components (the library)
+│   ├── index.ts            # Root public API for the library
+│   ├── ui/                 # Primitive UI components (atoms)
+│   ├── calendar/           # Feature folder
+│   ├── backlog/            # Feature folder
+│   ├── block/              # Feature folder
+│   ├── drag/               # Drag-and-drop system
+│   ├── weekly-analytics/   # Feature folder
+│   ├── _playground/        # Internal demo utilities (not exported)
+│   └── shell-example.tsx   # Full integration demo
+│
+├── lib/                    # Shared utilities and orchestration
+│   ├── unified-schedule/   # App-level state orchestration
+│   ├── adapters/           # Data conversion utilities
+│   ├── colors.ts           # Color palette and helpers
+│   ├── types.ts            # Cross-cutting types
+│   ├── drag-types.ts       # Drag system types
+│   └── utils.ts            # General utilities
+│
+└── hooks/                  # Re-exports for backward compatibility
+    └── index.ts            # Re-exports from lib/unified-schedule
+```
+
+## Key Modules
+
+### `lib/unified-schedule/` — App-Level Orchestration
+
+The unified schedule system provides a complete state management solution for apps that need to coordinate goals, commitments, calendar events, and deadlines.
+
+```tsx
+import { useUnifiedSchedule } from "@/lib/unified-schedule";
+import type { ScheduleGoal, GoalStats } from "@/lib/unified-schedule";
+
+const { goals, events, calendarHandlers, getGoalStats } = useUnifiedSchedule({
+  initialGoals,
+  allCommitments,
+  initialEvents,
+});
+```
+
+**Exports:**
+- `useUnifiedSchedule` — Main orchestration hook
+- Types: `ScheduleGoal`, `ScheduleTask`, `ScheduleCommitment`, `GoalStats`, etc.
+
+### `lib/adapters/` — Data Conversion
+
+Adapters convert between component-specific data formats:
+
+```tsx
+import { eventToBlockSidebarData, toAnalyticsItems } from "@/lib/adapters";
+
+// Convert CalendarEvent → BlockSidebarData
+const { block, availableGoalTasks } = eventToBlockSidebarData(event, goals, commitments, weekDates);
+
+// Convert goals/commitments → WeeklyAnalyticsItem[]
+const analyticsItems = toAnalyticsItems(goals, getGoalStats);
+```
+
+### `components/_playground/` — Internal Demo Utilities
+
+Contains utilities for the component playground that are **not part of the public API**:
+
+- `knobs.tsx` — KnobsProvider, KnobBoolean, KnobSelect for interactive demos
+
+These are used by example components but never exported from the library.
+
+## Directory Structure (Detailed)
 
 ```
 components/
+├── index.ts                # Root public API
+├── _playground/            # Internal demo utilities (not exported)
+│   └── knobs.tsx
 ├── ui/                     # Primitive UI components (atoms)
+│   ├── index.ts            # UI primitives barrel
 │   ├── button.tsx
 │   ├── input.tsx
 │   └── shell.tsx
-├── block/                  # Feature folder (when 3+ related files exist)
-│   ├── index.ts            # Public API re-exports
-│   ├── block.tsx           # Core component
-│   ├── block-sidebar.tsx   # Related component
-│   ├── resizable-block-wrapper.tsx
-│   └── use-block-resize.ts # Feature-specific hook
-├── calendar.tsx            # Feature component (molecule/organism)
-├── calendar-example.tsx    # Interactive demo wrapper
-├── backlog.tsx
-├── backlog-example.tsx
-└── ARCHITECTURE.md         # This file
+├── calendar/               # Feature folder
+│   ├── index.ts            # Public API
+│   ├── calendar.tsx        # Core component
+│   ├── calendar-example.tsx
+│   └── use-calendar-interactions.ts
+├── backlog/                # Feature folder
+│   ├── index.ts
+│   ├── backlog.tsx
+│   └── backlog-example.tsx
+├── block/                  # Feature folder
+│   ├── index.ts
+│   ├── block.tsx
+│   └── block-sidebar.tsx
+├── weekly-analytics/       # Feature folder
+│   ├── index.ts
+│   ├── weekly-analytics.tsx
+│   └── weekly-analytics-example.tsx
+└── shell-example.tsx       # Full integration demo
 ```
+
+## Library Layers
+
+The codebase is organized into distinct layers:
+
+| Layer | Location | Purpose |
+| --- | --- | --- |
+| **UI Primitives** | `components/ui/` | Low-level building blocks (Button, Input, Card) |
+| **Feature Components** | `components/{feature}/` | Business-focused components (Calendar, Backlog) |
+| **Drag System** | `components/drag/` | Cross-cutting drag-and-drop infrastructure |
+| **Orchestration** | `lib/unified-schedule/` | App-level state management |
+| **Adapters** | `lib/adapters/` | Data conversion between component formats |
+| **Shared Utilities** | `lib/` | Colors, types, helpers |
+| **Playground** | `components/_playground/` | Demo-only utilities (not exported) |
+
+### What Goes Where
+
+| You need... | Put it in... |
+| --- | --- |
+| A reusable UI component | `components/ui/` or a feature folder |
+| Cross-component types | `lib/types.ts` |
+| App-level state orchestration | `lib/unified-schedule/` |
+| Format conversion between components | `lib/adapters/` |
+| Demo/playground utilities | `components/_playground/` |
+| Shared fixtures/sample data | `lib/fixtures/` |
 
 ## Component Types
 
@@ -397,6 +502,16 @@ const EVENTS = [...] // duplicated
 
 Consistent import patterns improve discoverability and ensure consumers use the public API.
 
+### Root Library Export
+
+For external consumers, import from the root barrel:
+
+```tsx
+// ✅ Preferred for library consumers
+import { Calendar, Backlog, BlockSidebar, DragProvider } from "@/components";
+import type { CalendarEvent, BacklogItem, BlockSidebarData } from "@/components";
+```
+
 ### Feature Folders
 
 Import from the folder path (resolves to `index.ts`):
@@ -414,21 +529,41 @@ import { useCalendarInteractions } from "@/components/calendar/use-calendar-inte
 
 ### UI Primitives
 
-Import directly from the file (no `index.ts` needed for simple primitives):
+Import from the barrel or directly from files:
 
 ```tsx
+// From barrel
+import { Button, Input, Shell } from "@/components/ui";
+
+// Or directly (both work)
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell";
 ```
 
-### Flat Components
-
-Components without a feature folder import from their file:
+### Unified Schedule (Orchestration)
 
 ```tsx
-import { Backlog } from "@/components/backlog";
-import { WeeklyAnalytics } from "@/components/weekly-analytics";
+// Main orchestration hook
+import { useUnifiedSchedule } from "@/lib/unified-schedule";
+import type { 
+  ScheduleGoal, 
+  ScheduleTask, 
+  GoalStats,
+  UseUnifiedScheduleReturn 
+} from "@/lib/unified-schedule";
+
+// Or via hooks/ re-export (backward compatible)
+import { useUnifiedSchedule } from "@/hooks";
+```
+
+### Adapters
+
+```tsx
+import { 
+  eventToBlockSidebarData, 
+  toAnalyticsItems,
+  formatMinutesToTime 
+} from "@/lib/adapters";
 ```
 
 ### Shared Types and Utilities
@@ -444,9 +579,6 @@ import type { GoalColor } from "@/lib/colors";
 
 // Drag system types
 import type { DragItem, DropPosition } from "@/lib/drag-types";
-
-// Hooks
-import { useUnifiedSchedule } from "@/hooks";
 ```
 
 ### Internal Imports (Within Feature Folders)
@@ -458,6 +590,13 @@ Files within a feature folder use relative imports:
 import { TimeColumn } from "./time-column";
 import { getSegmentsForDay } from "./calendar-types";
 import type { CalendarEvent } from "./calendar-types";
+```
+
+### Playground Utilities (Internal Only)
+
+```tsx
+// ⚠️ Only for example components — never exported publicly
+import { KnobsProvider, KnobBoolean } from "@/components/_playground/knobs";
 ```
 
 ## Benefits of This Architecture

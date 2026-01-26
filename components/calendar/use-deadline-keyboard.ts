@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { DeadlineTask } from "@/hooks/use-unified-schedule";
+import type { DeadlineTask } from "@/lib/unified-schedule";
 
 export interface UseDeadlineKeyboardOptions {
   /** Currently hovered deadline (null if none) */

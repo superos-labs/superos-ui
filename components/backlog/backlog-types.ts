@@ -4,7 +4,7 @@
 
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
-import type { ScheduleTask } from "@/hooks/use-unified-schedule";
+import type { ScheduleTask } from "@/lib/unified-schedule";
 
 // Re-export for convenience
 export type { LifeArea, GoalIconOption };

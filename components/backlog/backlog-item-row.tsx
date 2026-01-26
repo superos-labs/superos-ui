@@ -10,7 +10,7 @@ import {
 import { getIconColorClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
-import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/hooks/use-unified-schedule";
+import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
 import type { BacklogItem, GoalDisplayMode } from "./backlog-types";
 import { TaskRow } from "./task-row";
 import { InlineTaskCreator } from "./inline-creators";

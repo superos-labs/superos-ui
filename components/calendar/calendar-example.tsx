@@ -17,7 +17,7 @@ import {
   KnobsPanel,
   KnobSelect,
   KnobBoolean,
-} from "@/components/knobs";
+} from "@/components/_playground/knobs";
 
 // Helper to convert hours to minutes for startMinutes
 const hoursToMinutes = (hours: number) => hours * 60;

@@ -12,21 +12,25 @@ import {
   type CalendarMode,
   type CalendarEvent,
 } from "@/components/calendar"
-import type { DeadlineTask } from "@/hooks/use-unified-schedule"
+import type { DeadlineTask } from "@/lib/unified-schedule"
 import { Backlog, type BacklogItem, type BacklogMode, type NewGoalData } from "@/components/backlog"
-import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
+import { WeeklyAnalytics } from "@/components/weekly-analytics"
 import {
   BlockSidebar,
-  type BlockSidebarData,
   type BlockGoalTask,
-  type BlockSubtask,
 } from "@/components/block"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
-import { useUnifiedSchedule } from "@/hooks/use-unified-schedule"
+import { useUnifiedSchedule } from "@/lib/unified-schedule"
 import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types"
 import type { GoalColor } from "@/lib/colors"
-import { getIconColorClass } from "@/lib/colors"
 import type { IconComponent } from "@/lib/types"
+
+// Adapters for data conversion
+import { 
+  eventToBlockSidebarData, 
+  parseTimeToMinutes,
+  toAnalyticsItems,
+} from "@/lib/adapters"
 
 // Sample data from fixtures
 import {
@@ -43,7 +47,7 @@ import {
   KnobsPanel,
   KnobBoolean,
   KnobSelect,
-} from "@/components/knobs"
+} from "@/components/_playground/knobs"
 import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
@@ -54,150 +58,6 @@ import {
 } from "@remixicon/react"
 import { cn } from "@/lib/utils"
 
-// =============================================================================
-// Helpers
-// =============================================================================
-
-/** Convert BacklogItem/ScheduleGoal to WeeklyAnalyticsItem */
-function toAnalyticsItems(
-  items: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor }>,
-  getStats: (id: string) => { plannedHours: number; completedHours: number }
-): WeeklyAnalyticsItem[] {
-  return items.map((item) => {
-    const stats = getStats(item.id)
-    return {
-      id: item.id,
-      label: item.label,
-      icon: item.icon,
-      color: getIconColorClass(item.color),
-      plannedHours: stats.plannedHours,
-      completedHours: stats.completedHours,
-    }
-  })
-}
-
-/** Format minutes from midnight to HH:MM time string */
-function formatMinutesToTime(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`
-}
-
-/** Parse HH:MM time string to minutes from midnight */
-function parseTimeToMinutes(time: string): number {
-  const [hours, mins] = time.split(":").map(Number)
-  return hours * 60 + mins
-}
-
-/** Result of converting a CalendarEvent to BlockSidebarData */
-interface EventToSidebarResult {
-  block: BlockSidebarData;
-  /** Available tasks from the goal that haven't been assigned yet (for goal blocks) */
-  availableGoalTasks: BlockGoalTask[];
-}
-
-/** Convert CalendarEvent to BlockSidebarData */
-function eventToBlockSidebarData(
-  event: CalendarEvent,
-  goals: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor; tasks?: Array<{ id: string; label: string; completed?: boolean; scheduledBlockId?: string; subtasks?: Array<{ id: string; label: string; completed: boolean }> }> }>,
-  commitments: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor }>,
-  weekDates: Date[]
-): EventToSidebarResult {
-  // Find source goal for goal/task blocks
-  const sourceGoal = event.sourceGoalId
-    ? goals.find((g) => g.id === event.sourceGoalId)
-    : undefined
-
-  // Find source commitment for commitment blocks
-  const sourceCommitment = event.sourceCommitmentId
-    ? commitments.find((c) => c.id === event.sourceCommitmentId)
-    : undefined
-
-  // Find source task (for task blocks)
-  const sourceTask =
-    event.sourceTaskId && sourceGoal
-      ? sourceGoal.tasks?.find((t) => t.id === event.sourceTaskId)
-      : undefined
-
-  // Calculate date from dayIndex + weekDates
-  const date = weekDates[event.dayIndex]
-  const isoDate = date ? date.toISOString().split("T")[0] : ""
-
-  // Convert minutes to time strings
-  const startTime = formatMinutesToTime(event.startMinutes)
-  const endTime = formatMinutesToTime(event.startMinutes + event.durationMinutes)
-
-  // Build goal tasks for goal blocks - only show assigned tasks
-  const assignedTaskIds = event.assignedTaskIds ?? []
-  const goalTasks: BlockGoalTask[] =
-    sourceGoal && event.blockType === "goal"
-      ? (sourceGoal.tasks ?? [])
-          .filter((t) => assignedTaskIds.includes(t.id))
-          .map((t) => ({
-            id: t.id,
-            label: t.label,
-            completed: t.completed ?? false,
-          }))
-      : []
-
-  // Build available tasks (not yet assigned) for goal blocks
-  // Filter out: already assigned, completed, or scheduled to other blocks
-  const availableGoalTasks: BlockGoalTask[] =
-    sourceGoal && event.blockType === "goal"
-      ? (sourceGoal.tasks ?? [])
-          .filter(
-            (t) =>
-              !assignedTaskIds.includes(t.id) && // not already assigned to this block
-              !t.completed && // not completed
-              !t.scheduledBlockId // not scheduled to another block
-          )
-          .map((t) => ({
-            id: t.id,
-            label: t.label,
-            completed: t.completed ?? false,
-          }))
-      : []
-
-  // Build subtasks for task blocks
-  const subtasks: BlockSubtask[] =
-    sourceTask?.subtasks?.map((s) => ({
-      id: s.id,
-      text: s.label,
-      done: s.completed,
-    })) ?? []
-
-  return {
-    block: {
-      id: event.id,
-      title: event.title,
-      blockType: event.blockType ?? "goal",
-      date: isoDate,
-      startTime,
-      endTime,
-      notes: event.notes ?? "",
-      subtasks,
-      goalTasks,
-      color: event.color,
-      goal: sourceGoal
-        ? {
-            id: sourceGoal.id,
-            label: sourceGoal.label,
-            icon: sourceGoal.icon,
-            color: getIconColorClass(sourceGoal.color),
-          }
-        : undefined,
-      commitment: sourceCommitment
-        ? {
-            id: sourceCommitment.id,
-            label: sourceCommitment.label,
-            icon: sourceCommitment.icon,
-            color: getIconColorClass(sourceCommitment.color),
-          }
-        : undefined,
-    },
-    availableGoalTasks,
-  }
-}
 
 // =============================================================================
 // Components

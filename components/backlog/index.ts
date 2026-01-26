@@ -32,5 +32,5 @@ export type {
   GoalIconOption,
 } from "./backlog-types";
 
-// Re-export types from use-unified-schedule for convenience
-export type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/hooks/use-unified-schedule";
+// Re-export types from unified-schedule for convenience
+export type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";

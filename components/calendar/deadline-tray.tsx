@@ -14,7 +14,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import type { DragItem } from "@/lib/drag-types";
-import type { DeadlineTask } from "@/hooks/use-unified-schedule";
+import type { DeadlineTask } from "@/lib/unified-schedule";
 
 // ============================================================================
 // Types

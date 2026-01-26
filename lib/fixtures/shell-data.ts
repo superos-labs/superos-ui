@@ -29,7 +29,7 @@ import {
 } from "@remixicon/react";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { CalendarEvent } from "@/components/calendar";
-import type { ScheduleGoal, ScheduleCommitment } from "@/hooks/use-unified-schedule";
+import type { ScheduleGoal, ScheduleCommitment } from "@/lib/unified-schedule";
 
 // Re-export types for convenience
 export type { LifeArea, GoalIconOption };

@@ -1,6 +1,7 @@
 // Public API for hooks
+// Re-exports from lib/unified-schedule for backward compatibility
 
-export { useUnifiedSchedule } from "./use-unified-schedule";
+export { useUnifiedSchedule } from "@/lib/unified-schedule";
 export type {
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
@@ -11,4 +12,5 @@ export type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
   DeadlineTask,
-} from "./use-unified-schedule";
+  Subtask,
+} from "@/lib/unified-schedule";

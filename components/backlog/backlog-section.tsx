@@ -6,7 +6,7 @@ import {
   RiAddLine,
   RiPencilLine,
 } from "@remixicon/react";
-import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/hooks/use-unified-schedule";
+import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { BacklogItem, GoalDisplayMode, NewGoalData } from "./backlog-types";
 import { BacklogItemRow } from "./backlog-item-row";

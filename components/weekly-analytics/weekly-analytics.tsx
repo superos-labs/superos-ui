@@ -6,7 +6,7 @@ import type { IconComponent } from "@/lib/types";
 
 // Types
 
-interface WeeklyAnalyticsItem {
+export interface WeeklyAnalyticsItem {
   id: string;
   label: string;
   icon: IconComponent;
@@ -15,7 +15,7 @@ interface WeeklyAnalyticsItem {
   completedHours: number;
 }
 
-interface WeeklyAnalyticsSectionData {
+export interface WeeklyAnalyticsSectionData {
   title: string;
   items: WeeklyAnalyticsItem[];
 }
@@ -63,7 +63,7 @@ interface WeeklyAnalyticsItemRowProps {
   className?: string;
 }
 
-function WeeklyAnalyticsItemRow({ item, className }: WeeklyAnalyticsItemRowProps) {
+export function WeeklyAnalyticsItemRow({ item, className }: WeeklyAnalyticsItemRowProps) {
   const IconComponent = item.icon;
   const isComplete = item.completedHours >= item.plannedHours;
 
@@ -108,7 +108,7 @@ interface WeeklyAnalyticsSectionProps {
   className?: string;
 }
 
-function WeeklyAnalyticsSection({ title, items, className }: WeeklyAnalyticsSectionProps) {
+export function WeeklyAnalyticsSection({ title, items, className }: WeeklyAnalyticsSectionProps) {
   const totalPlanned = items.reduce((sum, item) => sum + item.plannedHours, 0);
   const totalCompleted = items.reduce((sum, item) => sum + item.completedHours, 0);
   const isComplete = totalCompleted >= totalPlanned;
@@ -152,7 +152,7 @@ interface WeeklyAnalyticsHeaderProps {
   className?: string;
 }
 
-function WeeklyAnalyticsHeader({
+export function WeeklyAnalyticsHeader({
   totalPlanned,
   totalCompleted,
   weekLabel = "This Week",
@@ -198,7 +198,7 @@ function WeeklyAnalyticsHeader({
 }
 
 // Main component
-interface WeeklyAnalyticsProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface WeeklyAnalyticsProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of commitment items */
   commitments: WeeklyAnalyticsItem[];
   /** Array of goal items */
@@ -209,7 +209,7 @@ interface WeeklyAnalyticsProps extends React.HTMLAttributes<HTMLDivElement> {
   showSummary?: boolean;
 }
 
-function WeeklyAnalytics({
+export function WeeklyAnalytics({
   commitments,
   goals,
   weekLabel = "This Week",
@@ -266,6 +266,3 @@ function WeeklyAnalytics({
     </div>
   );
 }
-
-export { WeeklyAnalytics, WeeklyAnalyticsSection, WeeklyAnalyticsItemRow, WeeklyAnalyticsHeader };
-export type { WeeklyAnalyticsProps, WeeklyAnalyticsItem, WeeklyAnalyticsSectionData };

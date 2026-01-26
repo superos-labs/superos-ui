@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { WeeklyAnalytics, WeeklyAnalyticsItem } from "@/components/weekly-analytics";
+import { WeeklyAnalytics } from "./weekly-analytics";
+import type { WeeklyAnalyticsItem } from "./weekly-analytics";
 import {
   KnobsProvider,
   KnobsToggle,
   KnobsPanel,
   KnobBoolean,
-} from "@/components/knobs";
+} from "@/components/_playground/knobs";
 import {
   RiMoonLine,
   RiRestaurantLine,

@@ -2,7 +2,7 @@
  * Utility functions for the Backlog component family.
  */
 
-import type { TaskScheduleInfo, TaskDeadlineInfo } from "@/hooks/use-unified-schedule";
+import type { TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
 
 /**
  * Format a scheduled time for display in the task row.

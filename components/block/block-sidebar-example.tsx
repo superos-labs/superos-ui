@@ -15,7 +15,7 @@ import {
   KnobsToggle,
   KnobsPanel,
   KnobSelect,
-} from "@/components/knobs";
+} from "@/components/_playground/knobs";
 import { RiRocketLine } from "@remixicon/react";
 
 const SAMPLE_GOAL: BlockSidebarGoal = {

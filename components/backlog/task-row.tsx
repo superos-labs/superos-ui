@@ -10,7 +10,7 @@ import {
 } from "@remixicon/react";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
-import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask, Subtask } from "@/hooks/use-unified-schedule";
+import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask, Subtask } from "@/lib/unified-schedule";
 import type { BacklogItem, BacklogTask } from "./backlog-types";
 import { formatScheduledTime, formatDeadlineDate } from "./backlog-utils";
 import { SubtaskRow } from "@/components/ui/subtask-row";

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/hooks/use-unified-schedule";
+import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { BacklogItem, BacklogMode, GoalDisplayMode, NewGoalData } from "./backlog-types";
 import { BacklogSection } from "./backlog-section";

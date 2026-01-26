@@ -205,13 +205,13 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   /** Called when a task is dropped on a day header to set a deadline */
   onDeadlineDrop?: (dayIndex: number, date: string) => void;
   /** Map of ISO date string to array of deadline tasks for that day */
-  deadlines?: Map<string, import("@/hooks/use-unified-schedule").DeadlineTask[]>;
+  deadlines?: Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
   /** Called when a deadline task's completion status is toggled */
   onDeadlineToggleComplete?: (goalId: string, taskId: string) => void;
   /** Called when a deadline is removed (unassigned) */
   onDeadlineUnassign?: (goalId: string, taskId: string) => void;
   /** Called when mouse enters/leaves a deadline pill (for keyboard shortcuts) */
-  onDeadlineHover?: (deadline: import("@/hooks/use-unified-schedule").DeadlineTask | null) => void;
+  onDeadlineHover?: (deadline: import("@/lib/unified-schedule").DeadlineTask | null) => void;
 }
 
 export interface CalendarDayHeaderProps {
@@ -254,13 +254,13 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   /** Called when a task is dropped on a day header to set a deadline */
   onDeadlineDrop?: (dayIndex: number, date: string) => void;
   /** Map of ISO date string to array of deadline tasks for that day */
-  deadlines?: Map<string, import("@/hooks/use-unified-schedule").DeadlineTask[]>;
+  deadlines?: Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
   /** Called when a deadline task's completion status is toggled */
   onDeadlineToggleComplete?: (goalId: string, taskId: string) => void;
   /** Called when a deadline is removed (unassigned) */
   onDeadlineUnassign?: (goalId: string, taskId: string) => void;
   /** Called when mouse enters/leaves a deadline pill (for keyboard shortcuts) */
-  onDeadlineHover?: (deadline: import("@/hooks/use-unified-schedule").DeadlineTask | null) => void;
+  onDeadlineHover?: (deadline: import("@/lib/unified-schedule").DeadlineTask | null) => void;
 }
 
 /**

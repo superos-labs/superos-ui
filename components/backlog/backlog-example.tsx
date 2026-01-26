@@ -2,14 +2,14 @@
 
 import * as React from "react"
 import { Backlog, type BacklogItem, type GoalDisplayMode } from "./index"
-import type { ScheduleTask, Subtask } from "@/hooks/use-unified-schedule"
+import type { ScheduleTask, Subtask } from "@/lib/unified-schedule"
 import {
   KnobsProvider,
   KnobsToggle,
   KnobsPanel,
   KnobBoolean,
   KnobSelect,
-} from "@/components/knobs"
+} from "@/components/_playground/knobs"
 import {
   RiMoonLine,
   RiRestaurantLine,

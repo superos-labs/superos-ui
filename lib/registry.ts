@@ -42,7 +42,7 @@ export const registry: ComponentEntry[] = [
     slug: "weekly-analytics",
     name: "Weekly Analytics",
     component: lazy(() =>
-      import("@/components/weekly-analytics-example").then((m) => ({
+      import("@/components/weekly-analytics/weekly-analytics-example").then((m) => ({
         default: m.WeeklyAnalyticsExample,
       }))
     ),
