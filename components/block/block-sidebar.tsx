@@ -991,6 +991,12 @@ function BlockSidebar({
             type="text"
             value={block.title}
             onChange={(e) => onTitleChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                e.preventDefault();
+                e.currentTarget.blur();
+              }
+            }}
             className={cn(
               "w-full bg-transparent text-lg font-semibold text-foreground leading-tight",
               "outline-none placeholder:text-muted-foreground/60",
@@ -1062,6 +1068,12 @@ function BlockSidebar({
                 type="date"
                 value={block.date}
                 onChange={(e) => onDateChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                  }
+                }}
                 className={cn(
                   "w-full rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
                   "outline-none focus:bg-muted",
@@ -1079,6 +1091,12 @@ function BlockSidebar({
                     type="time"
                     value={block.startTime}
                     onChange={(e) => onStartTimeChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
+                    }}
                     className={cn(
                       "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
                       "outline-none focus:bg-muted",
@@ -1090,6 +1108,12 @@ function BlockSidebar({
                       type="time"
                       value={block.endTime}
                       onChange={(e) => onEndTimeChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                          e.preventDefault();
+                          e.currentTarget.blur();
+                        }
+                      }}
                       className={cn(
                         "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
                         "outline-none focus:bg-muted",
@@ -1180,6 +1204,12 @@ function BlockSidebar({
               <AutoResizeTextarea
                 value={block.notes || ""}
                 onChange={(e) => onNotesChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                  }
+                }}
                 placeholder="Add notes..."
                 className={cn(
                   "w-full min-h-[24px] bg-transparent text-sm text-foreground leading-relaxed",
