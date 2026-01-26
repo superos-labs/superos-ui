@@ -382,7 +382,7 @@ export function TimeColumn({
                 duration={segmentDuration as 30 | 60 | 240}
                 taskCount={
                   position === "start" || position === "only"
-                    ? event.taskCount
+                    ? (event.assignedTaskIds?.length ?? event.taskCount)
                     : undefined
                 }
                 segmentPosition={position}
