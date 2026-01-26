@@ -120,9 +120,10 @@ function AutoResizeTextarea({
 interface BlockGoalTaskRowProps {
   task: BlockGoalTask;
   onToggle?: (id: string) => void;
+  onUnassign?: (id: string) => void;
 }
 
-function BlockGoalTaskRow({ task, onToggle }: BlockGoalTaskRowProps) {
+function BlockGoalTaskRow({ task, onToggle, onUnassign }: BlockGoalTaskRowProps) {
   return (
     <div
       className={cn(
@@ -151,6 +152,17 @@ function BlockGoalTaskRow({ task, onToggle }: BlockGoalTaskRowProps) {
       >
         {task.label}
       </span>
+      {onUnassign && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onUnassign(task.id);
+          }}
+          className="flex size-5 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-all hover:text-muted-foreground group-hover:opacity-100"
+        >
+          <RiCloseLine className="size-3.5" />
+        </button>
+      )}
     </div>
   );
 }
@@ -423,11 +435,10 @@ function BlockSidebar({
   onCreateTask,
   availableGoalTasks,
   onAssignTask,
-  onUnassignTask: _onUnassignTask,
+  onUnassignTask,
   className,
   ...props
 }: BlockSidebarProps) {
-  // Note: _onUnassignTask is reserved for future use (unassign task from block)
   const isGoalBlock = block.blockType === "goal";
   const isTaskBlock = block.blockType === "task";
   const isCommitmentBlock = block.blockType === "commitment";
@@ -601,6 +612,7 @@ function BlockSidebar({
                     key={task.id}
                     task={task}
                     onToggle={onToggleGoalTask}
+                    onUnassign={onUnassignTask}
                   />
                 ))
               ) : (
