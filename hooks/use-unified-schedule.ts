@@ -448,23 +448,28 @@ export function useUnifiedSchedule({
 
   const scheduleGoal = React.useCallback(
     (goalId: string, dayIndex: number, startMinutes: number) => {
-      const goal = goals.find((g) => g.id === goalId);
-      if (!goal) return;
+      // Read goals inside the callback to avoid stale closures
+      setGoals((currentGoals) => {
+        const goal = currentGoals.find((g) => g.id === goalId);
+        if (!goal) return currentGoals;
 
-      const newEvent: CalendarEvent = {
-        id: crypto.randomUUID(),
-        title: goal.label,
-        dayIndex,
-        startMinutes,
-        durationMinutes: 60, // 1 hour for goals
-        color: goal.color,
-        blockType: "goal",
-        sourceGoalId: goalId,
-        status: "planned",
-      };
-      setEvents((prev) => [...prev, newEvent]);
+        const newEvent: CalendarEvent = {
+          id: crypto.randomUUID(),
+          title: goal.label,
+          dayIndex,
+          startMinutes,
+          durationMinutes: 60, // 1 hour for goals
+          color: goal.color,
+          blockType: "goal",
+          sourceGoalId: goalId,
+          status: "planned",
+        };
+        setEvents((prev) => [...prev, newEvent]);
+
+        return currentGoals; // No change to goals
+      });
     },
-    [goals]
+    []
   );
 
   const scheduleTask = React.useCallback(
@@ -474,58 +479,56 @@ export function useUnifiedSchedule({
       dayIndex: number,
       startMinutes: number
     ) => {
-      const goal = goals.find((g) => g.id === goalId);
-      const task = goal?.tasks?.find((t) => t.id === taskId);
-      if (!goal || !task) return;
-
-      // Find existing block for this task (if any) to remove it
-      const existingEvent = events.find((e) => e.sourceTaskId === taskId);
-
-      // Create new event
       const newEventId = crypto.randomUUID();
-      const newEvent: CalendarEvent = {
-        id: newEventId,
-        title: task.label,
-        dayIndex,
-        startMinutes,
-        durationMinutes: 30, // 30 min for tasks
-        color: goal.color, // Inherit from parent goal
-        blockType: "task",
-        sourceGoalId: goalId,
-        sourceTaskId: taskId,
-        status: task.completed ? "completed" : "planned",
-      };
 
-      // Update events: remove old, add new
-      setEvents((prev) => {
-        const filtered = existingEvent
-          ? prev.filter((e) => e.id !== existingEvent.id)
-          : prev;
-        return [...filtered, newEvent];
-      });
+      // Update goals first to get task data and set the new block reference
+      setGoals((currentGoals) => {
+        const goal = currentGoals.find((g) => g.id === goalId);
+        const task = goal?.tasks?.find((t) => t.id === taskId);
+        if (!goal || !task) return currentGoals;
 
-      // Update task with new block reference and clear deadline (mutually exclusive)
-      setGoals((prev) =>
-        prev.map((g) =>
+        // Create new event using current goal/task data
+        const newEvent: CalendarEvent = {
+          id: newEventId,
+          title: task.label,
+          dayIndex,
+          startMinutes,
+          durationMinutes: 30, // 30 min for tasks
+          color: goal.color, // Inherit from parent goal
+          blockType: "task",
+          sourceGoalId: goalId,
+          sourceTaskId: taskId,
+          status: task.completed ? "completed" : "planned",
+        };
+
+        // Update events: remove old (if any), add new
+        setEvents((currentEvents) => {
+          const filtered = currentEvents.filter((e) => e.sourceTaskId !== taskId);
+          return [...filtered, newEvent];
+        });
+
+        // Update task with new block reference and clear deadline (mutually exclusive)
+        return currentGoals.map((g) =>
           g.id === goalId
             ? {
                 ...g,
                 tasks: g.tasks?.map((t) =>
-                  t.id === taskId 
-                    ? { ...t, scheduledBlockId: newEventId, deadline: undefined } 
+                  t.id === taskId
+                    ? { ...t, scheduledBlockId: newEventId, deadline: undefined }
                     : t
                 ),
               }
             : g
-        )
-      );
+        );
+      });
     },
-    [goals, events]
+    []
   );
 
   const scheduleCommitment = React.useCallback(
     (commitmentId: string, dayIndex: number, startMinutes: number) => {
-      const commitment = commitments.find((c) => c.id === commitmentId);
+      // Find commitment from allCommitments (stable reference)
+      const commitment = allCommitments.find((c) => c.id === commitmentId);
       if (!commitment) return;
 
       const newEvent: CalendarEvent = {
@@ -541,7 +544,7 @@ export function useUnifiedSchedule({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [commitments]
+    [allCommitments]
   );
 
   // -------------------------------------------------------------------------
@@ -550,18 +553,19 @@ export function useUnifiedSchedule({
 
   const setTaskDeadline = React.useCallback(
     (goalId: string, taskId: string, date: string) => {
-      const goal = goals.find((g) => g.id === goalId);
-      const task = goal?.tasks?.find((t) => t.id === taskId);
-      if (!goal || !task) return;
+      setGoals((currentGoals) => {
+        const goal = currentGoals.find((g) => g.id === goalId);
+        const task = goal?.tasks?.find((t) => t.id === taskId);
+        if (!goal || !task) return currentGoals;
 
-      // If task has a scheduled block, remove it (mutually exclusive)
-      if (task.scheduledBlockId) {
-        setEvents((prev) => prev.filter((e) => e.id !== task.scheduledBlockId));
-      }
+        // If task has a scheduled block, remove it (mutually exclusive)
+        if (task.scheduledBlockId) {
+          const blockIdToRemove = task.scheduledBlockId;
+          setEvents((prev) => prev.filter((e) => e.id !== blockIdToRemove));
+        }
 
-      // Update task with deadline and clear scheduledBlockId
-      setGoals((prev) =>
-        prev.map((g) =>
+        // Update task with deadline and clear scheduledBlockId
+        return currentGoals.map((g) =>
           g.id === goalId
             ? {
                 ...g,
@@ -572,10 +576,10 @@ export function useUnifiedSchedule({
                 ),
               }
             : g
-        )
-      );
+        );
+      });
     },
-    [goals]
+    []
   );
 
   const clearTaskDeadline = React.useCallback(
@@ -639,92 +643,97 @@ export function useUnifiedSchedule({
 
   const deleteEvent = React.useCallback(
     (eventId: string) => {
-      const event = events.find((e) => e.id === eventId);
+      setEvents((currentEvents) => {
+        const event = currentEvents.find((e) => e.id === eventId);
 
-      // Remove the event
-      setEvents((prev) => prev.filter((e) => e.id !== eventId));
+        // Clear scheduledBlockId on task if this was a task block
+        if (event?.blockType === "task" && event.sourceTaskId) {
+          const { sourceGoalId, sourceTaskId } = event;
+          setGoals((prev) =>
+            prev.map((g) =>
+              g.id === sourceGoalId
+                ? {
+                    ...g,
+                    tasks: g.tasks?.map((t) =>
+                      t.id === sourceTaskId
+                        ? { ...t, scheduledBlockId: undefined }
+                        : t
+                    ),
+                  }
+                : g
+            )
+          );
+        }
 
-      // Clear scheduledBlockId on task if this was a task block
-      if (event?.blockType === "task" && event.sourceTaskId) {
-        setGoals((prev) =>
-          prev.map((g) =>
-            g.id === event.sourceGoalId
-              ? {
-                  ...g,
-                  tasks: g.tasks?.map((t) =>
-                    t.id === event.sourceTaskId
-                      ? { ...t, scheduledBlockId: undefined }
-                      : t
-                  ),
-                }
-              : g
-          )
-        );
-      }
+        // Remove the event
+        return currentEvents.filter((e) => e.id !== eventId);
+      });
     },
-    [events]
+    []
   );
 
   const markEventComplete = React.useCallback(
     (eventId: string) => {
-      const event = events.find((e) => e.id === eventId);
-      if (!event) return;
+      setEvents((currentEvents) => {
+        const event = currentEvents.find((e) => e.id === eventId);
+        if (!event) return currentEvents;
 
-      // Update event status
-      setEvents((prev) =>
-        prev.map((e) =>
+        // If it's a task block, also complete the task
+        if (event.blockType === "task" && event.sourceTaskId) {
+          const { sourceGoalId, sourceTaskId } = event;
+          setGoals((prev) =>
+            prev.map((g) =>
+              g.id === sourceGoalId
+                ? {
+                    ...g,
+                    tasks: g.tasks?.map((t) =>
+                      t.id === sourceTaskId ? { ...t, completed: true } : t
+                    ),
+                  }
+                : g
+            )
+          );
+        }
+
+        // Update event status
+        return currentEvents.map((e) =>
           e.id === eventId ? { ...e, status: "completed" as BlockStatus } : e
-        )
-      );
-
-      // If it's a task block, also complete the task
-      if (event.blockType === "task" && event.sourceTaskId) {
-        setGoals((prev) =>
-          prev.map((g) =>
-            g.id === event.sourceGoalId
-              ? {
-                  ...g,
-                  tasks: g.tasks?.map((t) =>
-                    t.id === event.sourceTaskId ? { ...t, completed: true } : t
-                  ),
-                }
-              : g
-          )
         );
-      }
+      });
     },
-    [events]
+    []
   );
 
   const markEventIncomplete = React.useCallback(
     (eventId: string) => {
-      const event = events.find((e) => e.id === eventId);
-      if (!event) return;
+      setEvents((currentEvents) => {
+        const event = currentEvents.find((e) => e.id === eventId);
+        if (!event) return currentEvents;
 
-      // Update event status
-      setEvents((prev) =>
-        prev.map((e) =>
+        // If it's a task block, also un-complete the task
+        if (event.blockType === "task" && event.sourceTaskId) {
+          const { sourceGoalId, sourceTaskId } = event;
+          setGoals((prev) =>
+            prev.map((g) =>
+              g.id === sourceGoalId
+                ? {
+                    ...g,
+                    tasks: g.tasks?.map((t) =>
+                      t.id === sourceTaskId ? { ...t, completed: false } : t
+                    ),
+                  }
+                : g
+            )
+          );
+        }
+
+        // Update event status
+        return currentEvents.map((e) =>
           e.id === eventId ? { ...e, status: "planned" as BlockStatus } : e
-        )
-      );
-
-      // If it's a task block, also un-complete the task
-      if (event.blockType === "task" && event.sourceTaskId) {
-        setGoals((prev) =>
-          prev.map((g) =>
-            g.id === event.sourceGoalId
-              ? {
-                  ...g,
-                  tasks: g.tasks?.map((t) =>
-                    t.id === event.sourceTaskId ? { ...t, completed: false } : t
-                  ),
-                }
-              : g
-          )
         );
-      }
+      });
     },
-    [events]
+    []
   );
 
   // -------------------------------------------------------------------------
@@ -740,16 +749,29 @@ export function useUnifiedSchedule({
 
   const toggleTaskComplete = React.useCallback(
     (goalId: string, taskId: string) => {
-      // Find the current task state
-      const goal = goals.find((g) => g.id === goalId);
-      const task = goal?.tasks?.find((t) => t.id === taskId);
-      if (!task) return;
+      setGoals((currentGoals) => {
+        // Find the current task state
+        const goal = currentGoals.find((g) => g.id === goalId);
+        const task = goal?.tasks?.find((t) => t.id === taskId);
+        if (!task) return currentGoals;
 
-      const newCompletedState = !task.completed;
+        const newCompletedState = !task.completed;
 
-      // Update the task
-      setGoals((prev) =>
-        prev.map((g) =>
+        // If task has a scheduled block, update its status too
+        if (task.scheduledBlockId) {
+          const blockId = task.scheduledBlockId;
+          const newStatus: BlockStatus = newCompletedState
+            ? "completed"
+            : "planned";
+          setEvents((prev) =>
+            prev.map((e) =>
+              e.id === blockId ? { ...e, status: newStatus } : e
+            )
+          );
+        }
+
+        // Update the task
+        return currentGoals.map((g) =>
           g.id === goalId
             ? {
                 ...g,
@@ -758,22 +780,10 @@ export function useUnifiedSchedule({
                 ),
               }
             : g
-        )
-      );
-
-      // If task has a scheduled block, update its status too
-      if (task.scheduledBlockId) {
-        const newStatus: BlockStatus = newCompletedState
-          ? "completed"
-          : "planned";
-        setEvents((prev) =>
-          prev.map((e) =>
-            e.id === task.scheduledBlockId ? { ...e, status: newStatus } : e
-          )
         );
-      }
+      });
     },
-    [goals]
+    []
   );
 
   // -------------------------------------------------------------------------
@@ -800,8 +810,23 @@ export function useUnifiedSchedule({
 
   const updateTask = React.useCallback(
     (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => {
-      setGoals((prev) =>
-        prev.map((g) =>
+      setGoals((currentGoals) => {
+        const goal = currentGoals.find((g) => g.id === goalId);
+        const task = goal?.tasks?.find((t) => t.id === taskId);
+
+        // If updating the label and task has a scheduled block, update the event title
+        const newLabel = updates.label;
+        if (newLabel && task?.scheduledBlockId) {
+          const blockId = task.scheduledBlockId;
+          setEvents((prev) =>
+            prev.map((e) =>
+              e.id === blockId ? { ...e, title: newLabel } : e
+            )
+          );
+        }
+
+        // Update the task
+        return currentGoals.map((g) =>
           g.id === goalId
             ? {
                 ...g,
@@ -810,48 +835,33 @@ export function useUnifiedSchedule({
                 ),
               }
             : g
-        )
-      );
-
-      // If updating the label, also update the calendar event title
-      const newLabel = updates.label;
-      if (newLabel) {
-        const goal = goals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
-        if (task?.scheduledBlockId) {
-          setEvents((prev) =>
-            prev.map((e) =>
-              e.id === task.scheduledBlockId
-                ? { ...e, title: newLabel }
-                : e
-            )
-          );
-        }
-      }
+        );
+      });
     },
-    [goals]
+    []
   );
 
   const deleteTask = React.useCallback(
     (goalId: string, taskId: string) => {
-      const goal = goals.find((g) => g.id === goalId);
-      const task = goal?.tasks?.find((t) => t.id === taskId);
+      setGoals((currentGoals) => {
+        const goal = currentGoals.find((g) => g.id === goalId);
+        const task = goal?.tasks?.find((t) => t.id === taskId);
 
-      // Remove associated calendar event if exists
-      if (task?.scheduledBlockId) {
-        setEvents((prev) => prev.filter((e) => e.id !== task.scheduledBlockId));
-      }
+        // Remove associated calendar event if exists
+        if (task?.scheduledBlockId) {
+          const blockId = task.scheduledBlockId;
+          setEvents((prev) => prev.filter((e) => e.id !== blockId));
+        }
 
-      // Remove the task from the goal
-      setGoals((prev) =>
-        prev.map((g) =>
+        // Remove the task from the goal
+        return currentGoals.map((g) =>
           g.id === goalId
             ? { ...g, tasks: g.tasks?.filter((t) => t.id !== taskId) }
             : g
-        )
-      );
+        );
+      });
     },
-    [goals]
+    []
   );
 
   // -------------------------------------------------------------------------

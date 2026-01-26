@@ -1,9 +1,17 @@
 "use client"
 
 import { notFound } from "next/navigation"
-import { use } from "react"
+import { Suspense, use } from "react"
 import { getComponent } from "@/lib/registry"
 import { cn } from "@/lib/utils"
+
+function ComponentSkeleton() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="size-8 animate-spin rounded-full border-2 border-muted border-t-foreground" />
+    </div>
+  )
+}
 
 export default function ComponentPage({
   params,
@@ -21,7 +29,11 @@ export default function ComponentPage({
   const layout = entry.layout ?? "center"
 
   if (layout === "full") {
-    return <Component />
+    return (
+      <Suspense fallback={<ComponentSkeleton />}>
+        <Component />
+      </Suspense>
+    )
   }
 
   return (
@@ -29,7 +41,9 @@ export default function ComponentPage({
       "flex min-h-screen justify-center",
       layout === "bottom" ? "items-end pb-32" : "items-center"
     )}>
-      <Component />
+      <Suspense fallback={<ComponentSkeleton />}>
+        <Component />
+      </Suspense>
     </main>
   )
 }

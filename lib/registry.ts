@@ -1,52 +1,60 @@
-import { ComponentType } from "react";
+import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 
 export interface ComponentEntry {
   slug: string;
   name: string;
-  component: ComponentType;
+  component: LazyExoticComponent<ComponentType>;
   layout?: "center" | "bottom" | "full";
 }
 
-// Lazy load components to keep the registry lightweight
+// Lazy load components for better code splitting
 export const registry: ComponentEntry[] = [
   {
     slug: "calendar",
     name: "Calendar",
     layout: "full",
-    get component() {
-      return require("@/components/calendar/calendar-example").CalendarExample;
-    },
+    component: lazy(() =>
+      import("@/components/calendar/calendar-example").then((m) => ({
+        default: m.CalendarExample,
+      }))
+    ),
   },
   {
     slug: "shell",
     name: "Shell",
     layout: "full",
-    get component() {
-      return require("@/components/shell-example").ShellExample;
-    },
+    component: lazy(() =>
+      import("@/components/shell-example").then((m) => ({
+        default: m.ShellExample,
+      }))
+    ),
   },
   {
     slug: "backlog",
     name: "Backlog",
-    get component() {
-      return require("@/components/backlog-example").BacklogExample;
-    },
+    component: lazy(() =>
+      import("@/components/backlog-example").then((m) => ({
+        default: m.BacklogExample,
+      }))
+    ),
   },
   {
     slug: "weekly-analytics",
     name: "Weekly Analytics",
-    get component() {
-      return require("@/components/weekly-analytics-example")
-        .WeeklyAnalyticsExample;
-    },
+    component: lazy(() =>
+      import("@/components/weekly-analytics-example").then((m) => ({
+        default: m.WeeklyAnalyticsExample,
+      }))
+    ),
   },
   {
     slug: "block-sidebar",
     name: "Block Sidebar",
-    get component() {
-      return require("@/components/block/block-sidebar-example")
-        .BlockSidebarExample;
-    },
+    component: lazy(() =>
+      import("@/components/block/block-sidebar-example").then((m) => ({
+        default: m.BlockSidebarExample,
+      }))
+    ),
   },
 ];
 
