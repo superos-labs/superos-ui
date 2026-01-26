@@ -448,28 +448,23 @@ export function useUnifiedSchedule({
 
   const scheduleGoal = React.useCallback(
     (goalId: string, dayIndex: number, startMinutes: number) => {
-      // Read goals inside the callback to avoid stale closures
-      setGoals((currentGoals) => {
-        const goal = currentGoals.find((g) => g.id === goalId);
-        if (!goal) return currentGoals;
+      const goal = goals.find((g) => g.id === goalId);
+      if (!goal) return;
 
-        const newEvent: CalendarEvent = {
-          id: crypto.randomUUID(),
-          title: goal.label,
-          dayIndex,
-          startMinutes,
-          durationMinutes: 60, // 1 hour for goals
-          color: goal.color,
-          blockType: "goal",
-          sourceGoalId: goalId,
-          status: "planned",
-        };
-        setEvents((prev) => [...prev, newEvent]);
-
-        return currentGoals; // No change to goals
-      });
+      const newEvent: CalendarEvent = {
+        id: crypto.randomUUID(),
+        title: goal.label,
+        dayIndex,
+        startMinutes,
+        durationMinutes: 60, // 1 hour for goals
+        color: goal.color,
+        blockType: "goal",
+        sourceGoalId: goalId,
+        status: "planned",
+      };
+      setEvents((prev) => [...prev, newEvent]);
     },
-    []
+    [goals]
   );
 
   const scheduleTask = React.useCallback(
