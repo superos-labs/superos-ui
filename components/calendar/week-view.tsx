@@ -42,6 +42,7 @@ export function WeekView({
   hasClipboardContent = false,
   onEventHover,
   onGridPositionHover,
+  onEventClick,
   enableExternalDrop = false,
   onExternalDrop,
   externalDragPreview,
@@ -190,6 +191,7 @@ export function WeekView({
                 onEventPaste={onEventPaste}
                 onEventHover={onEventHover}
                 onGridPositionHover={onGridPositionHover}
+                onEventClick={onEventClick}
                 enableExternalDrop={enableExternalDrop}
                 onExternalDrop={onExternalDrop}
                 externalDragPreview={externalDragPreview}

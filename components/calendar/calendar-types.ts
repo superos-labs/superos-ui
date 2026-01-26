@@ -99,6 +99,8 @@ export interface CalendarEvent {
   sourceTaskId?: string;
   /** The commitment this block is associated with (for commitment blocks) */
   sourceCommitmentId?: string;
+  /** Optional notes for this block */
+  notes?: string;
 }
 
 // =============================================================================
@@ -167,6 +169,8 @@ export interface CalendarEventCallbacks {
   onEventHover?: (event: CalendarEvent | null) => void;
   /** Called when mouse moves over the grid (for paste position) */
   onGridPositionHover?: (position: HoverPosition | null) => void;
+  /** Called when an event block is clicked (for sidebar selection) */
+  onEventClick?: (event: CalendarEvent) => void;
 }
 
 /**

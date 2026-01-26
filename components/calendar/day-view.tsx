@@ -41,6 +41,7 @@ export function DayView({
   hasClipboardContent = false,
   onEventHover,
   onGridPositionHover,
+  onEventClick,
   enableExternalDrop = false,
   onExternalDrop,
   externalDragPreview,
@@ -172,6 +173,7 @@ export function DayView({
             onEventPaste={onEventPaste}
             onEventHover={onEventHover}
             onGridPositionHover={onGridPositionHover}
+            onEventClick={onEventClick}
             enableExternalDrop={enableExternalDrop}
             onExternalDrop={onExternalDrop}
             externalDragPreview={externalDragPreview}

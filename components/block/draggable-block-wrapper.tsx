@@ -36,6 +36,8 @@ interface DraggableBlockWrapperProps extends Omit<
   onDragEnd?: (newDayIndex: number, newStartMinutes: number) => void;
   /** Called when drag operation ends with Option key held (duplicate) */
   onDuplicate?: (newDayIndex: number, newStartMinutes: number) => void;
+  /** Called when block is clicked (not dragged) */
+  onClick?: () => void;
 }
 
 export function DraggableBlockWrapper({
@@ -50,6 +52,7 @@ export function DraggableBlockWrapper({
   maxDayIndex = 6,
   onDragEnd,
   onDuplicate,
+  onClick,
   className,
   style,
   ...rest
@@ -73,6 +76,7 @@ export function DraggableBlockWrapper({
     maxDayIndex,
     onDragEnd,
     onDuplicate,
+    onClick,
   });
 
   // For duplicate (Option held): original stays in place, ghost follows cursor

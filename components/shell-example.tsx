@@ -10,10 +10,17 @@ import {
   useDeadlineKeyboard,
   getWeekDates,
   type CalendarMode,
+  type CalendarEvent,
 } from "@/components/calendar"
 import type { DeadlineTask } from "@/hooks/use-unified-schedule"
 import { Backlog, type BacklogItem, type BacklogMode, type NewGoalData } from "@/components/backlog"
 import { WeeklyAnalytics, type WeeklyAnalyticsItem } from "@/components/weekly-analytics"
+import {
+  BlockSidebar,
+  type BlockSidebarData,
+  type BlockGoalTask,
+  type BlockSubtask,
+} from "@/components/block"
 import { DragProvider, DragGhost, useDragContextOptional } from "@/components/drag"
 import { useUnifiedSchedule } from "@/hooks/use-unified-schedule"
 import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types"
@@ -69,6 +76,84 @@ function toAnalyticsItems(
   })
 }
 
+/** Format minutes from midnight to HH:MM time string */
+function formatMinutesToTime(minutes: number): string {
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`
+}
+
+/** Parse HH:MM time string to minutes from midnight */
+function parseTimeToMinutes(time: string): number {
+  const [hours, mins] = time.split(":").map(Number)
+  return hours * 60 + mins
+}
+
+/** Convert CalendarEvent to BlockSidebarData */
+function eventToBlockSidebarData(
+  event: CalendarEvent,
+  goals: Array<{ id: string; label: string; icon: IconComponent; color: GoalColor; tasks?: Array<{ id: string; label: string; completed?: boolean; subtasks?: Array<{ id: string; label: string; completed: boolean }> }> }>,
+  weekDates: Date[]
+): BlockSidebarData {
+  // Find source goal for goal/task blocks
+  const sourceGoal = event.sourceGoalId
+    ? goals.find((g) => g.id === event.sourceGoalId)
+    : undefined
+
+  // Find source task (for task blocks)
+  const sourceTask =
+    event.sourceTaskId && sourceGoal
+      ? sourceGoal.tasks?.find((t) => t.id === event.sourceTaskId)
+      : undefined
+
+  // Calculate date from dayIndex + weekDates
+  const date = weekDates[event.dayIndex]
+  const isoDate = date ? date.toISOString().split("T")[0] : ""
+
+  // Convert minutes to time strings
+  const startTime = formatMinutesToTime(event.startMinutes)
+  const endTime = formatMinutesToTime(event.startMinutes + event.durationMinutes)
+
+  // Build goal tasks for goal blocks
+  const goalTasks: BlockGoalTask[] =
+    sourceGoal && event.blockType === "goal"
+      ? (sourceGoal.tasks ?? []).map((t) => ({
+          id: t.id,
+          label: t.label,
+          completed: t.completed ?? false,
+        }))
+      : []
+
+  // Build subtasks for task blocks
+  const subtasks: BlockSubtask[] =
+    sourceTask?.subtasks?.map((s) => ({
+      id: s.id,
+      text: s.label,
+      done: s.completed,
+    })) ?? []
+
+  return {
+    id: event.id,
+    title: event.title,
+    blockType: event.blockType ?? "goal",
+    date: isoDate,
+    startTime,
+    endTime,
+    notes: event.notes ?? "",
+    subtasks,
+    goalTasks,
+    color: event.color,
+    goal: sourceGoal
+      ? {
+          id: sourceGoal.id,
+          label: sourceGoal.label,
+          icon: sourceGoal.icon,
+          color: getIconColorClass(sourceGoal.color),
+        }
+      : undefined,
+  }
+}
+
 // =============================================================================
 // Components
 // =============================================================================
@@ -86,6 +171,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   const [showTasks, setShowTasks] = React.useState(true)
   const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule")
   const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view")
+  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null)
 
   // Get the data set based on the ID
   const dataSet = DATA_SETS[dataSetId]
@@ -129,6 +215,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     hoveredEvent,
     hoverPosition,
     calendarHandlers,
+    updateEvent,
   } = useUnifiedSchedule({
     initialGoals: dataSet.goals,
     allCommitments: ALL_COMMITMENTS,
@@ -137,6 +224,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     onCopy: copy,
     onPaste: paste,
     hasClipboardContent,
+    onEventCreated: (event) => setSelectedEventId(event.id),
   })
 
   // Hover state for deadline keyboard shortcuts
@@ -147,6 +235,128 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   const weekDeadlines = React.useMemo(
     () => getWeekDeadlines(weekDates),
     [getWeekDeadlines, weekDates]
+  )
+
+  // Derive selected event from ID (auto-syncs when events change)
+  const selectedEvent = selectedEventId
+    ? calendarEvents.find((e) => e.id === selectedEventId) ?? null
+    : null
+
+  // Handle event click - select the block to show sidebar
+  const handleEventClick = React.useCallback((event: CalendarEvent) => {
+    setSelectedEventId(event.id)
+  }, [])
+
+  // Handle closing the block sidebar
+  const handleCloseSidebar = React.useCallback(() => {
+    setSelectedEventId(null)
+  }, [])
+
+  // Close sidebar on ESC key
+  React.useEffect(() => {
+    if (!selectedEventId) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedEventId(null)
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [selectedEventId])
+
+  // Sidebar callbacks for editing block properties
+  const handleSidebarTitleChange = React.useCallback(
+    (title: string) => {
+      if (!selectedEvent) return
+      updateEvent(selectedEvent.id, { title })
+      // If task block, also update the task label
+      if (selectedEvent.sourceTaskId && selectedEvent.sourceGoalId) {
+        updateTask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, { label: title })
+      }
+    },
+    [selectedEvent, updateEvent, updateTask]
+  )
+
+  const handleSidebarDateChange = React.useCallback(
+    (newDate: string) => {
+      if (!selectedEvent) return
+      const newDayIndex = weekDates.findIndex(
+        (d) => d.toISOString().split("T")[0] === newDate
+      )
+      if (newDayIndex >= 0) {
+        updateEvent(selectedEvent.id, { dayIndex: newDayIndex })
+      }
+    },
+    [selectedEvent, weekDates, updateEvent]
+  )
+
+  const handleSidebarStartTimeChange = React.useCallback(
+    (startTime: string) => {
+      if (!selectedEvent) return
+      const newStartMinutes = parseTimeToMinutes(startTime)
+      updateEvent(selectedEvent.id, { startMinutes: newStartMinutes })
+    },
+    [selectedEvent, updateEvent]
+  )
+
+  const handleSidebarEndTimeChange = React.useCallback(
+    (endTime: string) => {
+      if (!selectedEvent) return
+      const newEndMinutes = parseTimeToMinutes(endTime)
+      const newDuration = newEndMinutes - selectedEvent.startMinutes
+      if (newDuration > 0) {
+        updateEvent(selectedEvent.id, { durationMinutes: newDuration })
+      }
+    },
+    [selectedEvent, updateEvent]
+  )
+
+  const handleSidebarNotesChange = React.useCallback(
+    (notes: string) => {
+      if (!selectedEvent) return
+      updateEvent(selectedEvent.id, { notes })
+    },
+    [selectedEvent, updateEvent]
+  )
+
+  const handleSidebarToggleGoalTask = React.useCallback(
+    (taskId: string) => {
+      if (!selectedEvent?.sourceGoalId) return
+      toggleTaskComplete(selectedEvent.sourceGoalId, taskId)
+    },
+    [selectedEvent, toggleTaskComplete]
+  )
+
+  // Subtask handlers for task blocks
+  const handleSidebarAddSubtask = React.useCallback(() => {
+    if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+    addSubtask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, "")
+  }, [selectedEvent, addSubtask])
+
+  const handleSidebarToggleSubtask = React.useCallback(
+    (subtaskId: string) => {
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+      toggleSubtaskComplete(
+        selectedEvent.sourceGoalId,
+        selectedEvent.sourceTaskId,
+        subtaskId
+      )
+    },
+    [selectedEvent, toggleSubtaskComplete]
+  )
+
+  const handleSidebarDeleteSubtask = React.useCallback(
+    (subtaskId: string) => {
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+      deleteSubtask(
+        selectedEvent.sourceGoalId,
+        selectedEvent.sourceTaskId,
+        subtaskId
+      )
+    },
+    [selectedEvent, deleteSubtask]
   )
 
   // Drag context for external drag preview
@@ -308,9 +518,18 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
             <button 
               className={cn(
                 "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-                showRightSidebar ? "text-foreground" : "text-muted-foreground"
+                showRightSidebar || selectedEvent ? "text-foreground" : "text-muted-foreground"
               )}
-              onClick={() => setShowRightSidebar(!showRightSidebar)}
+              onClick={() => {
+                if (selectedEvent) {
+                  // If block is selected, close it and show analytics
+                  setSelectedEventId(null)
+                  setShowRightSidebar(true)
+                } else {
+                  // Toggle analytics
+                  setShowRightSidebar(!showRightSidebar)
+                }
+              }}
               title="Toggle analytics"
             >
               <RiPieChartLine className="size-4" />
@@ -320,7 +539,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
             </button>
           </div>
         </ShellToolbar>
-        <div className={`flex min-h-0 flex-1 ${showSidebar || showRightSidebar ? "gap-4" : "gap-0"}`}>
+        <div className={`flex min-h-0 flex-1 ${showSidebar || showRightSidebar || selectedEvent ? "gap-4" : "gap-0"}`}>
           <div 
             className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
               showSidebar ? "w-[420px] opacity-100" : "w-0 opacity-0"
@@ -374,6 +593,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 events={calendarEvents} 
                 mode={calendarMode}
                 {...calendarHandlers}
+                onEventClick={handleEventClick}
                 enableExternalDrop={true}
                 onExternalDrop={handleExternalDrop}
                 externalDragPreview={externalDragPreview}
@@ -387,15 +607,32 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
           </ShellContent>
           <div 
             className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-              showRightSidebar ? "w-[340px] opacity-100" : "w-0 opacity-0"
+              selectedEvent || showRightSidebar ? "w-[380px] opacity-100" : "w-0 opacity-0"
             }`}
           >
-            <WeeklyAnalytics 
-              commitments={analyticsCommitments}
-              goals={analyticsGoals}
-              weekLabel="Jan 20 – 26"
-              className="h-full w-[340px] max-w-none overflow-y-auto" 
-            />
+            {selectedEvent ? (
+              <BlockSidebar
+                block={eventToBlockSidebarData(selectedEvent, goals, weekDates)}
+                onClose={handleCloseSidebar}
+                onTitleChange={handleSidebarTitleChange}
+                onDateChange={handleSidebarDateChange}
+                onStartTimeChange={handleSidebarStartTimeChange}
+                onEndTimeChange={handleSidebarEndTimeChange}
+                onNotesChange={handleSidebarNotesChange}
+                onToggleGoalTask={handleSidebarToggleGoalTask}
+                onAddSubtask={handleSidebarAddSubtask}
+                onToggleSubtask={handleSidebarToggleSubtask}
+                onDeleteSubtask={handleSidebarDeleteSubtask}
+                className="h-full w-[380px] max-w-none overflow-y-auto"
+              />
+            ) : (
+              <WeeklyAnalytics 
+                commitments={analyticsCommitments}
+                goals={analyticsGoals}
+                weekLabel="Jan 20 – 26"
+                className="h-full w-[380px] max-w-none overflow-y-auto" 
+              />
+            )}
           </div>
         </div>
       </Shell>

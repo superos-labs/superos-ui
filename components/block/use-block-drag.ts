@@ -31,6 +31,8 @@ interface UseBlockDragOptions {
   onDragEnd?: (newDayIndex: number, newStartMinutes: number) => void;
   /** Called when drag operation ends with Option key held (duplicate) */
   onDuplicate?: (newDayIndex: number, newStartMinutes: number) => void;
+  /** Called when block is clicked (not dragged) */
+  onClick?: () => void;
 }
 
 interface DragPreviewPosition {
@@ -64,6 +66,7 @@ export function useBlockDrag({
   dragThreshold = DRAG_THRESHOLD,
   onDragEnd,
   onDuplicate,
+  onClick,
 }: UseBlockDragOptions): UseBlockDragReturn {
   const [dragState, setDragState] = React.useState<DragState>("idle");
   const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
@@ -72,6 +75,9 @@ export function useBlockDrag({
 
   const startPos = React.useRef({ x: 0, y: 0 });
   const startValues = React.useRef({ dayIndex: 0, startMinutes: 0 });
+  // Store onClick in a ref to avoid dependency issues in handlePointerUp
+  const onClickRef = React.useRef(onClick);
+  onClickRef.current = onClick;
   // Track the current calculated position for use in pointerUp
   const currentPosition = React.useRef({ dayIndex: 0, startMinutes: 0 });
   // Track Option key state in a ref for use in pointerUp (avoids stale closure)
@@ -214,7 +220,12 @@ export function useBlockDrag({
       setDragOffset({ x: 0, y: 0 });
       setPreviewPosition(null);
       
-      // Only call callbacks if we were actually dragging (not just clicking)
+      // Call onClick if this was a click (pointer down + up without dragging)
+      if (!wasDragging) {
+        onClickRef.current?.();
+      }
+      
+      // Only call drag callbacks if we were actually dragging (not just clicking)
       if (wasDragging) {
         if (wasOptionHeld && onDuplicate) {
           // Option was held - duplicate to new position

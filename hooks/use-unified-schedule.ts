@@ -106,6 +106,8 @@ export interface UseUnifiedScheduleOptions {
   onPaste?: (dayIndex: number, startMinutes: number) => CalendarEvent | null;
   /** Whether clipboard has content */
   hasClipboardContent?: boolean;
+  /** Called when a new event is created (for auto-selection) */
+  onEventCreated?: (event: CalendarEvent) => void;
 }
 
 export interface UseUnifiedScheduleReturn {
@@ -233,6 +235,7 @@ export function useUnifiedSchedule({
   onCopy,
   onPaste,
   hasClipboardContent = false,
+  onEventCreated,
 }: UseUnifiedScheduleOptions): UseUnifiedScheduleReturn {
   const [goals, setGoals] = React.useState<ScheduleGoal[]>(initialGoals);
   const [allCommitments] = React.useState<ScheduleCommitment[]>(allCommitmentsInput);
@@ -1015,8 +1018,9 @@ export function useUnifiedSchedule({
         color: "indigo",
       };
       setEvents((prev) => [...prev, newEvent]);
+      onEventCreated?.(newEvent);
     },
-    []
+    [onEventCreated]
   );
 
   const handleGridDragCreate = React.useCallback(
@@ -1030,8 +1034,9 @@ export function useUnifiedSchedule({
         color: "indigo",
       };
       setEvents((prev) => [...prev, newEvent]);
+      onEventCreated?.(newEvent);
     },
-    []
+    [onEventCreated]
   );
 
   const handleEventCopy = React.useCallback((event: CalendarEvent) => {

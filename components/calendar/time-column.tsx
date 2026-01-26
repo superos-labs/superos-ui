@@ -116,6 +116,7 @@ export function TimeColumn({
   onEventPaste,
   onEventHover,
   onGridPositionHover,
+  onEventClick,
   enableExternalDrop = false,
   onExternalDrop,
   externalDragPreview,
@@ -389,6 +390,7 @@ export function TimeColumn({
                           onEventDuplicate(event.id, newDay, newStart)
                       : undefined
                   }
+                  onClick={() => onEventClick?.(event)}
                   onDoubleClick={(e) => e.stopPropagation()}
                 >
                   {({ isDragging, previewPosition }) => {
@@ -412,6 +414,7 @@ export function TimeColumn({
                 style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
                 onMouseLeave={() => onEventHover?.(null)}
+                onClick={() => onEventClick?.(event)}
                 onDoubleClick={(e) => e.stopPropagation()}
                 {...blockAnimations}
               >
@@ -429,6 +432,7 @@ export function TimeColumn({
                 style={positionStyle}
                 onMouseEnter={() => onEventHover?.(event)}
                 onMouseLeave={() => onEventHover?.(null)}
+                onClick={() => onEventClick?.(event)}
                 onDoubleClick={(e) => e.stopPropagation()}
                 {...blockAnimations}
               >
@@ -444,6 +448,7 @@ export function TimeColumn({
               style={positionStyle}
               onMouseEnter={() => onEventHover?.(event)}
               onMouseLeave={() => onEventHover?.(null)}
+              onClick={() => onEventClick?.(event)}
               onDoubleClick={(e) => e.stopPropagation()}
               {...blockAnimations}
             >

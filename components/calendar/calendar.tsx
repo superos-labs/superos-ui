@@ -28,6 +28,7 @@ export function Calendar({
   hasClipboardContent,
   onEventHover,
   onGridPositionHover,
+  onEventClick,
   enableExternalDrop,
   onExternalDrop,
   externalDragPreview,
@@ -64,6 +65,7 @@ export function Calendar({
         hasClipboardContent={hasClipboardContent}
         onEventHover={onEventHover}
         onGridPositionHover={onGridPositionHover}
+        onEventClick={onEventClick}
         enableExternalDrop={enableExternalDrop}
         onExternalDrop={onExternalDrop}
         externalDragPreview={externalDragPreview}
@@ -92,6 +94,7 @@ export function Calendar({
       hasClipboardContent={hasClipboardContent}
       onEventHover={onEventHover}
       onGridPositionHover={onGridPositionHover}
+      onEventClick={onEventClick}
       enableExternalDrop={enableExternalDrop}
       onExternalDrop={onExternalDrop}
       externalDragPreview={externalDragPreview}
