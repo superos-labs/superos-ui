@@ -98,6 +98,7 @@ interface ExpandedTaskDetailProps {
   onUpdateTask?: (updates: Partial<ScheduleTask>) => void;
   onAddSubtask?: (label: string) => void;
   onToggleSubtask?: (subtaskId: string) => void;
+  onUpdateSubtask?: (subtaskId: string, label: string) => void;
   onDeleteSubtask?: (subtaskId: string) => void;
 }
 
@@ -106,6 +107,7 @@ function ExpandedTaskDetail({
   onUpdateTask,
   onAddSubtask,
   onToggleSubtask,
+  onUpdateSubtask,
   onDeleteSubtask,
 }: ExpandedTaskDetailProps) {
   const [descriptionValue, setDescriptionValue] = React.useState(task.description ?? "");
@@ -140,6 +142,7 @@ function ExpandedTaskDetail({
               key={subtask.id}
               subtask={subtask}
               onToggle={onToggleSubtask}
+              onTextChange={onUpdateSubtask}
               onDelete={onDeleteSubtask}
               size="compact"
             />
@@ -178,6 +181,8 @@ export interface TaskRowProps {
   onAddSubtask?: (label: string) => void;
   /** Callback to toggle a subtask's completion */
   onToggleSubtask?: (subtaskId: string) => void;
+  /** Callback to update a subtask's label */
+  onUpdateSubtask?: (subtaskId: string, label: string) => void;
   /** Callback to delete a subtask */
   onDeleteSubtask?: (subtaskId: string) => void;
   /** Callback to delete this task */
@@ -196,6 +201,7 @@ export function TaskRow({
   onUpdateTask,
   onAddSubtask,
   onToggleSubtask,
+  onUpdateSubtask,
   onDeleteSubtask,
   onDeleteTask,
 }: TaskRowProps) {
@@ -408,6 +414,7 @@ export function TaskRow({
           onUpdateTask={onUpdateTask}
           onAddSubtask={onAddSubtask}
           onToggleSubtask={onToggleSubtask}
+          onUpdateSubtask={onUpdateSubtask}
           onDeleteSubtask={onDeleteSubtask}
         />
       )}

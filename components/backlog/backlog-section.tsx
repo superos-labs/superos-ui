@@ -29,6 +29,8 @@ export interface BacklogSectionProps {
   onAddSubtask?: (goalId: string, taskId: string, label: string) => void;
   /** Callback to toggle a subtask's completion */
   onToggleSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
+  /** Callback to update a subtask's label */
+  onUpdateSubtask?: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
   /** Callback to delete a subtask */
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
@@ -67,6 +69,7 @@ export function BacklogSection({
   onUpdateTask,
   onAddSubtask,
   onToggleSubtask,
+  onUpdateSubtask,
   onDeleteSubtask,
   onDeleteTask,
   getItemStats,
@@ -172,6 +175,7 @@ export function BacklogSection({
             onUpdateTask={onUpdateTask}
             onAddSubtask={onAddSubtask}
             onToggleSubtask={onToggleSubtask}
+            onUpdateSubtask={onUpdateSubtask}
             onDeleteSubtask={onDeleteSubtask}
             onDeleteTask={onDeleteTask}
             getTaskSchedule={getTaskSchedule}

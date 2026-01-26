@@ -32,6 +32,8 @@ export interface BacklogItemRowProps {
   onAddSubtask?: (goalId: string, taskId: string, label: string) => void;
   /** Callback to toggle a subtask's completion */
   onToggleSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
+  /** Callback to update a subtask's label */
+  onUpdateSubtask?: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
   /** Callback to delete a subtask */
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
@@ -58,6 +60,7 @@ export function BacklogItemRow({
   onUpdateTask,
   onAddSubtask,
   onToggleSubtask,
+  onUpdateSubtask,
   onDeleteSubtask,
   onDeleteTask,
   getTaskSchedule,
@@ -170,6 +173,7 @@ export function BacklogItemRow({
               onUpdateTask={onUpdateTask ? (updates) => onUpdateTask(item.id, task.id, updates) : undefined}
               onAddSubtask={onAddSubtask ? (label) => onAddSubtask(item.id, task.id, label) : undefined}
               onToggleSubtask={onToggleSubtask ? (subtaskId) => onToggleSubtask(item.id, task.id, subtaskId) : undefined}
+              onUpdateSubtask={onUpdateSubtask ? (subtaskId, label) => onUpdateSubtask(item.id, task.id, subtaskId, label) : undefined}
               onDeleteSubtask={onDeleteSubtask ? (subtaskId) => onDeleteSubtask(item.id, task.id, subtaskId) : undefined}
               onDeleteTask={onDeleteTask ? () => onDeleteTask(item.id, task.id) : undefined}
             />

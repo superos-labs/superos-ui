@@ -247,6 +247,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     deleteTask,
     // Subtask CRUD
     addSubtask,
+    updateSubtask,
     toggleSubtaskComplete,
     deleteSubtask,
     clearTaskDeadline,
@@ -364,8 +365,12 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
     (notes: string) => {
       if (!selectedEvent) return
       updateEvent(selectedEvent.id, { notes })
+      // Sync notes to task description for task blocks
+      if (selectedEvent.blockType === "task" && selectedEvent.sourceGoalId && selectedEvent.sourceTaskId) {
+        updateTask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, { description: notes })
+      }
     },
-    [selectedEvent, updateEvent]
+    [selectedEvent, updateEvent, updateTask]
   )
 
   const handleSidebarToggleGoalTask = React.useCallback(
@@ -377,10 +382,13 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   )
 
   // Subtask handlers for task blocks
-  const handleSidebarAddSubtask = React.useCallback(() => {
-    if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
-    addSubtask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, "")
-  }, [selectedEvent, addSubtask])
+  const handleSidebarAddSubtask = React.useCallback(
+    (label: string) => {
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+      addSubtask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, label)
+    },
+    [selectedEvent, addSubtask]
+  )
 
   const handleSidebarToggleSubtask = React.useCallback(
     (subtaskId: string) => {
@@ -392,6 +400,19 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
       )
     },
     [selectedEvent, toggleSubtaskComplete]
+  )
+
+  const handleSidebarUpdateSubtask = React.useCallback(
+    (subtaskId: string, label: string) => {
+      if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return
+      updateSubtask(
+        selectedEvent.sourceGoalId,
+        selectedEvent.sourceTaskId,
+        subtaskId,
+        label
+      )
+    },
+    [selectedEvent, updateSubtask]
   )
 
   const handleSidebarDeleteSubtask = React.useCallback(
@@ -626,6 +647,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
               onUpdateTask={updateTask}
               onAddSubtask={addSubtask}
               onToggleSubtask={toggleSubtaskComplete}
+              onUpdateSubtask={updateSubtask}
               onDeleteSubtask={deleteSubtask}
               onDeleteTask={deleteTask}
               getGoalStats={getGoalStats}
@@ -692,6 +714,7 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
                 onToggleGoalTask={handleSidebarToggleGoalTask}
                 onAddSubtask={handleSidebarAddSubtask}
                 onToggleSubtask={handleSidebarToggleSubtask}
+                onUpdateSubtask={handleSidebarUpdateSubtask}
                 onDeleteSubtask={handleSidebarDeleteSubtask}
                 availableGoalTasks={sidebarData.availableGoalTasks}
                 onAssignTask={handleSidebarAssignTask}

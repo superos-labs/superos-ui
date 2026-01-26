@@ -259,8 +259,8 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onNotesChange?: (notes: string) => void;
 
   // Subtask callbacks (ephemeral, block-scoped)
-  /** Callback to add a new subtask */
-  onAddSubtask?: () => void;
+  /** Callback to add a new subtask with the given label */
+  onAddSubtask?: (label: string) => void;
   /** Callback when a subtask is toggled */
   onToggleSubtask?: (subtaskId: string) => void;
   /** Callback when subtask text is updated */
@@ -305,6 +305,40 @@ function BlockSidebar({
   
   // Get the source info (goal or commitment)
   const sourceInfo = block.goal ?? block.commitment;
+
+  // Inline subtask creation state
+  const [isCreatingSubtask, setIsCreatingSubtask] = React.useState(false);
+  const [newSubtaskLabel, setNewSubtaskLabel] = React.useState("");
+  const subtaskInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Focus input when entering creation mode
+  React.useEffect(() => {
+    if (isCreatingSubtask) {
+      subtaskInputRef.current?.focus();
+    }
+  }, [isCreatingSubtask]);
+
+  const handleSubtaskKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && newSubtaskLabel.trim()) {
+      e.preventDefault();
+      onAddSubtask?.(newSubtaskLabel.trim());
+      setNewSubtaskLabel("");
+      // Keep focus for rapid entry
+      subtaskInputRef.current?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setNewSubtaskLabel("");
+      setIsCreatingSubtask(false);
+    }
+  };
+
+  const handleSubtaskBlur = () => {
+    if (newSubtaskLabel.trim()) {
+      onAddSubtask?.(newSubtaskLabel.trim());
+    }
+    setNewSubtaskLabel("");
+    setIsCreatingSubtask(false);
+  };
   
   return (
     <div
@@ -510,15 +544,31 @@ function BlockSidebar({
                   </div>
                 )}
 
-                {/* Add subtask button */}
+                {/* Add subtask - inline creator or button */}
                 {onAddSubtask && (
-                  <button
-                    onClick={onAddSubtask}
-                    className="flex items-center gap-1.5 py-1 text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground"
-                  >
-                    <RiAddLine className="size-3.5" />
-                    <span>Add subtask</span>
-                  </button>
+                  isCreatingSubtask ? (
+                    <div className="flex items-center gap-2 py-0.5">
+                      <div className="flex size-4 shrink-0 items-center justify-center rounded border border-muted-foreground/40" />
+                      <input
+                        ref={subtaskInputRef}
+                        type="text"
+                        value={newSubtaskLabel}
+                        onChange={(e) => setNewSubtaskLabel(e.target.value)}
+                        onKeyDown={handleSubtaskKeyDown}
+                        onBlur={handleSubtaskBlur}
+                        placeholder="Subtask..."
+                        className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setIsCreatingSubtask(true)}
+                      className="flex items-center gap-1.5 py-1 text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+                    >
+                      <RiAddLine className="size-3.5" />
+                      <span>Add subtask</span>
+                    </button>
+                  )
                 )}
               </>
             )}

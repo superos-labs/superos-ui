@@ -154,6 +154,7 @@ export interface UseUnifiedScheduleReturn {
 
   // Subtask CRUD actions
   addSubtask: (goalId: string, taskId: string, label: string) => void;
+  updateSubtask: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
   toggleSubtaskComplete: (goalId: string, taskId: string, subtaskId: string) => void;
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
@@ -522,6 +523,7 @@ export function useUnifiedSchedule({
           sourceGoalId: goalId,
           sourceTaskId: taskId,
           status: task.completed ? "completed" : "planned",
+          notes: task.description, // Sync task description to block notes
         };
 
         // Update events: remove old (if any), add new
@@ -1042,6 +1044,16 @@ export function useUnifiedSchedule({
           );
         }
 
+        // If updating description and task has a scheduled block, sync to event notes
+        if (updates.description !== undefined && task?.scheduledBlockId) {
+          const blockId = task.scheduledBlockId;
+          setEvents((prev) =>
+            prev.map((e) =>
+              e.id === blockId ? { ...e, notes: updates.description } : e
+            )
+          );
+        }
+
         // Update the task
         return currentGoals.map((g) =>
           g.id === goalId
@@ -1100,6 +1112,31 @@ export function useUnifiedSchedule({
                 tasks: g.tasks?.map((t) =>
                   t.id === taskId
                     ? { ...t, subtasks: [...(t.subtasks ?? []), newSubtask] }
+                    : t
+                ),
+              }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  const updateSubtask = React.useCallback(
+    (goalId: string, taskId: string, subtaskId: string, label: string) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                tasks: g.tasks?.map((t) =>
+                  t.id === taskId
+                    ? {
+                        ...t,
+                        subtasks: t.subtasks?.map((s) =>
+                          s.id === subtaskId ? { ...s, label } : s
+                        ),
+                      }
                     : t
                 ),
               }
@@ -1317,6 +1354,7 @@ export function useUnifiedSchedule({
     deleteTask,
     // Subtask CRUD
     addSubtask,
+    updateSubtask,
     toggleSubtaskComplete,
     deleteSubtask,
     scheduleGoal,
