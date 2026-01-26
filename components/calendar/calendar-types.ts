@@ -424,13 +424,26 @@ export interface EventDaySegment {
  * Get all event segments that should be rendered for a specific day.
  * Single-day events produce one segment; overnight events may produce
  * a 'start' segment on day 1 and/or an 'end' segment on day 2.
+ *
+ * @param events - Calendar events to filter
+ * @param targetDayIndex - Day index (0-6, Monday-Sunday)
+ * @param mode - Calendar mode for visibility filtering
+ * @param weekDates - Optional array of dates for the current week. When provided,
+ *                    overnight events are validated to ensure the AM segment only
+ *                    appears on the actual next calendar day (fixes week boundary issues).
  */
 export function getSegmentsForDay(
   events: CalendarEvent[],
   targetDayIndex: number,
   mode: CalendarMode = "schedule",
+  weekDates?: Date[],
 ): EventDaySegment[] {
   const segments: EventDaySegment[] = [];
+
+  // Get the target date for overnight validation (if weekDates provided)
+  const targetDate = weekDates
+    ? weekDates[targetDayIndex].toISOString().split("T")[0]
+    : null;
 
   for (const event of events) {
     // Skip events not visible in current mode
@@ -451,6 +464,19 @@ export function getSegmentsForDay(
     }
     // Check if this day is the end day (for overnight events only)
     else if (isOvernight && endDayIndex === targetDayIndex) {
+      // When weekDates is provided, verify the actual calendar date matches.
+      // This prevents Sunday overnight events from appearing on Monday of the
+      // same week (they should appear on Monday of the following week).
+      if (targetDate && event.date) {
+        const eventNextDay = new Date(event.date + "T00:00:00");
+        eventNextDay.setDate(eventNextDay.getDate() + 1);
+        const nextDayISO = eventNextDay.toISOString().split("T")[0];
+        if (nextDayISO !== targetDate) {
+          // The event's next day doesn't match the target column's date
+          continue;
+        }
+      }
+
       segments.push({
         event,
         dayIndex: targetDayIndex,

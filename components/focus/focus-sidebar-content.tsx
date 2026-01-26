@@ -11,7 +11,7 @@ import {
   RiAddLine,
   RiCloseLine,
 } from "@remixicon/react";
-import { BLOCK_COLORS, type BlockColor } from "@/components/block";
+import { BLOCK_COLORS, BlockGoalTaskRow } from "@/components/block";
 import type { BlockSidebarData, BlockGoalTask } from "@/components/block";
 import type { ScheduleTask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
@@ -195,6 +195,19 @@ export interface FocusSidebarContentProps {
   // Goal task callbacks (for goal blocks)
   onToggleGoalTask?: (taskId: string) => void;
   onCreateTask?: (label: string) => void;
+  onUnassignTask?: (taskId: string) => void;
+
+  // Goal task context callbacks (for viewing/editing task details within goal blocks)
+  /** Callback to update a goal task's properties (label, description) */
+  onUpdateGoalTask?: (taskId: string, updates: Partial<ScheduleTask>) => void;
+  /** Callback to add a subtask to a goal task */
+  onAddGoalTaskSubtask?: (taskId: string, label: string) => void;
+  /** Callback to toggle a goal task's subtask completion */
+  onToggleGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
+  /** Callback to update a goal task's subtask label */
+  onUpdateGoalTaskSubtask?: (taskId: string, subtaskId: string, label: string) => void;
+  /** Callback to delete a goal task's subtask */
+  onDeleteGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
 
   // Subtask callbacks (for task blocks)
   onAddSubtask?: (label: string) => void;
@@ -214,6 +227,14 @@ export function FocusSidebarContent({
   onNotesChange,
   onToggleGoalTask,
   onCreateTask,
+  onUnassignTask,
+  // Goal task context callbacks
+  onUpdateGoalTask,
+  onAddGoalTaskSubtask,
+  onToggleGoalTaskSubtask,
+  onUpdateGoalTaskSubtask,
+  onDeleteGoalTaskSubtask,
+  // Subtask callbacks
   onAddSubtask,
   onToggleSubtask,
   onUpdateSubtask,
@@ -226,6 +247,13 @@ export function FocusSidebarContent({
 
   const isGoalBlock = block.blockType === "goal";
   const isTaskBlock = block.blockType === "task";
+
+  // Goal task expansion state (accordion - one at a time)
+  const [expandedGoalTaskId, setExpandedGoalTaskId] = React.useState<string | null>(null);
+
+  const handleGoalTaskExpand = React.useCallback((taskId: string) => {
+    setExpandedGoalTaskId(prev => prev === taskId ? null : taskId);
+  }, []);
 
   // Inline subtask creation state (for task blocks)
   const [isCreatingSubtask, setIsCreatingSubtask] = React.useState(false);
@@ -372,10 +400,18 @@ export function FocusSidebarContent({
             <div className="flex flex-col">
               {block.goalTasks.length > 0 ? (
                 block.goalTasks.map((task) => (
-                  <FocusTaskRow
+                  <BlockGoalTaskRow
                     key={task.id}
                     task={task}
+                    isExpanded={expandedGoalTaskId === task.id}
+                    onExpand={handleGoalTaskExpand}
                     onToggle={onToggleGoalTask}
+                    onUnassign={onUnassignTask}
+                    onUpdateTask={onUpdateGoalTask ? (updates) => onUpdateGoalTask(task.id, updates) : undefined}
+                    onAddSubtask={onAddGoalTaskSubtask ? (label) => onAddGoalTaskSubtask(task.id, label) : undefined}
+                    onToggleSubtask={onToggleGoalTaskSubtask ? (subtaskId) => onToggleGoalTaskSubtask(task.id, subtaskId) : undefined}
+                    onUpdateSubtask={onUpdateGoalTaskSubtask ? (subtaskId, label) => onUpdateGoalTaskSubtask(task.id, subtaskId, label) : undefined}
+                    onDeleteSubtask={onDeleteGoalTaskSubtask ? (subtaskId) => onDeleteGoalTaskSubtask(task.id, subtaskId) : undefined}
                   />
                 ))
               ) : (

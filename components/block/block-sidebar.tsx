@@ -939,6 +939,14 @@ function BlockSidebar({
           onNotesChange={onNotesChange}
           onToggleGoalTask={onToggleGoalTask}
           onCreateTask={onCreateTask}
+          onUnassignTask={onUnassignTask}
+          // Goal task context callbacks
+          onUpdateGoalTask={onUpdateGoalTask}
+          onAddGoalTaskSubtask={onAddGoalTaskSubtask}
+          onToggleGoalTaskSubtask={onToggleGoalTaskSubtask}
+          onUpdateGoalTaskSubtask={onUpdateGoalTaskSubtask}
+          onDeleteGoalTaskSubtask={onDeleteGoalTaskSubtask}
+          // Subtask callbacks
           onAddSubtask={onAddSubtask}
           onToggleSubtask={onToggleSubtask}
           onUpdateSubtask={onUpdateSubtask}

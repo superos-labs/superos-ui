@@ -141,6 +141,18 @@ export function useUnifiedSchedule({
   // Sync Task Counts on Events
   // -------------------------------------------------------------------------
 
+  // Create a stable key for tracking assigned task changes
+  // This ensures the sync effect runs when any event's assignedTaskIds changes
+  const assignedTasksKey = React.useMemo(
+    () =>
+      allEvents
+        .filter((e) => e.assignedTaskIds?.length)
+        .map((e) => `${e.id}:${e.assignedTaskIds?.slice().sort().join(",")}`)
+        .sort()
+        .join("|"),
+    [allEvents]
+  );
+
   // Keep event.pendingTaskCount and event.completedTaskCount in sync with goals
   React.useEffect(() => {
     setEvents((currentEvents) => {
@@ -190,7 +202,7 @@ export function useUnifiedSchedule({
 
       return hasChanges ? updatedEvents : currentEvents;
     });
-  }, [goals, setEvents]);
+  }, [goals, assignedTasksKey, setEvents]);
 
   // -------------------------------------------------------------------------
   // Bidirectional Sync: Task ↔ Event
