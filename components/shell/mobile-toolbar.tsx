@@ -62,18 +62,6 @@ export interface MobileToolbarProps {
 // =============================================================================
 
 /**
- * Check if a date is today.
- */
-function isToday(date: Date): boolean {
-  const today = new Date();
-  return (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  );
-}
-
-/**
  * Format date for mobile toolbar display.
  * Day view: "Mon, Jan 27"
  * Week view: "Jan 20 – 26"
@@ -142,7 +130,6 @@ export function MobileToolbar({
   className,
 }: MobileToolbarProps) {
   const dateLabel = formatDateLabel(currentDate, isWeekView);
-  const viewingToday = isToday(currentDate);
 
   return (
     <div
@@ -185,19 +172,13 @@ export function MobileToolbar({
 
       {/* Right: Today button, focus indicator, and settings */}
       <div className="flex items-center gap-1">
-        {/* Today button - shows "Today" when viewing today, "Back to today" otherwise */}
+        {/* Today button */}
         <button
           onClick={onToday}
-          disabled={viewingToday}
-          className={cn(
-            "flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors",
-            viewingToday
-              ? "cursor-default text-muted-foreground"
-              : "bg-primary text-primary-foreground hover:bg-primary/90"
-          )}
-          title={viewingToday ? "Viewing today" : "Go to today"}
+          className="flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          title="Go to today"
         >
-          {viewingToday ? "Today" : "Back to today"}
+          Today
         </button>
 
         {/* Focus indicator (when active) */}

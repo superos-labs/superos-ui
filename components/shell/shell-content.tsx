@@ -593,27 +593,6 @@ export function ShellContentComponent({
     });
   };
 
-  // Check if we're viewing today (for mobile day view) or if today is in the current week (for week view)
-  const isViewingToday = React.useMemo(() => {
-    const today = new Date();
-    const todayString = today.toISOString().split("T")[0];
-    
-    if (shouldShowWeekView) {
-      // Week view: check if today is in the current week
-      return weekDates.some(date => date.toISOString().split("T")[0] === todayString);
-    } else {
-      // Day view: check if selected day is today
-      return mobileSelectedDate.toISOString().split("T")[0] === todayString;
-    }
-  }, [shouldShowWeekView, weekDates, mobileSelectedDate]);
-
-  // For desktop, check if today is in the current week
-  const isDesktopViewingToday = React.useMemo(() => {
-    const today = new Date();
-    const todayString = today.toISOString().split("T")[0];
-    return weekDates.some(date => date.toISOString().split("T")[0] === todayString);
-  }, [weekDates]);
-
   // -------------------------------------------------------------------------
   // Render
   // -------------------------------------------------------------------------
@@ -642,16 +621,10 @@ export function ShellContentComponent({
 
         <button
           onClick={handleTodayClick}
-          disabled={isViewingToday}
-          className={cn(
-            "flex h-10 min-w-[100px] items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors",
-            isViewingToday
-              ? "cursor-default text-foreground"
-              : "text-foreground hover:bg-background"
-          )}
-          title={isViewingToday ? "Viewing today" : "Go to today"}
+          className="flex h-10 min-w-[100px] items-center justify-center rounded-lg px-2 text-sm font-medium text-foreground transition-colors hover:bg-background"
+          title="Go to today"
         >
-          {isViewingToday ? "Today" : "Back to today"}
+          Today
         </button>
 
         <button
@@ -737,16 +710,10 @@ export function ShellContentComponent({
         </button>
         <button
           onClick={handleTodayClick}
-          disabled={isDesktopViewingToday}
-          className={cn(
-            "flex h-8 items-center gap-1 rounded-md px-2.5 text-xs font-medium transition-colors",
-            isDesktopViewingToday
-              ? "cursor-default text-muted-foreground"
-              : "text-muted-foreground hover:bg-background hover:text-foreground"
-          )}
-          title={isDesktopViewingToday ? "Viewing today (T)" : "Go to today (T)"}
+          className="flex h-8 items-center gap-1 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          title="Go to today (T)"
         >
-          {isDesktopViewingToday ? "Today" : "Back to today"}
+          Today
         </button>
         <button
           onClick={onNextWeek}
