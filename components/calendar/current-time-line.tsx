@@ -2,15 +2,19 @@
 
 import * as React from "react";
 import type { CalendarView } from "./calendar-types";
+import type { WeekStartDay } from "@/lib/preferences";
 
 interface CurrentTimeLineProps {
   view?: CalendarView;
   showHourLabels?: boolean;
+  /** Which day the week starts on (0 = Sunday, 1 = Monday, default: 1) */
+  weekStartsOn?: WeekStartDay;
 }
 
 export function CurrentTimeLine({
   view = "week",
   showHourLabels = true,
+  weekStartsOn = 1,
 }: CurrentTimeLineProps) {
   const [now, setNow] = React.useState(new Date());
 
@@ -24,8 +28,11 @@ export function CurrentTimeLine({
   const minutes = now.getHours() * 60 + now.getMinutes();
   const position = (minutes / (24 * 60)) * 100;
 
-  const today = now.getDay();
-  const dayIndex = today === 0 ? 6 : today - 1;
+  // Calculate day index based on week start preference
+  const today = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const dayIndex = weekStartsOn === 1
+    ? (today === 0 ? 6 : today - 1) // Monday start: Mon=0, Tue=1, ..., Sun=6
+    : today; // Sunday start: Sun=0, Mon=1, ..., Sat=6
 
   const timeLabel = now.toLocaleTimeString("en-US", {
     hour: "numeric",

@@ -205,7 +205,7 @@ export function WeekView({
           })}
 
           {/* Current Time Indicator */}
-          <CurrentTimeLine view="week" showHourLabels={showHourLabels} />
+          <CurrentTimeLine view="week" showHourLabels={showHourLabels} weekStartsOn={weekStartsOn} />
         </div>
       </div>
     </div>
