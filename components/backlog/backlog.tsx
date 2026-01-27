@@ -132,7 +132,6 @@ export function Backlog({
         goals={goals}
         selectedGoalId={selectedGoalId}
         onSelectGoal={onSelectGoal}
-        getGoalStats={getGoalStats}
         onCreateAndSelectGoal={onCreateAndSelectGoal}
         onBrowseInspiration={onBrowseInspiration}
         isInspirationActive={isInspirationActive}

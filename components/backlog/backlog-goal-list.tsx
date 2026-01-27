@@ -4,7 +4,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiAddLine, RiSparklingLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
-import type { GoalStats } from "@/lib/unified-schedule";
 import type { BacklogItem } from "./backlog-types";
 
 // =============================================================================
@@ -14,20 +13,15 @@ import type { BacklogItem } from "./backlog-types";
 interface GoalListItemProps {
   goal: BacklogItem;
   isSelected?: boolean;
-  stats?: GoalStats;
   onClick?: () => void;
 }
 
 function GoalListItem({
   goal,
   isSelected,
-  stats,
   onClick,
 }: GoalListItemProps) {
   const Icon = goal.icon;
-  const progress = stats && stats.plannedHours > 0
-    ? Math.min(Math.round((stats.completedHours / stats.plannedHours) * 100), 100)
-    : 0;
 
   return (
     <button
@@ -54,33 +48,15 @@ function GoalListItem({
         />
       </div>
 
-      {/* Label and progress */}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span
-          className={cn(
-            "truncate text-sm font-medium",
-            isSelected ? "text-foreground" : "text-foreground/80",
-          )}
-        >
-          {goal.label}
-        </span>
-        {stats && stats.plannedHours > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all",
-                  progress >= 100 ? "bg-green-500" : "bg-foreground/20",
-                )}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
-              {progress}%
-            </span>
-          </div>
+      {/* Label */}
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate text-sm font-medium",
+          isSelected ? "text-foreground" : "text-foreground/80",
         )}
-      </div>
+      >
+        {goal.label}
+      </span>
     </button>
   );
 }
@@ -96,8 +72,6 @@ export interface BacklogGoalListProps {
   selectedGoalId?: string | null;
   /** Callback when a goal is selected */
   onSelectGoal?: (goalId: string) => void;
-  /** Function to get computed stats for a goal */
-  getGoalStats?: (goalId: string) => GoalStats;
   /** Callback to create a new goal and immediately select it */
   onCreateAndSelectGoal?: () => void;
   /** Callback to browse inspiration gallery */
@@ -111,7 +85,6 @@ export function BacklogGoalList({
   goals,
   selectedGoalId,
   onSelectGoal,
-  getGoalStats,
   onCreateAndSelectGoal,
   onBrowseInspiration,
   isInspirationActive,
@@ -136,7 +109,6 @@ export function BacklogGoalList({
             key={goal.id}
             goal={goal}
             isSelected={selectedGoalId === goal.id}
-            stats={getGoalStats?.(goal.id)}
             onClick={() => onSelectGoal?.(goal.id)}
           />
         ))}

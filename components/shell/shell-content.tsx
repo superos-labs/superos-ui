@@ -690,7 +690,6 @@ export function ShellContentComponent({
               <GoalDetail
                 goal={selectedGoal}
                 lifeArea={selectedGoalLifeArea}
-                stats={selectedGoalStats}
                 notes={goalNotes[selectedGoal.id] ?? ""}
                 onNotesChange={handleGoalNotesChange}
                 onTitleChange={(title) => onUpdateGoal(selectedGoal.id, { label: title })}

@@ -3,21 +3,13 @@
 import * as React from "react";
 import { GoalDetail } from "./goal-detail";
 import { SHELL_GOALS, LIFE_AREAS } from "@/lib/fixtures/shell-data";
-import type { ScheduleGoal, GoalStats } from "@/lib/unified-schedule";
+import type { ScheduleGoal } from "@/lib/unified-schedule";
 import {
   KnobsProvider,
   KnobsToggle,
   KnobsPanel,
   KnobSelect,
 } from "@/components/_playground/knobs";
-
-// Sample stats for demo
-const SAMPLE_STATS: Record<string, GoalStats> = {
-  superos: { plannedHours: 24, completedHours: 9.5, focusedHours: 8.5 },
-  marathon: { plannedHours: 6, completedHours: 2, focusedHours: 1.5 },
-  book: { plannedHours: 8, completedHours: 3.5, focusedHours: 3 },
-  spanish: { plannedHours: 5, completedHours: 1.5, focusedHours: 1.5 },
-};
 
 function GoalDetailDemo() {
   const [selectedGoalId, setSelectedGoalId] = React.useState(SHELL_GOALS[0]?.id ?? "");
@@ -140,6 +132,24 @@ function GoalDetailDemo() {
     );
   }, [selectedGoalId]);
 
+  const handleLifeAreaChange = React.useCallback((lifeAreaId: string) => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        return { ...goal, lifeAreaId };
+      })
+    );
+  }, [selectedGoalId]);
+
+  const handleProgressIndicatorChange = React.useCallback((progressIndicator: import("@/lib/unified-schedule").ProgressIndicator) => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        return { ...goal, progressIndicator };
+      })
+    );
+  }, [selectedGoalId]);
+
   if (!selectedGoal) {
     return <div className="p-8 text-muted-foreground">No goal selected</div>;
   }
@@ -150,10 +160,12 @@ function GoalDetailDemo() {
         <GoalDetail
           goal={selectedGoal}
           lifeArea={selectedLifeArea}
-          stats={SAMPLE_STATS[selectedGoalId] ?? { plannedHours: 0, completedHours: 0, focusedHours: 0 }}
+          lifeAreas={LIFE_AREAS}
           notes={goalNotes[selectedGoalId] ?? ""}
           onNotesChange={handleNotesChange}
           onTitleChange={handleTitleChange}
+          onLifeAreaChange={handleLifeAreaChange}
+          onProgressIndicatorChange={handleProgressIndicatorChange}
           onToggleTask={handleToggleTask}
           onAddTask={handleAddTask}
           onDeleteTask={handleDeleteTask}
