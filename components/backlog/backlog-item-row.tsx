@@ -42,6 +42,8 @@ export interface BacklogItemRowProps {
   draggable?: boolean;
   /** Type of drag item to create ("goal" for goals, "commitment" for commitments) */
   dragType?: "goal" | "commitment";
+  /** Compact display mode (for 2-column grid layout) */
+  compact?: boolean;
   className?: string;
 }
 
@@ -61,6 +63,7 @@ export function BacklogItemRow({
   getTaskDeadline,
   draggable = false,
   dragType = "goal",
+  compact = false,
   className,
 }: BacklogItemRowProps) {
   const IconComponent = item.icon;
@@ -108,6 +111,28 @@ export function BacklogItemRow({
 
   // Only show chevron for goals (not commitments)
   const showChevron = dragType === "goal" && onItemClick;
+
+  // Compact mode: simplified layout for 2-column grid (commitments)
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          "group flex items-center gap-2 rounded-lg px-2 py-2 transition-all",
+          "hover:bg-muted/60",
+          isDragging && "opacity-50",
+          className,
+        )}
+        {...(canDrag ? draggableProps : {})}
+      >
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted/60">
+          <IconComponent className={cn("size-3.5", getIconColorClass(item.color))} />
+        </div>
+        <span className="min-w-0 truncate text-sm text-foreground">
+          {item.label}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("flex flex-col", className)}>

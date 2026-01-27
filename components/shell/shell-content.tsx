@@ -831,9 +831,10 @@ export function ShellContentComponent({
           <div className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning ? "gap-4" : "gap-0"}`}>
             {/* Left Sidebar - Backlog or Planning Panel */}
             <div
-              className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-                showSidebar || isPlanning ? "w-[420px] opacity-100" : "w-0 opacity-0"
-              }`}
+              className={cn(
+                "shrink-0 overflow-hidden transition-all duration-300 ease-out",
+                isPlanning ? "w-[420px] opacity-100" : showSidebar ? "w-[360px] opacity-100" : "w-0 opacity-0"
+              )}
             >
               {isPlanning ? (
                 <PlanningPanel
@@ -863,7 +864,7 @@ export function ShellContentComponent({
                 <Backlog
                   commitments={commitments as BacklogItem[]}
                   goals={goals as BacklogItem[]}
-                  className="h-full w-[420px] max-w-none"
+                  className="h-full w-[360px] max-w-none"
                   showTasks={showTasks}
                   showCommitments={true}
                   onToggleGoalTask={onToggleTaskComplete}

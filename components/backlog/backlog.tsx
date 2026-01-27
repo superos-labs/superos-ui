@@ -148,7 +148,7 @@ export function Backlog({
   return (
     <div
       className={cn(
-        "flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
+        "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
         className,
       )}
       {...props}

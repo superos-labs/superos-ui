@@ -100,7 +100,13 @@ export function BacklogSection({
         </div>
       </div>
 
-      <div className="flex flex-col gap-0.5">
+      <div
+        className={cn(
+          dragType === "commitment"
+            ? "grid grid-cols-2 gap-1"
+            : "flex flex-col gap-0.5"
+        )}
+      >
         {items.map((item) => (
           <BacklogItemRow
             key={item.id}
@@ -119,6 +125,7 @@ export function BacklogSection({
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
             dragType={dragType}
+            compact={dragType === "commitment"}
           />
         ))}
 
