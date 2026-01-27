@@ -36,6 +36,8 @@ export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement>
   onCancel: () => void;
   /** Whether this is the first time planning (no blueprint exists) */
   isFirstPlan?: boolean;
+  /** Callback to add a new task to a goal */
+  onAddTask?: (goalId: string, label: string) => void;
 }
 
 // =============================================================================
@@ -54,6 +56,7 @@ export function PlanningPanel({
   onConfirm,
   onCancel,
   isFirstPlan = false,
+  onAddTask,
   className,
   ...props
 }: PlanningPanelProps) {
@@ -134,6 +137,8 @@ export function PlanningPanel({
                 onSetIntention(goal.id, target, taskIds)
               }
               onIntentionClear={() => onClearIntention(goal.id)}
+              availableTasks={goal.tasks?.filter((t) => !t.completed)}
+              onAddTask={onAddTask ? (label) => onAddTask(goal.id, label) : undefined}
             />
           ))}
 

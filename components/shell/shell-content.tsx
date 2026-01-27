@@ -580,6 +580,7 @@ export function ShellContentComponent({
                 onConfirm={planningFlow.confirm}
                 onCancel={planningFlow.cancel}
                 isFirstPlan={!hasBlueprint}
+                onAddTask={onAddTask}
                 className="h-full w-[420px] max-w-none"
               />
             ) : (
