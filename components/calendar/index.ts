@@ -10,7 +10,10 @@ export { DayView } from "./day-view";
 export { WeekView } from "./week-view";
 export { TimeColumn } from "./time-column";
 export { DeadlineTray } from "./deadline-tray";
-export { BlockContextMenu, EmptySpaceContextMenu } from "./calendar-context-menu";
+export {
+  BlockContextMenu,
+  EmptySpaceContextMenu,
+} from "./calendar-context-menu";
 
 // Hooks
 export { useCalendarInteractions } from "./use-calendar-interactions";
