@@ -4,34 +4,6 @@ import * as React from "react";
 import type { WeekStartDay, ProgressMetric, UserPreferences } from "./types";
 
 // =============================================================================
-// Locale Detection
-// =============================================================================
-
-/**
- * Detect the default week start day from browser locale.
- * Uses Intl.Locale.weekInfo when available (Chrome 99+, Safari 15.4+, Firefox 105+).
- * Falls back to Monday for unsupported browsers.
- * 
- * IMPORTANT: Only call this on the client (after hydration) to avoid SSR mismatch.
- */
-function detectLocaleWeekStart(): WeekStartDay {
-  if (typeof window === "undefined") {
-    return 1; // SSR fallback
-  }
-  
-  try {
-    const locale = new Intl.Locale(navigator.language);
-    // weekInfo.firstDay: 1 = Monday, 7 = Sunday (ISO 8601)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const weekInfo = (locale as any).weekInfo ?? (locale as any).getWeekInfo?.();
-    if (weekInfo?.firstDay === 7) return 0; // Sunday
-    return 1; // Default to Monday
-  } catch {
-    return 1; // Fallback to Monday
-  }
-}
-
-// =============================================================================
 // Context
 // =============================================================================
 
@@ -58,10 +30,10 @@ export interface PreferencesProviderProps {
 }
 
 /**
- * Default week start used during SSR and initial client render.
- * We use Monday (1) as the SSR-safe default to ensure hydration matches.
+ * Default week start day.
+ * Monday (1) = weeks run Monday to Sunday.
  */
-const SSR_SAFE_DEFAULT: WeekStartDay = 1;
+const DEFAULT_WEEK_START: WeekStartDay = 1;
 
 export function PreferencesProvider({
   children,
@@ -69,9 +41,9 @@ export function PreferencesProvider({
   defaultProgressMetric,
   defaultAutoCompleteCommitments,
 }: PreferencesProviderProps) {
-  // Start with SSR-safe default, then update after hydration
+  // Week starts on Monday by default
   const [weekStartsOn, setWeekStartsOn] = React.useState<WeekStartDay>(
-    defaultWeekStartsOn ?? SSR_SAFE_DEFAULT
+    defaultWeekStartsOn ?? DEFAULT_WEEK_START
   );
   
   // Progress metric: default to 'completed'
@@ -83,16 +55,6 @@ export function PreferencesProvider({
   const [autoCompleteCommitments, setAutoCompleteCommitments] = React.useState<boolean>(
     defaultAutoCompleteCommitments ?? true
   );
-
-  // Detect locale preference after hydration (client-only)
-  React.useEffect(() => {
-    if (defaultWeekStartsOn === undefined) {
-      const detected = detectLocaleWeekStart();
-      if (detected !== SSR_SAFE_DEFAULT) {
-        setWeekStartsOn(detected);
-      }
-    }
-  }, [defaultWeekStartsOn]);
 
   const value = React.useMemo(
     () => ({
