@@ -11,6 +11,8 @@ import {
   RiAddLine,
   RiArrowDownSLine,
   RiCheckboxCircleFill,
+  RiFocusLine,
+  RiPencilLine,
 } from "@remixicon/react";
 import {
   DropdownMenu,
@@ -103,6 +105,43 @@ function formatTimeDisplay(timeStr: string): string {
   const period = hours >= 12 ? "PM" : "AM";
   const displayHours = hours % 12 || 12;
   return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+}
+
+// Helper to format focus time (minutes) for display
+function formatFocusTime(minutes: number): string {
+  // Round to whole minutes for display
+  const roundedMinutes = Math.round(minutes);
+  if (roundedMinutes === 0) return "0m";
+  const hours = Math.floor(roundedMinutes / 60);
+  const mins = roundedMinutes % 60;
+  if (hours === 0) return `${mins}m`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}m`;
+}
+
+// Helper to parse focus time input to minutes
+function parseFocusTimeInput(input: string): number | null {
+  const trimmed = input.trim();
+  if (!trimmed) return 0;
+  
+  // Try parsing as plain number (minutes) - use parseFloat to handle decimals
+  const asNumber = parseFloat(trimmed);
+  if (!isNaN(asNumber) && asNumber >= 0) {
+    // Round to whole minutes
+    return Math.round(asNumber);
+  }
+  
+  // Try parsing as "Xh Ym" or "Xh" or "Ym"
+  const hourMatch = trimmed.match(/(\d+)\s*h/i);
+  const minMatch = trimmed.match(/(\d+)\s*m/i);
+  
+  if (hourMatch || minMatch) {
+    const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
+    const mins = minMatch ? parseInt(minMatch[1], 10) : 0;
+    return hours * 60 + mins;
+  }
+  
+  return null; // Invalid input
 }
 
 // Auto-resizing textarea component
@@ -575,6 +614,104 @@ function BlockSidebarSection({
   );
 }
 
+// =============================================================================
+// Focus Time Section (editable focus time display)
+// =============================================================================
+
+interface FocusTimeSectionProps {
+  /** Total focus time in minutes */
+  focusedMinutes: number;
+  /** Callback when focus time is edited (minutes) */
+  onFocusedMinutesChange?: (minutes: number) => void;
+}
+
+function FocusTimeSection({
+  focusedMinutes,
+  onFocusedMinutesChange,
+}: FocusTimeSectionProps) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Focus input when entering edit mode
+  React.useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleStartEdit = () => {
+    if (!onFocusedMinutesChange) return;
+    // Show rounded value in editor
+    setInputValue(Math.round(focusedMinutes).toString());
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    const parsed = parseFocusTimeInput(inputValue);
+    // Only save if value changed and is valid
+    if (parsed !== null && onFocusedMinutesChange && parsed !== Math.round(focusedMinutes)) {
+      onFocusedMinutesChange(parsed);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <BlockSidebarSection
+      icon={<RiFocusLine className="size-3.5" />}
+      label="Focus Time"
+    >
+      {isEditing ? (
+        <div className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleSave}
+            placeholder="e.g., 90 or 1h 30m"
+            className={cn(
+              "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
+              "outline-none focus:bg-muted",
+            )}
+          />
+          <span className="text-xs text-muted-foreground">min</span>
+        </div>
+      ) : (
+        <button
+          onClick={handleStartEdit}
+          disabled={!onFocusedMinutesChange}
+          className={cn(
+            "group flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors",
+            onFocusedMinutesChange
+              ? "hover:bg-muted/60 cursor-pointer"
+              : "cursor-default",
+          )}
+        >
+          <span className="text-sm font-medium tabular-nums text-foreground">
+            {formatFocusTime(focusedMinutes)}
+          </span>
+          {onFocusedMinutesChange && (
+            <RiPencilLine className="size-3 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" />
+          )}
+        </button>
+      )}
+    </BlockSidebarSection>
+  );
+}
+
 // Inline task creator for goal blocks (matches backlog InlineTaskCreator pattern)
 interface InlineBlockTaskCreatorProps {
   onSave: (label: string) => void;
@@ -828,6 +965,12 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onEndFocus?: () => void;
   /** Whether another block is currently being focused on (disables Start Focus button) */
   focusDisabled?: boolean;
+
+  // Focus time tracking (accumulated time from focus sessions)
+  /** Total accumulated focus time for this block (in minutes) */
+  totalFocusedMinutes?: number;
+  /** Callback when focus time is manually edited */
+  onFocusedMinutesChange?: (minutes: number) => void;
 }
 
 function BlockSidebar({
@@ -867,6 +1010,9 @@ function BlockSidebar({
   onResumeFocus,
   onEndFocus,
   focusDisabled,
+  // Focus time tracking
+  totalFocusedMinutes,
+  onFocusedMinutesChange,
   className,
   ...props
 }: BlockSidebarProps) {
@@ -1152,6 +1298,14 @@ function BlockSidebar({
             </div>
           </div>
         </BlockSidebarSection>
+
+        {/* Focus Time (only for goal/task blocks, not commitments) */}
+        {!isCommitmentBlock && totalFocusedMinutes !== undefined && (
+          <FocusTimeSection
+            focusedMinutes={totalFocusedMinutes}
+            onFocusedMinutesChange={onFocusedMinutesChange}
+          />
+        )}
 
         {/* Goal Tasks (only for goal blocks with assigned goal) - shown before notes */}
         {isGoalBlock && block.goal && (

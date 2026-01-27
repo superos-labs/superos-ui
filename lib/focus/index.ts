@@ -8,3 +8,9 @@ export type {
   UseFocusSessionOptions,
   UseFocusSessionReturn,
 } from "./types";
+
+export { useFocusNotifications } from "./use-focus-notifications";
+export type {
+  UseFocusNotificationsOptions,
+  UseFocusNotificationsReturn,
+} from "./use-focus-notifications";

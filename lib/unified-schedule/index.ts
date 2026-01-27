@@ -19,6 +19,9 @@ export type { UseScheduleStatsOptions, UseScheduleStatsReturn } from "./use-sche
 export { useScheduling } from "./use-scheduling";
 export type { UseSchedulingOptions, UseSchedulingReturn } from "./use-scheduling";
 
+export { useCommitmentAutoComplete } from "./use-commitment-auto-complete";
+export type { UseCommitmentAutoCompleteOptions } from "./use-commitment-auto-complete";
+
 // Week navigation hook
 export { useWeekNavigation } from "./use-week-navigation";
 export type { UseWeekNavigationOptions } from "./use-week-navigation";

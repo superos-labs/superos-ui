@@ -24,13 +24,13 @@ import { BlockSidebar, useBlockSidebarHandlers } from "@/components/block";
 import { GoalDetail } from "@/components/goal-detail";
 import type { ScheduleGoal } from "@/lib/unified-schedule";
 import { FocusIndicator } from "@/components/focus";
-import { useFocusSession } from "@/lib/focus";
+import { useFocusSession, useFocusNotifications } from "@/lib/focus";
 import {
   DragProvider,
   DragGhost,
   useDragContextOptional,
 } from "@/components/drag";
-import { useUnifiedSchedule, useWeekNavigation } from "@/lib/unified-schedule";
+import { useUnifiedSchedule, useWeekNavigation, useCommitmentAutoComplete } from "@/lib/unified-schedule";
 import { toAnalyticsItems } from "@/lib/adapters";
 
 // Shell-specific hooks (internal demo utilities)
@@ -76,7 +76,7 @@ import {
   RiPieChartLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
-import { PreferencesProvider, usePreferences, type WeekStartDay } from "@/lib/preferences";
+import { PreferencesProvider, usePreferences, type WeekStartDay, type ProgressMetric } from "@/lib/preferences";
 
 // =============================================================================
 // Components
@@ -136,7 +136,13 @@ function ShellDemoContent({
   // -------------------------------------------------------------------------
   // Preferences
   // -------------------------------------------------------------------------
-  const { weekStartsOn, setWeekStartsOn } = usePreferences();
+  const { 
+    weekStartsOn, 
+    setWeekStartsOn,
+    progressMetric,
+    setProgressMetric,
+    autoCompleteCommitments,
+  } = usePreferences();
 
   // -------------------------------------------------------------------------
   // Week Navigation
@@ -263,11 +269,33 @@ function ShellDemoContent({
       // Skip commitments (they don't track focus time)
       if (event.blockType === "commitment") return;
       
-      // Accumulate focus time on the event
-      const additionalMinutes = completed.totalMs / 60000;
+      // Accumulate focus time on the event (round to whole minutes)
+      const additionalMinutes = Math.round(completed.totalMs / 60000);
       schedule.updateEvent(completed.blockId, {
         focusedMinutes: (event.focusedMinutes ?? 0) + additionalMinutes,
       });
+    },
+  });
+
+  // -------------------------------------------------------------------------
+  // Commitment Auto-Complete
+  // -------------------------------------------------------------------------
+  useCommitmentAutoComplete({
+    events: calendarEvents,
+    enabled: autoCompleteCommitments,
+    markComplete: schedule.markEventComplete,
+  });
+
+  // -------------------------------------------------------------------------
+  // Focus Notifications
+  // -------------------------------------------------------------------------
+  useFocusNotifications({
+    session: focusSession,
+    events: calendarEvents,
+    enabled: true,
+    onNotify: () => {
+      // Could play a sound here in the future
+      console.log("Focus session: block time ended");
     },
   });
 
@@ -370,13 +398,14 @@ function ShellDemoContent({
   // -------------------------------------------------------------------------
   // Analytics Data
   // -------------------------------------------------------------------------
+  const useFocusedHours = progressMetric === "focused";
   const analyticsCommitments = React.useMemo(
-    () => toAnalyticsItems(commitments, getCommitmentStats),
-    [commitments, getCommitmentStats]
+    () => toAnalyticsItems(commitments, getCommitmentStats, { useFocusedHours }),
+    [commitments, getCommitmentStats, useFocusedHours]
   );
   const analyticsGoals = React.useMemo(
-    () => toAnalyticsItems(goals, getGoalStats),
-    [goals, getGoalStats]
+    () => toAnalyticsItems(goals, getGoalStats, { useFocusedHours }),
+    [goals, getGoalStats, useFocusedHours]
   );
 
   // -------------------------------------------------------------------------
@@ -654,6 +683,17 @@ function ShellDemoContent({
                 onResumeFocus={resumeFocus}
                 onEndFocus={endFocus}
                 focusDisabled={focusSession !== null && !isSidebarBlockFocused}
+                // Focus time tracking (only for goal/task blocks)
+                totalFocusedMinutes={
+                  selectedEvent?.blockType !== "commitment" 
+                    ? (selectedEvent?.focusedMinutes ?? 0) 
+                    : undefined
+                }
+                onFocusedMinutesChange={
+                  selectedEvent?.blockType !== "commitment" && selectedEvent
+                    ? (minutes) => schedule.updateEvent(selectedEvent.id, { focusedMinutes: minutes })
+                    : undefined
+                }
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : renderedContent === "analytics" ? (
@@ -661,6 +701,8 @@ function ShellDemoContent({
                 commitments={analyticsCommitments}
                 goals={analyticsGoals}
                 weekLabel={formatWeekRange(weekDates)}
+                progressMetric={progressMetric}
+                onProgressMetricChange={setProgressMetric}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : null}

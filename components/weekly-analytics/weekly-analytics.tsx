@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { IconComponent } from "@/lib/types";
+import type { ProgressMetric } from "@/lib/preferences";
 
 // =============================================================================
 // Types
@@ -281,6 +282,10 @@ interface WeeklyAnalyticsHeaderProps {
   allItems: WeeklyAnalyticsItem[];
   weekLabel?: string;
   onHoverItem?: (id: string | null) => void;
+  /** Current progress metric being displayed */
+  progressMetric?: ProgressMetric;
+  /** Callback when user toggles the metric */
+  onProgressMetricChange?: (metric: ProgressMetric) => void;
   className?: string;
 }
 
@@ -290,9 +295,17 @@ export function WeeklyAnalyticsHeader({
   allItems,
   weekLabel = "This Week",
   onHoverItem,
+  progressMetric = "completed",
+  onProgressMetricChange,
   className,
 }: WeeklyAnalyticsHeaderProps) {
   const progress = getProgress(totalCompleted, totalPlanned);
+  const metricLabel = progressMetric === "focused" ? "focused" : "completed";
+
+  const handleToggleMetric = () => {
+    if (!onProgressMetricChange) return;
+    onProgressMetricChange(progressMetric === "completed" ? "focused" : "completed");
+  };
 
   return (
     <div className={cn("flex flex-col gap-3 px-4 py-4", className)}>
@@ -311,10 +324,20 @@ export function WeeklyAnalyticsHeader({
           totalPlanned={totalPlanned}
           onHoverItem={onHoverItem}
         />
-        <p className="text-xs text-muted-foreground">
-          {formatHours(totalCompleted)} completed · {formatHours(totalPlanned)}{" "}
-          planned
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {formatHours(totalCompleted)} {metricLabel} · {formatHours(totalPlanned)}{" "}
+            planned
+          </p>
+          {onProgressMetricChange && (
+            <button
+              onClick={handleToggleMetric}
+              className="text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+            >
+              Show {progressMetric === "completed" ? "focused" : "completed"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -334,6 +357,10 @@ export interface WeeklyAnalyticsProps
   weekLabel?: string;
   /** Whether to show the summary header */
   showSummary?: boolean;
+  /** Current progress metric being displayed */
+  progressMetric?: ProgressMetric;
+  /** Callback when user toggles the metric */
+  onProgressMetricChange?: (metric: ProgressMetric) => void;
 }
 
 export function WeeklyAnalytics({
@@ -341,6 +368,8 @@ export function WeeklyAnalytics({
   goals,
   weekLabel = "This Week",
   showSummary = true,
+  progressMetric,
+  onProgressMetricChange,
   className,
   ...props
 }: WeeklyAnalyticsProps) {
@@ -375,6 +404,8 @@ export function WeeklyAnalytics({
           allItems={allItems}
           weekLabel={weekLabel}
           onHoverItem={setHoveredItemId}
+          progressMetric={progressMetric}
+          onProgressMetricChange={onProgressMetricChange}
           className="border-b border-border"
         />
       )}

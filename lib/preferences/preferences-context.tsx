@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { WeekStartDay, UserPreferences } from "./types";
+import type { WeekStartDay, ProgressMetric, UserPreferences } from "./types";
 
 // =============================================================================
 // Locale Detection
@@ -37,6 +37,8 @@ function detectLocaleWeekStart(): WeekStartDay {
 
 interface PreferencesContextValue extends UserPreferences {
   setWeekStartsOn: (day: WeekStartDay) => void;
+  setProgressMetric: (metric: ProgressMetric) => void;
+  setAutoCompleteCommitments: (enabled: boolean) => void;
 }
 
 const PreferencesContext = React.createContext<PreferencesContextValue | null>(null);
@@ -49,6 +51,10 @@ export interface PreferencesProviderProps {
   children: React.ReactNode;
   /** Override the default week start (for testing) */
   defaultWeekStartsOn?: WeekStartDay;
+  /** Override the default progress metric */
+  defaultProgressMetric?: ProgressMetric;
+  /** Override the default auto-complete commitments setting */
+  defaultAutoCompleteCommitments?: boolean;
 }
 
 /**
@@ -60,10 +66,22 @@ const SSR_SAFE_DEFAULT: WeekStartDay = 1;
 export function PreferencesProvider({
   children,
   defaultWeekStartsOn,
+  defaultProgressMetric,
+  defaultAutoCompleteCommitments,
 }: PreferencesProviderProps) {
   // Start with SSR-safe default, then update after hydration
   const [weekStartsOn, setWeekStartsOn] = React.useState<WeekStartDay>(
     defaultWeekStartsOn ?? SSR_SAFE_DEFAULT
+  );
+  
+  // Progress metric: default to 'completed'
+  const [progressMetric, setProgressMetric] = React.useState<ProgressMetric>(
+    defaultProgressMetric ?? 'completed'
+  );
+  
+  // Auto-complete commitments: default to true
+  const [autoCompleteCommitments, setAutoCompleteCommitments] = React.useState<boolean>(
+    defaultAutoCompleteCommitments ?? true
   );
 
   // Detect locale preference after hydration (client-only)
@@ -80,8 +98,12 @@ export function PreferencesProvider({
     () => ({
       weekStartsOn,
       setWeekStartsOn,
+      progressMetric,
+      setProgressMetric,
+      autoCompleteCommitments,
+      setAutoCompleteCommitments,
     }),
-    [weekStartsOn]
+    [weekStartsOn, progressMetric, autoCompleteCommitments]
   );
 
   return (

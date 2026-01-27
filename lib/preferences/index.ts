@@ -1,5 +1,5 @@
 // Types
-export type { WeekStartDay, UserPreferences } from "./types";
+export type { WeekStartDay, ProgressMetric, UserPreferences } from "./types";
 
 // Context and hooks
 export {
