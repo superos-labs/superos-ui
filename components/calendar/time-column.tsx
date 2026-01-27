@@ -473,7 +473,7 @@ export function TimeColumn({
                 <DraggableBlockWrapper
                   className="h-full"
                   startMinutes={event.startMinutes}
-                  dayIndex={event.dayIndex}
+                  dayIndex={dayIndex}
                   durationMinutes={event.durationMinutes}
                   pixelsPerMinute={pixelsPerMinute}
                   dayColumnWidth={dayColumnWidth}
