@@ -62,6 +62,18 @@ export interface MobileToolbarProps {
 // =============================================================================
 
 /**
+ * Check if a date is today.
+ */
+function isToday(date: Date): boolean {
+  const today = new Date();
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+}
+
+/**
  * Format date for mobile toolbar display.
  * Day view: "Mon, Jan 27"
  * Week view: "Jan 20 – 26"
@@ -130,6 +142,7 @@ export function MobileToolbar({
   className,
 }: MobileToolbarProps) {
   const dateLabel = formatDateLabel(currentDate, isWeekView);
+  const viewingToday = isToday(currentDate);
 
   return (
     <div
@@ -157,13 +170,9 @@ export function MobileToolbar({
           <RiArrowLeftSLine className="size-5" />
         </button>
 
-        <button
-          onClick={onToday}
-          className="flex h-10 min-w-[100px] items-center justify-center rounded-lg px-2 text-sm font-medium text-foreground transition-colors hover:bg-background"
-          title="Go to today"
-        >
+        <span className="flex h-10 min-w-[100px] items-center justify-center px-2 text-sm font-medium text-foreground">
           {dateLabel}
-        </button>
+        </span>
 
         <button
           onClick={onNext}
@@ -174,8 +183,23 @@ export function MobileToolbar({
         </button>
       </div>
 
-      {/* Right: Focus indicator and/or settings */}
+      {/* Right: Today button, focus indicator, and settings */}
       <div className="flex items-center gap-1">
+        {/* Today button - shows "Today" when viewing today, "Back to today" otherwise */}
+        <button
+          onClick={onToday}
+          disabled={viewingToday}
+          className={cn(
+            "flex h-9 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors",
+            viewingToday
+              ? "cursor-default text-muted-foreground"
+              : "bg-primary text-primary-foreground hover:bg-primary/90"
+          )}
+          title={viewingToday ? "Viewing today" : "Go to today"}
+        >
+          {viewingToday ? "Today" : "Back to today"}
+        </button>
+
         {/* Focus indicator (when active) */}
         {focusSession && (
           <FocusIndicator
