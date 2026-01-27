@@ -216,7 +216,7 @@ function createSampleEvents(): CalendarEvent[] {
     // Sleep - 12a-7a (7 hours) every day
     // =============================================================================
     { id: "shell-sleep-0", title: "Sleep", date: getDate(0), dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep", status: "completed" },
-    { id: "shell-sleep-1", title: "Sleep", date: getDate(1), dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+    { id: "shell-sleep-1", title: "Sleep", date: getDate(1), dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep", status: "completed" },
     { id: "shell-sleep-2", title: "Sleep", date: getDate(2), dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
     { id: "shell-sleep-3", title: "Sleep", date: getDate(3), dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
     { id: "shell-sleep-4", title: "Sleep", date: getDate(4), dayIndex: 4, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
@@ -269,11 +269,16 @@ function createSampleEvents(): CalendarEvent[] {
     // =============================================================================
     // Eat (Dinner) - 8p-9p (60 min) Mon-Fri
     // =============================================================================
-    { id: "shell-eat-dinner-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-dinner-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat", status: "completed" },
     { id: "shell-eat-dinner-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
     { id: "shell-eat-dinner-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
     { id: "shell-eat-dinner-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
     { id: "shell-eat-dinner-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+
+    // =============================================================================
+    // SuperOS Goal - Evening block (10:30p-12a = 90 min on Mon)
+    // =============================================================================
+    { id: "shell-superos-eve-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(22.5), durationMinutes: 90, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
   ];
 }
 
