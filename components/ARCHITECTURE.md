@@ -149,14 +149,14 @@ The reusable, stateless (or minimally stateful) UI building blocks.
 interface BacklogProps {
   commitments: BacklogItem[];
   goals: BacklogItem[];
-  showHours?: boolean;
+  showTasks?: boolean;
   onToggleTask?: (goalId: string, taskId: string) => void;
 }
 
 function Backlog({
   commitments,
   goals,
-  showHours = true,
+  showTasks = true,
   onToggleTask,
 }: BacklogProps) {
   // Pure rendering logic only
@@ -171,7 +171,7 @@ export type { BacklogProps, BacklogItem, BacklogTask };
 - No `useState` for demo purposes — state should be lifted to consumers
 - No embedded sample data or default arrays
 - Props that accept data should be required, not optional with defaults
-- Boolean display flags (e.g., `showHours`) can have sensible defaults
+- Boolean display flags (e.g., `showTasks`) can have sensible defaults
 
 ### 2. Example Components (`component-example.tsx`)
 
@@ -194,7 +194,7 @@ const SAMPLE_COMMITMENTS: BacklogItem[] = [
 ]
 
 export function BacklogExample() {
-  const [showHours, setShowHours] = useState(true)
+  const [showTasks, setShowTasks] = useState(true)
   const [goals, setGoals] = useState(INITIAL_GOALS)
 
   const handleToggleTask = useCallback((goalId, taskId) => {
@@ -206,11 +206,11 @@ export function BacklogExample() {
       <Backlog
         commitments={SAMPLE_COMMITMENTS}
         goals={goals}
-        showHours={showHours}
+        showTasks={showTasks}
         onToggleTask={handleToggleTask}
       />
       <KnobsPanel>
-        <KnobBoolean label="Show Hours" value={showHours} onChange={setShowHours} />
+        <KnobBoolean label="Show Tasks" value={showTasks} onChange={setShowTasks} />
       </KnobsPanel>
     </KnobsProvider>
   )

@@ -602,7 +602,6 @@ export function ShellContentComponent({
                 onDeleteSubtask={onDeleteSubtask}
                 onDeleteTask={onDeleteTask}
                 getGoalStats={getGoalStats}
-                getCommitmentStats={getCommitmentStats}
                 getTaskSchedule={getTaskSchedule}
                 getTaskDeadline={getTaskDeadline}
                 draggable={true}

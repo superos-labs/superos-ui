@@ -14,7 +14,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   commitments: BacklogItem[];
   /** Array of goal items to display */
   goals: BacklogItem[];
-  showHours?: boolean;
   showTasks?: boolean;
   showCommitments?: boolean;
   onAddCommitment?: () => void;
@@ -34,10 +33,8 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
   onDeleteTask?: (goalId: string, taskId: string) => void;
-  /** Function to get computed stats for a goal (enables computed hours display) */
+  /** Function to get computed stats for a goal (used by goal-detail mode) */
   getGoalStats?: (goalId: string) => GoalStats;
-  /** Function to get computed stats for a commitment (enables computed hours display) */
-  getCommitmentStats?: (commitmentId: string) => GoalStats;
   /** Function to get schedule info for a task (enables time pill display) */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task (enables deadline pill display) */
@@ -87,7 +84,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Backlog({
   commitments,
   goals,
-  showHours = true,
   showTasks = true,
   showCommitments = true,
   onAddCommitment,
@@ -101,7 +97,6 @@ export function Backlog({
   onDeleteSubtask,
   onDeleteTask,
   getGoalStats,
-  getCommitmentStats,
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
@@ -172,9 +167,7 @@ export function Backlog({
               title="Commitments"
               description="Time for essentials"
               items={commitments}
-              showHours={showHours}
               onAddItem={onAddCommitment}
-              getItemStats={getCommitmentStats}
               getTaskSchedule={getTaskSchedule}
               getTaskDeadline={getTaskDeadline}
               draggable={draggable}
@@ -189,7 +182,6 @@ export function Backlog({
           title="Goals"
           description="Chosen priorities"
           items={goals}
-          showHours={showHours}
           showTasks={showTasks}
           onAddItem={onAddGoal}
           onItemClick={onSelectGoal}
@@ -201,7 +193,6 @@ export function Backlog({
           onUpdateSubtask={onUpdateSubtask}
           onDeleteSubtask={onDeleteSubtask}
           onDeleteTask={onDeleteTask}
-          getItemStats={getGoalStats}
           getTaskSchedule={getTaskSchedule}
           getTaskDeadline={getTaskDeadline}
           draggable={draggable}

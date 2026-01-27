@@ -117,7 +117,6 @@ const INITIAL_GOALS: BacklogItem[] = [
 ]
 
 export function BacklogExample() {
-  const [showHours, setShowHours] = React.useState(true)
   const [showTasks, setShowTasks] = React.useState(true)
   const [showCommitments, setShowCommitments] = React.useState(true)
   const [goals, setGoals] = React.useState(INITIAL_GOALS)
@@ -243,7 +242,6 @@ export function BacklogExample() {
       <Backlog
         commitments={INITIAL_COMMITMENTS}
         goals={goals}
-        showHours={showHours}
         showTasks={showTasks}
         showCommitments={showCommitments}
         onToggleGoalTask={handleToggleGoalTask}
@@ -266,11 +264,6 @@ export function BacklogExample() {
           label="Show Tasks"
           value={showTasks}
           onChange={setShowTasks}
-        />
-        <KnobBoolean
-          label="Show Hours"
-          value={showHours}
-          onChange={setShowHours}
         />
       </KnobsPanel>
     </KnobsProvider>

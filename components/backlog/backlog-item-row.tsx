@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn, formatHours } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   RiArrowRightSLine,
   RiShiningLine,
@@ -9,16 +9,13 @@ import {
 import { getIconColorClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
-import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
+import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
 import type { BacklogItem } from "./backlog-types";
 import { TaskRow } from "./task-row";
 import { InlineTaskCreator } from "./inline-creators";
 
 export interface BacklogItemRowProps {
   item: BacklogItem;
-  /** Computed stats from calendar (optional, uses item.plannedHours/completedHours as fallback) */
-  stats?: GoalStats;
-  showHours?: boolean;
   showTasks?: boolean;
   /** Callback when the item row is clicked (for entering goal-detail mode) */
   onItemClick?: (itemId: string) => void;
@@ -50,8 +47,6 @@ export interface BacklogItemRowProps {
 
 export function BacklogItemRow({
   item,
-  stats,
-  showHours = true,
   showTasks = true,
   onItemClick,
   onToggleTask,
@@ -72,11 +67,6 @@ export function BacklogItemRow({
 
   // Expansion state - accordion style (one task at a time)
   const [expandedTaskId, setExpandedTaskId] = React.useState<string | null>(null);
-
-  // Use computed stats if provided, otherwise fall back to legacy props
-  const plannedHours = stats?.plannedHours ?? item.plannedHours ?? 0;
-  const completedHours = stats?.completedHours ?? item.completedHours ?? 0;
-  const hasHoursData = stats ? (plannedHours > 0 || completedHours > 0) : item.plannedHours !== undefined;
 
   // Drag context is optional - only use if within DragProvider
   const dragContext = useDragContextOptional();
@@ -147,18 +137,6 @@ export function BacklogItemRow({
             </span>
           )}
         </div>
-
-        {showHours && hasHoursData && (
-          <div className="flex shrink-0 items-center gap-1.5 text-xs">
-            <span className="tabular-nums text-foreground">
-              {formatHours(completedHours)}h
-            </span>
-            <span className="text-muted-foreground/50">/</span>
-            <span className="tabular-nums text-muted-foreground">
-              {formatHours(plannedHours)}h
-            </span>
-          </div>
-        )}
 
         {showChevron && (
           <button

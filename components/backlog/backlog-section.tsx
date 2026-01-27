@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { cn, formatHours } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   RiAddLine,
   RiPencilLine,
   RiSparklingLine,
 } from "@remixicon/react";
-import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
+import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
 import type { BacklogItem } from "./backlog-types";
 import { BacklogItemRow } from "./backlog-item-row";
 
@@ -15,7 +15,6 @@ export interface BacklogSectionProps {
   title: string;
   description?: string;
   items: BacklogItem[];
-  showHours?: boolean;
   showTasks?: boolean;
   onAddItem?: () => void;
   /** Callback when an item row is clicked (for entering goal-detail mode) */
@@ -35,8 +34,6 @@ export interface BacklogSectionProps {
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
   onDeleteTask?: (goalId: string, taskId: string) => void;
-  /** Function to get computed stats for a goal/commitment */
-  getItemStats?: (itemId: string) => GoalStats;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -60,7 +57,6 @@ export function BacklogSection({
   title,
   description,
   items,
-  showHours = true,
   showTasks = true,
   onAddItem,
   onItemClick,
@@ -72,7 +68,6 @@ export function BacklogSection({
   onUpdateSubtask,
   onDeleteSubtask,
   onDeleteTask,
-  getItemStats,
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
@@ -83,26 +78,6 @@ export function BacklogSection({
   isInspirationActive,
   className,
 }: BacklogSectionProps) {
-  // Calculate totals from stats if available, otherwise use legacy props
-  const totals = React.useMemo(() => {
-    if (getItemStats) {
-      return items.reduce(
-        (acc, item) => {
-          const stats = getItemStats(item.id);
-          return {
-            planned: acc.planned + stats.plannedHours,
-            completed: acc.completed + stats.completedHours,
-          };
-        },
-        { planned: 0, completed: 0 }
-      );
-    }
-    return {
-      planned: items.reduce((sum, item) => sum + (item.plannedHours || 0), 0),
-      completed: items.reduce((sum, item) => sum + (item.completedHours || 0), 0),
-    };
-  }, [items, getItemStats]);
-
   return (
     <div className={cn("flex flex-col px-3", className)}>
       <div className="group/section flex items-center justify-between px-3 py-2">
@@ -113,17 +88,6 @@ export function BacklogSection({
           )}
         </div>
         <div className="flex items-center gap-2">
-          {showHours && totals.planned > 0 && (
-            <div className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-              <span className="tabular-nums text-foreground">
-                {formatHours(totals.completed)}h
-              </span>
-              <span className="text-muted-foreground/50">/</span>
-              <span className="tabular-nums text-muted-foreground">
-                {formatHours(totals.planned)}h
-              </span>
-            </div>
-          )}
           {onEdit && (
             <button
               onClick={onEdit}
@@ -141,8 +105,6 @@ export function BacklogSection({
           <BacklogItemRow
             key={item.id}
             item={item}
-            stats={getItemStats?.(item.id)}
-            showHours={showHours}
             showTasks={showTasks}
             onItemClick={onItemClick}
             onToggleTask={onToggleTask}
