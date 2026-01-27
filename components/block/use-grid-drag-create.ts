@@ -5,6 +5,9 @@ import * as React from "react";
 /** Maximum duration for events (just under 48 hours, spanning at most 2 days) */
 const MAX_EVENT_DURATION_MINUTES = 2879;
 
+/** Fine-grained snap interval when Shift is held (1 minute) */
+const FINE_GRAIN_INTERVAL = 1;
+
 interface UseGridDragCreateOptions {
   /** Pixels per minute in the calendar grid */
   pixelsPerMinute: number;
@@ -66,8 +69,39 @@ export function useGridDragCreate({
     hasExceededThreshold: boolean;
   } | null>(null);
 
+  // Track Shift key state for fine-grained duration (1-minute precision)
+  // Note: Start time always snaps to 15 min; only duration becomes fine-grained
+  const isShiftHeldRef = React.useRef(false);
+
+  // Track Shift key during drag operation
+  React.useEffect(() => {
+    if (!isDragging) {
+      isShiftHeldRef.current = false;
+      return;
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Shift") {
+        isShiftHeldRef.current = true;
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === "Shift") {
+        isShiftHeldRef.current = false;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [isDragging]);
+
   const snapToInterval = React.useCallback(
-    (minutes: number) => Math.round(minutes / snapInterval) * snapInterval,
+    (minutes: number, interval: number = snapInterval) => Math.round(minutes / interval) * interval,
     [snapInterval],
   );
 
@@ -79,7 +113,13 @@ export function useGridDragCreate({
       e.preventDefault();
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
+      // Check if Shift is already held when drag starts
+      if (e.shiftKey) {
+        isShiftHeldRef.current = true;
+      }
+
       // Calculate precise start position within the cell
+      // Start time always snaps to standard interval (15 min) for usability
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const relativeY = e.clientY - rect.top;
       const minutesIntoCell = (relativeY / rect.height) * 60;
@@ -112,9 +152,13 @@ export function useGridDragCreate({
         drag.hasExceededThreshold = true;
       }
 
-      // Calculate minutes delta and snap
+      // Use fine-grained interval for duration when Shift is held
+      // Note: Start time always uses standard interval for usability
+      const durationInterval = isShiftHeldRef.current ? FINE_GRAIN_INTERVAL : snapInterval;
+
+      // Calculate minutes delta and snap (for end position calculation)
       const deltaMinutes = deltaY / pixelsPerMinute;
-      const currentMinutes = snapToInterval(drag.anchorMinutes + deltaMinutes);
+      const currentMinutes = snapToInterval(drag.anchorMinutes + deltaMinutes, durationInterval);
 
       // Allow extending past midnight for overnight blocks
       // Start time must be within day (0-1440), but duration can extend past
@@ -131,8 +175,8 @@ export function useGridDragCreate({
         // Allow end time to extend past 1440 (for overnight blocks)
         endMinutes = Math.max(currentMinutes, drag.anchorMinutes);
       } else {
-        // Dragging upward
-        startMinutes = Math.max(0, currentMinutes);
+        // Dragging upward - start time snaps to standard interval, but end position uses duration interval
+        startMinutes = Math.max(0, snapToInterval(currentMinutes, snapInterval));
         endMinutes = drag.anchorMinutes;
       }
 
@@ -146,7 +190,7 @@ export function useGridDragCreate({
         durationMinutes,
       });
     },
-    [pixelsPerMinute, snapToInterval, dragThreshold, minDuration, maxDuration],
+    [pixelsPerMinute, snapInterval, snapToInterval, dragThreshold, minDuration, maxDuration],
   );
 
   const handlePointerUp = React.useCallback(

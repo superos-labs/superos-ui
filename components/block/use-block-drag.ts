@@ -5,6 +5,9 @@ import * as React from "react";
 /** Pixel distance pointer must move before drag activates */
 const DRAG_THRESHOLD = 4;
 
+/** Fine-grained snap interval when Shift is held (1 minute) */
+const FINE_GRAIN_INTERVAL = 1;
+
 type DragState = "idle" | "pending" | "dragging";
 
 interface UseBlockDragOptions {
@@ -82,13 +85,16 @@ export function useBlockDrag({
   const currentPosition = React.useRef({ dayIndex: 0, startMinutes: 0 });
   // Track Option key state in a ref for use in pointerUp (avoids stale closure)
   const isOptionHeldRef = React.useRef(false);
+  // Track Shift key state for fine-grained positioning (1-minute precision)
+  const isShiftHeldRef = React.useRef(false);
 
-  // Track Option/Alt key state during drag
+  // Track Option/Alt and Shift key state during drag
   React.useEffect(() => {
     if (dragState === "idle") {
-      // Reset Option state when not dragging
+      // Reset modifier states when not dragging
       setIsOptionHeld(false);
       isOptionHeldRef.current = false;
+      isShiftHeldRef.current = false;
       return;
     }
 
@@ -97,11 +103,17 @@ export function useBlockDrag({
         setIsOptionHeld(true);
         isOptionHeldRef.current = true;
       }
+      if (e.key === "Shift") {
+        isShiftHeldRef.current = true;
+      }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === "Alt") {
         setIsOptionHeld(false);
         isOptionHeldRef.current = false;
+      }
+      if (e.key === "Shift") {
+        isShiftHeldRef.current = false;
       }
     };
 
@@ -115,8 +127,8 @@ export function useBlockDrag({
   }, [dragState]);
 
   const snapToInterval = React.useCallback(
-    (minutes: number) => {
-      return Math.round(minutes / snapInterval) * snapInterval;
+    (minutes: number, interval: number = snapInterval) => {
+      return Math.round(minutes / interval) * interval;
     },
     [snapInterval],
   );
@@ -134,6 +146,10 @@ export function useBlockDrag({
       if (e.altKey) {
         setIsOptionHeld(true);
         isOptionHeldRef.current = true;
+      }
+      // Check if Shift is already held when drag starts
+      if (e.shiftKey) {
+        isShiftHeldRef.current = true;
       }
 
       // Enter pending state - NOT dragging yet until threshold is exceeded
@@ -172,10 +188,14 @@ export function useBlockDrag({
       let newDayIndex = startValues.current.dayIndex + dayDelta;
       newDayIndex = Math.max(minDayIndex, Math.min(maxDayIndex, newDayIndex));
 
+      // Use fine-grained interval when Shift is held
+      const effectiveInterval = isShiftHeldRef.current ? FINE_GRAIN_INTERVAL : snapInterval;
+
       // Calculate new start time from vertical movement
       const minutesDelta = deltaY / pixelsPerMinute;
       let newStartMinutes = snapToInterval(
         startValues.current.startMinutes + minutesDelta,
+        effectiveInterval,
       );
 
       // Constrain start time to valid range
@@ -193,6 +213,7 @@ export function useBlockDrag({
       dragThreshold,
       dayColumnWidth,
       pixelsPerMinute,
+      snapInterval,
       snapToInterval,
       minDayIndex,
       maxDayIndex,
