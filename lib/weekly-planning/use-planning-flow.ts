@@ -5,7 +5,8 @@
  */
 
 import * as React from "react";
-import type { WeeklyIntention, UsePlanningFlowOptions, UsePlanningFlowReturn } from "./types";
+import type { ProgressIndicator } from "@/lib/unified-schedule";
+import type { WeeklyIntention, PlanningStep, UsePlanningFlowOptions, UsePlanningFlowReturn } from "./types";
 
 /**
  * Hook for managing draft intentions during the planning flow.
@@ -23,19 +24,41 @@ export function usePlanningFlow({
   const [draftIntentions, setDraftIntentions] = React.useState<
     WeeklyIntention[]
   >([]);
+  const [step, setStep] = React.useState<PlanningStep>("intentions");
 
-  // Reset draft when planning mode is deactivated
+  // Reset draft and step when planning mode is deactivated
   React.useEffect(() => {
     if (!isActive) {
       setDraftIntentions([]);
+      setStep("intentions");
     }
   }, [isActive]);
+
+  // -------------------------------------------------------------------------
+  // Computed Values
+  // -------------------------------------------------------------------------
+  
+  // Collect all task IDs from intentions using specific-tasks indicator
+  const highlightedTaskIds = React.useMemo(() => {
+    const taskIds: string[] = [];
+    for (const intention of draftIntentions) {
+      if (intention.targetTaskIds && intention.targetTaskIds.length > 0) {
+        taskIds.push(...intention.targetTaskIds);
+      }
+    }
+    return taskIds;
+  }, [draftIntentions]);
 
   // -------------------------------------------------------------------------
   // Actions
   // -------------------------------------------------------------------------
   const setIntention = React.useCallback(
-    (goalId: string, target: number, targetTaskIds?: string[]) => {
+    (
+      goalId: string,
+      target: number,
+      targetTaskIds?: string[],
+      progressIndicatorOverride?: ProgressIndicator
+    ) => {
       setDraftIntentions((prev) => {
         const filtered = prev.filter((i) => i.goalId !== goalId);
         return [
@@ -44,6 +67,7 @@ export function usePlanningFlow({
             goalId,
             target,
             targetTaskIds,
+            progressIndicatorOverride,
           },
         ];
       });
@@ -68,15 +92,28 @@ export function usePlanningFlow({
 
   const cancel = React.useCallback(() => {
     setDraftIntentions([]);
+    setStep("intentions");
     onCancel?.();
   }, [onCancel]);
 
   const reset = React.useCallback(
     (initialIntentions: WeeklyIntention[] = []) => {
       setDraftIntentions(initialIntentions);
+      setStep("intentions");
     },
     []
   );
+
+  // -------------------------------------------------------------------------
+  // Step Navigation
+  // -------------------------------------------------------------------------
+  const continueToSchedule = React.useCallback(() => {
+    setStep("schedule");
+  }, []);
+
+  const backToIntentions = React.useCallback(() => {
+    setStep("intentions");
+  }, []);
 
   // -------------------------------------------------------------------------
   // Return
@@ -89,5 +126,10 @@ export function usePlanningFlow({
     confirm,
     cancel,
     reset,
+    // Step management
+    step,
+    continueToSchedule,
+    backToIntentions,
+    highlightedTaskIds,
   };
 }

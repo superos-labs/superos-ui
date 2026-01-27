@@ -19,7 +19,18 @@ export interface WeeklyIntention {
   target: number;
   /** For 'specific-tasks' indicator: which tasks must be completed */
   targetTaskIds?: string[];
+  /** Override the goal's default progress indicator for this week only */
+  progressIndicatorOverride?: ProgressIndicator;
 }
+
+// ============================================================================
+// Planning Flow
+// ============================================================================
+
+/**
+ * Current step in the planning wizard.
+ */
+export type PlanningStep = "intentions" | "schedule";
 
 // ============================================================================
 // Weekly Plan
@@ -69,8 +80,7 @@ export interface IntentionProgress {
 // ============================================================================
 
 export interface UseWeeklyPlanOptions {
-  /** Storage key prefix for localStorage (default: 'superos-weekly-plan') */
-  storageKey?: string;
+  // Options reserved for future use (session-only, no persistence)
 }
 
 export interface UseWeeklyPlanReturn {
@@ -109,7 +119,8 @@ export interface UsePlanningFlowReturn {
   setIntention: (
     goalId: string,
     target: number,
-    targetTaskIds?: string[]
+    targetTaskIds?: string[],
+    progressIndicatorOverride?: ProgressIndicator
   ) => void;
   /** Clear intention for a goal */
   clearIntention: (goalId: string) => void;
@@ -121,4 +132,15 @@ export interface UsePlanningFlowReturn {
   cancel: () => void;
   /** Reset draft to initial state */
   reset: (initialIntentions?: WeeklyIntention[]) => void;
+  
+  // Step management
+  /** Current wizard step */
+  step: PlanningStep;
+  /** Advance to schedule step */
+  continueToSchedule: () => void;
+  /** Go back to intentions step */
+  backToIntentions: () => void;
+  
+  /** Task IDs that should be highlighted in schedule step (from specific-tasks intentions) */
+  highlightedTaskIds: string[];
 }

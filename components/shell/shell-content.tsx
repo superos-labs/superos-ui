@@ -735,12 +735,13 @@ export function ShellContentComponent({
             onClick={handleNavigateToFocusedBlock}
           />
         )}
-        {showPlanWeek && (
+        {/* Show Plan week button only if week is not already planned */}
+        {showPlanWeek && currentWeekPlan === null && !isPlanning && (
           <button
             className="flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
             onClick={handlePlanWeekClick}
           >
-            {isPlanning ? "Confirm" : "Plan week"}
+            Plan week
           </button>
         )}
         <button
@@ -848,6 +849,14 @@ export function ShellContentComponent({
                   onCancel={planningFlow.cancel}
                   isFirstPlan={!hasBlueprint}
                   onAddTask={onAddTask}
+                  // Step management props
+                  step={planningFlow.step}
+                  onContinue={planningFlow.continueToSchedule}
+                  onBack={planningFlow.backToIntentions}
+                  highlightedTaskIds={planningFlow.highlightedTaskIds}
+                  // Schedule step data accessors
+                  getTaskSchedule={getTaskSchedule}
+                  getTaskDeadline={getTaskDeadline}
                   className="h-full w-[420px] max-w-none"
                 />
               ) : (

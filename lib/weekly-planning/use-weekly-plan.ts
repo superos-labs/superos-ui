@@ -2,50 +2,25 @@
 
 /**
  * Hook for managing weekly plans.
- * Uses localStorage for persistence in the demo.
+ * Session-only (in-memory) - plans are not persisted across page refreshes.
  */
 
 import * as React from "react";
 import type { WeeklyPlan, WeeklyIntention, UseWeeklyPlanOptions, UseWeeklyPlanReturn } from "./types";
 
-const DEFAULT_STORAGE_KEY = "superos-weekly-plans";
-
 /**
  * Hook for managing weekly plans across weeks.
- * Provides CRUD operations for weekly plans with localStorage persistence.
+ * Provides CRUD operations for weekly plans (session-only, no persistence).
  */
 export function useWeeklyPlan(
-  options: UseWeeklyPlanOptions = {}
+  _options: UseWeeklyPlanOptions = {}
 ): UseWeeklyPlanReturn {
-  const { storageKey = DEFAULT_STORAGE_KEY } = options;
-
   // -------------------------------------------------------------------------
-  // State - Map of weekStartDate to WeeklyPlan
+  // State - Map of weekStartDate to WeeklyPlan (session-only)
   // -------------------------------------------------------------------------
-  const [plans, setPlans] = React.useState<Map<string, WeeklyPlan>>(() => {
-    if (typeof window === "undefined") return new Map();
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (!stored) return new Map();
-      const parsed = JSON.parse(stored) as [string, WeeklyPlan][];
-      return new Map(parsed);
-    } catch {
-      return new Map();
-    }
-  });
-
-  // -------------------------------------------------------------------------
-  // Persist to localStorage
-  // -------------------------------------------------------------------------
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const entries = Array.from(plans.entries());
-      localStorage.setItem(storageKey, JSON.stringify(entries));
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, [plans, storageKey]);
+  const [plans, setPlans] = React.useState<Map<string, WeeklyPlan>>(
+    () => new Map()
+  );
 
   // -------------------------------------------------------------------------
   // Actions
