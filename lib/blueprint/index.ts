@@ -17,6 +17,5 @@ export type {
   Blueprint,
   BlueprintBlock,
   BlueprintIntention,
-  UseBlueprintOptions,
   UseBlueprintReturn,
 } from "./types";

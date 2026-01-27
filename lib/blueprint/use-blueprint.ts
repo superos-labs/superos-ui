@@ -2,52 +2,21 @@
 
 /**
  * Hook for managing the user's blueprint (typical week template).
- * Uses localStorage for persistence in the demo.
+ * In-memory only — state resets on page refresh.
  */
 
 import * as React from "react";
-import type { Blueprint, UseBlueprintOptions, UseBlueprintReturn } from "./types";
-
-const DEFAULT_STORAGE_KEY = "superos-blueprint";
+import type { Blueprint, UseBlueprintReturn } from "./types";
 
 /**
  * Hook for managing the blueprint template.
- * Provides CRUD operations for the blueprint with localStorage persistence.
+ * Provides CRUD operations for the blueprint with in-memory state only.
  */
-export function useBlueprint(
-  options: UseBlueprintOptions = {}
-): UseBlueprintReturn {
-  const { storageKey = DEFAULT_STORAGE_KEY } = options;
-
+export function useBlueprint(): UseBlueprintReturn {
   // -------------------------------------------------------------------------
-  // State
+  // State (in-memory only)
   // -------------------------------------------------------------------------
-  const [blueprint, setBlueprint] = React.useState<Blueprint | null>(() => {
-    // Load from localStorage on mount
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = localStorage.getItem(storageKey);
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  // -------------------------------------------------------------------------
-  // Persist to localStorage
-  // -------------------------------------------------------------------------
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      if (blueprint) {
-        localStorage.setItem(storageKey, JSON.stringify(blueprint));
-      } else {
-        localStorage.removeItem(storageKey);
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, [blueprint, storageKey]);
+  const [blueprint, setBlueprint] = React.useState<Blueprint | null>(null);
 
   // -------------------------------------------------------------------------
   // Actions

@@ -71,11 +71,6 @@ export interface Blueprint {
 // Hook Types
 // ============================================================================
 
-export interface UseBlueprintOptions {
-  /** Storage key prefix for localStorage (default: 'superos-blueprint') */
-  storageKey?: string;
-}
-
 export interface UseBlueprintReturn {
   /** The current blueprint (null if none exists) */
   blueprint: Blueprint | null;
