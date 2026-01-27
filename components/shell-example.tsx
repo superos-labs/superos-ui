@@ -10,7 +10,6 @@ import {
   useDeadlineKeyboard,
   getWeekDates,
   formatWeekRange,
-  type CalendarMode,
   type CalendarEvent,
 } from "@/components/calendar";
 import type { DeadlineTask } from "@/lib/unified-schedule";
@@ -18,11 +17,10 @@ import {
   Backlog,
   GoalInspirationGallery,
   type BacklogItem,
-  type BacklogMode,
   type NewGoalData,
 } from "@/components/backlog";
 import { WeeklyAnalytics } from "@/components/weekly-analytics";
-import { BlockSidebar, useBlockSidebarHandlers, type UseBlockSidebarHandlersReturn } from "@/components/block";
+import { BlockSidebar, useBlockSidebarHandlers } from "@/components/block";
 import { GoalDetail } from "@/components/goal-detail";
 import type { ScheduleGoal } from "@/lib/unified-schedule";
 import { FocusIndicator } from "@/components/focus";
@@ -33,12 +31,15 @@ import {
   useDragContextOptional,
 } from "@/components/drag";
 import { useUnifiedSchedule, useWeekNavigation } from "@/lib/unified-schedule";
-import {
-  getDefaultDuration,
-  getDragItemTitle,
-  getDragItemColor,
-} from "@/lib/drag-types";
 import { toAnalyticsItems } from "@/lib/adapters";
+
+// Shell-specific hooks (internal demo utilities)
+import {
+  useShellLayout,
+  useShellFocus,
+  useExternalDragPreview,
+  useToastAggregator,
+} from "./use-shell-hooks";
 
 // Sample data from fixtures
 import {
@@ -91,20 +92,46 @@ function ShellDemoContent({
   onDataSetChange,
 }: ShellDemoContentProps) {
   // -------------------------------------------------------------------------
-  // UI State
+  // UI Layout State (extracted to hook)
   // -------------------------------------------------------------------------
-  const [showPlanWeek, setShowPlanWeek] = React.useState(true);
-  const [showCalendar, setShowCalendar] = React.useState(true);
-  const [showSidebar, setShowSidebar] = React.useState(true);
-  const [showRightSidebar, setShowRightSidebar] = React.useState(false);
-  const [showTasks, setShowTasks] = React.useState(true);
-  const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule");
-  const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view");
-  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null);
-  
-  // Goal detail mode state
-  const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(null);
-  const [goalNotes, setGoalNotes] = React.useState<Record<string, string>>({});
+  const layout = useShellLayout();
+  const {
+    showPlanWeek,
+    setShowPlanWeek,
+    showCalendar,
+    setShowCalendar,
+    showSidebar,
+    setShowSidebar,
+    showRightSidebar,
+    setShowRightSidebar,
+    showTasks,
+    setShowTasks,
+    showInspirationGallery,
+    calendarMode,
+    setCalendarMode,
+    backlogMode,
+    setBacklogMode,
+    selectedEventId,
+    setSelectedEventId,
+    selectedGoalId,
+    setSelectedGoalId,
+    goalNotes,
+    renderedContent,
+    frozenSidebarData,
+    isRightSidebarOpen,
+    updateFrozenSidebarData,
+    isPlanning,
+    isGoalDetailMode,
+    handleEventClick,
+    handleCloseSidebar,
+    handleSelectGoal,
+    handleCloseGoalDetail,
+    handleBrowseInspiration,
+    handleCloseInspiration,
+    handlePlanWeekClick,
+    handleGoalNotesChange,
+    handleAnalyticsToggle,
+  } = layout;
 
   // -------------------------------------------------------------------------
   // Preferences
@@ -146,12 +173,6 @@ function ShellDemoContent({
     onNextWeek: goToNextWeek,
     onToday: goToToday,
   });
-
-  // -------------------------------------------------------------------------
-  // Right Sidebar Content State
-  // -------------------------------------------------------------------------
-  const [renderedContent, setRenderedContent] = React.useState<"block" | "analytics" | null>(null);
-  const [frozenSidebarData, setFrozenSidebarData] = React.useState<UseBlockSidebarHandlersReturn["sidebarData"]>(null);
 
   // -------------------------------------------------------------------------
   // Data & State
@@ -263,24 +284,55 @@ function ShellDemoContent({
     : null;
 
   // -------------------------------------------------------------------------
-  // Toast State
+  // Keyboard Shortcuts & Toast Aggregation
   // -------------------------------------------------------------------------
-  const [sidebarToastMessage, setSidebarToastMessage] = React.useState<string | null>(null);
-  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<string | null>(null);
+  const { toastMessage: calendarToastMessage } = useCalendarKeyboard({
+    hoveredEvent,
+    hoverPosition,
+    hasClipboardContent: calendarHandlers.hasClipboardContent,
+    onCopy: calendarHandlers.onEventCopy,
+    onPaste: calendarHandlers.onEventPaste,
+    onDuplicate: (eventId, newDayIndex, newStartMinutes) =>
+      calendarHandlers.onEventDuplicate(eventId, newDayIndex, newStartMinutes),
+    onDelete: (eventId) => calendarHandlers.onEventDelete(eventId),
+    onToggleComplete: (eventId, currentStatus) => {
+      const newStatus = currentStatus === "completed" ? "planned" : "completed";
+      calendarHandlers.onEventStatusChange(eventId, newStatus);
+    },
+  });
 
-  React.useEffect(() => {
-    if (sidebarToastMessage) {
-      const timer = setTimeout(() => setSidebarToastMessage(null), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [sidebarToastMessage]);
+  // Toast aggregation (extracted to hook) - must be before useBlockSidebarHandlers
+  const toasts = useToastAggregator(calendarToastMessage);
+  const { toastMessage } = toasts;
 
-  React.useEffect(() => {
-    if (deadlineToastMessage) {
-      const timer = setTimeout(() => setDeadlineToastMessage(null), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [deadlineToastMessage]);
+  useDeadlineKeyboard({
+    hoveredDeadline,
+    onToggleComplete: toggleTaskComplete,
+    onUnassign: clearTaskDeadline,
+    showToast: toasts.setDeadlineToast,
+  });
+
+  // -------------------------------------------------------------------------
+  // Focus Mode Computed Values (extracted to hook)
+  // -------------------------------------------------------------------------
+  const { isSidebarBlockFocused, showFocusIndicator, handleStartFocus, handleNavigateToFocusedBlock } =
+    useShellFocus({
+      focusSession,
+      selectedEventId,
+      selectedEvent,
+      startFocus,
+      onNavigateToBlock: setSelectedEventId,
+    });
+
+  // -------------------------------------------------------------------------
+  // External Drag & Drop (extracted to hook)
+  // -------------------------------------------------------------------------
+  const dragContext = useDragContextOptional();
+  const { externalDragPreview, handleExternalDrop, handleDeadlineDrop } = useExternalDragPreview({
+    dragContext,
+    weekDates,
+    onDrop: handleDrop,
+  });
 
   // -------------------------------------------------------------------------
   // Block Sidebar Handlers (extracted to hook)
@@ -303,149 +355,17 @@ function ShellDemoContent({
       unassignTaskFromBlock: schedule.unassignTaskFromBlock,
       calendarHandlers,
     },
-    onToast: setSidebarToastMessage,
+    onToast: toasts.setSidebarToast,
     // End focus session when marking the focused block as complete
     onEndFocus: focusSession?.blockId === selectedEvent?.id ? endFocus : undefined,
   });
 
-  // -------------------------------------------------------------------------
-  // Right Sidebar Content Management
-  // -------------------------------------------------------------------------
-  const targetContent: "block" | "analytics" | null = selectedEvent
-    ? "block"
-    : showRightSidebar
-      ? "analytics"
-      : null;
-
+  // Update frozen sidebar data for animation
   React.useEffect(() => {
-    if (targetContent !== null) {
-      setRenderedContent(targetContent);
-    }
-  }, [targetContent]);
+    updateFrozenSidebarData(sidebarData);
+  }, [sidebarData, updateFrozenSidebarData]);
 
-  React.useEffect(() => {
-    if (sidebarData) {
-      setFrozenSidebarData(sidebarData);
-    }
-  }, [sidebarData]);
-
-  const isRightSidebarOpen = targetContent !== null;
   const sidebarDataToRender = selectedEvent ? sidebarData : frozenSidebarData;
-
-  // -------------------------------------------------------------------------
-  // Event Handlers
-  // -------------------------------------------------------------------------
-  const handleEventClick = React.useCallback((event: CalendarEvent) => {
-    setSelectedEventId(event.id);
-  }, []);
-
-  const handleCloseSidebar = React.useCallback(() => {
-    setSelectedEventId(null);
-  }, []);
-
-  // ESC key to close sidebar
-  React.useEffect(() => {
-    if (!selectedEventId) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedEventId(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedEventId]);
-
-  // -------------------------------------------------------------------------
-  // Focus Mode Handlers
-  // -------------------------------------------------------------------------
-  const handleStartFocus = React.useCallback(() => {
-    if (!selectedEvent) return;
-    startFocus(selectedEvent.id, selectedEvent.title, selectedEvent.color);
-  }, [selectedEvent, startFocus]);
-
-  const handleNavigateToFocusedBlock = React.useCallback(() => {
-    if (focusSession) {
-      setSelectedEventId(focusSession.blockId);
-    }
-  }, [focusSession]);
-
-  const isSidebarBlockFocused = focusSession?.blockId === selectedEventId;
-  const showFocusIndicator = focusSession !== null && selectedEventId !== focusSession.blockId;
-
-  // -------------------------------------------------------------------------
-  // External Drag & Drop
-  // -------------------------------------------------------------------------
-  const dragContext = useDragContextOptional();
-  const dragState = dragContext?.state ?? null;
-  const isDragging = dragState?.isDragging ?? false;
-  const dragItem = dragState?.item ?? null;
-  const previewPosition = dragState?.previewPosition ?? null;
-
-  const externalDragPreview = React.useMemo(() => {
-    if (!isDragging || !dragItem || !previewPosition) return null;
-    if (previewPosition.dropTarget !== "time-grid") return null;
-    
-    const color = getDragItemColor(dragItem);
-    if (!color) return null;
-    
-    return {
-      dayIndex: previewPosition.dayIndex,
-      startMinutes: previewPosition.startMinutes ?? 0,
-      durationMinutes: getDefaultDuration(dragItem.type),
-      color,
-      title: getDragItemTitle(dragItem),
-    };
-  }, [isDragging, dragItem, previewPosition]);
-
-  const handleExternalDrop = React.useCallback(
-    (dayIndex: number, startMinutes: number) => {
-      if (!dragItem) return;
-      const position =
-        previewPosition && previewPosition.dropTarget === "existing-block"
-          ? previewPosition
-          : { dayIndex, startMinutes, dropTarget: "time-grid" as const };
-      handleDrop(dragItem, position, weekDates);
-    },
-    [dragItem, previewPosition, handleDrop, weekDates]
-  );
-
-  const handleDeadlineDrop = React.useCallback(
-    (dayIndex: number) => {
-      if (!dragItem || !dragContext) return;
-      handleDrop(dragItem, { dayIndex, dropTarget: "day-header" }, weekDates);
-      dragContext.endDrag();
-    },
-    [dragItem, dragContext, handleDrop, weekDates]
-  );
-
-  // -------------------------------------------------------------------------
-  // Keyboard Shortcuts
-  // -------------------------------------------------------------------------
-  const { toastMessage: calendarToastMessage } = useCalendarKeyboard({
-    hoveredEvent,
-    hoverPosition,
-    hasClipboardContent: calendarHandlers.hasClipboardContent,
-    onCopy: calendarHandlers.onEventCopy,
-    onPaste: calendarHandlers.onEventPaste,
-    onDuplicate: (eventId, newDayIndex, newStartMinutes) =>
-      calendarHandlers.onEventDuplicate(eventId, newDayIndex, newStartMinutes),
-    onDelete: (eventId) => calendarHandlers.onEventDelete(eventId),
-    onToggleComplete: (eventId, currentStatus) => {
-      const newStatus = currentStatus === "completed" ? "planned" : "completed";
-      calendarHandlers.onEventStatusChange(eventId, newStatus);
-    },
-  });
-
-  useDeadlineKeyboard({
-    hoveredDeadline,
-    onToggleComplete: toggleTaskComplete,
-    onUnassign: clearTaskDeadline,
-    showToast: setDeadlineToastMessage,
-  });
-
-  const toastMessage = calendarToastMessage ?? sidebarToastMessage ?? deadlineToastMessage;
 
   // -------------------------------------------------------------------------
   // Analytics Data
@@ -455,7 +375,7 @@ function ShellDemoContent({
     [commitments, getCommitmentStats]
   );
   const analyticsGoals = React.useMemo(
-    () => toAnalyticsItems(goals, getGoalStats, { useFocusedHours: true }),
+    () => toAnalyticsItems(goals, getGoalStats),
     [goals, getGoalStats]
   );
 
@@ -482,25 +402,8 @@ function ShellDemoContent({
   );
 
   // -------------------------------------------------------------------------
-  // Inspiration Gallery State (separate from backlog mode)
+  // Goal Detail Mode Derived Data
   // -------------------------------------------------------------------------
-  const [showInspirationGallery, setShowInspirationGallery] = React.useState(false);
-
-  const handleBrowseInspiration = React.useCallback(() => {
-    setShowInspirationGallery(true);
-    // Clear selected goal so nothing appears active in the goal list
-    setSelectedGoalId(null);
-  }, []);
-
-  const handleCloseInspiration = React.useCallback(() => {
-    setShowInspirationGallery(false);
-  }, []);
-
-  // -------------------------------------------------------------------------
-  // Goal Detail Mode
-  // -------------------------------------------------------------------------
-  const isGoalDetailMode = backlogMode === "goal-detail";
-  
   // Get the currently selected goal
   const selectedGoal = selectedGoalId
     ? (goals.find((g) => g.id === selectedGoalId) as ScheduleGoal | undefined)
@@ -514,39 +417,6 @@ function ShellDemoContent({
 
   // Get stats for selected goal
   const selectedGoalStats = selectedGoalId ? getGoalStats(selectedGoalId) : { plannedHours: 0, completedHours: 0, focusedHours: 0 };
-
-  // Enter goal detail mode
-  const handleSelectGoal = React.useCallback((goalId: string) => {
-    setSelectedGoalId(goalId);
-    setBacklogMode("goal-detail");
-    // Close inspiration gallery if open
-    setShowInspirationGallery(false);
-    // Close any open right sidebar content
-    setSelectedEventId(null);
-    setShowRightSidebar(false);
-  }, []);
-
-  // Exit goal detail mode
-  const handleCloseGoalDetail = React.useCallback(() => {
-    setSelectedGoalId(null);
-    setBacklogMode("view");
-  }, []);
-
-  // Handle goal notes change
-  const handleGoalNotesChange = React.useCallback((notes: string) => {
-    if (selectedGoalId) {
-      setGoalNotes((prev) => ({ ...prev, [selectedGoalId]: notes }));
-    }
-  }, [selectedGoalId]);
-
-  // -------------------------------------------------------------------------
-  // Plan Week Toggle
-  // -------------------------------------------------------------------------
-  const isPlanning = calendarMode === "blueprint";
-
-  const handlePlanWeekClick = () => {
-    setCalendarMode(isPlanning ? "schedule" : "blueprint");
-  };
 
   // -------------------------------------------------------------------------
   // Render
@@ -628,14 +498,7 @@ function ShellDemoContent({
                   ? "text-foreground"
                   : "text-muted-foreground"
               )}
-              onClick={() => {
-                if (selectedEvent) {
-                  setSelectedEventId(null);
-                  setShowRightSidebar(true);
-                } else {
-                  setShowRightSidebar(!showRightSidebar);
-                }
-              }}
+              onClick={handleAnalyticsToggle}
               title="Toggle analytics"
             >
               <RiPieChartLine className="size-4" />
