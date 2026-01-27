@@ -11,6 +11,3 @@ export type { GoalDetailMilestonesProps } from "./goal-detail-milestones";
 
 export { GoalDetailTasks } from "./goal-detail-tasks";
 export type { GoalDetailTasksProps } from "./goal-detail-tasks";
-
-export { GoalDetailStats } from "./goal-detail-stats";
-export type { GoalDetailStatsProps } from "./goal-detail-stats";

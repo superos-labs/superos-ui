@@ -2,16 +2,104 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { RiArrowRightSLine, RiCloseLine } from "@remixicon/react";
 import type { ScheduleGoal, ScheduleTask, GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
 import type { LifeArea } from "@/lib/types";
 import type { BacklogItem } from "@/components/backlog";
 import { GoalDetailHeader } from "./goal-detail-header";
 import { GoalDetailMilestones } from "./goal-detail-milestones";
 import { GoalDetailTasks } from "./goal-detail-tasks";
-import { GoalDetailStats } from "./goal-detail-stats";
 
 // =============================================================================
-// Notes Section
+// Collapsible Section
+// =============================================================================
+
+interface CollapsibleSectionProps {
+  label: string;
+  count?: { completed: number; total: number };
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}
+
+function CollapsibleSection({
+  label,
+  count,
+  defaultOpen = true,
+  children,
+}: CollapsibleSectionProps) {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 py-1.5 text-left transition-colors hover:text-foreground"
+      >
+        <RiArrowRightSLine
+          className={cn(
+            "size-4 text-muted-foreground/50 transition-transform",
+            isOpen && "rotate-90"
+          )}
+        />
+        <span className="text-xs text-muted-foreground/70">{label}</span>
+        {count && count.total > 0 && (
+          <span className="text-xs text-muted-foreground/40">
+            {count.completed}/{count.total}
+          </span>
+        )}
+      </button>
+      {isOpen && <div className="flex flex-col">{children}</div>}
+    </div>
+  );
+}
+
+// =============================================================================
+// Inline Progress Bar
+// =============================================================================
+
+interface InlineProgressProps {
+  stats: GoalStats;
+  className?: string;
+}
+
+function InlineProgress({ stats, className }: InlineProgressProps) {
+  const { plannedHours, completedHours } = stats;
+  const progress = plannedHours > 0
+    ? Math.min(Math.round((completedHours / plannedHours) * 100), 100)
+    : 0;
+
+  const formatHours = (hours: number): string => {
+    if (hours === 0) return "0h";
+    const formatted = hours.toFixed(1);
+    return formatted.endsWith(".0")
+      ? `${Math.round(hours)}h`
+      : `${formatted}h`;
+  };
+
+  return (
+    <div className={cn("flex flex-col gap-2", className)}>
+      <div className="h-1 overflow-hidden rounded-full bg-muted">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all",
+            progress >= 100 ? "bg-green-500" : "bg-foreground/25"
+          )}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <p className="text-xs text-muted-foreground">
+        <span className="font-medium text-foreground">
+          {formatHours(completedHours)}
+        </span>
+        {" completed · "}
+        {formatHours(plannedHours)} planned
+      </p>
+    </div>
+  );
+}
+
+// =============================================================================
+// Notes Section (borderless, auto-expanding)
 // =============================================================================
 
 interface GoalDetailNotesProps {
@@ -27,29 +115,28 @@ function GoalDetailNotes({
 }: GoalDetailNotesProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize textarea
+  // Auto-resize textarea based on content
   React.useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${Math.max(textarea.scrollHeight, 80)}px`;
+      // Minimum height of one line (~20px), grows with content
+      textarea.style.height = `${Math.max(textarea.scrollHeight, 20)}px`;
     }
   }, [notes]);
 
   return (
-    <div className={cn("flex flex-col gap-2 px-6", className)}>
-      <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        Notes
-      </h3>
+    <div className={cn("flex flex-col", className)}>
       <textarea
         ref={textareaRef}
         value={notes}
         onChange={(e) => onChange?.(e.target.value)}
-        placeholder="Add notes about this goal..."
+        placeholder="Add notes..."
+        rows={1}
         className={cn(
-          "min-h-[80px] w-full resize-none rounded-lg bg-muted/40 px-3 py-2.5 text-sm text-foreground leading-relaxed",
-          "placeholder:text-muted-foreground/50",
-          "focus:bg-muted/60 focus:outline-none focus:ring-1 focus:ring-border",
+          "w-full resize-none bg-transparent text-sm text-muted-foreground leading-relaxed",
+          "placeholder:text-muted-foreground/40",
+          "focus:outline-none",
           !onChange && "cursor-default",
         )}
         readOnly={!onChange}
@@ -73,6 +160,8 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   notes?: string;
   /** Callback when notes change */
   onNotesChange?: (notes: string) => void;
+  /** Callback when title is edited */
+  onTitleChange?: (title: string) => void;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -95,8 +184,6 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onToggleMilestone?: (milestoneId: string) => void;
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
   onDeleteMilestone?: (milestoneId: string) => void;
-  /** Toggle whether milestones are enabled for this goal */
-  onToggleMilestonesEnabled?: () => void;
   
   // Navigation
   onClose?: () => void;
@@ -108,6 +195,7 @@ export function GoalDetail({
   stats,
   notes = "",
   onNotesChange,
+  onTitleChange,
   getTaskSchedule,
   getTaskDeadline,
   onToggleTask,
@@ -122,7 +210,6 @@ export function GoalDetail({
   onToggleMilestone,
   onUpdateMilestone,
   onDeleteMilestone,
-  onToggleMilestonesEnabled,
   onClose,
   className,
   ...props
@@ -138,81 +225,103 @@ export function GoalDetail({
     tasks: goal.tasks,
   };
 
-  // Compute whether milestones are enabled (default to true if milestones exist)
-  const milestonesEnabled = goal.milestonesEnabled ?? (goal.milestones && goal.milestones.length > 0);
+  // Compute milestone and task counts for collapsible headers
+  const milestones = goal.milestones ?? [];
+  const tasks = goal.tasks ?? [];
+  const milestoneCount = {
+    completed: milestones.filter((m) => m.completed).length,
+    total: milestones.length,
+  };
+  const taskCount = {
+    completed: tasks.filter((t) => t.completed).length,
+    total: tasks.length,
+  };
+
+  // Show milestones section if there are any, or if user can add them
+  const showMilestones = milestones.length > 0 || onAddMilestone;
 
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
+        "relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
         className,
       )}
       {...props}
     >
+      {/* Close button - absolute positioned top right */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="absolute right-6 top-6 z-10 flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Close goal detail"
+        >
+          <RiCloseLine className="size-5" />
+        </button>
+      )}
+
       {/* Scrollable content */}
       <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {/* Header */}
-        <GoalDetailHeader
-          icon={goal.icon}
-          title={goal.label}
-          color={goal.color}
-          lifeArea={lifeArea}
-          milestonesEnabled={milestonesEnabled}
-          onToggleMilestonesEnabled={onToggleMilestonesEnabled}
-          onClose={onClose}
-        />
-
-        {/* Divider */}
-        <div className="mx-6 border-t border-border" />
-
-        {/* Notes */}
-        <GoalDetailNotes
-          notes={notes}
-          onChange={onNotesChange}
-          className="py-4"
-        />
-
-        {/* Milestones (only if enabled) */}
-        {milestonesEnabled && (
-          <>
-            {/* Divider */}
-            <div className="mx-6 border-t border-border" />
-
-            <GoalDetailMilestones
-              milestones={goal.milestones ?? []}
-              onAdd={onAddMilestone}
-              onToggle={onToggleMilestone}
-              onUpdate={onUpdateMilestone}
-              onDelete={onDeleteMilestone}
-              className="py-2"
+        <div className="w-full px-12 py-12">
+          {/* Content flows vertically with consistent spacing */}
+          <div className="flex flex-col gap-6">
+            {/* Header */}
+            <GoalDetailHeader
+              icon={goal.icon}
+              title={goal.label}
+              color={goal.color}
+              lifeArea={lifeArea}
+              onTitleChange={onTitleChange}
             />
-          </>
-        )}
 
-        {/* Divider */}
-        <div className="mx-6 border-t border-border" />
+            {/* Notes (inline, borderless) */}
+            <GoalDetailNotes
+              notes={notes}
+              onChange={onNotesChange}
+            />
 
-        {/* Tasks */}
-        <GoalDetailTasks
-          tasks={goal.tasks ?? []}
-          parentGoal={goalAsBacklogItem}
-          getTaskSchedule={getTaskSchedule}
-          getTaskDeadline={getTaskDeadline}
-          onToggleTask={onToggleTask}
-          onAddTask={onAddTask}
-          onUpdateTask={onUpdateTask}
-          onAddSubtask={onAddSubtask}
-          onToggleSubtask={onToggleSubtask}
-          onUpdateSubtask={onUpdateSubtask}
-          onDeleteSubtask={onDeleteSubtask}
-          onDeleteTask={onDeleteTask}
-          className="py-2"
-        />
-      </div>
+            {/* Milestones (collapsible) */}
+            {showMilestones && (
+              <CollapsibleSection
+                label="Milestones"
+                count={milestoneCount}
+                defaultOpen={true}
+              >
+                <GoalDetailMilestones
+                  milestones={milestones}
+                  onAdd={onAddMilestone}
+                  onToggle={onToggleMilestone}
+                  onUpdate={onUpdateMilestone}
+                  onDelete={onDeleteMilestone}
+                />
+              </CollapsibleSection>
+            )}
 
-      {/* Footer: Stats */}
-      <div className="shrink-0 border-t border-border">
-        <GoalDetailStats stats={stats} />
+            {/* Tasks (collapsible) */}
+            <CollapsibleSection
+              label="Tasks"
+              count={taskCount}
+              defaultOpen={true}
+            >
+              <GoalDetailTasks
+                tasks={tasks}
+                parentGoal={goalAsBacklogItem}
+                getTaskSchedule={getTaskSchedule}
+                getTaskDeadline={getTaskDeadline}
+                onToggleTask={onToggleTask}
+                onAddTask={onAddTask}
+                onUpdateTask={onUpdateTask}
+                onAddSubtask={onAddSubtask}
+                onToggleSubtask={onToggleSubtask}
+                onUpdateSubtask={onUpdateSubtask}
+                onDeleteSubtask={onDeleteSubtask}
+                onDeleteTask={onDeleteTask}
+              />
+            </CollapsibleSection>
+
+            {/* Progress (inline with content) */}
+            <InlineProgress stats={stats} className="mt-2" />
+          </div>
+        </div>
       </div>
     </div>
   );

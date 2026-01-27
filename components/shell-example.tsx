@@ -204,7 +204,6 @@ function ShellDemoContent({
     updateMilestone,
     toggleMilestoneComplete,
     deleteMilestone,
-    toggleMilestonesEnabled,
     handleDrop,
     hoveredEvent,
     hoverPosition,
@@ -732,7 +731,6 @@ function ShellDemoContent({
                 onToggleMilestone={(milestoneId) => toggleMilestoneComplete(selectedGoal.id, milestoneId)}
                 onUpdateMilestone={(milestoneId, label) => updateMilestone(selectedGoal.id, milestoneId, label)}
                 onDeleteMilestone={(milestoneId) => deleteMilestone(selectedGoal.id, milestoneId)}
-                onToggleMilestonesEnabled={() => toggleMilestonesEnabled(selectedGoal.id)}
                 onClose={handleCloseGoalDetail}
                 className="h-full"
               />

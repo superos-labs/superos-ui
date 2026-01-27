@@ -131,15 +131,11 @@ function GoalDetailDemo() {
     );
   }, [selectedGoalId]);
 
-  const handleToggleMilestonesEnabled = React.useCallback(() => {
+  const handleTitleChange = React.useCallback((title: string) => {
     setGoals((prev) =>
       prev.map((goal) => {
         if (goal.id !== selectedGoalId) return goal;
-        const currentlyEnabled = goal.milestonesEnabled ?? (goal.milestones && goal.milestones.length > 0);
-        return {
-          ...goal,
-          milestonesEnabled: !currentlyEnabled,
-        };
+        return { ...goal, label: title };
       })
     );
   }, [selectedGoalId]);
@@ -157,6 +153,7 @@ function GoalDetailDemo() {
           stats={SAMPLE_STATS[selectedGoalId] ?? { plannedHours: 0, completedHours: 0 }}
           notes={goalNotes[selectedGoalId] ?? ""}
           onNotesChange={handleNotesChange}
+          onTitleChange={handleTitleChange}
           onToggleTask={handleToggleTask}
           onAddTask={handleAddTask}
           onDeleteTask={handleDeleteTask}
@@ -164,7 +161,6 @@ function GoalDetailDemo() {
           onToggleMilestone={handleToggleMilestone}
           onUpdateMilestone={handleUpdateMilestone}
           onDeleteMilestone={handleDeleteMilestone}
-          onToggleMilestonesEnabled={handleToggleMilestonesEnabled}
           onClose={() => console.log("Close clicked")}
           className="h-[600px] w-[480px]"
         />

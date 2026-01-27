@@ -199,49 +199,34 @@ export function GoalDetailTasks({
   }, [tasks]);
 
   return (
-    <div className={cn("flex flex-col", className)}>
-      {/* Section header */}
-      <div className="flex items-center gap-2 px-6 py-2">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Tasks
-        </h3>
-        {tasks.length > 0 && (
-          <span className="text-xs text-muted-foreground/60">
-            {tasks.filter((t) => t.completed).length}/{tasks.length}
-          </span>
-        )}
-      </div>
+    <div className={cn("flex flex-col gap-0.5", className)}>
+      {sortedTasks.length === 0 && !onAddTask && (
+        <p className="py-2 text-sm text-muted-foreground/60">
+          No tasks yet
+        </p>
+      )}
 
-      {/* Task list */}
-      <div className="flex flex-col gap-0.5 px-3">
-        {sortedTasks.length === 0 && !onAddTask && (
-          <p className="px-3 py-2 text-sm text-muted-foreground/60">
-            No tasks yet
-          </p>
-        )}
+      {sortedTasks.map((task) => (
+        <GoalDetailTaskRow
+          key={task.id}
+          task={task}
+          parentGoal={parentGoal}
+          scheduleInfo={getTaskSchedule?.(task.id)}
+          deadlineInfo={getTaskDeadline?.(task.id)}
+          isExpanded={expandedTaskId === task.id}
+          onToggle={onToggleTask}
+          onExpand={handleExpand}
+          onUpdateTask={onUpdateTask}
+          onAddSubtask={onAddSubtask}
+          onToggleSubtask={onToggleSubtask}
+          onUpdateSubtask={onUpdateSubtask}
+          onDeleteSubtask={onDeleteSubtask}
+          onDeleteTask={onDeleteTask}
+        />
+      ))}
 
-        {sortedTasks.map((task) => (
-          <GoalDetailTaskRow
-            key={task.id}
-            task={task}
-            parentGoal={parentGoal}
-            scheduleInfo={getTaskSchedule?.(task.id)}
-            deadlineInfo={getTaskDeadline?.(task.id)}
-            isExpanded={expandedTaskId === task.id}
-            onToggle={onToggleTask}
-            onExpand={handleExpand}
-            onUpdateTask={onUpdateTask}
-            onAddSubtask={onAddSubtask}
-            onToggleSubtask={onToggleSubtask}
-            onUpdateSubtask={onUpdateSubtask}
-            onDeleteSubtask={onDeleteSubtask}
-            onDeleteTask={onDeleteTask}
-          />
-        ))}
-
-        {/* Inline task creator */}
-        {onAddTask && <InlineTaskCreator onSave={onAddTask} />}
-      </div>
+      {/* Inline task creator */}
+      {onAddTask && <InlineTaskCreator onSave={onAddTask} />}
     </div>
   );
 }

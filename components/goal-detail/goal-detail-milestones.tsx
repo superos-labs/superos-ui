@@ -235,48 +235,24 @@ export function GoalDetailMilestones({
   onDelete,
   className,
 }: GoalDetailMilestonesProps) {
-  // Don't render if no milestones and no ability to add
-  if (milestones.length === 0 && !onAdd) {
-    return null;
-  }
-
-  // Compute progress
-  const completedCount = milestones.filter((m) => m.completed).length;
-  const totalCount = milestones.length;
-
   // Find the current milestone (first incomplete)
   const currentMilestoneId = milestones.find((m) => !m.completed)?.id;
 
   return (
-    <div className={cn("flex flex-col", className)}>
-      {/* Section header */}
-      <div className="flex items-center gap-2 px-6 py-2">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Milestones
-        </h3>
-        {totalCount > 0 && (
-          <span className="text-xs text-muted-foreground/60">
-            {completedCount}/{totalCount}
-          </span>
-        )}
-      </div>
+    <div className={cn("flex flex-col gap-0.5", className)}>
+      {milestones.map((milestone) => (
+        <MilestoneRow
+          key={milestone.id}
+          milestone={milestone}
+          isCurrent={milestone.id === currentMilestoneId}
+          onToggle={onToggle ? () => onToggle(milestone.id) : undefined}
+          onUpdate={onUpdate ? (label) => onUpdate(milestone.id, label) : undefined}
+          onDelete={onDelete ? () => onDelete(milestone.id) : undefined}
+        />
+      ))}
 
-      {/* Milestone list */}
-      <div className="flex flex-col gap-0.5 px-3">
-        {milestones.map((milestone) => (
-          <MilestoneRow
-            key={milestone.id}
-            milestone={milestone}
-            isCurrent={milestone.id === currentMilestoneId}
-            onToggle={onToggle ? () => onToggle(milestone.id) : undefined}
-            onUpdate={onUpdate ? (label) => onUpdate(milestone.id, label) : undefined}
-            onDelete={onDelete ? () => onDelete(milestone.id) : undefined}
-          />
-        ))}
-
-        {/* Inline milestone creator */}
-        {onAdd && <InlineMilestoneCreator onSave={onAdd} />}
-      </div>
+      {/* Inline milestone creator */}
+      {onAdd && <InlineMilestoneCreator onSave={onAdd} />}
     </div>
   );
 }
