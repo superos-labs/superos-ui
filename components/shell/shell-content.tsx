@@ -100,6 +100,7 @@ export function ShellContentComponent({
   selectedGoalId: selectedGoalIdProp,
   hoveredEvent,
   hoverPosition,
+  hoveredDayIndex,
   // Commitment management
   enabledCommitmentIds,
   draftEnabledCommitmentIds,
@@ -298,6 +299,7 @@ export function ShellContentComponent({
     hoveredEvent,
     hoverPosition,
     hasClipboardContent: calendarHandlers.hasClipboardContent,
+    hoveredDayIndex,
     onCopy: calendarHandlers.onEventCopy,
     onPaste: calendarHandlers.onEventPaste,
     onDuplicate: (eventId, newDayIndex, newStartMinutes) =>
@@ -307,6 +309,7 @@ export function ShellContentComponent({
       const newStatus = currentStatus === "completed" ? "planned" : "completed";
       calendarHandlers.onEventStatusChange(eventId, newStatus);
     },
+    onMarkDayComplete: calendarHandlers.onMarkDayComplete,
   });
 
   const toasts = useToastAggregator(calendarToastMessage);

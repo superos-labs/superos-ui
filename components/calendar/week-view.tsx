@@ -51,6 +51,8 @@ export function WeekView({
   onDeadlineToggleComplete,
   onDeadlineUnassign,
   onDeadlineHover,
+  onDayHeaderHover,
+  onMarkDayComplete,
 }: WeekViewProps) {
   // Get day labels based on week start preference
   const dayLabels = getDayLabels(weekStartsOn);
@@ -111,6 +113,7 @@ export function WeekView({
               dayIndex={index}
               fullDate={date}
               onDeadlineDrop={onDeadlineDrop}
+              onDayHeaderHover={onDayHeaderHover}
             />
           );
         })}

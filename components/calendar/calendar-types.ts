@@ -194,6 +194,10 @@ export interface CalendarEventCallbacks {
   onGridPositionHover?: (position: HoverPosition | null) => void;
   /** Called when an event block is clicked (for sidebar selection) */
   onEventClick?: (event: CalendarEvent) => void;
+  /** Called when mouse enters/leaves a day header (for keyboard shortcuts) */
+  onDayHeaderHover?: (dayIndex: number | null) => void;
+  /** Called when user wants to mark all blocks on a day as complete (⌘Enter on header) */
+  onMarkDayComplete?: (dayIndex: number) => void;
 }
 
 /**
@@ -250,6 +254,8 @@ export interface CalendarDayHeaderProps {
   isDropTarget?: boolean;
   /** Called when an item is dropped on this header */
   onDeadlineDrop?: (dayIndex: number, date: string) => void;
+  /** Called when mouse enters/leaves this header (for keyboard shortcuts) */
+  onDayHeaderHover?: (dayIndex: number | null) => void;
 }
 
 export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
@@ -261,6 +267,10 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
+  /** Called when mouse enters/leaves the day header (for keyboard shortcuts) */
+  onDayHeaderHover?: (dayIndex: number | null) => void;
+  /** Called when user wants to mark all blocks on this day as complete */
+  onMarkDayComplete?: (dayIndex: number) => void;
 }
 
 export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
@@ -283,6 +293,10 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   onDeadlineUnassign?: (goalId: string, taskId: string) => void;
   /** Called when mouse enters/leaves a deadline pill (for keyboard shortcuts) */
   onDeadlineHover?: (deadline: import("@/lib/unified-schedule").DeadlineTask | null) => void;
+  /** Called when mouse enters/leaves a day header (for keyboard shortcuts) */
+  onDayHeaderHover?: (dayIndex: number | null) => void;
+  /** Called when user wants to mark all blocks on a day as complete */
+  onMarkDayComplete?: (dayIndex: number) => void;
 }
 
 /**

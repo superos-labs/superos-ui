@@ -15,6 +15,7 @@ export function CalendarDayHeader({
   fullDate,
   isDropTarget: _isDropTarget = false,
   onDeadlineDrop,
+  onDayHeaderHover,
 }: CalendarDayHeaderProps) {
   // Note: _isDropTarget is available for styling drop targets in the future
   const dragContext = useDragContextOptional();
@@ -63,6 +64,17 @@ export function CalendarDayHeader({
       dragContext.setPreviewPosition(null);
     }
   }, [dragContext, dayIndex]);
+  
+  // Handle mouse enter/leave for keyboard shortcuts (⌘Enter to mark all complete)
+  const handleMouseEnter = React.useCallback(() => {
+    if (dayIndex !== undefined) {
+      onDayHeaderHover?.(dayIndex);
+    }
+  }, [dayIndex, onDayHeaderHover]);
+  
+  const handleMouseLeave = React.useCallback(() => {
+    onDayHeaderHover?.(null);
+  }, [onDayHeaderHover]);
 
   return (
     <div
@@ -79,6 +91,8 @@ export function CalendarDayHeader({
       onPointerMove={isDraggingTask ? handlePointerMove : undefined}
       onPointerUp={isDraggingTask ? handlePointerUp : undefined}
       onPointerLeave={isDraggingTask ? handlePointerLeave : undefined}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <span
         className={cn(

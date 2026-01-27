@@ -37,6 +37,8 @@ export function Calendar({
   onDeadlineToggleComplete,
   onDeadlineUnassign,
   onDeadlineHover,
+  onDayHeaderHover,
+  onMarkDayComplete,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -71,6 +73,8 @@ export function Calendar({
         enableExternalDrop={enableExternalDrop}
         onExternalDrop={onExternalDrop}
         externalDragPreview={externalDragPreview}
+        onDayHeaderHover={onDayHeaderHover}
+        onMarkDayComplete={onMarkDayComplete}
       />
     );
   }
@@ -105,6 +109,8 @@ export function Calendar({
       onDeadlineToggleComplete={onDeadlineToggleComplete}
       onDeadlineUnassign={onDeadlineUnassign}
       onDeadlineHover={onDeadlineHover}
+      onDayHeaderHover={onDayHeaderHover}
+      onMarkDayComplete={onMarkDayComplete}
     />
   );
 }

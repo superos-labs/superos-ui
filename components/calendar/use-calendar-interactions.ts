@@ -37,6 +37,8 @@ export interface UseCalendarInteractionsReturn {
     hasClipboardContent: boolean;
     onEventHover: (event: CalendarEvent | null) => void;
     onGridPositionHover: (position: HoverPosition | null) => void;
+    onDayHeaderHover: (dayIndex: number | null) => void;
+    onMarkDayComplete: (dayIndex: number) => void;
   };
 }
 
@@ -86,12 +88,34 @@ export function useCalendarInteractions({
   // Hover state for keyboard shortcuts
   const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
   const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
+  const [hoveredDayIndex, setHoveredDayIndex] = React.useState<number | null>(null);
+
+  // Handle marking all blocks on a day as complete
+  const handleMarkDayComplete = React.useCallback(
+    (dayIndex: number) => {
+      const targetDate = weekDates[dayIndex].toISOString().split("T")[0];
+      setEvents((prev) => {
+        // Check if there are any incomplete blocks on this day
+        const hasIncomplete = prev.some(
+          (event) => event.date === targetDate && event.status !== "completed"
+        );
+        if (!hasIncomplete) return prev;
+        
+        // Mark all blocks on this day as complete
+        return prev.map((event) =>
+          event.date === targetDate ? { ...event, status: "completed" as const } : event
+        );
+      });
+    },
+    [weekDates]
+  );
 
   // Keyboard shortcuts hook
   const { toastMessage } = useCalendarKeyboard({
     hoveredEvent,
     hoverPosition,
     hasClipboardContent,
+    hoveredDayIndex,
     onCopy: (event) => copy(event),
     onPaste: (dayIndex, startMinutes) => {
       const pastedEvent = paste(dayIndex, startMinutes);
@@ -126,6 +150,7 @@ export function useCalendarInteractions({
         prev.map((e) => (e.id === eventId ? { ...e, status: newStatus } : e))
       );
     },
+    onMarkDayComplete: handleMarkDayComplete,
   });
 
   // Handle event resize - updates the event's start time and duration
@@ -288,6 +313,8 @@ export function useCalendarInteractions({
       hasClipboardContent,
       onEventHover: setHoveredEvent,
       onGridPositionHover: setHoverPosition,
+      onDayHeaderHover: setHoveredDayIndex,
+      onMarkDayComplete: handleMarkDayComplete,
     },
   };
 }

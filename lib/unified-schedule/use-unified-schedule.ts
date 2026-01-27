@@ -90,6 +90,7 @@ export function useUnifiedSchedule({
     setEvents,
     hoveredEvent,
     hoverPosition,
+    hoveredDayIndex,
     addEvent,
     updateEvent,
     deleteEvent: baseDeleteEvent,
@@ -418,6 +419,7 @@ export function useUnifiedSchedule({
     convertTaskBlockToGoalBlock,
     hoveredEvent,
     hoverPosition,
+    hoveredDayIndex,
     calendarHandlers,
   };
 }

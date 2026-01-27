@@ -60,6 +60,8 @@ export interface ShellContentProps {
   hoveredEvent: CalendarEvent | null;
   /** Hover position data */
   hoverPosition: HoverPosition | null;
+  /** Currently hovered day header index (for keyboard shortcuts) */
+  hoveredDayIndex: number | null;
 
   // -------------------------------------------------------------------------
   // Commitment Management

@@ -25,6 +25,8 @@ export interface UseEventStateReturn {
   hoveredEvent: CalendarEvent | null;
   /** Hover position for paste operations */
   hoverPosition: HoverPosition | null;
+  /** Hovered day header index (for day-complete shortcut) */
+  hoveredDayIndex: number | null;
   /** Event CRUD operations */
   addEvent: (event: CalendarEvent) => void;
   updateEvent: (eventId: string, updates: Partial<CalendarEvent>) => void;
@@ -62,6 +64,8 @@ export interface UseEventStateReturn {
     hasClipboardContent: boolean;
     onEventHover: (event: CalendarEvent | null) => void;
     onGridPositionHover: (position: HoverPosition | null) => void;
+    onDayHeaderHover: (dayIndex: number | null) => void;
+    onMarkDayComplete: (dayIndex: number) => void;
   };
 }
 
@@ -80,6 +84,7 @@ export function useEventState({
   const [events, setEvents] = React.useState<CalendarEvent[]>(initialEvents);
   const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
   const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
+  const [hoveredDayIndex, setHoveredDayIndex] = React.useState<number | null>(null);
 
   const addEvent = React.useCallback((event: CalendarEvent) => {
     setEvents((prev) => [...prev, event]);
@@ -285,6 +290,26 @@ export function useEventState({
     [deleteEvent]
   );
 
+  // Handle marking all blocks on a day as complete
+  const handleMarkDayComplete = React.useCallback(
+    (dayIndex: number) => {
+      const targetDate = weekDates[dayIndex].toISOString().split("T")[0];
+      setEvents((prev) => {
+        // Check if there are any incomplete blocks on this day
+        const hasIncomplete = prev.some(
+          (event) => event.date === targetDate && event.status !== "completed"
+        );
+        if (!hasIncomplete) return prev;
+        
+        // Mark all blocks on this day as complete
+        return prev.map((event) =>
+          event.date === targetDate ? { ...event, status: "completed" as const } : event
+        );
+      });
+    },
+    [weekDates]
+  );
+
   const calendarHandlers = React.useMemo(
     () => ({
       onEventResize: handleEventResize,
@@ -300,6 +325,8 @@ export function useEventState({
       hasClipboardContent,
       onEventHover: setHoveredEvent,
       onGridPositionHover: setHoverPosition,
+      onDayHeaderHover: setHoveredDayIndex,
+      onMarkDayComplete: handleMarkDayComplete,
     }),
     [
       handleEventResize,
@@ -313,6 +340,7 @@ export function useEventState({
       handleEventStatusChange,
       handleEventPaste,
       hasClipboardContent,
+      handleMarkDayComplete,
     ]
   );
 
@@ -321,6 +349,7 @@ export function useEventState({
     setEvents,
     hoveredEvent,
     hoverPosition,
+    hoveredDayIndex,
     addEvent,
     updateEvent,
     deleteEvent,

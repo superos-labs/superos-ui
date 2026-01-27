@@ -217,6 +217,7 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
     selectedGoalId,
     hoveredEvent: schedule.hoveredEvent,
     hoverPosition: schedule.hoverPosition,
+    hoveredDayIndex: schedule.hoveredDayIndex,
 
     // Commitment management
     enabledCommitmentIds: schedule.enabledCommitmentIds as Set<string>,

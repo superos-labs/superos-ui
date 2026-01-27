@@ -13,12 +13,16 @@ export interface UseCalendarKeyboardOptions {
   hoverPosition: HoverPosition | null;
   /** Whether clipboard has content */
   hasClipboardContent: boolean;
+  /** Currently hovered day header index (null if none) */
+  hoveredDayIndex?: number | null;
   /** Callbacks */
   onCopy?: (event: CalendarEvent) => void;
   onPaste?: (dayIndex: number, startMinutes: number) => void;
   onDuplicate?: (eventId: string, dayIndex: number, startMinutes: number) => void;
   onDelete?: (eventId: string) => void;
   onToggleComplete?: (eventId: string, currentStatus: CalendarEvent["status"]) => void;
+  /** Called when ⌘Enter is pressed while hovering a day header */
+  onMarkDayComplete?: (dayIndex: number) => void;
 }
 
 export interface UseCalendarKeyboardReturn {
@@ -41,11 +45,13 @@ export function useCalendarKeyboard({
   hoveredEvent,
   hoverPosition,
   hasClipboardContent,
+  hoveredDayIndex,
   onCopy,
   onPaste,
   onDuplicate,
   onDelete,
   onToggleComplete,
+  onMarkDayComplete,
 }: UseCalendarKeyboardOptions): UseCalendarKeyboardReturn {
   const [toastMessage, setToastMessage] = React.useState<string | null>(null);
 
@@ -73,10 +79,11 @@ export function useCalendarKeyboard({
         return;
       }
 
-      // Only act when hovering within the calendar grid
+      // Only act when hovering within the calendar grid or day header
       const isHoveringBlock = hoveredEvent !== null;
       const isHoveringGrid = hoverPosition !== null;
-      if (!isHoveringBlock && !isHoveringGrid) return;
+      const isHoveringDayHeader = hoveredDayIndex !== null && hoveredDayIndex !== undefined;
+      if (!isHoveringBlock && !isHoveringGrid && !isHoveringDayHeader) return;
 
       const isMeta = e.metaKey || e.ctrlKey;
 
@@ -106,6 +113,14 @@ export function useCalendarKeyboard({
         return;
       }
 
+      // ⌘Enter on day header - Mark all blocks on that day complete
+      if (isMeta && e.key === "Enter" && !isHoveringBlock && hoveredDayIndex !== null && hoveredDayIndex !== undefined && onMarkDayComplete) {
+        e.preventDefault();
+        onMarkDayComplete(hoveredDayIndex);
+        showToast("All blocks completed");
+        return;
+      }
+
       // ⌘Enter - Toggle complete
       if (isMeta && e.key === "Enter" && isHoveringBlock && onToggleComplete) {
         e.preventDefault();
@@ -130,11 +145,13 @@ export function useCalendarKeyboard({
     hoveredEvent,
     hoverPosition,
     hasClipboardContent,
+    hoveredDayIndex,
     onCopy,
     onPaste,
     onDuplicate,
     onDelete,
     onToggleComplete,
+    onMarkDayComplete,
     showToast,
   ]);
 

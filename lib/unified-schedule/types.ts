@@ -269,6 +269,7 @@ export interface UseUnifiedScheduleReturn {
   // Hover state (for keyboard shortcuts)
   hoveredEvent: CalendarEvent | null;
   hoverPosition: HoverPosition | null;
+  hoveredDayIndex: number | null;
 
   // Standard calendar handlers (spread onto Calendar component)
   calendarHandlers: {
@@ -301,5 +302,7 @@ export interface UseUnifiedScheduleReturn {
     hasClipboardContent: boolean;
     onEventHover: (event: CalendarEvent | null) => void;
     onGridPositionHover: (position: HoverPosition | null) => void;
+    onDayHeaderHover: (dayIndex: number | null) => void;
+    onMarkDayComplete: (dayIndex: number) => void;
   };
 }

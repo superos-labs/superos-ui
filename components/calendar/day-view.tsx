@@ -44,6 +44,8 @@ export function DayView({
   enableExternalDrop = false,
   onExternalDrop,
   externalDragPreview,
+  onDayHeaderHover,
+  onMarkDayComplete,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -108,6 +110,9 @@ export function DayView({
             isToday={today}
             showBorder={false}
             className="bg-white dark:bg-zinc-950"
+            dayIndex={selectedDayIndex}
+            fullDate={selectedDate}
+            onDayHeaderHover={onDayHeaderHover}
           />
         </div>
       )}
