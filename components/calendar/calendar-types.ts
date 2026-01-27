@@ -123,6 +123,8 @@ export interface CalendarEvent {
   notes?: string;
   /** For goal blocks: task IDs explicitly assigned to this block (empty by default) */
   assignedTaskIds?: string[];
+  /** Accumulated focus time in minutes (from focus sessions) */
+  focusedMinutes?: number;
 }
 
 // =============================================================================

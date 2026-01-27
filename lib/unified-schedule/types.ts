@@ -74,8 +74,10 @@ export interface ScheduleCommitment {
 export interface GoalStats {
   /** Total hours from all scheduled blocks */
   plannedHours: number;
-  /** Total hours from completed blocks */
+  /** Total hours from blocks marked as completed */
   completedHours: number;
+  /** Total hours of actual focus time tracked */
+  focusedHours: number;
 }
 
 /** Schedule info for a task */

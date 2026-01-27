@@ -106,10 +106,17 @@ export function useScheduleStats({
       const completedMinutes = goalEvents
         .filter((e) => e.status === "completed")
         .reduce((sum, e) => sum + e.durationMinutes, 0);
+      
+      // Sum actual focus time from sessions
+      const focusedMinutes = goalEvents.reduce(
+        (sum, e) => sum + (e.focusedMinutes ?? 0),
+        0
+      );
 
       return {
         plannedHours: Math.round((plannedMinutes / 60) * 10) / 10,
         completedHours: Math.round((completedMinutes / 60) * 10) / 10,
+        focusedHours: Math.round((focusedMinutes / 60) * 10) / 10,
       };
     },
     [events, isEventInWeek]
@@ -130,6 +137,7 @@ export function useScheduleStats({
       return {
         plannedHours: Math.round((plannedMinutes / 60) * 10) / 10,
         completedHours: Math.round((completedMinutes / 60) * 10) / 10,
+        focusedHours: 0, // Commitments don't track focus time
       };
     },
     [filteredEvents]

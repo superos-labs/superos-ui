@@ -219,6 +219,12 @@ function ShellDemoContent({
   // -------------------------------------------------------------------------
   // Focus Mode
   // -------------------------------------------------------------------------
+  // Use ref to avoid stale closure in onSessionEnd callback
+  const calendarEventsRef = React.useRef(calendarEvents);
+  React.useEffect(() => {
+    calendarEventsRef.current = calendarEvents;
+  }, [calendarEvents]);
+
   const {
     session: focusSession,
     isRunning: focusIsRunning,
@@ -229,10 +235,17 @@ function ShellDemoContent({
     end: endFocus,
   } = useFocusSession({
     onSessionEnd: (completed) => {
-      console.log("Focus session completed:", {
-        blockId: completed.blockId,
-        totalMs: completed.totalMs,
-        segments: completed.segments.length,
+      // Find the event using ref to get current value (avoid stale closure)
+      const event = calendarEventsRef.current.find((e) => e.id === completed.blockId);
+      if (!event) return;
+      
+      // Skip commitments (they don't track focus time)
+      if (event.blockType === "commitment") return;
+      
+      // Accumulate focus time on the event
+      const additionalMinutes = completed.totalMs / 60000;
+      schedule.updateEvent(completed.blockId, {
+        focusedMinutes: (event.focusedMinutes ?? 0) + additionalMinutes,
       });
     },
   });
@@ -442,7 +455,7 @@ function ShellDemoContent({
     [commitments, getCommitmentStats]
   );
   const analyticsGoals = React.useMemo(
-    () => toAnalyticsItems(goals, getGoalStats),
+    () => toAnalyticsItems(goals, getGoalStats, { useFocusedHours: true }),
     [goals, getGoalStats]
   );
 
@@ -500,7 +513,7 @@ function ShellDemoContent({
   }, [selectedGoal]);
 
   // Get stats for selected goal
-  const selectedGoalStats = selectedGoalId ? getGoalStats(selectedGoalId) : { plannedHours: 0, completedHours: 0 };
+  const selectedGoalStats = selectedGoalId ? getGoalStats(selectedGoalId) : { plannedHours: 0, completedHours: 0, focusedHours: 0 };
 
   // Enter goal detail mode
   const handleSelectGoal = React.useCallback((goalId: string) => {

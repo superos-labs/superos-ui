@@ -13,10 +13,10 @@ import {
 
 // Sample stats for demo
 const SAMPLE_STATS: Record<string, GoalStats> = {
-  superos: { plannedHours: 24, completedHours: 9.5 },
-  marathon: { plannedHours: 6, completedHours: 2 },
-  book: { plannedHours: 8, completedHours: 3.5 },
-  spanish: { plannedHours: 5, completedHours: 1.5 },
+  superos: { plannedHours: 24, completedHours: 9.5, focusedHours: 8.5 },
+  marathon: { plannedHours: 6, completedHours: 2, focusedHours: 1.5 },
+  book: { plannedHours: 8, completedHours: 3.5, focusedHours: 3 },
+  spanish: { plannedHours: 5, completedHours: 1.5, focusedHours: 1.5 },
 };
 
 function GoalDetailDemo() {
@@ -150,7 +150,7 @@ function GoalDetailDemo() {
         <GoalDetail
           goal={selectedGoal}
           lifeArea={selectedLifeArea}
-          stats={SAMPLE_STATS[selectedGoalId] ?? { plannedHours: 0, completedHours: 0 }}
+          stats={SAMPLE_STATS[selectedGoalId] ?? { plannedHours: 0, completedHours: 0, focusedHours: 0 }}
           notes={goalNotes[selectedGoalId] ?? ""}
           onNotesChange={handleNotesChange}
           onTitleChange={handleTitleChange}
