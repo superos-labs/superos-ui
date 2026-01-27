@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { Subtask, ScheduleTask, ScheduleGoal } from "./types";
+import type { Subtask, Milestone, ScheduleTask, ScheduleGoal } from "./types";
 
 // ============================================================================
 // Types
@@ -25,6 +25,13 @@ export interface UseGoalStateReturn {
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Find a task by ID across all goals */
   findTask: (taskId: string) => { goal: ScheduleGoal; task: ScheduleTask } | null;
+  // Milestone CRUD
+  addMilestone: (goalId: string, label: string) => string;
+  updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
+  toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
+  deleteMilestone: (goalId: string, milestoneId: string) => void;
+  /** Toggle whether milestones are enabled for a goal */
+  toggleMilestonesEnabled: (goalId: string) => void;
 }
 
 // ============================================================================
@@ -218,6 +225,89 @@ export function useGoalState({
     []
   );
 
+  // -------------------------------------------------------------------------
+  // Milestone CRUD
+  // -------------------------------------------------------------------------
+
+  const addMilestone = React.useCallback((goalId: string, label: string): string => {
+    const newMilestone: Milestone = {
+      id: crypto.randomUUID(),
+      label,
+      completed: false,
+    };
+    setGoals((prev) =>
+      prev.map((g) =>
+        g.id === goalId
+          ? { ...g, milestones: [...(g.milestones ?? []), newMilestone] }
+          : g
+      )
+    );
+    return newMilestone.id;
+  }, []);
+
+  const updateMilestone = React.useCallback(
+    (goalId: string, milestoneId: string, label: string) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                milestones: g.milestones?.map((m) =>
+                  m.id === milestoneId ? { ...m, label } : m
+                ),
+              }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  const toggleMilestoneComplete = React.useCallback(
+    (goalId: string, milestoneId: string) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                milestones: g.milestones?.map((m) =>
+                  m.id === milestoneId ? { ...m, completed: !m.completed } : m
+                ),
+              }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  const deleteMilestone = React.useCallback(
+    (goalId: string, milestoneId: string) => {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === goalId
+            ? { ...g, milestones: g.milestones?.filter((m) => m.id !== milestoneId) }
+            : g
+        )
+      );
+    },
+    []
+  );
+
+  const toggleMilestonesEnabled = React.useCallback(
+    (goalId: string) => {
+      setGoals((prev) =>
+        prev.map((g) => {
+          if (g.id !== goalId) return g;
+          // If milestonesEnabled is undefined, treat it as enabled (true) if milestones exist
+          const currentlyEnabled = g.milestonesEnabled ?? (g.milestones && g.milestones.length > 0);
+          return { ...g, milestonesEnabled: !currentlyEnabled };
+        })
+      );
+    },
+    []
+  );
+
   const findTask = React.useCallback(
     (taskId: string): { goal: ScheduleGoal; task: ScheduleTask } | null => {
       for (const goal of goals) {
@@ -242,5 +332,11 @@ export function useGoalState({
     toggleSubtaskComplete,
     deleteSubtask,
     findTask,
+    // Milestone CRUD
+    addMilestone,
+    updateMilestone,
+    toggleMilestoneComplete,
+    deleteMilestone,
+    toggleMilestonesEnabled,
   };
 }

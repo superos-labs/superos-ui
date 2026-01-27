@@ -75,6 +75,75 @@ function GoalDetailDemo() {
     );
   }, [selectedGoalId]);
 
+  // Milestone handlers
+  const handleAddMilestone = React.useCallback((label: string) => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        return {
+          ...goal,
+          milestones: [
+            ...(goal.milestones ?? []),
+            { id: crypto.randomUUID(), label, completed: false },
+          ],
+        };
+      })
+    );
+  }, [selectedGoalId]);
+
+  const handleToggleMilestone = React.useCallback((milestoneId: string) => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        return {
+          ...goal,
+          milestones: goal.milestones?.map((m) =>
+            m.id === milestoneId ? { ...m, completed: !m.completed } : m
+          ),
+        };
+      })
+    );
+  }, [selectedGoalId]);
+
+  const handleUpdateMilestone = React.useCallback((milestoneId: string, label: string) => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        return {
+          ...goal,
+          milestones: goal.milestones?.map((m) =>
+            m.id === milestoneId ? { ...m, label } : m
+          ),
+        };
+      })
+    );
+  }, [selectedGoalId]);
+
+  const handleDeleteMilestone = React.useCallback((milestoneId: string) => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        return {
+          ...goal,
+          milestones: goal.milestones?.filter((m) => m.id !== milestoneId),
+        };
+      })
+    );
+  }, [selectedGoalId]);
+
+  const handleToggleMilestonesEnabled = React.useCallback(() => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        const currentlyEnabled = goal.milestonesEnabled ?? (goal.milestones && goal.milestones.length > 0);
+        return {
+          ...goal,
+          milestonesEnabled: !currentlyEnabled,
+        };
+      })
+    );
+  }, [selectedGoalId]);
+
   if (!selectedGoal) {
     return <div className="p-8 text-muted-foreground">No goal selected</div>;
   }
@@ -91,6 +160,11 @@ function GoalDetailDemo() {
           onToggleTask={handleToggleTask}
           onAddTask={handleAddTask}
           onDeleteTask={handleDeleteTask}
+          onAddMilestone={handleAddMilestone}
+          onToggleMilestone={handleToggleMilestone}
+          onUpdateMilestone={handleUpdateMilestone}
+          onDeleteMilestone={handleDeleteMilestone}
+          onToggleMilestonesEnabled={handleToggleMilestonesEnabled}
           onClose={() => console.log("Close clicked")}
           className="h-[600px] w-[480px]"
         />

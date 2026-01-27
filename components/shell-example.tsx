@@ -182,6 +182,12 @@ function ShellDemoContent({
     deleteSubtask,
     deleteTask,
     clearTaskDeadline,
+    // Milestone CRUD
+    addMilestone,
+    updateMilestone,
+    toggleMilestoneComplete,
+    deleteMilestone,
+    toggleMilestonesEnabled,
     handleDrop,
     hoveredEvent,
     hoverPosition,
@@ -664,6 +670,11 @@ function ShellDemoContent({
                 onToggleSubtask={(taskId, subtaskId) => toggleSubtaskComplete(selectedGoal.id, taskId, subtaskId)}
                 onUpdateSubtask={(taskId, subtaskId, label) => updateSubtask(selectedGoal.id, taskId, subtaskId, label)}
                 onDeleteSubtask={(taskId, subtaskId) => deleteSubtask(selectedGoal.id, taskId, subtaskId)}
+                onAddMilestone={(label) => addMilestone(selectedGoal.id, label)}
+                onToggleMilestone={(milestoneId) => toggleMilestoneComplete(selectedGoal.id, milestoneId)}
+                onUpdateMilestone={(milestoneId, label) => updateMilestone(selectedGoal.id, milestoneId, label)}
+                onDeleteMilestone={(milestoneId) => deleteMilestone(selectedGoal.id, milestoneId)}
+                onToggleMilestonesEnabled={() => toggleMilestonesEnabled(selectedGoal.id)}
                 onClose={handleCloseGoalDetail}
                 className="h-full"
               />

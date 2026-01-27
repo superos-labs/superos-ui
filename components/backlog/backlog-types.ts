@@ -4,10 +4,10 @@
 
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
-import type { ScheduleTask } from "@/lib/unified-schedule";
+import type { ScheduleTask, Milestone } from "@/lib/unified-schedule";
 
 // Re-export for convenience
-export type { LifeArea, GoalIconOption };
+export type { LifeArea, GoalIconOption, Milestone };
 
 /**
  * BacklogTask is a re-export of ScheduleTask for backward compatibility.
@@ -28,8 +28,10 @@ export interface BacklogItem {
   plannedHours?: number;
   /** @deprecated Use getGoalStats instead - hours are now computed from calendar blocks */
   completedHours?: number;
-  /** Current milestone - the next concrete step toward this goal */
-  milestone?: string;
+  /** Ordered milestones (sequential steps toward the goal) */
+  milestones?: Milestone[];
+  /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
+  milestonesEnabled?: boolean;
   /** Tasks associated with this item */
   tasks?: BacklogTask[];
   /** If true, commitment cannot be disabled (only for commitments) */
@@ -38,9 +40,6 @@ export interface BacklogItem {
 
 /** Mode for the backlog display */
 export type BacklogMode = "view" | "edit-commitments" | "goal-detail";
-
-/** How to display goals - by goal name or milestone */
-export type GoalDisplayMode = "goal" | "milestone";
 
 export interface BacklogGroup {
   id: string;

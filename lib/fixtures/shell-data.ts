@@ -122,7 +122,13 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiRocketLine,
     color: "violet",
     lifeAreaId: "career",
-    milestone: "Ship billing integration",
+    milestones: [
+      { id: "superos-m1", label: "Research competitors", completed: true },
+      { id: "superos-m2", label: "Write product spec", completed: true },
+      { id: "superos-m3", label: "Design billing UI", completed: true },
+      { id: "superos-m4", label: "Ship billing integration", completed: false },
+      { id: "superos-m5", label: "Launch to beta users", completed: false },
+    ],
     tasks: [
       { 
         id: "superos-1", 
@@ -151,7 +157,12 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiMedalLine,
     color: "rose",
     lifeAreaId: "health",
-    milestone: "Complete 10K under 50min",
+    milestones: [
+      { id: "marathon-m1", label: "Run 5K without stopping", completed: true },
+      { id: "marathon-m2", label: "Complete 10K under 50min", completed: false },
+      { id: "marathon-m3", label: "Run half marathon", completed: false },
+      { id: "marathon-m4", label: "Complete full marathon", completed: false },
+    ],
     tasks: [
       { id: "marathon-1", label: "Run 5K three times this week", completed: true },
       { 
@@ -168,7 +179,13 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiPenNibLine,
     color: "teal",
     lifeAreaId: "creative",
-    milestone: "Finish chapter 3 draft",
+    milestones: [
+      { id: "book-m1", label: "Complete outline", completed: true },
+      { id: "book-m2", label: "Finish chapter 1 draft", completed: true },
+      { id: "book-m3", label: "Finish chapter 2 draft", completed: true },
+      { id: "book-m4", label: "Finish chapter 3 draft", completed: false },
+      { id: "book-m5", label: "Complete first draft", completed: false },
+    ],
     tasks: [
       { id: "book-1", label: "Outline the main conflict", completed: true },
       { id: "book-2", label: "Write the opening scene", completed: true },
@@ -190,7 +207,12 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiCodeLine,
     color: "blue",
     lifeAreaId: "learning",
-    milestone: "Complete A2 certification",
+    milestones: [
+      { id: "spanish-m1", label: "Complete A1 basics", completed: true },
+      { id: "spanish-m2", label: "Complete A2 certification", completed: false },
+      { id: "spanish-m3", label: "Pass B1 exam", completed: false },
+      { id: "spanish-m4", label: "Achieve conversational fluency", completed: false },
+    ],
     tasks: [
       { id: "spanish-1", label: "Complete Duolingo lesson", completed: true },
       { id: "spanish-2", label: "Watch Spanish movie with subtitles", completed: false },

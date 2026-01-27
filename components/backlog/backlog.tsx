@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
-import type { BacklogItem, BacklogMode, GoalDisplayMode, NewGoalData } from "./backlog-types";
+import type { BacklogItem, BacklogMode, NewGoalData } from "./backlog-types";
 import { BacklogSection } from "./backlog-section";
 import { EditCommitmentsView } from "./edit-commitments-view";
 import { BacklogGoalList } from "./backlog-goal-list";
@@ -17,8 +17,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   showHours?: boolean;
   showTasks?: boolean;
   showCommitments?: boolean;
-  /** Whether to display goal or milestone as primary title for goals */
-  goalDisplayMode?: GoalDisplayMode;
   onAddCommitment?: () => void;
   onAddGoal?: () => void;
   onToggleGoalTask?: (goalId: string, taskId: string) => void;
@@ -88,7 +86,6 @@ export function Backlog({
   showHours = true,
   showTasks = true,
   showCommitments = true,
-  goalDisplayMode = "goal",
   onAddCommitment,
   onAddGoal,
   onToggleGoalTask,
@@ -189,7 +186,6 @@ export function Backlog({
           items={goals}
           showHours={showHours}
           showTasks={showTasks}
-          goalDisplayMode={goalDisplayMode}
           onAddItem={onAddGoal}
           onItemClick={onSelectGoal}
           onToggleTask={onToggleGoalTask}

@@ -6,6 +6,7 @@ import type { ScheduleGoal, ScheduleTask, GoalStats, TaskScheduleInfo, TaskDeadl
 import type { LifeArea } from "@/lib/types";
 import type { BacklogItem } from "@/components/backlog";
 import { GoalDetailHeader } from "./goal-detail-header";
+import { GoalDetailMilestones } from "./goal-detail-milestones";
 import { GoalDetailTasks } from "./goal-detail-tasks";
 import { GoalDetailStats } from "./goal-detail-stats";
 
@@ -89,6 +90,14 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onUpdateSubtask?: (taskId: string, subtaskId: string, label: string) => void;
   onDeleteSubtask?: (taskId: string, subtaskId: string) => void;
   
+  // Milestone callbacks
+  onAddMilestone?: (label: string) => void;
+  onToggleMilestone?: (milestoneId: string) => void;
+  onUpdateMilestone?: (milestoneId: string, label: string) => void;
+  onDeleteMilestone?: (milestoneId: string) => void;
+  /** Toggle whether milestones are enabled for this goal */
+  onToggleMilestonesEnabled?: () => void;
+  
   // Navigation
   onClose?: () => void;
 }
@@ -109,6 +118,11 @@ export function GoalDetail({
   onToggleSubtask,
   onUpdateSubtask,
   onDeleteSubtask,
+  onAddMilestone,
+  onToggleMilestone,
+  onUpdateMilestone,
+  onDeleteMilestone,
+  onToggleMilestonesEnabled,
   onClose,
   className,
   ...props
@@ -119,9 +133,13 @@ export function GoalDetail({
     label: goal.label,
     icon: goal.icon,
     color: goal.color,
-    milestone: goal.milestone,
+    milestones: goal.milestones,
+    milestonesEnabled: goal.milestonesEnabled,
     tasks: goal.tasks,
   };
+
+  // Compute whether milestones are enabled (default to true if milestones exist)
+  const milestonesEnabled = goal.milestonesEnabled ?? (goal.milestones && goal.milestones.length > 0);
 
   return (
     <div
@@ -139,6 +157,8 @@ export function GoalDetail({
           title={goal.label}
           color={goal.color}
           lifeArea={lifeArea}
+          milestonesEnabled={milestonesEnabled}
+          onToggleMilestonesEnabled={onToggleMilestonesEnabled}
           onClose={onClose}
         />
 
@@ -151,6 +171,23 @@ export function GoalDetail({
           onChange={onNotesChange}
           className="py-4"
         />
+
+        {/* Milestones (only if enabled) */}
+        {milestonesEnabled && (
+          <>
+            {/* Divider */}
+            <div className="mx-6 border-t border-border" />
+
+            <GoalDetailMilestones
+              milestones={goal.milestones ?? []}
+              onAdd={onAddMilestone}
+              onToggle={onToggleMilestone}
+              onUpdate={onUpdateMilestone}
+              onDelete={onDeleteMilestone}
+              className="py-2"
+            />
+          </>
+        )}
 
         {/* Divider */}
         <div className="mx-6 border-t border-border" />

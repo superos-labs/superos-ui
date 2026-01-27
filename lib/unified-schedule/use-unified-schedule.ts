@@ -54,6 +54,12 @@ export function useUnifiedSchedule({
     toggleSubtaskComplete,
     deleteSubtask,
     findTask,
+    // Milestone CRUD
+    addMilestone,
+    updateMilestone,
+    toggleMilestoneComplete,
+    deleteMilestone,
+    toggleMilestonesEnabled,
   } = useGoalState({ initialGoals });
 
   // -------------------------------------------------------------------------
@@ -385,6 +391,12 @@ export function useUnifiedSchedule({
     updateSubtask,
     toggleSubtaskComplete,
     deleteSubtask,
+    // Milestone CRUD
+    addMilestone,
+    updateMilestone,
+    toggleMilestoneComplete,
+    deleteMilestone,
+    toggleMilestonesEnabled,
     scheduleGoal,
     scheduleTask,
     scheduleCommitment,

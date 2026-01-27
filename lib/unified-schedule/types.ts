@@ -19,6 +19,13 @@ export interface Subtask {
   completed: boolean;
 }
 
+/** Milestone within a goal (ordered sequential steps) */
+export interface Milestone {
+  id: string;
+  label: string;
+  completed: boolean;
+}
+
 /** Task within a goal */
 export interface ScheduleTask {
   id: string;
@@ -42,7 +49,10 @@ export interface ScheduleGoal {
   color: GoalColor;
   /** Life area this goal belongs to */
   lifeAreaId: string;
-  milestone?: string;
+  /** Ordered milestones (sequential steps toward the goal) */
+  milestones?: Milestone[];
+  /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
+  milestonesEnabled?: boolean;
   tasks?: ScheduleTask[];
 }
 
@@ -166,6 +176,14 @@ export interface UseUnifiedScheduleReturn {
   updateSubtask: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
   toggleSubtaskComplete: (goalId: string, taskId: string, subtaskId: string) => void;
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
+
+  // Milestone CRUD actions
+  addMilestone: (goalId: string, label: string) => string;
+  updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
+  toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
+  deleteMilestone: (goalId: string, milestoneId: string) => void;
+  /** Toggle whether milestones are enabled for a goal */
+  toggleMilestonesEnabled: (goalId: string) => void;
 
   // Scheduling actions (from drag-drop)
   scheduleGoal: (goalId: string, dayIndex: number, startMinutes: number) => void;

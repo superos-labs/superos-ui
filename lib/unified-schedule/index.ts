@@ -27,6 +27,7 @@ export type { UseWeekNavigationOptions } from "./use-week-navigation";
 export type {
   // Core data types
   Subtask,
+  Milestone,
   ScheduleTask,
   ScheduleGoal,
   ScheduleCommitment,

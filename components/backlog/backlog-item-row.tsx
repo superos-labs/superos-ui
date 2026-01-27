@@ -5,13 +5,12 @@ import { cn, formatHours } from "@/lib/utils";
 import {
   RiMoreLine,
   RiShiningLine,
-  RiFlagLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
 import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
-import type { BacklogItem, GoalDisplayMode } from "./backlog-types";
+import type { BacklogItem } from "./backlog-types";
 import { TaskRow } from "./task-row";
 import { InlineTaskCreator } from "./inline-creators";
 
@@ -21,8 +20,6 @@ export interface BacklogItemRowProps {
   stats?: GoalStats;
   showHours?: boolean;
   showTasks?: boolean;
-  /** For goals with milestones, which should be the primary title */
-  goalDisplayMode?: GoalDisplayMode;
   /** Callback when the item row is clicked (for entering goal-detail mode) */
   onItemClick?: (itemId: string) => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
@@ -56,7 +53,6 @@ export function BacklogItemRow({
   stats,
   showHours = true,
   showTasks = true,
-  goalDisplayMode = "goal",
   onItemClick,
   onToggleTask,
   onAddTask,
@@ -106,12 +102,13 @@ export function BacklogItemRow({
     disabled: !canDrag,
   });
 
-  // Determine what to show as primary vs secondary based on display mode
-  const hasMilestone = !!item.milestone;
-  const showMilestoneAsPrimary =
-    goalDisplayMode === "milestone" && hasMilestone;
-  const primaryText = showMilestoneAsPrimary ? item.milestone : item.label;
-  const secondaryText = showMilestoneAsPrimary ? item.label : item.milestone;
+  // Compute current milestone (first incomplete) and progress
+  // Only show if milestones are enabled (default to true if milestones exist)
+  const milestonesEnabled = item.milestonesEnabled ?? (item.milestones && item.milestones.length > 0);
+  const currentMilestone = milestonesEnabled ? item.milestones?.find(m => !m.completed) : undefined;
+  const completedMilestones = item.milestones?.filter(m => m.completed).length ?? 0;
+  const totalMilestones = item.milestones?.length ?? 0;
+  const showMilestones = milestonesEnabled && totalMilestones > 0;
 
   // Handle row click
   const handleRowClick = React.useCallback(() => {
@@ -136,16 +133,15 @@ export function BacklogItemRow({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm font-medium text-foreground">
-            {primaryText}
+            {item.label}
           </span>
-          {secondaryText && (
+          {showMilestones && currentMilestone && (
             <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-              {showMilestoneAsPrimary ? (
-                <RiFlagLine className="size-3 shrink-0" />
-              ) : (
-                <RiShiningLine className="size-3 shrink-0" />
-              )}
-              <span className="truncate">{secondaryText}</span>
+              <RiShiningLine className="size-3 shrink-0" />
+              <span className="truncate">{currentMilestone.label}</span>
+              <span className="shrink-0 text-muted-foreground/60">
+                ({completedMilestones}/{totalMilestones})
+              </span>
             </span>
           )}
         </div>

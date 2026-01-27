@@ -46,8 +46,8 @@ export type {
   BacklogItem, 
   BacklogTask,
   BacklogMode,
-  GoalDisplayMode,
   NewGoalData,
+  Milestone,
 } from "./backlog";
 
 // Block

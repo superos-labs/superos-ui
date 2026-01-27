@@ -8,7 +8,7 @@ import {
 } from "@remixicon/react";
 import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
-import type { BacklogItem, GoalDisplayMode, NewGoalData } from "./backlog-types";
+import type { BacklogItem, NewGoalData } from "./backlog-types";
 import { BacklogItemRow } from "./backlog-item-row";
 import { InlineGoalCreator } from "./inline-creators";
 
@@ -18,7 +18,6 @@ export interface BacklogSectionProps {
   items: BacklogItem[];
   showHours?: boolean;
   showTasks?: boolean;
-  goalDisplayMode?: GoalDisplayMode;
   onAddItem?: () => void;
   /** Callback when an item row is clicked (for entering goal-detail mode) */
   onItemClick?: (itemId: string) => void;
@@ -64,7 +63,6 @@ export function BacklogSection({
   items,
   showHours = true,
   showTasks = true,
-  goalDisplayMode = "goal",
   onAddItem,
   onItemClick,
   onToggleTask,
@@ -172,7 +170,6 @@ export function BacklogSection({
             stats={getItemStats?.(item.id)}
             showHours={showHours}
             showTasks={showTasks}
-            goalDisplayMode={goalDisplayMode}
             onItemClick={onItemClick}
             onToggleTask={onToggleTask}
             onAddTask={onAddTask}

@@ -29,10 +29,10 @@ export type {
   BacklogTask,
   BacklogGroup,
   BacklogMode,
-  GoalDisplayMode,
   NewGoalData,
   LifeArea,
   GoalIconOption,
+  Milestone,
 } from "./backlog-types";
 
 // Re-export types from unified-schedule for convenience
