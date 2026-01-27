@@ -24,7 +24,7 @@ export const registry: ComponentEntry[] = [
     name: "Shell",
     layout: "full",
     component: lazy(() =>
-      import("@/components/shell-example").then((m) => ({
+      import("@/components/shell/shell-example").then((m) => ({
         default: m.ShellExample,
       }))
     ),

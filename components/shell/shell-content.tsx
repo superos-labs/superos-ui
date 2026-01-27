@@ -1,67 +1,47 @@
 "use client";
 
+/**
+ * ShellContent - The core shell component for orchestrating the full application UI.
+ * 
+ * This component handles the rendering of the calendar, backlog, analytics,
+ * focus mode, and planning features. It manages its own UI layout state
+ * (panel visibility, selections) while accepting business data and handlers via props.
+ * 
+ * This is a feature component - it does NOT contain sample data or demo logic.
+ */
+
 import * as React from "react";
-import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell";
+import { Shell, ShellToolbar, ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
 import {
   Calendar,
   KeyboardToast,
-  useCalendarClipboard,
   useCalendarKeyboard,
   useDeadlineKeyboard,
-  getWeekDates,
   formatWeekRange,
   type CalendarEvent,
+  type ExternalDragPreview,
 } from "@/components/calendar";
-import type { DeadlineTask } from "@/lib/unified-schedule";
 import {
   Backlog,
   GoalInspirationGallery,
   type BacklogItem,
+  type BacklogMode,
   type NewGoalData,
+  type InspirationCategory,
 } from "@/components/backlog";
 import { WeeklyAnalytics } from "@/components/weekly-analytics";
 import { BlockSidebar, useBlockSidebarHandlers } from "@/components/block";
 import { GoalDetail } from "@/components/goal-detail";
-import type { ScheduleGoal } from "@/lib/unified-schedule";
 import { FocusIndicator } from "@/components/focus";
-import { useFocusSession, useFocusNotifications } from "@/lib/focus";
-import {
-  DragProvider,
-  DragGhost,
-  useDragContextOptional,
-} from "@/components/drag";
-import { useUnifiedSchedule, useWeekNavigation, useCommitmentAutoComplete } from "@/lib/unified-schedule";
-import { toAnalyticsItems } from "@/lib/adapters";
-import { useBlueprint, blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
-import type { BlueprintIntention } from "@/lib/blueprint";
-import { useWeeklyPlan, usePlanningFlow, useIntentionProgress } from "@/lib/weekly-planning";
+import { DragGhost, useDragContextOptional } from "@/components/drag";
 import { PlanningPanel } from "@/components/weekly-planning";
-
-// Shell-specific hooks (internal demo utilities)
-import {
-  useShellLayout,
-  useShellFocus,
-  useExternalDragPreview,
-  useToastAggregator,
-} from "./use-shell-hooks";
-
-// Sample data from fixtures
-import {
-  DATA_SETS,
-  ALL_COMMITMENTS,
-  LIFE_AREAS,
-  GOAL_ICONS,
-  type DataSetId,
-} from "@/lib/fixtures/shell-data";
-import { INSPIRATION_CATEGORIES } from "@/lib/fixtures/goal-inspiration-data";
-
-import {
-  KnobsProvider,
-  KnobsToggle,
-  KnobsPanel,
-  KnobBoolean,
-  KnobSelect,
-} from "@/components/_playground/knobs";
+import { toAnalyticsItems } from "@/lib/adapters";
+import { blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
+import type { BlueprintIntention } from "@/lib/blueprint";
+import { usePlanningFlow } from "@/lib/weekly-planning";
+import type { WeeklyIntention } from "@/lib/weekly-planning";
+import type { ScheduleGoal, DeadlineTask } from "@/lib/unified-schedule";
+import type { GoalColor } from "@/lib/colors";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -80,30 +60,128 @@ import {
   RiPieChartLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
-import { PreferencesProvider, usePreferences, type WeekStartDay, type ProgressMetric } from "@/lib/preferences";
+import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
+import type { ShellContentProps } from "./shell-types";
+import {
+  useShellLayout,
+  useShellFocus,
+  useExternalDragPreview,
+  useToastAggregator,
+} from "./use-shell-hooks";
+
+// Re-export for consumers
+export type { ShellContentProps };
 
 // =============================================================================
-// Components
+// Component Props (extending the core props with UI-specific options)
 // =============================================================================
 
-interface ShellDemoContentProps {
-  dataSetId: DataSetId;
-  onDataSetChange: (id: DataSetId) => void;
+export interface ShellContentComponentProps extends ShellContentProps {
+  /** Categories for goal inspiration gallery */
+  inspirationCategories?: InspirationCategory[];
+  /** Callback when UI layout changes (for persistence) */
+  onLayoutChange?: (layout: { showSidebar: boolean; showRightSidebar: boolean }) => void;
 }
 
-function ShellDemoContent({
-  dataSetId,
-  onDataSetChange,
-}: ShellDemoContentProps) {
+// =============================================================================
+// Component Implementation
+// =============================================================================
+
+export function ShellContentComponent({
+  // Data
+  goals,
+  commitments,
+  allCommitments,
+  events,
+  weekDates,
+  weekDeadlines,
+  // Selection (passed in for coordination)
+  selectedEventId: selectedEventIdProp,
+  selectedGoalId: selectedGoalIdProp,
+  hoveredEvent,
+  hoverPosition,
+  // Commitment management
+  enabledCommitmentIds,
+  draftEnabledCommitmentIds,
+  mandatoryCommitmentIds,
+  onToggleCommitmentEnabled,
+  onStartEditingCommitments,
+  onSaveCommitmentChanges,
+  onCancelCommitmentChanges,
+  // Goal CRUD
+  onAddGoal,
+  onDeleteGoal,
+  onUpdateGoal,
+  // Task CRUD
+  onToggleTaskComplete,
+  onAddTask,
+  onUpdateTask,
+  onDeleteTask,
+  // Subtask CRUD
+  onAddSubtask,
+  onToggleSubtaskComplete,
+  onUpdateSubtask,
+  onDeleteSubtask,
+  // Milestone CRUD
+  onAddMilestone,
+  onToggleMilestoneComplete,
+  onUpdateMilestone,
+  onDeleteMilestone,
+  // Deadline management
+  onClearTaskDeadline,
+  // Stats accessors
+  getGoalStats,
+  getCommitmentStats,
+  getTaskSchedule,
+  getTaskDeadline,
+  // Calendar handlers
+  calendarHandlers,
+  // Event management
+  onAddEvent,
+  onUpdateEvent,
+  onAssignTaskToBlock,
+  onUnassignTaskFromBlock,
+  // Drop handling
+  onDrop,
+  // Focus mode
+  focusSession,
+  focusIsRunning,
+  focusElapsedMs,
+  onStartFocus,
+  onPauseFocus,
+  onResumeFocus,
+  onEndFocus,
+  // Blueprint & planning
+  blueprint,
+  hasBlueprint,
+  onSaveBlueprint,
+  currentWeekPlan,
+  onSaveWeeklyPlan,
+  getIntentionProgress,
+  // Preferences
+  weekStartsOn,
+  onWeekStartsOnChange,
+  progressMetric,
+  onProgressMetricChange,
+  // Navigation
+  selectedDate,
+  onPreviousWeek,
+  onNextWeek,
+  onToday,
+  // Reference data
+  lifeAreas,
+  goalIcons,
+  // UI-specific props
+  inspirationCategories,
+  onLayoutChange,
+}: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
-  // UI Layout State (extracted to hook)
+  // UI Layout State
   // -------------------------------------------------------------------------
   const layout = useShellLayout();
   const {
     showPlanWeek,
-    setShowPlanWeek,
     showCalendar,
-    setShowCalendar,
     showSidebar,
     setShowSidebar,
     showRightSidebar,
@@ -133,139 +211,26 @@ function ShellDemoContent({
     handlePlanWeekClick,
     handleGoalNotesChange,
     handleAnalyticsToggle,
+    isPlanningMode,
+    setIsPlanningMode,
   } = layout;
 
   // -------------------------------------------------------------------------
-  // Preferences
+  // Deadline Hover State
   // -------------------------------------------------------------------------
-  const { 
-    weekStartsOn, 
-    setWeekStartsOn,
-    progressMetric,
-    setProgressMetric,
-    autoCompleteCommitments,
-  } = usePreferences();
+  const [hoveredDeadline, setHoveredDeadline] = React.useState<DeadlineTask | null>(null);
 
   // -------------------------------------------------------------------------
-  // Week Navigation
+  // Planning Flow
   // -------------------------------------------------------------------------
-  const [selectedDate, setSelectedDate] = React.useState(() => new Date());
-
-  const weekDates = React.useMemo(
-    () => getWeekDates(selectedDate, weekStartsOn),
-    [selectedDate, weekStartsOn]
-  );
-
-  const goToPreviousWeek = React.useCallback(() => {
-    setSelectedDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() - 7);
-      return newDate;
-    });
-  }, []);
-
-  const goToNextWeek = React.useCallback(() => {
-    setSelectedDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setDate(newDate.getDate() + 7);
-      return newDate;
-    });
-  }, []);
-
-  const goToToday = React.useCallback(() => {
-    setSelectedDate(new Date());
-  }, []);
-
-  useWeekNavigation({
-    onPreviousWeek: goToPreviousWeek,
-    onNextWeek: goToNextWeek,
-    onToday: goToToday,
-  });
-
-  // -------------------------------------------------------------------------
-  // Data & State
-  // -------------------------------------------------------------------------
-  const dataSet = DATA_SETS[dataSetId];
-
-  const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard();
-
-  const schedule = useUnifiedSchedule({
-    initialGoals: dataSet.goals,
-    allCommitments: ALL_COMMITMENTS,
-    initialEnabledCommitmentIds: dataSetId === "empty" ? [] : undefined,
-    initialEvents: dataSet.events,
-    weekDates,
-    onCopy: copy,
-    onPaste: paste,
-    hasClipboardContent,
-    onEventCreated: (event) => setSelectedEventId(event.id),
-  });
-
-  const {
-    goals,
-    commitments,
-    allCommitments,
-    events: calendarEvents,
-    enabledCommitmentIds,
-    draftEnabledCommitmentIds,
-    mandatoryCommitmentIds,
-    toggleCommitmentEnabled,
-    startEditingCommitments,
-    saveCommitmentChanges,
-    cancelCommitmentChanges,
-    getGoalStats,
-    getCommitmentStats,
-    getTaskSchedule,
-    getTaskDeadline,
-    getWeekDeadlines,
-    addGoal,
-    deleteGoal,
-    updateGoal,
-    toggleTaskComplete,
-    addTask,
-    updateTask,
-    addSubtask,
-    toggleSubtaskComplete,
-    updateSubtask,
-    deleteSubtask,
-    deleteTask,
-    clearTaskDeadline,
-    // Milestone CRUD
-    addMilestone,
-    updateMilestone,
-    toggleMilestoneComplete,
-    deleteMilestone,
-    handleDrop,
-    hoveredEvent,
-    hoverPosition,
-    calendarHandlers,
-  } = schedule;
-
-  // -------------------------------------------------------------------------
-  // Blueprint & Weekly Planning
-  // -------------------------------------------------------------------------
-  const {
-    blueprint,
-    hasBlueprint,
-    saveBlueprint,
-  } = useBlueprint();
-
   const weekStartDate = weekDates[0]?.toISOString().split("T")[0] ?? "";
 
-  const {
-    getWeeklyPlan,
-    saveWeeklyPlan,
-  } = useWeeklyPlan();
-
-  const currentWeekPlan = getWeeklyPlan(weekStartDate);
-
-  // Planning flow state
   const planningFlow = usePlanningFlow({
-    isActive: layout.isPlanningMode,
+    isActive: isPlanningMode,
     weekDates,
     onConfirm: (intentions) => {
       // Save the weekly plan
-      saveWeeklyPlan({
+      onSaveWeeklyPlan({
         weekStartDate,
         intentions,
         plannedAt: new Date().toISOString(),
@@ -273,12 +238,12 @@ function ShellDemoContent({
 
       // On first planning, save the blueprint
       if (!hasBlueprint) {
-        const blueprintBlocks = eventsToBlueprint(calendarEvents, weekDates);
+        const blueprintBlocks = eventsToBlueprint(events, weekDates);
         const blueprintIntentions: BlueprintIntention[] = intentions.map((i) => ({
           goalId: i.goalId,
           target: i.target,
         }));
-        saveBlueprint({
+        onSaveBlueprint({
           blocks: blueprintBlocks,
           intentions: blueprintIntentions,
           updatedAt: new Date().toISOString(),
@@ -286,20 +251,18 @@ function ShellDemoContent({
       }
 
       // Exit planning mode
-      layout.setIsPlanningMode(false);
+      setIsPlanningMode(false);
     },
     onCancel: () => {
-      layout.setIsPlanningMode(false);
+      setIsPlanningMode(false);
     },
   });
 
   // Initialize planning flow with blueprint defaults when entering planning mode
   React.useEffect(() => {
-    if (layout.isPlanningMode) {
-      // Pre-populate from blueprint or existing plan
+    if (isPlanningMode) {
       const initialIntentions = currentWeekPlan?.intentions ?? [];
       if (initialIntentions.length === 0 && blueprint) {
-        // Use blueprint defaults
         planningFlow.reset(
           blueprint.intentions.map((i) => ({
             goalId: i.goalId,
@@ -310,88 +273,22 @@ function ShellDemoContent({
         planningFlow.reset(initialIntentions);
       }
     }
-  }, [layout.isPlanningMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isPlanningMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Import blueprint blocks to calendar
   const handleImportBlueprint = React.useCallback(() => {
     if (!blueprint) return;
     const importedEvents = blueprintToEvents(blueprint, weekDates);
     importedEvents.forEach((event) => {
-      schedule.addEvent(event);
+      onAddEvent(event);
     });
-  }, [blueprint, weekDates, schedule]);
-
-  // -------------------------------------------------------------------------
-  // Deadline Hover State
-  // -------------------------------------------------------------------------
-  const [hoveredDeadline, setHoveredDeadline] = React.useState<DeadlineTask | null>(null);
-
-  // -------------------------------------------------------------------------
-  // Focus Mode
-  // -------------------------------------------------------------------------
-  // Use ref to avoid stale closure in onSessionEnd callback
-  const calendarEventsRef = React.useRef(calendarEvents);
-  React.useEffect(() => {
-    calendarEventsRef.current = calendarEvents;
-  }, [calendarEvents]);
-
-  const {
-    session: focusSession,
-    isRunning: focusIsRunning,
-    elapsedMs: focusElapsedMs,
-    start: startFocus,
-    pause: pauseFocus,
-    resume: resumeFocus,
-    end: endFocus,
-  } = useFocusSession({
-    onSessionEnd: (completed) => {
-      // Find the event using ref to get current value (avoid stale closure)
-      const event = calendarEventsRef.current.find((e) => e.id === completed.blockId);
-      if (!event) return;
-      
-      // Skip commitments (they don't track focus time)
-      if (event.blockType === "commitment") return;
-      
-      // Accumulate focus time on the event (round to whole minutes)
-      const additionalMinutes = Math.round(completed.totalMs / 60000);
-      schedule.updateEvent(completed.blockId, {
-        focusedMinutes: (event.focusedMinutes ?? 0) + additionalMinutes,
-      });
-    },
-  });
-
-  // -------------------------------------------------------------------------
-  // Commitment Auto-Complete
-  // -------------------------------------------------------------------------
-  useCommitmentAutoComplete({
-    events: calendarEvents,
-    enabled: autoCompleteCommitments,
-    markComplete: schedule.markEventComplete,
-  });
-
-  // -------------------------------------------------------------------------
-  // Focus Notifications
-  // -------------------------------------------------------------------------
-  useFocusNotifications({
-    session: focusSession,
-    events: calendarEvents,
-    enabled: true,
-    onNotify: () => {
-      // Could play a sound here in the future
-      console.log("Focus session: block time ended");
-    },
-  });
+  }, [blueprint, weekDates, onAddEvent]);
 
   // -------------------------------------------------------------------------
   // Derived Data
   // -------------------------------------------------------------------------
-  const weekDeadlines = React.useMemo(
-    () => getWeekDeadlines(weekDates),
-    [getWeekDeadlines, weekDates]
-  );
-
   const selectedEvent = selectedEventId
-    ? (calendarEvents.find((e) => e.id === selectedEventId) ?? null)
+    ? (events.find((e) => e.id === selectedEventId) ?? null)
     : null;
 
   // -------------------------------------------------------------------------
@@ -412,41 +309,40 @@ function ShellDemoContent({
     },
   });
 
-  // Toast aggregation (extracted to hook) - must be before useBlockSidebarHandlers
   const toasts = useToastAggregator(calendarToastMessage);
   const { toastMessage } = toasts;
 
   useDeadlineKeyboard({
     hoveredDeadline,
-    onToggleComplete: toggleTaskComplete,
-    onUnassign: clearTaskDeadline,
+    onToggleComplete: onToggleTaskComplete,
+    onUnassign: onClearTaskDeadline,
     showToast: toasts.setDeadlineToast,
   });
 
   // -------------------------------------------------------------------------
-  // Focus Mode Computed Values (extracted to hook)
+  // Focus Mode Computed Values
   // -------------------------------------------------------------------------
   const { isSidebarBlockFocused, showFocusIndicator, handleStartFocus, handleNavigateToFocusedBlock } =
     useShellFocus({
       focusSession,
       selectedEventId,
       selectedEvent,
-      startFocus,
+      startFocus: onStartFocus,
       onNavigateToBlock: setSelectedEventId,
     });
 
   // -------------------------------------------------------------------------
-  // External Drag & Drop (extracted to hook)
+  // External Drag & Drop
   // -------------------------------------------------------------------------
   const dragContext = useDragContextOptional();
   const { externalDragPreview, handleExternalDrop, handleDeadlineDrop } = useExternalDragPreview({
     dragContext,
     weekDates,
-    onDrop: handleDrop,
+    onDrop,
   });
 
   // -------------------------------------------------------------------------
-  // Block Sidebar Handlers (extracted to hook)
+  // Block Sidebar Handlers
   // -------------------------------------------------------------------------
   const { sidebarData, availableGoals, handlers: sidebarHandlers } = useBlockSidebarHandlers({
     selectedEvent,
@@ -454,21 +350,20 @@ function ShellDemoContent({
     commitments,
     weekDates,
     schedule: {
-      updateEvent: schedule.updateEvent,
-      updateTask,
-      toggleTaskComplete,
-      addTask,
-      addSubtask,
-      toggleSubtaskComplete,
-      updateSubtask,
-      deleteSubtask,
-      assignTaskToBlock: schedule.assignTaskToBlock,
-      unassignTaskFromBlock: schedule.unassignTaskFromBlock,
+      updateEvent: onUpdateEvent,
+      updateTask: onUpdateTask,
+      toggleTaskComplete: onToggleTaskComplete,
+      addTask: onAddTask,
+      addSubtask: onAddSubtask,
+      toggleSubtaskComplete: onToggleSubtaskComplete,
+      updateSubtask: onUpdateSubtask,
+      deleteSubtask: onDeleteSubtask,
+      assignTaskToBlock: onAssignTaskToBlock,
+      unassignTaskFromBlock: onUnassignTaskFromBlock,
       calendarHandlers,
     },
     onToast: toasts.setSidebarToast,
-    // End focus session when marking the focused block as complete
-    onEndFocus: focusSession?.blockId === selectedEvent?.id ? endFocus : undefined,
+    onEndFocus: focusSession?.blockId === selectedEvent?.id ? onEndFocus : undefined,
   });
 
   // Update frozen sidebar data for animation
@@ -479,16 +374,6 @@ function ShellDemoContent({
   const sidebarDataToRender = selectedEvent ? sidebarData : frozenSidebarData;
 
   // -------------------------------------------------------------------------
-  // Intention Progress
-  // -------------------------------------------------------------------------
-  const { getProgress: getIntentionProgress } = useIntentionProgress({
-    goals,
-    events: calendarEvents,
-    weeklyPlan: currentWeekPlan,
-    weekDates,
-  });
-
-  // -------------------------------------------------------------------------
   // Analytics Data
   // -------------------------------------------------------------------------
   const useFocusedHours = progressMetric === "focused";
@@ -497,7 +382,7 @@ function ShellDemoContent({
     [commitments, getCommitmentStats, useFocusedHours]
   );
   const analyticsGoals = React.useMemo(
-    () => toAnalyticsItems(goals, getGoalStats, { 
+    () => toAnalyticsItems(goals, getGoalStats, {
       useFocusedHours,
       getIntentionProgress,
     }),
@@ -505,12 +390,12 @@ function ShellDemoContent({
   );
 
   // -------------------------------------------------------------------------
-  // Goal Creation
+  // Goal Creation Handlers
   // -------------------------------------------------------------------------
   const handleCreateGoal = React.useCallback(
     (data: NewGoalData) => {
       const newGoalId = crypto.randomUUID();
-      addGoal({
+      onAddGoal({
         id: newGoalId,
         label: data.label,
         icon: data.icon,
@@ -518,21 +403,19 @@ function ShellDemoContent({
         lifeAreaId: data.lifeAreaId,
         tasks: [],
       });
-      // Optionally select the newly created goal
       if (backlogMode === "goal-detail") {
         setSelectedGoalId(newGoalId);
       }
     },
-    [addGoal, backlogMode]
+    [onAddGoal, backlogMode, setSelectedGoalId]
   );
 
-  // Create a new goal with defaults and immediately navigate to it
   const handleCreateAndSelectGoal = React.useCallback(() => {
     const newGoalId = crypto.randomUUID();
-    const defaultIcon = GOAL_ICONS[0]?.icon;
-    const defaultLifeAreaId = LIFE_AREAS[0]?.id ?? "";
-    
-    addGoal({
+    const defaultIcon = goalIcons[0]?.icon;
+    const defaultLifeAreaId = lifeAreas[0]?.id ?? "";
+
+    onAddGoal({
       id: newGoalId,
       label: "New goal",
       icon: defaultIcon,
@@ -540,39 +423,36 @@ function ShellDemoContent({
       lifeAreaId: defaultLifeAreaId,
       tasks: [],
     });
-    
-    // Navigate to goal-detail mode and select the new goal
+
     setBacklogMode("goal-detail");
     setSelectedGoalId(newGoalId);
-  }, [addGoal, setBacklogMode, setSelectedGoalId]);
+  }, [onAddGoal, goalIcons, lifeAreas, setBacklogMode, setSelectedGoalId]);
 
   // -------------------------------------------------------------------------
-  // Goal Deletion
+  // Goal Deletion Handler
   // -------------------------------------------------------------------------
   const handleDeleteGoal = React.useCallback(() => {
     if (!selectedGoalId) return;
-    deleteGoal(selectedGoalId);
-    // Navigate back to main backlog view
+    onDeleteGoal(selectedGoalId);
     setSelectedGoalId(null);
     setBacklogMode("view");
-  }, [selectedGoalId, deleteGoal, setSelectedGoalId, setBacklogMode]);
+  }, [selectedGoalId, onDeleteGoal, setSelectedGoalId, setBacklogMode]);
 
   // -------------------------------------------------------------------------
   // Goal Detail Mode Derived Data
   // -------------------------------------------------------------------------
-  // Get the currently selected goal
   const selectedGoal = selectedGoalId
     ? (goals.find((g) => g.id === selectedGoalId) as ScheduleGoal | undefined)
     : undefined;
 
-  // Look up life area for the selected goal
   const selectedGoalLifeArea = React.useMemo(() => {
     if (!selectedGoal?.lifeAreaId) return undefined;
-    return LIFE_AREAS.find((area) => area.id === selectedGoal.lifeAreaId);
-  }, [selectedGoal]);
+    return lifeAreas.find((area) => area.id === selectedGoal.lifeAreaId);
+  }, [selectedGoal, lifeAreas]);
 
-  // Get stats for selected goal
-  const selectedGoalStats = selectedGoalId ? getGoalStats(selectedGoalId) : { plannedHours: 0, completedHours: 0, focusedHours: 0 };
+  const selectedGoalStats = selectedGoalId
+    ? getGoalStats(selectedGoalId)
+    : { plannedHours: 0, completedHours: 0, focusedHours: 0 };
 
   // -------------------------------------------------------------------------
   // Render
@@ -606,21 +486,21 @@ function ShellDemoContent({
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
             <button
-              onClick={goToPreviousWeek}
+              onClick={onPreviousWeek}
               className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
               title="Previous week (←)"
             >
               <RiArrowLeftSLine className="size-4" />
             </button>
             <button
-              onClick={goToToday}
+              onClick={onToday}
               className="flex h-8 items-center gap-1 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
               title="Go to today (T)"
             >
               Today
             </button>
             <button
-              onClick={goToNextWeek}
+              onClick={onNextWeek}
               className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
               title="Next week (→)"
             >
@@ -634,8 +514,8 @@ function ShellDemoContent({
                 blockColor={focusSession.blockColor}
                 elapsedMs={focusElapsedMs}
                 isRunning={focusIsRunning}
-                onPause={pauseFocus}
-                onResume={resumeFocus}
+                onPause={onPauseFocus}
+                onResume={onResumeFocus}
                 onClick={handleNavigateToFocusedBlock}
               />
             )}
@@ -670,7 +550,7 @@ function ShellDemoContent({
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
                   value={weekStartsOn.toString()}
-                  onValueChange={(v) => setWeekStartsOn(Number(v) as WeekStartDay)}
+                  onValueChange={(v) => onWeekStartsOnChange(Number(v) as WeekStartDay)}
                 >
                   <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
@@ -704,59 +584,58 @@ function ShellDemoContent({
               />
             ) : (
               <Backlog
-              commitments={commitments as BacklogItem[]}
-              goals={goals as BacklogItem[]}
-              className="h-full w-[420px] max-w-none"
-              showTasks={showTasks}
-              showCommitments={true}
-              onToggleGoalTask={toggleTaskComplete}
-              onAddTask={addTask}
-              onUpdateTask={updateTask}
-              onAddSubtask={addSubtask}
-              onToggleSubtask={toggleSubtaskComplete}
-              onUpdateSubtask={updateSubtask}
-              onDeleteSubtask={deleteSubtask}
-              onDeleteTask={deleteTask}
-              getGoalStats={getGoalStats}
-              getCommitmentStats={getCommitmentStats}
-              getTaskSchedule={getTaskSchedule}
-              getTaskDeadline={getTaskDeadline}
-              draggable={true}
-              mode={backlogMode}
-              allCommitments={allCommitments as BacklogItem[]}
-              enabledCommitmentIds={draftEnabledCommitmentIds ?? enabledCommitmentIds}
-              mandatoryCommitmentIds={mandatoryCommitmentIds}
-              onToggleCommitmentEnabled={toggleCommitmentEnabled}
-              onEditCommitments={() => {
-                startEditingCommitments();
-                setBacklogMode("edit-commitments");
-              }}
-              onSaveCommitments={() => {
-                saveCommitmentChanges();
-                setBacklogMode("view");
-              }}
-              onCancelEditCommitments={() => {
-                cancelCommitmentChanges();
-                setBacklogMode("view");
-              }}
-              onCreateGoal={handleCreateGoal}
-              lifeAreas={LIFE_AREAS}
-              goalIcons={GOAL_ICONS}
-              onCreateAndSelectGoal={handleCreateAndSelectGoal}
-              // Goal detail mode props
-              selectedGoalId={selectedGoalId}
-              onSelectGoal={handleSelectGoal}
-              onBrowseInspiration={handleBrowseInspiration}
-              isInspirationActive={showInspirationGallery}
-            />
+                commitments={commitments as BacklogItem[]}
+                goals={goals as BacklogItem[]}
+                className="h-full w-[420px] max-w-none"
+                showTasks={showTasks}
+                showCommitments={true}
+                onToggleGoalTask={onToggleTaskComplete}
+                onAddTask={onAddTask}
+                onUpdateTask={onUpdateTask}
+                onAddSubtask={onAddSubtask}
+                onToggleSubtask={onToggleSubtaskComplete}
+                onUpdateSubtask={onUpdateSubtask}
+                onDeleteSubtask={onDeleteSubtask}
+                onDeleteTask={onDeleteTask}
+                getGoalStats={getGoalStats}
+                getCommitmentStats={getCommitmentStats}
+                getTaskSchedule={getTaskSchedule}
+                getTaskDeadline={getTaskDeadline}
+                draggable={true}
+                mode={backlogMode}
+                allCommitments={allCommitments as BacklogItem[]}
+                enabledCommitmentIds={draftEnabledCommitmentIds ?? enabledCommitmentIds}
+                mandatoryCommitmentIds={mandatoryCommitmentIds}
+                onToggleCommitmentEnabled={onToggleCommitmentEnabled}
+                onEditCommitments={() => {
+                  onStartEditingCommitments();
+                  setBacklogMode("edit-commitments");
+                }}
+                onSaveCommitments={() => {
+                  onSaveCommitmentChanges();
+                  setBacklogMode("view");
+                }}
+                onCancelEditCommitments={() => {
+                  onCancelCommitmentChanges();
+                  setBacklogMode("view");
+                }}
+                onCreateGoal={handleCreateGoal}
+                lifeAreas={lifeAreas}
+                goalIcons={goalIcons}
+                onCreateAndSelectGoal={handleCreateAndSelectGoal}
+                selectedGoalId={selectedGoalId}
+                onSelectGoal={handleSelectGoal}
+                onBrowseInspiration={handleBrowseInspiration}
+                isInspirationActive={showInspirationGallery}
+              />
             )}
           </div>
 
           {/* Main Content - Calendar, Goal Detail, or Inspiration Gallery */}
-          <ShellContent className="overflow-hidden">
-            {showInspirationGallery ? (
+          <ShellContentPrimitive className="overflow-hidden">
+            {showInspirationGallery && inspirationCategories ? (
               <GoalInspirationGallery
-                categories={INSPIRATION_CATEGORIES}
+                categories={inspirationCategories}
                 onAddGoal={handleCreateGoal}
                 onClose={handleCloseInspiration}
                 className="h-full"
@@ -768,35 +647,35 @@ function ShellDemoContent({
                 stats={selectedGoalStats}
                 notes={goalNotes[selectedGoal.id] ?? ""}
                 onNotesChange={handleGoalNotesChange}
-                onTitleChange={(title) => updateGoal(selectedGoal.id, { label: title })}
+                onTitleChange={(title) => onUpdateGoal(selectedGoal.id, { label: title })}
                 getTaskSchedule={getTaskSchedule}
                 getTaskDeadline={getTaskDeadline}
-                onToggleTask={(taskId) => toggleTaskComplete(selectedGoal.id, taskId)}
-                onAddTask={(label) => addTask(selectedGoal.id, label)}
-                onUpdateTask={(taskId, updates) => updateTask(selectedGoal.id, taskId, updates)}
-                onDeleteTask={(taskId) => deleteTask(selectedGoal.id, taskId)}
-                onAddSubtask={(taskId, label) => addSubtask(selectedGoal.id, taskId, label)}
-                onToggleSubtask={(taskId, subtaskId) => toggleSubtaskComplete(selectedGoal.id, taskId, subtaskId)}
-                onUpdateSubtask={(taskId, subtaskId, label) => updateSubtask(selectedGoal.id, taskId, subtaskId, label)}
-                onDeleteSubtask={(taskId, subtaskId) => deleteSubtask(selectedGoal.id, taskId, subtaskId)}
-                onAddMilestone={(label) => addMilestone(selectedGoal.id, label)}
-                onToggleMilestone={(milestoneId) => toggleMilestoneComplete(selectedGoal.id, milestoneId)}
-                onUpdateMilestone={(milestoneId, label) => updateMilestone(selectedGoal.id, milestoneId, label)}
-                onDeleteMilestone={(milestoneId) => deleteMilestone(selectedGoal.id, milestoneId)}
+                onToggleTask={(taskId) => onToggleTaskComplete(selectedGoal.id, taskId)}
+                onAddTask={(label) => onAddTask(selectedGoal.id, label)}
+                onUpdateTask={(taskId, updates) => onUpdateTask(selectedGoal.id, taskId, updates)}
+                onDeleteTask={(taskId) => onDeleteTask(selectedGoal.id, taskId)}
+                onAddSubtask={(taskId, label) => onAddSubtask(selectedGoal.id, taskId, label)}
+                onToggleSubtask={(taskId, subtaskId) => onToggleSubtaskComplete(selectedGoal.id, taskId, subtaskId)}
+                onUpdateSubtask={(taskId, subtaskId, label) => onUpdateSubtask(selectedGoal.id, taskId, subtaskId, label)}
+                onDeleteSubtask={(taskId, subtaskId) => onDeleteSubtask(selectedGoal.id, taskId, subtaskId)}
+                onAddMilestone={(label) => onAddMilestone(selectedGoal.id, label)}
+                onToggleMilestone={(milestoneId) => onToggleMilestoneComplete(selectedGoal.id, milestoneId)}
+                onUpdateMilestone={(milestoneId, label) => onUpdateMilestone(selectedGoal.id, milestoneId, label)}
+                onDeleteMilestone={(milestoneId) => onDeleteMilestone(selectedGoal.id, milestoneId)}
                 onClose={handleCloseGoalDetail}
                 onDelete={handleDeleteGoal}
-                lifeAreas={LIFE_AREAS}
-                goalIcons={GOAL_ICONS}
-                onIconChange={(icon) => updateGoal(selectedGoal.id, { icon })}
-                onColorChange={(color) => updateGoal(selectedGoal.id, { color })}
-                onLifeAreaChange={(lifeAreaId) => updateGoal(selectedGoal.id, { lifeAreaId })}
-                onProgressIndicatorChange={(progressIndicator) => updateGoal(selectedGoal.id, { progressIndicator })}
+                lifeAreas={lifeAreas}
+                goalIcons={goalIcons}
+                onIconChange={(icon) => onUpdateGoal(selectedGoal.id, { icon })}
+                onColorChange={(color) => onUpdateGoal(selectedGoal.id, { color })}
+                onLifeAreaChange={(lifeAreaId) => onUpdateGoal(selectedGoal.id, { lifeAreaId })}
+                onProgressIndicatorChange={(progressIndicator) => onUpdateGoal(selectedGoal.id, { progressIndicator })}
                 className="h-full"
               />
             ) : showCalendar ? (
               <Calendar
                 selectedDate={selectedDate}
-                events={calendarEvents}
+                events={events}
                 weekStartsOn={weekStartsOn}
                 {...calendarHandlers}
                 onEventClick={handleEventClick}
@@ -805,12 +684,12 @@ function ShellDemoContent({
                 externalDragPreview={externalDragPreview}
                 onDeadlineDrop={handleDeadlineDrop}
                 deadlines={weekDeadlines}
-                onDeadlineToggleComplete={toggleTaskComplete}
-                onDeadlineUnassign={clearTaskDeadline}
+                onDeadlineToggleComplete={onToggleTaskComplete}
+                onDeadlineUnassign={onClearTaskDeadline}
                 onDeadlineHover={setHoveredDeadline}
               />
             ) : null}
-          </ShellContent>
+          </ShellContentPrimitive>
 
           {/* Right Sidebar - Block Details / Analytics */}
           <div
@@ -830,19 +709,18 @@ function ShellDemoContent({
                 focusIsRunning={focusIsRunning}
                 focusElapsedMs={focusElapsedMs}
                 onStartFocus={handleStartFocus}
-                onPauseFocus={pauseFocus}
-                onResumeFocus={resumeFocus}
-                onEndFocus={endFocus}
+                onPauseFocus={onPauseFocus}
+                onResumeFocus={onResumeFocus}
+                onEndFocus={onEndFocus}
                 focusDisabled={focusSession !== null && !isSidebarBlockFocused}
-                // Focus time tracking (only for goal/task blocks)
                 totalFocusedMinutes={
-                  selectedEvent?.blockType !== "commitment" 
-                    ? (selectedEvent?.focusedMinutes ?? 0) 
+                  selectedEvent?.blockType !== "commitment"
+                    ? (selectedEvent?.focusedMinutes ?? 0)
                     : undefined
                 }
                 onFocusedMinutesChange={
                   selectedEvent?.blockType !== "commitment" && selectedEvent
-                    ? (minutes) => schedule.updateEvent(selectedEvent.id, { focusedMinutes: minutes })
+                    ? (minutes) => onUpdateEvent(selectedEvent.id, { focusedMinutes: minutes })
                     : undefined
                 }
                 className="h-full w-[380px] max-w-none overflow-y-auto"
@@ -853,7 +731,7 @@ function ShellDemoContent({
                 goals={analyticsGoals}
                 weekLabel={formatWeekRange(weekDates)}
                 progressMetric={progressMetric}
-                onProgressMetricChange={setProgressMetric}
+                onProgressMetricChange={onProgressMetricChange}
                 className="h-full w-[380px] max-w-none overflow-y-auto"
               />
             ) : null}
@@ -863,46 +741,6 @@ function ShellDemoContent({
 
       <KeyboardToast message={toastMessage} />
       <DragGhost />
-      <KnobsToggle />
-      <KnobsPanel>
-        <KnobSelect
-          label="Data Set"
-          value={dataSetId}
-          onChange={onDataSetChange}
-          options={[
-            { label: "Sample Data", value: "sample" },
-            { label: "Empty", value: "empty" },
-          ]}
-        />
-        <KnobBoolean label="Show Sidebar" value={showSidebar} onChange={setShowSidebar} />
-        <KnobBoolean label="Show Analytics" value={showRightSidebar} onChange={setShowRightSidebar} />
-        <KnobBoolean label="Show Plan Week button" value={showPlanWeek} onChange={setShowPlanWeek} />
-        <KnobBoolean label="Show Calendar" value={showCalendar} onChange={setShowCalendar} />
-      </KnobsPanel>
     </>
-  );
-}
-
-function ShellDemo() {
-  const [dataSetId, setDataSetId] = React.useState<DataSetId>("sample");
-
-  return (
-    <PreferencesProvider>
-      <DragProvider>
-        <ShellDemoContent
-          key={dataSetId}
-          dataSetId={dataSetId}
-          onDataSetChange={setDataSetId}
-        />
-      </DragProvider>
-    </PreferencesProvider>
-  );
-}
-
-export function ShellExample() {
-  return (
-    <KnobsProvider>
-      <ShellDemo />
-    </KnobsProvider>
   );
 }

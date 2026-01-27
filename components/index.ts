@@ -76,6 +76,15 @@ export type {
   FocusSidebarContentProps,
 } from "./focus";
 
+// Shell (integrated application frame)
+export { ShellContentComponent, useShellState } from "./shell";
+export type {
+  ShellContentProps,
+  ShellContentComponentProps,
+  UseShellStateOptions,
+  UseShellStateReturn,
+} from "./shell";
+
 // -----------------------------------------------------------------------------
 // Drag and Drop System
 // -----------------------------------------------------------------------------
