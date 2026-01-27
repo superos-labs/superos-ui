@@ -15,6 +15,7 @@ import {
   getPixelsPerMinuteFromZoom,
   type DayViewProps,
 } from "./calendar-types";
+import { useScrollToCurrentTime } from "./use-scroll-to-current-time";
 import {
   formatHour,
   isToday,
@@ -30,6 +31,7 @@ export function DayView({
   density,
   zoom,
   setBlockStyle,
+  scrollToCurrentTimeKey,
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
@@ -58,6 +60,14 @@ export function DayView({
   // Compute grid dimensions based on zoom (preferred) or density (legacy)
   const gridHeight = zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
   const pixelsPerMinute = zoom !== undefined ? getPixelsPerMinuteFromZoom(zoom) : getPixelsPerMinute(density);
+
+  // Scroll to current time on mount and when "Today" is clicked
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  useScrollToCurrentTime(scrollContainerRef, {
+    zoom,
+    triggerKey: scrollToCurrentTimeKey,
+    enabled: today,
+  });
 
   const headerCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1";
   const gridCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1";
@@ -121,7 +131,7 @@ export function DayView({
       )}
 
       {/* Time Grid */}
-      <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
+      <div ref={scrollContainerRef} className="relative flex-1 overflow-y-auto overflow-x-hidden">
         <div
           ref={dayColumnRef}
           className={cn("relative grid", gridCols)}

@@ -37,6 +37,9 @@ export type {
 export { useDeadlineKeyboard } from "./use-deadline-keyboard";
 export type { UseDeadlineKeyboardOptions } from "./use-deadline-keyboard";
 
+export { useScrollToCurrentTime } from "./use-scroll-to-current-time";
+export type { UseScrollToCurrentTimeOptions } from "./use-scroll-to-current-time";
+
 // Keyboard feedback
 export { KeyboardToast } from "./keyboard-toast";
 

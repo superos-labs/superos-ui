@@ -15,6 +15,7 @@ export function Calendar({
   density,
   zoom,
   weekStartsOn = 1,
+  scrollToCurrentTimeKey,
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
@@ -57,6 +58,7 @@ export function Calendar({
         events={events}
         density={density}
         zoom={zoom}
+        scrollToCurrentTimeKey={scrollToCurrentTimeKey}
         setBlockStyle={setBlockStyle}
         onEventResize={onEventResize}
         onEventResizeEnd={onEventResizeEnd}
@@ -89,6 +91,7 @@ export function Calendar({
       density={density}
       zoom={zoom}
       weekStartsOn={weekStartsOn}
+      scrollToCurrentTimeKey={scrollToCurrentTimeKey}
       setBlockStyle={setBlockStyle}
       onEventResize={onEventResize}
       onEventResizeEnd={onEventResizeEnd}

@@ -17,6 +17,7 @@ import {
   getDayLabels,
   type WeekViewProps,
 } from "./calendar-types";
+import { useScrollToCurrentTime } from "./use-scroll-to-current-time";
 import {
   formatHour,
   isToday,
@@ -32,6 +33,7 @@ export function WeekView({
   zoom,
   setBlockStyle,
   weekStartsOn = 1,
+  scrollToCurrentTimeKey,
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
@@ -63,6 +65,15 @@ export function WeekView({
   // Compute grid dimensions based on zoom (preferred) or density (legacy)
   const gridHeight = zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
   const pixelsPerMinute = zoom !== undefined ? getPixelsPerMinuteFromZoom(zoom) : getPixelsPerMinute(density);
+
+  // Scroll to current time on mount and when "Today" is clicked
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const isCurrentWeek = weekDates.some((date) => isToday(date));
+  useScrollToCurrentTime(scrollContainerRef, {
+    zoom,
+    triggerKey: scrollToCurrentTimeKey,
+    enabled: isCurrentWeek,
+  });
   const headerCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
     : "grid-cols-[repeat(7,1fr)]";
@@ -133,7 +144,7 @@ export function WeekView({
       />
 
       {/* Time Grid */}
-      <div className="relative flex-1 overflow-y-auto overflow-x-hidden">
+      <div ref={scrollContainerRef} className="relative flex-1 overflow-y-auto overflow-x-hidden">
         <div
           ref={gridRef}
           className={cn("relative grid", gridCols)}

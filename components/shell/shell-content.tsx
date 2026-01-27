@@ -189,6 +189,15 @@ export function ShellContentComponent({
   // UI Layout State
   // -------------------------------------------------------------------------
   const layout = useShellLayout();
+  
+  // Scroll-to-current-time key (changes on mount and "Today" click)
+  const [scrollToCurrentTimeKey, setScrollToCurrentTimeKey] = React.useState(() => Date.now());
+  
+  // Handler for "Today" button that also triggers scroll to current time
+  const handleTodayClick = React.useCallback(() => {
+    onToday();
+    setScrollToCurrentTimeKey(Date.now());
+  }, [onToday]);
   const {
     showPlanWeek,
     showCalendar,
@@ -518,7 +527,7 @@ export function ShellContentComponent({
               <RiArrowLeftSLine className="size-4" />
             </button>
             <button
-              onClick={onToday}
+              onClick={handleTodayClick}
               className="flex h-8 items-center gap-1 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
               title="Go to today (T)"
             >
@@ -723,6 +732,7 @@ export function ShellContentComponent({
                 events={events}
                 weekStartsOn={weekStartsOn}
                 zoom={calendarZoom}
+                scrollToCurrentTimeKey={scrollToCurrentTimeKey}
                 {...calendarHandlers}
                 onEventClick={handleEventClick}
                 enableExternalDrop={true}

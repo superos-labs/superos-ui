@@ -257,6 +257,8 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   headerIsVisible?: boolean;
   /** Events to display on the calendar (required - no default data) */
   events: CalendarEvent[];
+  /** Key that triggers scroll-to-current-time when changed (used for initial load and "Today" button) */
+  scrollToCurrentTimeKey?: string | number;
   /** 
    * Density preset controlling vertical spacing (default: "default") 
    * @deprecated Use zoom instead
@@ -304,6 +306,8 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
   /** Events to display (required - always passed from parent Calendar) */
   events: CalendarEvent[];
   setBlockStyle?: BlockStyle;
+  /** Key that triggers scroll-to-current-time when changed */
+  scrollToCurrentTimeKey?: string | number;
   /** 
    * Density preset controlling vertical spacing (default: "default") 
    * @deprecated Use zoom instead
@@ -323,6 +327,8 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   /** Events to display (required - always passed from parent Calendar) */
   events: CalendarEvent[];
   setBlockStyle?: BlockStyle;
+  /** Key that triggers scroll-to-current-time when changed */
+  scrollToCurrentTimeKey?: string | number;
   /** 
    * Density preset controlling vertical spacing (default: "default") 
    * @deprecated Use zoom instead
