@@ -61,6 +61,7 @@ export type {
 // Constants (for advanced use cases)
 export {
   DAYS,
+  DAYS_SUNDAY_START,
   HOURS,
   GRID_HEIGHT_PX,
   PIXELS_PER_MINUTE,
@@ -68,6 +69,7 @@ export {
   COMPACT_LAYOUT_THRESHOLD_PX,
   DENSITY_HEIGHTS,
   DEFAULT_DENSITY,
+  getDayLabels,
 } from "./calendar-types";
 
 // Density helpers

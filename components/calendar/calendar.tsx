@@ -14,6 +14,7 @@ export function Calendar({
   headerIsVisible = true,
   events,
   density,
+  weekStartsOn = 1,
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
@@ -40,7 +41,10 @@ export function Calendar({
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
-  const weekDates = React.useMemo(() => getWeekDates(dateToUse), [dateToUse]);
+  const weekDates = React.useMemo(
+    () => getWeekDates(dateToUse, weekStartsOn),
+    [dateToUse, weekStartsOn]
+  );
 
   if (view === "day") {
     return (
@@ -80,6 +84,7 @@ export function Calendar({
       events={events}
       mode={mode}
       density={density}
+      weekStartsOn={weekStartsOn}
       setBlockStyle={setBlockStyle}
       onEventResize={onEventResize}
       onEventResizeEnd={onEventResizeEnd}

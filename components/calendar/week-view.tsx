@@ -8,11 +8,11 @@ import { CurrentTimeLine } from "./current-time-line";
 import { TimeColumn } from "./time-column";
 import { DeadlineTray } from "./deadline-tray";
 import {
-  DAYS,
   HOURS,
   getSegmentsForDay,
   getGridHeight,
   getPixelsPerMinute,
+  getDayLabels,
   type WeekViewProps,
 } from "./calendar-types";
 import {
@@ -29,6 +29,7 @@ export function WeekView({
   mode = "schedule",
   density,
   setBlockStyle,
+  weekStartsOn = 1,
   onEventResize,
   onEventResizeEnd,
   onEventDragEnd,
@@ -52,6 +53,9 @@ export function WeekView({
   onDeadlineUnassign,
   onDeadlineHover,
 }: WeekViewProps) {
+  // Get day labels based on week start preference
+  const dayLabels = getDayLabels(weekStartsOn);
+
   // Compute grid dimensions based on density
   const gridHeight = getGridHeight(density);
   const pixelsPerMinute = getPixelsPerMinute(density);
@@ -96,7 +100,7 @@ export function WeekView({
         className={cn("border-border/40 grid shrink-0 border-b", headerCols)}
       >
         {showHourLabels && <div className="border-border/40 border-r" />}
-        {DAYS.map((day, index) => {
+        {dayLabels.map((day, index) => {
           const date = weekDates[index];
 
           return (
@@ -161,7 +165,7 @@ export function WeekView({
           )}
 
           {/* Day Columns */}
-          {DAYS.map((day, dayIndex) => {
+          {dayLabels.map((day, dayIndex) => {
             const date = weekDates[dayIndex];
             const dateString = date.toISOString().split("T")[0];
             const rawSegments = getSegmentsForDay(events, dateString, mode);

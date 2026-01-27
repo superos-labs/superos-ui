@@ -58,6 +58,15 @@ import {
   KnobSelect,
 } from "@/components/_playground/knobs";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
+import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiMoreFill,
@@ -66,6 +75,7 @@ import {
   RiPieChartLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
+import { PreferencesProvider, usePreferences, type WeekStartDay } from "@/lib/preferences";
 
 // =============================================================================
 // Components
@@ -97,13 +107,18 @@ function ShellDemoContent({
   const [goalNotes, setGoalNotes] = React.useState<Record<string, string>>({});
 
   // -------------------------------------------------------------------------
+  // Preferences
+  // -------------------------------------------------------------------------
+  const { weekStartsOn, setWeekStartsOn } = usePreferences();
+
+  // -------------------------------------------------------------------------
   // Week Navigation
   // -------------------------------------------------------------------------
   const [selectedDate, setSelectedDate] = React.useState(() => new Date());
 
   const weekDates = React.useMemo(
-    () => getWeekDates(selectedDate),
-    [selectedDate]
+    () => getWeekDates(selectedDate, weekStartsOn),
+    [selectedDate, weekStartsOn]
   );
 
   const goToPreviousWeek = React.useCallback(() => {
@@ -612,9 +627,24 @@ function ShellDemoContent({
             >
               <RiPieChartLine className="size-4" />
             </button>
-            <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
-              <RiMoreFill className="size-4" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
+                  <RiMoreFill className="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>Week starts on</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={weekStartsOn.toString()}
+                  onValueChange={(v) => setWeekStartsOn(Number(v) as WeekStartDay)}
+                >
+                  <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </ShellToolbar>
 
@@ -711,6 +741,7 @@ function ShellDemoContent({
                 selectedDate={selectedDate}
                 events={calendarEvents}
                 mode={calendarMode}
+                weekStartsOn={weekStartsOn}
                 {...calendarHandlers}
                 onEventClick={handleEventClick}
                 enableExternalDrop={true}
@@ -787,13 +818,15 @@ function ShellDemo() {
   const [dataSetId, setDataSetId] = React.useState<DataSetId>("sample");
 
   return (
-    <DragProvider>
-      <ShellDemoContent
-        key={dataSetId}
-        dataSetId={dataSetId}
-        onDataSetChange={setDataSetId}
-      />
-    </DragProvider>
+    <PreferencesProvider>
+      <DragProvider>
+        <ShellDemoContent
+          key={dataSetId}
+          dataSetId={dataSetId}
+          onDataSetChange={setDataSetId}
+        />
+      </DragProvider>
+    </PreferencesProvider>
   );
 }
 

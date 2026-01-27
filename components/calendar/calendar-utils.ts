@@ -1,6 +1,6 @@
 import type { Transition } from "framer-motion";
+import type { WeekStartDay } from "@/lib/preferences";
 import {
-  DAYS,
   SNAP_MINUTES,
   MAX_OVERLAP_COLUMNS,
   type EventDaySegment,
@@ -20,18 +20,34 @@ export const blockAnimations = {
 
 /**
  * Get an array of Date objects for each day of the week containing the reference date.
- * Week starts on Monday.
+ * @param referenceDate - The date to get the week for (defaults to today)
+ * @param weekStartsOn - Which day the week starts on (0 = Sunday, 1 = Monday, defaults to 1)
  */
-export function getWeekDates(referenceDate: Date = new Date()): Date[] {
+export function getWeekDates(
+  referenceDate: Date = new Date(),
+  weekStartsOn: WeekStartDay = 1
+): Date[] {
   const date = new Date(referenceDate);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(date);
-  monday.setDate(diff);
+  const currentDay = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
-  return DAYS.map((_, index) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + index);
+  // Calculate the offset to the start of the week
+  // For Monday start (1): Sunday (0) goes back 6 days, Monday (1) stays, etc.
+  // For Sunday start (0): Sunday (0) stays, Monday (1) goes back 1 day, etc.
+  let daysToSubtract: number;
+  if (weekStartsOn === 1) {
+    // Monday start
+    daysToSubtract = currentDay === 0 ? 6 : currentDay - 1;
+  } else {
+    // Sunday start
+    daysToSubtract = currentDay;
+  }
+
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - daysToSubtract);
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + index);
     return d;
   });
 }
@@ -44,12 +60,22 @@ export function getDateForDayIndex(weekDates: Date[], dayIndex: number): string 
 }
 
 /**
- * Get the day index (0-6, Monday-start) from an ISO date string.
+ * Get the day index (0-6) from an ISO date string.
+ * @param date - ISO date string (e.g., "2026-01-27")
+ * @param weekStartsOn - Which day the week starts on (0 = Sunday, 1 = Monday, defaults to 1)
+ * @returns Day index where 0 is the first day of the week
  */
-export function getDayIndexFromDate(date: string): number {
+export function getDayIndexFromDate(date: string, weekStartsOn: WeekStartDay = 1): number {
   const d = new Date(date + "T00:00:00"); // Ensure consistent parsing
-  const day = d.getDay();
-  return day === 0 ? 6 : day - 1; // Convert Sunday=0 to Monday-start (Mon=0, Sun=6)
+  const day = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+  if (weekStartsOn === 1) {
+    // Monday start: Mon=0, Tue=1, ..., Sun=6
+    return day === 0 ? 6 : day - 1;
+  } else {
+    // Sunday start: Sun=0, Mon=1, ..., Sat=6
+    return day;
+  }
 }
 
 /**

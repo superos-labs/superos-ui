@@ -1,12 +1,27 @@
 import type { BlockColor } from "@/components/block";
 import type { BlockType, BlockStatus } from "@/lib/types";
+import type { WeekStartDay } from "@/lib/preferences";
 
 // Re-export shared types for convenience
 export type { BlockType, BlockStatus };
 
 // Constants
+/** Day labels for Monday-start weeks (legacy constant for backward compatibility) */
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+
+/** Day labels for Sunday-start weeks */
+export const DAYS_SUNDAY_START = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
 export const HOURS = Array.from({ length: 24 }, (_, i) => i);
+
+/**
+ * Get the day labels array based on which day the week starts on.
+ * @param weekStartsOn - Which day the week starts on (0 = Sunday, 1 = Monday)
+ * @returns Array of day abbreviations in order
+ */
+export function getDayLabels(weekStartsOn: WeekStartDay = 1): readonly string[] {
+  return weekStartsOn === 0 ? DAYS_SUNDAY_START : DAYS;
+}
 
 // Snap to 15-minute intervals for precise click positioning
 export const SNAP_MINUTES = 15;
@@ -206,6 +221,8 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   events: CalendarEvent[];
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
+  /** Which day the week starts on (0 = Sunday, 1 = Monday, default: 1) */
+  weekStartsOn?: WeekStartDay;
   setBlockStyle?: BlockStyle;
   /** Called when a task is dropped on a day header to set a deadline */
   onDeadlineDrop?: (dayIndex: number, date: string) => void;
@@ -256,6 +273,8 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
+  /** Which day the week starts on (0 = Sunday, 1 = Monday, default: 1) */
+  weekStartsOn?: WeekStartDay;
   /** Called when a task is dropped on a day header to set a deadline */
   onDeadlineDrop?: (dayIndex: number, date: string) => void;
   /** Map of ISO date string to array of deadline tasks for that day */
