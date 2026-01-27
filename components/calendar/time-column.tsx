@@ -23,8 +23,10 @@ import {
   formatTimeFromMinutes,
   snapToGrid,
   blockAnimations,
+  calculateAdaptiveDrop,
 } from "./calendar-utils";
 import { useDragContextOptional } from "@/components/drag";
+import { getDefaultDuration } from "@/lib/drag-types";
 
 /**
  * Default layout for segments without overlap calculation.
@@ -169,8 +171,8 @@ export function TimeColumn({
     [dragContext?.state.item, segments]
   );
   
-  // Calculate minutes from Y position for external drops
-  const getMinutesFromY = React.useCallback(
+  // Calculate raw minutes from Y position for external drops (no snapping)
+  const getRawMinutesFromY = React.useCallback(
     (clientY: number): number => {
       if (!columnRef.current) return 0;
       const rect = columnRef.current.getBoundingClientRect();
@@ -178,7 +180,7 @@ export function TimeColumn({
       const scrollTop = scrollParent?.scrollTop ?? 0;
       const y = clientY - rect.top + scrollTop;
       const rawMinutes = y / pixelsPerMinute;
-      return snapToGrid(Math.max(0, Math.min(1440 - 15, rawMinutes)));
+      return Math.max(0, Math.min(1440 - 15, rawMinutes));
     },
     [pixelsPerMinute]
   );
@@ -187,6 +189,9 @@ export function TimeColumn({
   const handleExternalDragMove = React.useCallback(
     (e: React.PointerEvent) => {
       if (!enableExternalDrop || !dragContext?.state.isDragging) return;
+      
+      const dragItem = dragContext.state.item;
+      if (!dragItem) return;
       
       // Check if pointer is over a valid block drop target
       const blockHit = getBlockAtPoint(e.clientX, e.clientY);
@@ -199,11 +204,35 @@ export function TimeColumn({
         return;
       }
       
-      // Fall back to grid drop
-      const startMinutes = getMinutesFromY(e.clientY);
-      dragContext.setPreviewPosition({ dayIndex, startMinutes, dropTarget: "time-grid" });
+      const rawMinutes = getRawMinutesFromY(e.clientY);
+      const defaultDuration = getDefaultDuration(dragItem.type);
+      
+      // Adaptive drop mode when shift is held - fits block to available gaps
+      if (dragContext.state.isShiftHeld) {
+        // Pass raw cursor position - adaptive algorithm handles centering within gaps
+        const adaptive = calculateAdaptiveDrop(
+          segments,
+          rawMinutes,
+          defaultDuration
+        );
+        dragContext.setPreviewPosition({
+          dayIndex,
+          startMinutes: adaptive.startMinutes,
+          dropTarget: "time-grid",
+          adaptiveDuration: adaptive.isAdapted ? adaptive.durationMinutes : undefined,
+        });
+      } else {
+        // Standard behavior - center on cursor and snap to 15-minute grid
+        const centeredMinutes = Math.max(0, rawMinutes - defaultDuration / 2);
+        const snappedMinutes = snapToGrid(centeredMinutes);
+        dragContext.setPreviewPosition({
+          dayIndex,
+          startMinutes: snappedMinutes,
+          dropTarget: "time-grid",
+        });
+      }
     },
-    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY, getBlockAtPoint]
+    [enableExternalDrop, dragContext, dayIndex, getRawMinutesFromY, getBlockAtPoint, segments]
   );
   
   // Handle pointer up for external drop
@@ -220,12 +249,13 @@ export function TimeColumn({
         return;
       }
       
-      // Grid drop
-      const startMinutes = getMinutesFromY(e.clientY);
+      // Grid drop - use the snapped position from preview if available
+      const previewPos = dragContext.state.previewPosition;
+      const startMinutes = previewPos?.startMinutes ?? snapToGrid(getRawMinutesFromY(e.clientY));
       onExternalDrop?.(dayIndex, startMinutes);
       dragContext.endDrag();
     },
-    [enableExternalDrop, dragContext, dayIndex, getMinutesFromY, onExternalDrop, getBlockAtPoint]
+    [enableExternalDrop, dragContext, dayIndex, getRawMinutesFromY, onExternalDrop, getBlockAtPoint]
   );
   
   // Handle pointer leave - clear preview if leaving this column
@@ -590,17 +620,19 @@ export function TimeColumn({
         );
       })()}
       
-      {/* External drag preview (from backlog) */}
+      {/* External drag preview (from backlog) - animated for smooth snapping */}
       {externalDragPreview && externalDragPreview.dayIndex === dayIndex && (() => {
         const previewHeightPx = externalDragPreview.durationMinutes * pixelsPerMinute;
         const previewCompactLayout = previewHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
         return (
-          <div
+          <motion.div
             className="pointer-events-none absolute right-1 left-1 z-40 opacity-70"
-            style={{
+            initial={false}
+            animate={{
               top: `${(externalDragPreview.startMinutes / 1440) * 100}%`,
               height: `${(externalDragPreview.durationMinutes / 1440) * 100}%`,
             }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
           >
             <Block
               title={externalDragPreview.title}
@@ -614,7 +646,7 @@ export function TimeColumn({
               compactLayout={previewCompactLayout}
               fillContainer
             />
-          </div>
+          </motion.div>
         );
       })()}
     </div>

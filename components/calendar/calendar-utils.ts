@@ -1,5 +1,6 @@
 import type { Transition } from "framer-motion";
 import type { WeekStartDay } from "@/lib/preferences";
+import { ADAPTIVE_DROP_MIN_GAP } from "@/lib/drag-types";
 import {
   SNAP_MINUTES,
   MAX_OVERLAP_COLUMNS,
@@ -317,4 +318,150 @@ export function calculateOverlapLayout(
   }
 
   return result;
+}
+
+// ============================================================================
+// Adaptive drop calculation
+// ============================================================================
+
+/**
+ * Result of adaptive drop calculation.
+ */
+export interface AdaptiveDropInfo {
+  /** Snapped start position (adjusted to fit gap boundaries) */
+  startMinutes: number;
+  /** Duration that fits the available gap */
+  durationMinutes: number;
+  /** Whether adaptive mode was applied (gap was constraining) */
+  isAdapted: boolean;
+}
+
+/**
+ * Calculate adaptive drop position that fits within available gaps.
+ * Used when Shift is held during drag to fit blocks into gaps between existing blocks.
+ * 
+ * Behavior:
+ * - Finds the gap that contains the cursor position
+ * - Centers the block within the gap when possible
+ * - Snaps to gap boundaries when the block doesn't fit centered
+ * - Constrains duration to fit within the gap (minimum 10 minutes)
+ * - Falls back to default behavior if gap is too small
+ * 
+ * @param segments - Event segments for the target day
+ * @param cursorMinutes - Raw cursor position (not centered)
+ * @param defaultDuration - Default duration for the drag item type
+ * @param minGap - Minimum gap size to consider (default: 10 minutes)
+ * @returns Adaptive drop info with snapped position and constrained duration
+ */
+export function calculateAdaptiveDrop(
+  segments: EventDaySegment[],
+  cursorMinutes: number,
+  defaultDuration: number,
+  minGap: number = ADAPTIVE_DROP_MIN_GAP
+): AdaptiveDropInfo {
+  // Sort segments by start time, only consider primary segments (not "end" of overnight)
+  const sorted = [...segments]
+    .filter(s => s.position !== "end")
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+
+  // If no blocks, return centered position with default duration
+  if (sorted.length === 0) {
+    const centered = Math.max(0, cursorMinutes - defaultDuration / 2);
+    return {
+      startMinutes: snapToGrid(centered),
+      durationMinutes: defaultDuration,
+      isAdapted: false,
+    };
+  }
+
+  // Find the gap that contains the cursor position
+  // A gap is the space between two blocks (or between day start/end and a block)
+  let gapStart = 0;
+  let gapEnd = 1440;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const block = sorted[i];
+    
+    if (cursorMinutes < block.startMinutes) {
+      // Cursor is before this block - gap is from previous block end to this block start
+      gapEnd = block.startMinutes;
+      break;
+    } else if (cursorMinutes >= block.startMinutes && cursorMinutes < block.endMinutes) {
+      // Cursor is inside a block - find the nearest gap
+      // Check gap before this block vs gap after this block
+      const gapBefore = block.startMinutes - (i > 0 ? sorted[i - 1].endMinutes : 0);
+      const gapAfter = (i < sorted.length - 1 ? sorted[i + 1].startMinutes : 1440) - block.endMinutes;
+      
+      if (gapBefore >= gapAfter && gapBefore >= minGap) {
+        // Use gap before
+        gapStart = i > 0 ? sorted[i - 1].endMinutes : 0;
+        gapEnd = block.startMinutes;
+      } else if (gapAfter >= minGap) {
+        // Use gap after
+        gapStart = block.endMinutes;
+        gapEnd = i < sorted.length - 1 ? sorted[i + 1].startMinutes : 1440;
+      } else {
+        // Both gaps too small, fall back to default
+        const centered = Math.max(0, cursorMinutes - defaultDuration / 2);
+        return {
+          startMinutes: snapToGrid(centered),
+          durationMinutes: defaultDuration,
+          isAdapted: false,
+        };
+      }
+      break;
+    } else {
+      // Cursor is after this block
+      gapStart = block.endMinutes;
+      // Continue to find where the gap ends
+    }
+  }
+
+  const gapSize = gapEnd - gapStart;
+
+  // If gap is too small to fit minimum duration, fall back to standard behavior
+  if (gapSize < minGap) {
+    const centered = Math.max(0, cursorMinutes - defaultDuration / 2);
+    return {
+      startMinutes: snapToGrid(centered),
+      durationMinutes: defaultDuration,
+      isAdapted: false,
+    };
+  }
+
+  // Determine the duration (constrain to gap if needed)
+  const duration = Math.min(defaultDuration, gapSize);
+  const effectiveDuration = Math.max(minGap, duration);
+
+  // Try to center the block on the cursor within the gap
+  let idealStart = cursorMinutes - effectiveDuration / 2;
+  
+  // Clamp to gap boundaries
+  if (idealStart < gapStart) {
+    idealStart = gapStart;
+  } else if (idealStart + effectiveDuration > gapEnd) {
+    idealStart = gapEnd - effectiveDuration;
+  }
+
+  // Snap to grid while staying within gap
+  let finalStart = snapToGrid(idealStart);
+  
+  // Ensure we don't snap outside the gap
+  if (finalStart < gapStart) {
+    finalStart = gapStart;
+  } else if (finalStart + effectiveDuration > gapEnd) {
+    // Snap to the end of the gap instead
+    finalStart = gapEnd - effectiveDuration;
+  }
+
+  // Determine if we adapted (constrained duration or snapped to boundary)
+  const isAdapted = effectiveDuration < defaultDuration || 
+    finalStart === gapStart || 
+    finalStart + effectiveDuration === gapEnd;
+
+  return {
+    startMinutes: finalStart,
+    durationMinutes: effectiveDuration,
+    isAdapted,
+  };
 }

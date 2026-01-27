@@ -53,7 +53,12 @@ export interface DropPosition {
   dropTarget: DropTarget;
   /** Block ID when dropping onto an existing block */
   targetBlockId?: string;
+  /** Duration adapted to fit available gap (when shift is held for adaptive drop) */
+  adaptiveDuration?: number;
 }
+
+/** Minimum gap size in minutes to consider for adaptive drop mode */
+export const ADAPTIVE_DROP_MIN_GAP = 10;
 
 /**
  * Get the default duration for a drag item type.

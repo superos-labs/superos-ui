@@ -18,6 +18,8 @@ export interface DragState {
   startPosition: { x: number; y: number } | null;
   /** Whether the drag threshold has been exceeded */
   isDragging: boolean;
+  /** Whether shift key is held (for adaptive drop mode) */
+  isShiftHeld: boolean;
 }
 
 export interface DragContextValue {
@@ -52,6 +54,7 @@ export function DragProvider({ children }: DragProviderProps) {
     previewPosition: null,
     startPosition: null,
     isDragging: false,
+    isShiftHeld: false,
   });
 
   // Track whether we're in a pending drag state (pointer down but threshold not met)
@@ -61,9 +64,15 @@ export function DragProvider({ children }: DragProviderProps) {
     startY: number;
   } | null>(null);
 
+  // Track initial shift state when drag starts
+  const initialShiftRef = React.useRef(false);
+
   const startDrag = React.useCallback((item: DragItem, e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Capture initial shift state
+    initialShiftRef.current = e.shiftKey;
 
     // Enter pending state
     pendingDragRef.current = {
@@ -78,28 +87,33 @@ export function DragProvider({ children }: DragProviderProps) {
       previewPosition: null,
       startPosition: { x: e.clientX, y: e.clientY },
       isDragging: false,
+      isShiftHeld: e.shiftKey,
     });
   }, []);
 
   const endDrag = React.useCallback(() => {
     pendingDragRef.current = null;
+    initialShiftRef.current = false;
     setState({
       item: null,
       position: { x: 0, y: 0 },
       previewPosition: null,
       startPosition: null,
       isDragging: false,
+      isShiftHeld: false,
     });
   }, []);
 
   const cancelDrag = React.useCallback(() => {
     pendingDragRef.current = null;
+    initialShiftRef.current = false;
     setState({
       item: null,
       position: { x: 0, y: 0 },
       previewPosition: null,
       startPosition: null,
       isDragging: false,
+      isShiftHeld: false,
     });
   }, []);
 
@@ -117,7 +131,7 @@ export function DragProvider({ children }: DragProviderProps) {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance >= DRAG_THRESHOLD) {
-          // Activate drag
+          // Activate drag - preserve shift state from when drag started
           setState({
             item: pendingDragRef.current.item,
             position: { x: e.clientX, y: e.clientY },
@@ -127,6 +141,7 @@ export function DragProvider({ children }: DragProviderProps) {
               y: pendingDragRef.current.startY,
             },
             isDragging: true,
+            isShiftHeld: initialShiftRef.current,
           });
         }
         return;
@@ -152,16 +167,31 @@ export function DragProvider({ children }: DragProviderProps) {
       if (e.key === "Escape" && (state.isDragging || pendingDragRef.current)) {
         cancelDrag();
       }
+      // Track shift key for adaptive drop mode
+      if (e.key === "Shift" && state.isDragging) {
+        initialShiftRef.current = true;
+        setState((prev) => ({ ...prev, isShiftHeld: true }));
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // Track shift key release for adaptive drop mode
+      if (e.key === "Shift" && state.isDragging) {
+        initialShiftRef.current = false;
+        setState((prev) => ({ ...prev, isShiftHeld: false }));
+      }
     };
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [state.isDragging, cancelDrag]);
 

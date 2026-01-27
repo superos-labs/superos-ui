@@ -390,10 +390,13 @@ export function useExternalDragPreview({
     const color = getDragItemColor(dragItem);
     if (!color) return null;
 
+    // Use adaptive duration when available (shift+drag mode), otherwise default
+    const duration = previewPosition.adaptiveDuration ?? getDefaultDuration(dragItem.type);
+
     return {
       dayIndex: previewPosition.dayIndex,
       startMinutes: previewPosition.startMinutes ?? 0,
-      durationMinutes: getDefaultDuration(dragItem.type),
+      durationMinutes: duration,
       color,
       title: getDragItemTitle(dragItem),
     };
@@ -402,10 +405,19 @@ export function useExternalDragPreview({
   const handleExternalDrop = React.useCallback(
     (dayIndex: number, startMinutes: number) => {
       if (!dragItem) return;
-      const position =
-        previewPosition && previewPosition.dropTarget === "existing-block"
-          ? previewPosition
-          : { dayIndex, startMinutes, dropTarget: "time-grid" as const };
+      
+      let position: DropPosition;
+      if (previewPosition && previewPosition.dropTarget === "existing-block") {
+        position = previewPosition;
+      } else {
+        // Preserve adaptiveDuration from preview position if available
+        position = {
+          dayIndex,
+          startMinutes,
+          dropTarget: "time-grid" as const,
+          adaptiveDuration: previewPosition?.adaptiveDuration,
+        };
+      }
       onDrop(dragItem, position, weekDates);
     },
     [dragItem, previewPosition, onDrop, weekDates]

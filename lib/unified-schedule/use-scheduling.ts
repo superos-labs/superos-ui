@@ -20,19 +20,21 @@ export interface UseSchedulingOptions {
 
 export interface UseSchedulingReturn {
   /** Schedule a goal on the calendar */
-  scheduleGoal: (goalId: string, dayIndex: number, startMinutes: number) => void;
+  scheduleGoal: (goalId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => void;
   /** Schedule a task on the calendar */
   scheduleTask: (
     goalId: string,
     taskId: string,
     dayIndex: number,
-    startMinutes: number
+    startMinutes: number,
+    durationMinutes?: number
   ) => void;
   /** Schedule a commitment on the calendar */
   scheduleCommitment: (
     commitmentId: string,
     dayIndex: number,
-    startMinutes: number
+    startMinutes: number,
+    durationMinutes?: number
   ) => void;
   /** Set a deadline for a task */
   setTaskDeadline: (goalId: string, taskId: string, date: string) => void;
@@ -63,7 +65,7 @@ export function useScheduling({
   setEvents,
 }: UseSchedulingOptions): UseSchedulingReturn {
   const scheduleGoal = React.useCallback(
-    (goalId: string, dayIndex: number, startMinutes: number) => {
+    (goalId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => {
       const goal = goals.find((g) => g.id === goalId);
       if (!goal) return;
 
@@ -73,7 +75,7 @@ export function useScheduling({
         date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
-        durationMinutes: 60, // 1 hour for goals
+        durationMinutes: durationMinutes ?? 60, // Default 1 hour for goals
         color: goal.color,
         blockType: "goal",
         sourceGoalId: goalId,
@@ -89,7 +91,8 @@ export function useScheduling({
       goalId: string,
       taskId: string,
       dayIndex: number,
-      startMinutes: number
+      startMinutes: number,
+      durationMinutes?: number
     ) => {
       const newEventId = crypto.randomUUID();
       const eventDate = weekDates[dayIndex].toISOString().split("T")[0];
@@ -107,7 +110,7 @@ export function useScheduling({
           date: eventDate,
           dayIndex,
           startMinutes,
-          durationMinutes: 30, // 30 min for tasks
+          durationMinutes: durationMinutes ?? 30, // Default 30 min for tasks
           color: goal.color, // Inherit from parent goal
           blockType: "task",
           sourceGoalId: goalId,
@@ -141,7 +144,7 @@ export function useScheduling({
   );
 
   const scheduleCommitment = React.useCallback(
-    (commitmentId: string, dayIndex: number, startMinutes: number) => {
+    (commitmentId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => {
       const commitment = allCommitments.find((c) => c.id === commitmentId);
       if (!commitment) return;
 
@@ -151,7 +154,7 @@ export function useScheduling({
         date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
-        durationMinutes: 60, // 1 hour for commitments
+        durationMinutes: durationMinutes ?? 60, // Default 1 hour for commitments
         color: commitment.color,
         blockType: "commitment",
         sourceCommitmentId: commitmentId,
@@ -380,14 +383,15 @@ export function useScheduling({
         }
         // Goals and commitments dropped on header are ignored (only tasks can have deadlines)
       } else if (position.dropTarget === "time-grid") {
-        // Time grid drop
+        // Time grid drop - use adaptive duration if available (shift+drag mode)
         const startMinutes = position.startMinutes ?? 0;
+        const duration = position.adaptiveDuration; // undefined uses default
         if (item.type === "goal" && item.goalId) {
-          scheduleGoal(item.goalId, position.dayIndex, startMinutes);
+          scheduleGoal(item.goalId, position.dayIndex, startMinutes, duration);
         } else if (item.type === "task" && item.taskId && item.goalId) {
-          scheduleTask(item.goalId, item.taskId, position.dayIndex, startMinutes);
+          scheduleTask(item.goalId, item.taskId, position.dayIndex, startMinutes, duration);
         } else if (item.type === "commitment" && item.commitmentId) {
-          scheduleCommitment(item.commitmentId, position.dayIndex, startMinutes);
+          scheduleCommitment(item.commitmentId, position.dayIndex, startMinutes, duration);
         }
       }
     },

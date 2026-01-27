@@ -12,11 +12,14 @@ import { useDragContext } from "./drag-context";
 /**
  * Visual ghost that follows the cursor during drag operations.
  * Renders a Block component preview at the current pointer position.
+ * 
+ * The ghost is hidden when over a valid drop zone (calendar shows its own preview).
  */
 export function DragGhost() {
   const { state } = useDragContext();
 
-  if (!state.isDragging || !state.item) {
+  // Hide ghost when over a valid drop zone - the calendar renders its own preview
+  if (!state.isDragging || !state.item || state.previewPosition) {
     return null;
   }
 
