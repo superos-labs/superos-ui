@@ -58,7 +58,7 @@ interface BlockSidebarData {
   title: string;
   /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'commitment' shows notes only */
   blockType: BlockType;
-  /** Block status: 'planned', 'completed', or 'blueprint' */
+  /** Block status: 'planned' or 'completed' */
   status?: BlockStatus;
   /** Start date in ISO format (YYYY-MM-DD) */
   date: string;
@@ -1180,8 +1180,8 @@ function BlockSidebar({
           )
         )}
 
-        {/* Mark Complete action - only for planned blocks (not completed or blueprint) */}
-        {block.status !== "completed" && block.status !== "blueprint" && onMarkComplete && (
+        {/* Mark Complete action - only for planned blocks */}
+        {block.status !== "completed" && onMarkComplete && (
           <button
             onClick={onMarkComplete}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
@@ -1192,7 +1192,7 @@ function BlockSidebar({
         )}
 
         {/* Focus mode: show timer when focused, or start button when not */}
-        {/* Hide focus controls for completed and blueprint blocks */}
+        {/* Hide focus controls for completed blocks */}
         {isFocused ? (
           <FocusTimer
             elapsedMs={focusElapsedMs ?? 0}
@@ -1202,7 +1202,7 @@ function BlockSidebar({
             onResume={onResumeFocus}
             onStop={onEndFocus}
           />
-        ) : onStartFocus && block.status !== "completed" && block.status !== "blueprint" ? (
+        ) : onStartFocus && block.status !== "completed" ? (
           <StartFocusButton
             onClick={onStartFocus}
             disabled={focusDisabled}

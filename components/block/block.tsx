@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiCheckLine, RiCircleLine, RiCloseLine } from "@remixicon/react";
+import { RiCheckLine, RiCircleLine } from "@remixicon/react";
 import { BLOCK_COLORS, type BlockColor } from "./block-colors";
 import type { BlockStatus } from "@/lib/types";
 
@@ -30,8 +30,6 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   pendingTaskCount?: number;
   /** Number of completed tasks assigned to this block */
   completedTaskCount?: number;
-  /** Show action buttons on hover for outlined variant (default: true) */
-  showOutlinedActions?: boolean;
   /** When true, Block fills its container height instead of calculating its own */
   fillContainer?: boolean;
   /** Position within an overnight block for corner styling */
@@ -57,7 +55,6 @@ function Block({
   duration = 30,
   pendingTaskCount,
   completedTaskCount,
-  showOutlinedActions = true,
   fillContainer = false,
   segmentPosition = "only",
   compactLayout,
@@ -72,7 +69,6 @@ function Block({
 
   const colorStyles = BLOCK_COLORS[color];
   const isCompleted = status === "completed";
-  const isOutlined = status === "blueprint";
 
   const height = fillContainer
     ? undefined
@@ -96,33 +92,22 @@ function Block({
         isCompact ? "justify-center py-1" : "py-2",
         "cursor-pointer transition-all",
         fillContainer && "h-full",
-        isOutlined
+        isCompleted
           ? [
-              "border border-dashed",
-              // For overnight blueprint blocks, adjust border on connected edges
-              segmentPosition === "start" && "border-b-0",
-              segmentPosition === "end" && "border-t-0",
-              colorStyles.outlinedBorder,
-              colorStyles.outlinedBg,
-              colorStyles.outlinedBgHover,
-              colorStyles.text,
+              "border-l-[3px]",
+              colorStyles.completedBorder,
+              colorStyles.completedBg,
+              colorStyles.completedBgHover,
+              colorStyles.completedText,
+              "opacity-60",
             ]
-          : isCompleted
-            ? [
-                "border-l-[3px]",
-                colorStyles.completedBorder,
-                colorStyles.completedBg,
-                colorStyles.completedBgHover,
-                colorStyles.completedText,
-                "opacity-60",
-              ]
-            : [
-                "border-l-[3px]",
-                colorStyles.border,
-                colorStyles.bg,
-                colorStyles.bgHover,
-                colorStyles.text,
-              ],
+          : [
+              "border-l-[3px]",
+              colorStyles.border,
+              colorStyles.bg,
+              colorStyles.bgHover,
+              colorStyles.text,
+            ],
         // Drop target visual states
         isDropTarget && !isDragOver && "ring-2 ring-primary/30",
         isDragOver && "ring-2 ring-primary/60 scale-[1.02] shadow-lg",
@@ -141,7 +126,7 @@ function Block({
         const total = pending + completed;
         const allCompleted = total > 0 && pending === 0;
 
-        if (total === 0 || isOutlined) return null;
+        if (total === 0) return null;
 
         return (
           <div
@@ -161,36 +146,6 @@ function Block({
           </div>
         );
       })()}
-      {isOutlined && showOutlinedActions && (
-        <div
-          className={cn(
-            "flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100",
-            isCompact
-              ? "absolute top-1/2 right-1.5 -translate-y-1/2"
-              : "absolute top-1.5 right-1.5",
-          )}
-        >
-          <button
-            className={cn(
-              "flex size-6 items-center justify-center rounded-md transition-colors",
-              "bg-white shadow-sm hover:text-green-600",
-              colorStyles.text,
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <RiCheckLine className="size-3.5" />
-          </button>
-          <button
-            className={cn(
-              "flex size-6 items-center justify-center rounded-md transition-colors",
-              "bg-white text-muted-foreground shadow-sm hover:text-foreground",
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <RiCloseLine className="size-3.5" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -106,10 +106,8 @@ export function useCalendarKeyboard({
         return;
       }
 
-      // ⌘Enter - Toggle complete (only for non-blueprint blocks)
+      // ⌘Enter - Toggle complete
       if (isMeta && e.key === "Enter" && isHoveringBlock && onToggleComplete) {
-        // Blueprint blocks cannot be marked complete/incomplete
-        if (!canMarkComplete(hoveredEvent.status)) return;
         e.preventDefault();
         const isCompleted = hoveredEvent.status === "completed";
         onToggleComplete(hoveredEvent.id, hoveredEvent.status);

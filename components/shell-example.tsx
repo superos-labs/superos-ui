@@ -32,6 +32,10 @@ import {
 } from "@/components/drag";
 import { useUnifiedSchedule, useWeekNavigation, useCommitmentAutoComplete } from "@/lib/unified-schedule";
 import { toAnalyticsItems } from "@/lib/adapters";
+import { useBlueprint, blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
+import type { BlueprintIntention } from "@/lib/blueprint";
+import { useWeeklyPlan, usePlanningFlow, useIntentionProgress } from "@/lib/weekly-planning";
+import { PlanningPanel } from "@/components/weekly-planning";
 
 // Shell-specific hooks (internal demo utilities)
 import {
@@ -107,8 +111,6 @@ function ShellDemoContent({
     showTasks,
     setShowTasks,
     showInspirationGallery,
-    calendarMode,
-    setCalendarMode,
     backlogMode,
     setBacklogMode,
     selectedEventId,
@@ -238,6 +240,86 @@ function ShellDemoContent({
     hoverPosition,
     calendarHandlers,
   } = schedule;
+
+  // -------------------------------------------------------------------------
+  // Blueprint & Weekly Planning
+  // -------------------------------------------------------------------------
+  const {
+    blueprint,
+    hasBlueprint,
+    saveBlueprint,
+  } = useBlueprint();
+
+  const weekStartDate = weekDates[0]?.toISOString().split("T")[0] ?? "";
+
+  const {
+    getWeeklyPlan,
+    saveWeeklyPlan,
+  } = useWeeklyPlan();
+
+  const currentWeekPlan = getWeeklyPlan(weekStartDate);
+
+  // Planning flow state
+  const planningFlow = usePlanningFlow({
+    isActive: layout.isPlanningMode,
+    weekDates,
+    onConfirm: (intentions) => {
+      // Save the weekly plan
+      saveWeeklyPlan({
+        weekStartDate,
+        intentions,
+        plannedAt: new Date().toISOString(),
+      });
+
+      // On first planning, save the blueprint
+      if (!hasBlueprint) {
+        const blueprintBlocks = eventsToBlueprint(calendarEvents, weekDates);
+        const blueprintIntentions: BlueprintIntention[] = intentions.map((i) => ({
+          goalId: i.goalId,
+          target: i.target,
+        }));
+        saveBlueprint({
+          blocks: blueprintBlocks,
+          intentions: blueprintIntentions,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      // Exit planning mode
+      layout.setIsPlanningMode(false);
+    },
+    onCancel: () => {
+      layout.setIsPlanningMode(false);
+    },
+  });
+
+  // Initialize planning flow with blueprint defaults when entering planning mode
+  React.useEffect(() => {
+    if (layout.isPlanningMode) {
+      // Pre-populate from blueprint or existing plan
+      const initialIntentions = currentWeekPlan?.intentions ?? [];
+      if (initialIntentions.length === 0 && blueprint) {
+        // Use blueprint defaults
+        planningFlow.reset(
+          blueprint.intentions.map((i) => ({
+            goalId: i.goalId,
+            target: i.target,
+          }))
+        );
+      } else {
+        planningFlow.reset(initialIntentions);
+      }
+    }
+  }, [layout.isPlanningMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Import blueprint blocks to calendar
+  const handleImportBlueprint = React.useCallback(() => {
+    if (!blueprint) return;
+    const importedEvents = blueprintToEvents(blueprint, weekDates);
+    importedEvents.forEach((event) => {
+      schedule.addEvent(event);
+    });
+  }, [blueprint, weekDates, schedule]);
 
   // -------------------------------------------------------------------------
   // Deadline Hover State
@@ -397,6 +479,16 @@ function ShellDemoContent({
   const sidebarDataToRender = selectedEvent ? sidebarData : frozenSidebarData;
 
   // -------------------------------------------------------------------------
+  // Intention Progress
+  // -------------------------------------------------------------------------
+  const { getProgress: getIntentionProgress } = useIntentionProgress({
+    goals,
+    events: calendarEvents,
+    weeklyPlan: currentWeekPlan,
+    weekDates,
+  });
+
+  // -------------------------------------------------------------------------
   // Analytics Data
   // -------------------------------------------------------------------------
   const useFocusedHours = progressMetric === "focused";
@@ -405,8 +497,11 @@ function ShellDemoContent({
     [commitments, getCommitmentStats, useFocusedHours]
   );
   const analyticsGoals = React.useMemo(
-    () => toAnalyticsItems(goals, getGoalStats, { useFocusedHours }),
-    [goals, getGoalStats, useFocusedHours]
+    () => toAnalyticsItems(goals, getGoalStats, { 
+      useFocusedHours,
+      getIntentionProgress,
+    }),
+    [goals, getGoalStats, useFocusedHours, getIntentionProgress]
   );
 
   // -------------------------------------------------------------------------
@@ -585,14 +680,30 @@ function ShellDemoContent({
           </div>
         </ShellToolbar>
 
-        <div className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen ? "gap-4" : "gap-0"}`}>
-          {/* Left Sidebar - Backlog */}
+        <div className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning ? "gap-4" : "gap-0"}`}>
+          {/* Left Sidebar - Backlog or Planning Panel */}
           <div
             className={`shrink-0 overflow-hidden transition-all duration-300 ease-out ${
-              showSidebar ? "w-[420px] opacity-100" : "w-0 opacity-0"
+              showSidebar || isPlanning ? "w-[420px] opacity-100" : "w-0 opacity-0"
             }`}
           >
-            <Backlog
+            {isPlanning ? (
+              <PlanningPanel
+                goals={goals}
+                commitments={commitments}
+                blueprint={blueprint}
+                weekDates={weekDates}
+                intentions={planningFlow.draftIntentions}
+                onSetIntention={planningFlow.setIntention}
+                onClearIntention={planningFlow.clearIntention}
+                onImportBlueprint={hasBlueprint ? handleImportBlueprint : undefined}
+                onConfirm={planningFlow.confirm}
+                onCancel={planningFlow.cancel}
+                isFirstPlan={!hasBlueprint}
+                className="h-full w-[420px] max-w-none"
+              />
+            ) : (
+              <Backlog
               commitments={commitments as BacklogItem[]}
               goals={goals as BacklogItem[]}
               className="h-full w-[420px] max-w-none"
@@ -638,6 +749,7 @@ function ShellDemoContent({
               onBrowseInspiration={handleBrowseInspiration}
               isInspirationActive={showInspirationGallery}
             />
+            )}
           </div>
 
           {/* Main Content - Calendar, Goal Detail, or Inspiration Gallery */}
@@ -678,13 +790,13 @@ function ShellDemoContent({
                 onIconChange={(icon) => updateGoal(selectedGoal.id, { icon })}
                 onColorChange={(color) => updateGoal(selectedGoal.id, { color })}
                 onLifeAreaChange={(lifeAreaId) => updateGoal(selectedGoal.id, { lifeAreaId })}
+                onProgressIndicatorChange={(progressIndicator) => updateGoal(selectedGoal.id, { progressIndicator })}
                 className="h-full"
               />
             ) : showCalendar ? (
               <Calendar
                 selectedDate={selectedDate}
                 events={calendarEvents}
-                mode={calendarMode}
                 weekStartsOn={weekStartsOn}
                 {...calendarHandlers}
                 onEventClick={handleEventClick}

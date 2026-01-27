@@ -29,7 +29,7 @@ interface BlockContextMenuProps {
   onCopy: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  /** When undefined, the mark complete/incomplete action is hidden (e.g., for blueprint blocks) */
+  /** When undefined, the mark complete/incomplete action is hidden */
   onToggleComplete?: () => void;
 }
 

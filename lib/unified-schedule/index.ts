@@ -28,6 +28,8 @@ export type { UseWeekNavigationOptions } from "./use-week-navigation";
 
 // Types
 export type {
+  // Progress indicator types
+  ProgressIndicator,
   // Core data types
   Subtask,
   Milestone,
@@ -42,4 +44,10 @@ export type {
   // Hook types
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
+} from "./types";
+
+// Constants
+export {
+  PROGRESS_INDICATOR_LABELS,
+  PROGRESS_INDICATOR_UNITS,
 } from "./types";

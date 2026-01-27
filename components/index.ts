@@ -12,7 +12,6 @@ export type {
   CalendarProps, 
   CalendarEvent, 
   CalendarView, 
-  CalendarMode,
   CalendarDensity,
   BlockStatus,
   BlockType,

@@ -271,14 +271,11 @@ export function useEventState({
     (eventId: string, status: BlockStatus) => {
       if (status === "completed") {
         markEventComplete(eventId);
-      } else if (status === "planned") {
-        markEventIncomplete(eventId);
       } else {
-        // Blueprint or other statuses
-        updateEvent(eventId, { status });
+        markEventIncomplete(eventId);
       }
     },
-    [markEventComplete, markEventIncomplete, updateEvent]
+    [markEventComplete, markEventIncomplete]
   );
 
   const handleEventDelete = React.useCallback(

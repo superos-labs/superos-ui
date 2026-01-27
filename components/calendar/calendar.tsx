@@ -8,7 +8,6 @@ import type { CalendarProps } from "./calendar-types";
 
 export function Calendar({
   view = "week",
-  mode = "schedule",
   selectedDate,
   showHourLabels = true,
   headerIsVisible = true,
@@ -53,7 +52,6 @@ export function Calendar({
         showHourLabels={showHourLabels}
         headerIsVisible={headerIsVisible}
         events={events}
-        mode={mode}
         density={density}
         setBlockStyle={setBlockStyle}
         onEventResize={onEventResize}
@@ -82,7 +80,6 @@ export function Calendar({
       weekDates={weekDates}
       showHourLabels={showHourLabels}
       events={events}
-      mode={mode}
       density={density}
       weekStartsOn={weekStartsOn}
       setBlockStyle={setBlockStyle}

@@ -4,18 +4,38 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { IconComponent } from "@/lib/types";
 import type { ProgressMetric } from "@/lib/preferences";
+import type { ProgressIndicator } from "@/lib/unified-schedule";
 
 // =============================================================================
 // Types
 // =============================================================================
+
+/**
+ * Intention-based progress information.
+ * When present, overrides the default hours-based progress calculation.
+ */
+export interface IntentionInfo {
+  /** Target value for this week */
+  target: number;
+  /** Actual achieved value */
+  actual: number;
+  /** Progress indicator type */
+  indicator: ProgressIndicator;
+  /** Unit label (e.g., "hours", "blocks", "days", "tasks") */
+  unit: string;
+}
 
 export interface WeeklyAnalyticsItem {
   id: string;
   label: string;
   icon: IconComponent;
   color: string;
+  /** Planned hours (fallback when no intention) */
   plannedHours: number;
+  /** Completed hours (fallback when no intention) */
   completedHours: number;
+  /** Intention-based progress (when set, overrides hours-based) */
+  intention?: IntentionInfo;
 }
 
 export interface WeeklyAnalyticsSectionData {
@@ -145,11 +165,21 @@ export function WeeklyAnalyticsItemRow({
   className,
 }: WeeklyAnalyticsItemRowProps) {
   const IconComponent = item.icon;
-  const isPlanned = item.plannedHours > 0;
-  const progress = getProgress(item.completedHours, item.plannedHours);
-  const isComplete = item.completedHours >= item.plannedHours && isPlanned;
+  
+  // Use intention-based progress if available, otherwise fall back to hours
+  const intention = item.intention;
+  const hasIntention = intention !== undefined;
+  const isPlanned = hasIntention ? intention.target > 0 : item.plannedHours > 0;
+  
+  const progress = hasIntention
+    ? getProgress(item.intention!.actual, item.intention!.target)
+    : getProgress(item.completedHours, item.plannedHours);
+  
+  const isComplete = hasIntention
+    ? item.intention!.actual >= item.intention!.target && isPlanned
+    : item.completedHours >= item.plannedHours && isPlanned;
 
-  // Muted row for items with no planned hours
+  // Muted row for items with no planned hours or intention
   if (!isPlanned) {
     return (
       <div
@@ -170,6 +200,11 @@ export function WeeklyAnalyticsItemRow({
     );
   }
 
+  // Format the progress label based on intention or hours
+  const progressLabel = hasIntention
+    ? `${item.intention!.actual}/${item.intention!.target} ${item.intention!.unit}`
+    : undefined;
+
   // Active row with % and progress bar
   return (
     <div
@@ -183,9 +218,16 @@ export function WeeklyAnalyticsItemRow({
         <IconComponent className={cn("size-3", item.color)} />
       </div>
 
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground">
-        {item.label}
-      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="truncate text-sm text-foreground">
+          {item.label}
+        </span>
+        {progressLabel && (
+          <span className="text-[10px] text-muted-foreground">
+            {progressLabel}
+          </span>
+        )}
+      </div>
 
       <div className="flex shrink-0 items-center gap-2">
         <span

@@ -20,9 +20,8 @@ export type BlockType = "goal" | "task" | "commitment";
  * Block status determines the visual state and behavior of a block.
  * - planned: Default state, active block
  * - completed: Block has been marked as done
- * - blueprint: Template block shown only in planning mode
  */
-export type BlockStatus = "planned" | "completed" | "blueprint";
+export type BlockStatus = "planned" | "completed";
 
 // =============================================================================
 // Component Types

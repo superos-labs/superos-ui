@@ -3,13 +3,87 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiArrowRightSLine, RiCloseLine, RiDeleteBinLine } from "@remixicon/react";
-import type { ScheduleGoal, ScheduleTask, GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
+import type { ScheduleGoal, ScheduleTask, GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ProgressIndicator } from "@/lib/unified-schedule";
+import { PROGRESS_INDICATOR_LABELS } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 import type { BacklogItem } from "@/components/backlog";
 import { GoalDetailHeader } from "./goal-detail-header";
 import { GoalDetailMilestones } from "./goal-detail-milestones";
 import { GoalDetailTasks } from "./goal-detail-tasks";
+
+// =============================================================================
+// Progress Indicator Selector
+// =============================================================================
+
+const PROGRESS_INDICATORS: ProgressIndicator[] = [
+  "completed-time",
+  "focused-time",
+  "blocks-completed",
+  "days-with-blocks",
+  "specific-tasks",
+];
+
+interface ProgressIndicatorSelectorProps {
+  value: ProgressIndicator;
+  onChange?: (indicator: ProgressIndicator) => void;
+  className?: string;
+}
+
+function ProgressIndicatorSelector({
+  value,
+  onChange,
+  className,
+}: ProgressIndicatorSelectorProps) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  return (
+    <div className={cn("flex flex-col gap-1.5", className)}>
+      <span className="text-xs text-muted-foreground/70">Progress measured by</span>
+      <div className="relative">
+        <button
+          onClick={() => onChange && setIsOpen(!isOpen)}
+          disabled={!onChange}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors",
+            onChange
+              ? "hover:bg-muted cursor-pointer"
+              : "cursor-default",
+          )}
+        >
+          <span>{PROGRESS_INDICATOR_LABELS[value]}</span>
+          {onChange && (
+            <RiArrowRightSLine
+              className={cn(
+                "size-3.5 text-muted-foreground/50 transition-transform",
+                isOpen && "rotate-90"
+              )}
+            />
+          )}
+        </button>
+        {isOpen && onChange && (
+          <div className="absolute top-full left-0 z-10 mt-1 w-48 rounded-md border border-border bg-background py-1 shadow-lg">
+            {PROGRESS_INDICATORS.map((indicator) => (
+              <button
+                key={indicator}
+                onClick={() => {
+                  onChange(indicator);
+                  setIsOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center px-3 py-1.5 text-sm transition-colors hover:bg-muted",
+                  indicator === value && "bg-muted font-medium"
+                )}
+              >
+                {PROGRESS_INDICATOR_LABELS[indicator]}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // =============================================================================
 // Collapsible Section
@@ -173,6 +247,8 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
+  /** Callback when progress indicator is changed */
+  onProgressIndicatorChange?: (indicator: ProgressIndicator) => void;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -214,6 +290,7 @@ export function GoalDetail({
   onIconChange,
   onColorChange,
   onLifeAreaChange,
+  onProgressIndicatorChange,
   getTaskSchedule,
   getTaskDeadline,
   onToggleTask,
@@ -376,8 +453,14 @@ export function GoalDetail({
               />
             </CollapsibleSection>
 
-            {/* Progress (inline with content) */}
-            <InlineProgress stats={stats} className="mt-2" />
+            {/* Progress settings and display */}
+            <div className="flex flex-col gap-4 mt-2">
+              <ProgressIndicatorSelector
+                value={goal.progressIndicator ?? "completed-time"}
+                onChange={onProgressIndicatorChange}
+              />
+              <InlineProgress stats={stats} />
+            </div>
           </div>
         </div>
       </div>

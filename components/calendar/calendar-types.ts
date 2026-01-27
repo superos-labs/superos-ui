@@ -90,8 +90,7 @@ export const PIXELS_PER_MINUTE = getPixelsPerMinute(DEFAULT_DENSITY);
 
 // Types
 export type CalendarView = "week" | "day";
-export type CalendarMode = "schedule" | "blueprint";
-export type BlockStyle = "planned" | "completed" | "blueprint";
+export type BlockStyle = "planned" | "completed";
 
 // Note: BlockType is imported from @/lib/types
 
@@ -108,7 +107,7 @@ export interface CalendarEvent {
   pendingTaskCount?: number;
   /** Number of completed tasks assigned to this block */
   completedTaskCount?: number;
-  status?: BlockStatus; // "planned" | "completed" | "blueprint"
+  status?: BlockStatus; // "planned" | "completed"
   
   // Block identity and source tracking
   /** Whether this block is for a goal work session, a specific task, or a commitment */
@@ -215,7 +214,6 @@ export interface ExternalDropCallbacks {
 
 export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallbacks {
   view?: CalendarView;
-  mode?: CalendarMode;
   selectedDate?: Date;
   showHourLabels?: boolean;
   headerIsVisible?: boolean;
@@ -260,7 +258,6 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
   headerIsVisible?: boolean;
   /** Events to display (required - always passed from parent Calendar) */
   events: CalendarEvent[];
-  mode?: CalendarMode;
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
@@ -271,7 +268,6 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   showHourLabels?: boolean;
   /** Events to display (required - always passed from parent Calendar) */
   events: CalendarEvent[];
-  mode?: CalendarMode;
   setBlockStyle?: BlockStyle;
   /** Density preset controlling vertical spacing (default: "default") */
   density?: CalendarDensity;
@@ -304,8 +300,6 @@ export interface TimeColumnProps extends CalendarEventCallbacks, ExternalDropCal
   dayColumnWidth: number;
   /** Pixels per minute for positioning calculations (derived from density) */
   pixelsPerMinute: number;
-  /** Calendar mode for styling */
-  mode?: CalendarMode;
   /** Override style for all blocks */
   setBlockStyle?: BlockStyle;
   /** Whether a drag-to-create is in progress */
@@ -335,34 +329,19 @@ export function blockStyleToStatus(style: BlockStyle): BlockStatus {
 
 /**
  * Check if a block can be marked complete/incomplete.
- * Blueprint blocks cannot be marked complete.
+ * All blocks can be marked complete.
  */
 export function canMarkComplete(status: BlockStatus | undefined): boolean {
-  return status !== "blueprint";
+  return true;
 }
 
 /**
  * Determine the status for a pasted or duplicated block.
- * Completed and blueprint blocks become planned when pasted.
+ * Completed blocks become planned when pasted.
  */
 export function statusOnPaste(sourceStatus: BlockStatus | undefined): BlockStatus {
   if (sourceStatus === "completed") return "planned";
-  if (sourceStatus === "blueprint") return "planned";
   return sourceStatus ?? "planned";
-}
-
-/**
- * Check if an event should be visible in the given calendar mode.
- * - Schedule mode: shows planned and completed, hides blueprint
- * - Blueprint mode: shows only blueprint blocks
- */
-export function isVisibleInMode(
-  status: BlockStatus | undefined,
-  mode: CalendarMode,
-): boolean {
-  if (mode === "blueprint") return status === "blueprint";
-  // Schedule mode: show planned and completed, hide blueprint
-  return status !== "blueprint";
 }
 
 // ============================================================================
@@ -474,20 +453,15 @@ function getDayIndexFromDateInternal(date: string): number {
  *
  * @param events - Array of calendar events to filter
  * @param targetDate - ISO date string (e.g., "2026-01-20") for the target day
- * @param mode - Calendar mode for visibility filtering
  */
 export function getSegmentsForDay(
   events: CalendarEvent[],
   targetDate: string,
-  mode: CalendarMode = "schedule",
 ): EventDaySegment[] {
   const segments: EventDaySegment[] = [];
   const targetDayIndex = getDayIndexFromDateInternal(targetDate);
 
   for (const event of events) {
-    // Skip events not visible in current mode
-    if (!isVisibleInMode(event.status, mode)) continue;
-
     const isOvernight = isOvernightEvent(event);
 
     // Check if this day is the start day (match by exact date)

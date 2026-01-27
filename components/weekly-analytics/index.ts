@@ -10,5 +10,6 @@ export {
 export type { 
   WeeklyAnalyticsProps, 
   WeeklyAnalyticsItem, 
-  WeeklyAnalyticsSectionData 
+  WeeklyAnalyticsSectionData,
+  IntentionInfo,
 } from "./weekly-analytics";

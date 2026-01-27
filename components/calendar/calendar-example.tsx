@@ -7,7 +7,6 @@ import { KeyboardToast } from "./keyboard-toast";
 import { getWeekDates } from "./calendar-utils";
 import {
   type CalendarView,
-  type CalendarMode,
   type CalendarDensity,
   type CalendarEvent,
   type BlockStyle,
@@ -175,7 +174,7 @@ function createSampleEvents(): CalendarEvent[] {
       startMinutes: hoursToMinutes(10),
       durationMinutes: 180,
       color: "lime",
-      status: "blueprint",
+      status: "planned",
     },
     {
       id: "16",
@@ -185,7 +184,7 @@ function createSampleEvents(): CalendarEvent[] {
       startMinutes: hoursToMinutes(9),
       durationMinutes: 120,
       color: "slate",
-      status: "blueprint",
+      status: "planned",
     },
     // Overnight events (spanning across midnight)
     {
@@ -224,7 +223,6 @@ const INITIAL_EVENTS: CalendarEvent[] = createSampleEvents();
 
 export function CalendarExample() {
   const [view, setView] = React.useState<CalendarView>("week");
-  const [mode, setMode] = React.useState<CalendarMode>("schedule");
   const [density, setDensity] = React.useState<CalendarDensity>("default");
   const [showHourLabels, setShowHourLabels] = React.useState(true);
   const [headerIsVisible, setHeaderIsVisible] = React.useState(true);
@@ -241,7 +239,6 @@ export function CalendarExample() {
       <div className="h-screen w-full">
         <Calendar
           view={view}
-          mode={mode}
           density={density}
           showHourLabels={showHourLabels}
           headerIsVisible={headerIsVisible}
@@ -263,15 +260,6 @@ export function CalendarExample() {
           options={[
             { label: "Week", value: "week" },
             { label: "Day", value: "day" },
-          ]}
-        />
-        <KnobSelect
-          label="Mode"
-          value={mode}
-          onChange={setMode}
-          options={[
-            { label: "Schedule", value: "schedule" },
-            { label: "Blueprint", value: "blueprint" },
           ]}
         />
         <KnobSelect
@@ -298,7 +286,6 @@ export function CalendarExample() {
               { label: "Default", value: "" },
               { label: "Planned", value: "planned" },
               { label: "Completed", value: "completed" },
-              { label: "Blueprint", value: "blueprint" },
             ]}
           />
         )}

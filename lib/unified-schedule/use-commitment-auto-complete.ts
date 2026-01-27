@@ -53,8 +53,8 @@ function findBlocksToAutoComplete(events: CalendarEvent[], now: number): string[
       // Must be a commitment block
       if (event.blockType !== "commitment") return false;
       
-      // Must be planned (not already completed or blueprint)
-      if (event.status === "completed" || event.status === "blueprint") return false;
+      // Must be planned (not already completed)
+      if (event.status === "completed") return false;
       
       // End time must be in the past
       const endTimestamp = getEventEndTimestamp(event);

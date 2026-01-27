@@ -183,7 +183,7 @@ export function useCalendarInteractions({
           date: weekDates[newDayIndex].toISOString().split("T")[0],
           dayIndex: newDayIndex,
           startMinutes: newStartMinutes,
-          // Completed/blueprint blocks become planned when duplicated
+          // Completed blocks become planned when duplicated
           status: statusOnPaste(source.status),
           // Don't copy task assignments to duplicates
           assignedTaskIds: undefined,

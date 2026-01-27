@@ -9,7 +9,7 @@
  */
 
 import * as React from "react";
-import type { CalendarMode, CalendarEvent, ExternalDragPreview } from "@/components/calendar";
+import type { CalendarEvent, ExternalDragPreview } from "@/components/calendar";
 import type { BacklogMode } from "@/components/backlog";
 import type { UseBlockSidebarHandlersReturn } from "@/components/block";
 import type { DragContextValue } from "@/components/drag";
@@ -42,10 +42,12 @@ export interface UseShellLayoutReturn {
   setShowInspirationGallery: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Mode state
-  calendarMode: CalendarMode;
-  setCalendarMode: React.Dispatch<React.SetStateAction<CalendarMode>>;
   backlogMode: BacklogMode;
   setBacklogMode: React.Dispatch<React.SetStateAction<BacklogMode>>;
+  
+  // Planning mode
+  isPlanningMode: boolean;
+  setIsPlanningMode: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Selection state
   selectedEventId: string | null;
@@ -93,8 +95,8 @@ export function useShellLayout(): UseShellLayoutReturn {
   // -------------------------------------------------------------------------
   // Mode State
   // -------------------------------------------------------------------------
-  const [calendarMode, setCalendarMode] = React.useState<CalendarMode>("schedule");
   const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view");
+  const [isPlanningMode, setIsPlanningMode] = React.useState(false);
 
   // -------------------------------------------------------------------------
   // Selection State
@@ -141,7 +143,7 @@ export function useShellLayout(): UseShellLayoutReturn {
   // -------------------------------------------------------------------------
   // Computed Values
   // -------------------------------------------------------------------------
-  const isPlanning = calendarMode === "blueprint";
+  const isPlanning = isPlanningMode;
   const isGoalDetailMode = backlogMode === "goal-detail";
 
   // -------------------------------------------------------------------------
@@ -213,7 +215,7 @@ export function useShellLayout(): UseShellLayoutReturn {
   // Plan Week Toggle
   // -------------------------------------------------------------------------
   const handlePlanWeekClick = React.useCallback(() => {
-    setCalendarMode((prev) => (prev === "blueprint" ? "schedule" : "blueprint"));
+    setIsPlanningMode((prev) => !prev);
   }, []);
 
   // -------------------------------------------------------------------------
@@ -244,10 +246,10 @@ export function useShellLayout(): UseShellLayoutReturn {
     setShowInspirationGallery,
 
     // Mode state
-    calendarMode,
-    setCalendarMode,
     backlogMode,
     setBacklogMode,
+    isPlanningMode,
+    setIsPlanningMode,
 
     // Selection state
     selectedEventId,

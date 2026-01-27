@@ -41,7 +41,6 @@ export { KeyboardToast } from "./keyboard-toast";
 export type {
   CalendarProps,
   CalendarView,
-  CalendarMode,
   CalendarEvent,
   CalendarDayHeaderProps,
   CalendarDensity,
@@ -79,7 +78,6 @@ export { getGridHeight, getPixelsPerMinute } from "./calendar-types";
 export {
   canMarkComplete,
   statusOnPaste,
-  isVisibleInMode,
   blockStyleToStatus,
 } from "./calendar-types";
 

@@ -25,7 +25,6 @@ export function DayView({
   showHourLabels = true,
   headerIsVisible = true,
   events,
-  mode = "schedule",
   density,
   setBlockStyle,
   onEventResize,
@@ -66,7 +65,7 @@ export function DayView({
   const selectedDateString = selectedDate.toISOString().split("T")[0];
 
   // Get segments for this day (handles overnight events automatically)
-  const rawSegments = getSegmentsForDay(events, selectedDateString, mode);
+  const rawSegments = getSegmentsForDay(events, selectedDateString);
   const daySegments = calculateOverlapLayout(rawSegments);
 
   // Measure day column width for drag calculations
@@ -157,7 +156,6 @@ export function DayView({
             segments={daySegments}
             dayColumnWidth={dayColumnWidth}
             pixelsPerMinute={pixelsPerMinute}
-            mode={mode}
             setBlockStyle={setBlockStyle}
             isCreatingBlock={isCreatingBlock}
             createPreview={createPreview}

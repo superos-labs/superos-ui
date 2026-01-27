@@ -39,7 +39,7 @@ function useCalendarClipboard(): UseCalendarClipboardReturn {
       if (!clipboard.event) return null;
 
       // Create a new event with a new ID at the specified position
-      // Completed/blueprint blocks become planned when pasted
+      // Completed blocks become planned when pasted
       return {
         ...clipboard.event,
         id: crypto.randomUUID(),

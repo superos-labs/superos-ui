@@ -26,7 +26,6 @@ export function WeekView({
   weekDates,
   showHourLabels = true,
   events,
-  mode = "schedule",
   density,
   setBlockStyle,
   weekStartsOn = 1,
@@ -168,7 +167,7 @@ export function WeekView({
           {dayLabels.map((day, dayIndex) => {
             const date = weekDates[dayIndex];
             const dateString = date.toISOString().split("T")[0];
-            const rawSegments = getSegmentsForDay(events, dateString, mode);
+            const rawSegments = getSegmentsForDay(events, dateString);
             const daySegments = calculateOverlapLayout(rawSegments);
 
             return (
@@ -179,7 +178,6 @@ export function WeekView({
                 segments={daySegments}
                 dayColumnWidth={dayColumnWidth}
                 pixelsPerMinute={pixelsPerMinute}
-                mode={mode}
                 setBlockStyle={setBlockStyle}
                 isCreatingBlock={isCreatingBlock}
                 createPreview={createPreview}
