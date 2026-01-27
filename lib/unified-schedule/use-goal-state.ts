@@ -15,6 +15,7 @@ export interface UseGoalStateReturn {
   goals: ScheduleGoal[];
   setGoals: React.Dispatch<React.SetStateAction<ScheduleGoal[]>>;
   addGoal: (goal: ScheduleGoal) => void;
+  deleteGoal: (goalId: string) => void;
   updateGoal: (goalId: string, updates: Partial<ScheduleGoal>) => void;
   toggleTaskComplete: (goalId: string, taskId: string) => boolean | undefined;
   addTask: (goalId: string, label: string) => string;
@@ -46,6 +47,10 @@ export function useGoalState({
 
   const addGoal = React.useCallback((goal: ScheduleGoal) => {
     setGoals((prev) => [...prev, goal]);
+  }, []);
+
+  const deleteGoal = React.useCallback((goalId: string) => {
+    setGoals((prev) => prev.filter((g) => g.id !== goalId));
   }, []);
 
   const updateGoal = React.useCallback(
@@ -335,6 +340,7 @@ export function useGoalState({
     goals,
     setGoals,
     addGoal,
+    deleteGoal,
     updateGoal,
     toggleTaskComplete,
     addTask,

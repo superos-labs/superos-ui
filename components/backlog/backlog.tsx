@@ -63,13 +63,15 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Cancel and exit edit mode */
   onCancelEditCommitments?: () => void;
   
-  // Goal creation props
+  // Goal creation props (for goal-detail mode's BacklogGoalList)
   /** Callback for creating a new goal */
   onCreateGoal?: (goal: NewGoalData) => void;
   /** Life areas for goal creation */
   lifeAreas?: LifeArea[];
   /** Available icons for goal creation */
   goalIcons?: GoalIconOption[];
+  /** Callback to create a new goal and immediately select it (for main backlog view) */
+  onCreateAndSelectGoal?: () => void;
   
   // Goal detail mode props
   /** Currently selected goal ID (for goal-detail mode) */
@@ -116,6 +118,7 @@ export function Backlog({
   onCreateGoal,
   lifeAreas,
   goalIcons,
+  onCreateAndSelectGoal,
   // Goal detail mode props
   selectedGoalId,
   onSelectGoal,
@@ -135,9 +138,7 @@ export function Backlog({
         selectedGoalId={selectedGoalId}
         onSelectGoal={onSelectGoal}
         getGoalStats={getGoalStats}
-        onCreateGoal={onCreateGoal}
-        lifeAreas={lifeAreas}
-        goalIcons={goalIcons}
+        onCreateAndSelectGoal={onCreateAndSelectGoal}
         onBrowseInspiration={onBrowseInspiration}
         isInspirationActive={isInspirationActive}
         className={className}
@@ -205,9 +206,9 @@ export function Backlog({
           getTaskDeadline={getTaskDeadline}
           draggable={draggable}
           dragType="goal"
-          onCreateGoal={onCreateGoal}
-          lifeAreas={lifeAreas}
-          goalIcons={goalIcons}
+          onCreateAndSelectGoal={onCreateAndSelectGoal}
+          onBrowseInspiration={onBrowseInspiration}
+          isInspirationActive={isInspirationActive}
           className="py-2"
         />
       </div>

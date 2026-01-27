@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn, formatHours } from "@/lib/utils";
 import {
-  RiMoreLine,
+  RiArrowRightSLine,
   RiShiningLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
@@ -110,10 +110,14 @@ export function BacklogItemRow({
   const totalMilestones = item.milestones?.length ?? 0;
   const showMilestones = milestonesEnabled && totalMilestones > 0;
 
-  // Handle row click
-  const handleRowClick = React.useCallback(() => {
+  // Handle chevron click to navigate to goal detail
+  const handleChevronClick = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent drag initiation
     onItemClick?.(item.id);
   }, [onItemClick, item.id]);
+
+  // Only show chevron for goals (not commitments)
+  const showChevron = dragType === "goal" && onItemClick;
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -122,9 +126,7 @@ export function BacklogItemRow({
           "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
           "hover:bg-muted/60",
           isDragging && "opacity-50",
-          onItemClick && "cursor-pointer",
         )}
-        onClick={handleRowClick}
         {...(canDrag ? draggableProps : {})}
       >
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
@@ -158,9 +160,15 @@ export function BacklogItemRow({
           </div>
         )}
 
-        <button className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-lg bg-background text-muted-foreground opacity-0 shadow-sm ring-1 ring-border/50 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100">
-          <RiMoreLine className="size-4" />
-        </button>
+        {showChevron && (
+          <button
+            onClick={handleChevronClick}
+            className="absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-lg bg-background text-muted-foreground opacity-0 shadow-sm ring-1 ring-border/50 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100"
+            aria-label="Open goal details"
+          >
+            <RiArrowRightSLine className="size-4" />
+          </button>
+        )}
       </div>
 
       {showTasks && (

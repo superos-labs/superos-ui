@@ -45,6 +45,7 @@ export function useUnifiedSchedule({
     goals,
     setGoals,
     addGoal,
+    deleteGoal,
     updateGoal,
     toggleTaskComplete: baseToggleTaskComplete,
     addTask,
@@ -382,6 +383,7 @@ export function useUnifiedSchedule({
     getTaskDeadline,
     getWeekDeadlines,
     addGoal,
+    deleteGoal,
     updateGoal,
     toggleTaskComplete,
     // Task CRUD

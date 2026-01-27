@@ -217,6 +217,7 @@ function ShellDemoContent({
     getTaskDeadline,
     getWeekDeadlines,
     addGoal,
+    deleteGoal,
     updateGoal,
     toggleTaskComplete,
     addTask,
@@ -430,6 +431,37 @@ function ShellDemoContent({
     [addGoal, backlogMode]
   );
 
+  // Create a new goal with defaults and immediately navigate to it
+  const handleCreateAndSelectGoal = React.useCallback(() => {
+    const newGoalId = crypto.randomUUID();
+    const defaultIcon = GOAL_ICONS[0]?.icon;
+    const defaultLifeAreaId = LIFE_AREAS[0]?.id ?? "";
+    
+    addGoal({
+      id: newGoalId,
+      label: "New goal",
+      icon: defaultIcon,
+      color: "violet",
+      lifeAreaId: defaultLifeAreaId,
+      tasks: [],
+    });
+    
+    // Navigate to goal-detail mode and select the new goal
+    setBacklogMode("goal-detail");
+    setSelectedGoalId(newGoalId);
+  }, [addGoal, setBacklogMode, setSelectedGoalId]);
+
+  // -------------------------------------------------------------------------
+  // Goal Deletion
+  // -------------------------------------------------------------------------
+  const handleDeleteGoal = React.useCallback(() => {
+    if (!selectedGoalId) return;
+    deleteGoal(selectedGoalId);
+    // Navigate back to main backlog view
+    setSelectedGoalId(null);
+    setBacklogMode("view");
+  }, [selectedGoalId, deleteGoal, setSelectedGoalId, setBacklogMode]);
+
   // -------------------------------------------------------------------------
   // Goal Detail Mode Derived Data
   // -------------------------------------------------------------------------
@@ -599,6 +631,7 @@ function ShellDemoContent({
               onCreateGoal={handleCreateGoal}
               lifeAreas={LIFE_AREAS}
               goalIcons={GOAL_ICONS}
+              onCreateAndSelectGoal={handleCreateAndSelectGoal}
               // Goal detail mode props
               selectedGoalId={selectedGoalId}
               onSelectGoal={handleSelectGoal}
@@ -639,6 +672,12 @@ function ShellDemoContent({
                 onUpdateMilestone={(milestoneId, label) => updateMilestone(selectedGoal.id, milestoneId, label)}
                 onDeleteMilestone={(milestoneId) => deleteMilestone(selectedGoal.id, milestoneId)}
                 onClose={handleCloseGoalDetail}
+                onDelete={handleDeleteGoal}
+                lifeAreas={LIFE_AREAS}
+                goalIcons={GOAL_ICONS}
+                onIconChange={(icon) => updateGoal(selectedGoal.id, { icon })}
+                onColorChange={(color) => updateGoal(selectedGoal.id, { color })}
+                onLifeAreaChange={(lifeAreaId) => updateGoal(selectedGoal.id, { lifeAreaId })}
                 className="h-full"
               />
             ) : showCalendar ? (

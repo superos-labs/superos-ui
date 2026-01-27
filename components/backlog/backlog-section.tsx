@@ -5,12 +5,11 @@ import { cn, formatHours } from "@/lib/utils";
 import {
   RiAddLine,
   RiPencilLine,
+  RiSparklingLine,
 } from "@remixicon/react";
 import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
-import type { LifeArea, GoalIconOption } from "@/lib/types";
-import type { BacklogItem, NewGoalData } from "./backlog-types";
+import type { BacklogItem } from "./backlog-types";
 import { BacklogItemRow } from "./backlog-item-row";
-import { InlineGoalCreator } from "./inline-creators";
 
 export interface BacklogSectionProps {
   title: string;
@@ -48,12 +47,12 @@ export interface BacklogSectionProps {
   dragType?: "goal" | "commitment";
   /** Callback to enter edit mode (only for commitments section) */
   onEdit?: () => void;
-  /** Callback for inline goal creation (shows + button in header) */
-  onCreateGoal?: (goal: NewGoalData) => void;
-  /** Life areas for goal creation dropdown */
-  lifeAreas?: LifeArea[];
-  /** Available icons for goal creation */
-  goalIcons?: GoalIconOption[];
+  /** Callback to create a new goal and immediately select it (for goals section) */
+  onCreateAndSelectGoal?: () => void;
+  /** Callback to browse inspiration gallery (for goals section) */
+  onBrowseInspiration?: () => void;
+  /** Whether the inspiration gallery is currently active */
+  isInspirationActive?: boolean;
   className?: string;
 }
 
@@ -79,14 +78,11 @@ export function BacklogSection({
   draggable = false,
   dragType = "goal",
   onEdit,
-  onCreateGoal,
-  lifeAreas,
-  goalIcons,
+  onCreateAndSelectGoal,
+  onBrowseInspiration,
+  isInspirationActive,
   className,
 }: BacklogSectionProps) {
-  // State for inline goal creation
-  const [isCreating, setIsCreating] = React.useState(false);
-
   // Calculate totals from stats if available, otherwise use legacy props
   const totals = React.useMemo(() => {
     if (getItemStats) {
@@ -137,30 +133,8 @@ export function BacklogSection({
               <RiPencilLine className="size-3.5 shrink-0" />
             </button>
           )}
-          {onCreateGoal && lifeAreas && goalIcons && !isCreating && (
-            <button
-              onClick={() => setIsCreating(true)}
-              className="flex h-6 w-0 items-center justify-center overflow-hidden rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground group-hover/section:w-6"
-              title="Add goal"
-            >
-              <RiAddLine className="size-3.5 shrink-0" />
-            </button>
-          )}
         </div>
       </div>
-
-      {/* Inline Goal Creator */}
-      {isCreating && onCreateGoal && lifeAreas && goalIcons && (
-        <InlineGoalCreator
-          lifeAreas={lifeAreas}
-          goalIcons={goalIcons}
-          onSave={(goal) => {
-            onCreateGoal(goal);
-            setIsCreating(false);
-          }}
-          onCancel={() => setIsCreating(false)}
-        />
-      )}
 
       <div className="flex flex-col gap-0.5">
         {items.map((item) => (
@@ -185,6 +159,47 @@ export function BacklogSection({
             dragType={dragType}
           />
         ))}
+
+        {/* New goal button - for goals section */}
+        {onCreateAndSelectGoal && (
+          <button
+            onClick={onCreateAndSelectGoal}
+            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
+          >
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+              <RiAddLine className="size-4 text-muted-foreground" />
+            </div>
+            <span className="text-sm text-muted-foreground">New goal</span>
+          </button>
+        )}
+
+        {/* Browse inspiration button - for goals section */}
+        {onBrowseInspiration && (
+          <button
+            onClick={onBrowseInspiration}
+            className={cn(
+              "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all",
+              isInspirationActive ? "bg-muted" : "hover:bg-muted/60",
+            )}
+          >
+            <div
+              className={cn(
+                "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                isInspirationActive ? "bg-muted" : "bg-muted/60",
+              )}
+            >
+              <RiSparklingLine className="size-4 text-muted-foreground" />
+            </div>
+            <span
+              className={cn(
+                "text-sm",
+                isInspirationActive ? "font-medium text-foreground" : "text-muted-foreground",
+              )}
+            >
+              Browse inspiration
+            </span>
+          </button>
+        )}
       </div>
 
       {onAddItem && (

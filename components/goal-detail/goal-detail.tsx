@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiArrowRightSLine, RiCloseLine } from "@remixicon/react";
+import { RiArrowRightSLine, RiCloseLine, RiDeleteBinLine } from "@remixicon/react";
 import type { ScheduleGoal, ScheduleTask, GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
-import type { LifeArea } from "@/lib/types";
+import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
+import type { GoalColor } from "@/lib/colors";
 import type { BacklogItem } from "@/components/backlog";
 import { GoalDetailHeader } from "./goal-detail-header";
 import { GoalDetailMilestones } from "./goal-detail-milestones";
@@ -162,6 +163,16 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onNotesChange?: (notes: string) => void;
   /** Callback when title is edited */
   onTitleChange?: (title: string) => void;
+  /** Available life areas for editing */
+  lifeAreas?: LifeArea[];
+  /** Available icons for editing */
+  goalIcons?: GoalIconOption[];
+  /** Callback when icon is changed */
+  onIconChange?: (icon: IconComponent) => void;
+  /** Callback when color is changed */
+  onColorChange?: (color: GoalColor) => void;
+  /** Callback when life area is changed */
+  onLifeAreaChange?: (lifeAreaId: string) => void;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -187,6 +198,8 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   
   // Navigation
   onClose?: () => void;
+  /** Callback when goal is deleted */
+  onDelete?: () => void;
 }
 
 export function GoalDetail({
@@ -196,6 +209,11 @@ export function GoalDetail({
   notes = "",
   onNotesChange,
   onTitleChange,
+  lifeAreas,
+  goalIcons,
+  onIconChange,
+  onColorChange,
+  onLifeAreaChange,
   getTaskSchedule,
   getTaskDeadline,
   onToggleTask,
@@ -211,9 +229,12 @@ export function GoalDetail({
   onUpdateMilestone,
   onDeleteMilestone,
   onClose,
+  onDelete,
   className,
   ...props
 }: GoalDetailProps) {
+  // State for delete confirmation
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   // Convert ScheduleGoal to BacklogItem for task row compatibility
   const goalAsBacklogItem: BacklogItem = {
     id: goal.id,
@@ -248,16 +269,48 @@ export function GoalDetail({
       )}
       {...props}
     >
-      {/* Close button - absolute positioned top right */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="absolute right-6 top-6 z-10 flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Close goal detail"
-        >
-          <RiCloseLine className="size-5" />
-        </button>
-      )}
+      {/* Action buttons - absolute positioned top right */}
+      <div className="absolute right-6 top-6 z-10 flex items-center gap-1">
+        {/* Delete button with inline confirmation */}
+        {onDelete && (
+          showDeleteConfirm ? (
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+              <button
+                onClick={() => {
+                  onDelete();
+                  setShowDeleteConfirm(false);
+                }}
+                className="rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-600"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="Delete goal"
+            >
+              <RiDeleteBinLine className="size-5" />
+            </button>
+          )
+        )}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Close goal detail"
+          >
+            <RiCloseLine className="size-5" />
+          </button>
+        )}
+      </div>
 
       {/* Scrollable content */}
       <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -270,7 +323,12 @@ export function GoalDetail({
               title={goal.label}
               color={goal.color}
               lifeArea={lifeArea}
+              lifeAreas={lifeAreas}
+              goalIcons={goalIcons}
               onTitleChange={onTitleChange}
+              onIconChange={onIconChange}
+              onColorChange={onColorChange}
+              onLifeAreaChange={onLifeAreaChange}
             />
 
             {/* Notes (inline, borderless) */}

@@ -5,9 +5,7 @@ import { cn } from "@/lib/utils";
 import { RiAddLine, RiSparklingLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { GoalStats } from "@/lib/unified-schedule";
-import type { LifeArea, GoalIconOption } from "@/lib/types";
-import type { BacklogItem, NewGoalData } from "./backlog-types";
-import { InlineGoalCreator } from "./inline-creators";
+import type { BacklogItem } from "./backlog-types";
 
 // =============================================================================
 // Goal List Item
@@ -100,12 +98,8 @@ export interface BacklogGoalListProps {
   onSelectGoal?: (goalId: string) => void;
   /** Function to get computed stats for a goal */
   getGoalStats?: (goalId: string) => GoalStats;
-  /** Callback for creating a new goal */
-  onCreateGoal?: (goal: NewGoalData) => void;
-  /** Life areas for goal creation */
-  lifeAreas?: LifeArea[];
-  /** Available icons for goal creation */
-  goalIcons?: GoalIconOption[];
+  /** Callback to create a new goal and immediately select it */
+  onCreateAndSelectGoal?: () => void;
   /** Callback to browse inspiration gallery */
   onBrowseInspiration?: () => void;
   /** Whether the inspiration gallery is currently active */
@@ -118,15 +112,11 @@ export function BacklogGoalList({
   selectedGoalId,
   onSelectGoal,
   getGoalStats,
-  onCreateGoal,
-  lifeAreas,
-  goalIcons,
+  onCreateAndSelectGoal,
   onBrowseInspiration,
   isInspirationActive,
   className,
 }: BacklogGoalListProps) {
-  const [isCreating, setIsCreating] = React.useState(false);
-
   return (
     <div
       className={cn(
@@ -152,9 +142,9 @@ export function BacklogGoalList({
         ))}
 
         {/* New goal button - inline with goal list */}
-        {onCreateGoal && lifeAreas && goalIcons && !isCreating && (
+        {onCreateAndSelectGoal && (
           <button
-            onClick={() => setIsCreating(true)}
+            onClick={onCreateAndSelectGoal}
             className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
           >
             <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60">
@@ -165,7 +155,7 @@ export function BacklogGoalList({
         )}
 
         {/* Browse inspiration button - inline with goal list */}
-        {onBrowseInspiration && !isCreating && (
+        {onBrowseInspiration && (
           <button
             onClick={onBrowseInspiration}
             className={cn(
@@ -190,19 +180,6 @@ export function BacklogGoalList({
               Browse inspiration
             </span>
           </button>
-        )}
-
-        {/* Inline goal creator */}
-        {isCreating && onCreateGoal && lifeAreas && goalIcons && (
-          <InlineGoalCreator
-            lifeAreas={lifeAreas}
-            goalIcons={goalIcons}
-            onSave={(goal) => {
-              onCreateGoal(goal);
-              setIsCreating(false);
-            }}
-            onCancel={() => setIsCreating(false)}
-          />
         )}
       </div>
     </div>
