@@ -148,6 +148,19 @@ export function BacklogGoalList({
           />
         ))}
 
+        {/* New goal button - inline with goal list */}
+        {onCreateGoal && lifeAreas && goalIcons && !isCreating && (
+          <button
+            onClick={() => setIsCreating(true)}
+            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
+          >
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+              <RiAddLine className="size-4 text-muted-foreground" />
+            </div>
+            <span className="text-sm text-muted-foreground">New goal</span>
+          </button>
+        )}
+
         {/* Inline goal creator */}
         {isCreating && onCreateGoal && lifeAreas && goalIcons && (
           <InlineGoalCreator
@@ -163,31 +176,17 @@ export function BacklogGoalList({
       </div>
 
       {/* Footer actions */}
-      <div className="shrink-0 border-t border-border px-3 py-2">
-        <div className="flex flex-col gap-0.5">
-          {/* New goal button */}
-          {onCreateGoal && lifeAreas && goalIcons && !isCreating && (
-            <button
-              onClick={() => setIsCreating(true)}
-              className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-            >
-              <RiAddLine className="size-4" />
-              <span>New goal</span>
-            </button>
-          )}
-
-          {/* Browse templates button */}
-          {onBrowseTemplates && (
-            <button
-              onClick={onBrowseTemplates}
-              className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-            >
-              <RiFolderLine className="size-4" />
-              <span>Browse templates</span>
-            </button>
-          )}
+      {onBrowseTemplates && (
+        <div className="shrink-0 border-t border-border px-3 py-2">
+          <button
+            onClick={onBrowseTemplates}
+            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+          >
+            <RiFolderLine className="size-4" />
+            <span>Browse templates</span>
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 }
