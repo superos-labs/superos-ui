@@ -434,6 +434,7 @@ function ShellDemoContent({
         label: data.label,
         icon: data.icon,
         color: data.color,
+        lifeAreaId: data.lifeAreaId,
         tasks: [],
       });
       // Optionally select the newly created goal
@@ -454,9 +455,11 @@ function ShellDemoContent({
     ? (goals.find((g) => g.id === selectedGoalId) as ScheduleGoal | undefined)
     : undefined;
 
-  // Life area lookup would go here when goals store lifeAreaId
-  // For now, goals don't persist their life area, so we don't show it
-  const selectedGoalLifeArea = undefined;
+  // Look up life area for the selected goal
+  const selectedGoalLifeArea = React.useMemo(() => {
+    if (!selectedGoal?.lifeAreaId) return undefined;
+    return LIFE_AREAS.find((area) => area.id === selectedGoal.lifeAreaId);
+  }, [selectedGoal]);
 
   // Get stats for selected goal
   const selectedGoalStats = selectedGoalId ? getGoalStats(selectedGoalId) : { plannedHours: 0, completedHours: 0 };

@@ -40,6 +40,8 @@ export interface ScheduleGoal {
   label: string;
   icon: IconComponent;
   color: GoalColor;
+  /** Life area this goal belongs to */
+  lifeAreaId: string;
   milestone?: string;
   tasks?: ScheduleTask[];
 }

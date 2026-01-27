@@ -25,7 +25,10 @@ function GoalDetailDemo() {
   const [goals, setGoals] = React.useState<ScheduleGoal[]>(SHELL_GOALS);
 
   const selectedGoal = goals.find((g) => g.id === selectedGoalId);
-  const selectedLifeArea = LIFE_AREAS[0]; // Using first life area as demo
+  const selectedLifeArea = React.useMemo(() => {
+    if (!selectedGoal?.lifeAreaId) return undefined;
+    return LIFE_AREAS.find((area) => area.id === selectedGoal.lifeAreaId);
+  }, [selectedGoal]);
 
   const handleNotesChange = React.useCallback((notes: string) => {
     setGoalNotes((prev) => ({ ...prev, [selectedGoalId]: notes }));

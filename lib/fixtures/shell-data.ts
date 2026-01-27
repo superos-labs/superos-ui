@@ -121,6 +121,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Get SuperOS to $1M ARR",
     icon: RiRocketLine,
     color: "violet",
+    lifeAreaId: "career",
     milestone: "Ship billing integration",
     tasks: [
       { 
@@ -149,6 +150,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Run a marathon",
     icon: RiMedalLine,
     color: "rose",
+    lifeAreaId: "health",
     milestone: "Complete 10K under 50min",
     tasks: [
       { id: "marathon-1", label: "Run 5K three times this week", completed: true },
@@ -165,6 +167,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Write a book",
     icon: RiPenNibLine,
     color: "teal",
+    lifeAreaId: "creative",
     milestone: "Finish chapter 3 draft",
     tasks: [
       { id: "book-1", label: "Outline the main conflict", completed: true },
@@ -186,6 +189,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Become fluent in Spanish",
     icon: RiCodeLine,
     color: "blue",
+    lifeAreaId: "learning",
     milestone: "Complete A2 certification",
     tasks: [
       { id: "spanish-1", label: "Complete Duolingo lesson", completed: true },
