@@ -12,6 +12,8 @@ import {
   getSegmentsForDay,
   getGridHeight,
   getPixelsPerMinute,
+  getGridHeightFromZoom,
+  getPixelsPerMinuteFromZoom,
   getDayLabels,
   type WeekViewProps,
 } from "./calendar-types";
@@ -27,6 +29,7 @@ export function WeekView({
   showHourLabels = true,
   events,
   density,
+  zoom,
   setBlockStyle,
   weekStartsOn = 1,
   onEventResize,
@@ -57,9 +60,9 @@ export function WeekView({
   // Get day labels based on week start preference
   const dayLabels = getDayLabels(weekStartsOn);
 
-  // Compute grid dimensions based on density
-  const gridHeight = getGridHeight(density);
-  const pixelsPerMinute = getPixelsPerMinute(density);
+  // Compute grid dimensions based on zoom (preferred) or density (legacy)
+  const gridHeight = zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
+  const pixelsPerMinute = zoom !== undefined ? getPixelsPerMinuteFromZoom(zoom) : getPixelsPerMinute(density);
   const headerCols = showHourLabels
     ? "grid-cols-[3rem_repeat(7,1fr)]"
     : "grid-cols-[repeat(7,1fr)]";

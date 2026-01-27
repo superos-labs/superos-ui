@@ -58,9 +58,16 @@ import {
   RiSideBarLine,
   RiCheckLine,
   RiPieChartLine,
+  RiAddLine,
+  RiSubtractLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
+import {
+  MIN_CALENDAR_ZOOM,
+  MAX_CALENDAR_ZOOM,
+  CALENDAR_ZOOM_STEP,
+} from "@/lib/preferences";
 import type { ShellContentProps } from "./shell-types";
 import {
   useShellLayout,
@@ -164,6 +171,8 @@ export function ShellContentComponent({
   onWeekStartsOnChange,
   progressMetric,
   onProgressMetricChange,
+  calendarZoom,
+  onCalendarZoomChange,
   // Navigation
   selectedDate,
   onPreviousWeek,
@@ -293,6 +302,17 @@ export function ShellContentComponent({
     : null;
 
   // -------------------------------------------------------------------------
+  // Zoom Handlers
+  // -------------------------------------------------------------------------
+  const handleZoomIn = React.useCallback(() => {
+    onCalendarZoomChange(Math.min(MAX_CALENDAR_ZOOM, calendarZoom + CALENDAR_ZOOM_STEP));
+  }, [calendarZoom, onCalendarZoomChange]);
+
+  const handleZoomOut = React.useCallback(() => {
+    onCalendarZoomChange(Math.max(MIN_CALENDAR_ZOOM, calendarZoom - CALENDAR_ZOOM_STEP));
+  }, [calendarZoom, onCalendarZoomChange]);
+
+  // -------------------------------------------------------------------------
   // Keyboard Shortcuts & Toast Aggregation
   // -------------------------------------------------------------------------
   const { toastMessage: calendarToastMessage } = useCalendarKeyboard({
@@ -310,6 +330,8 @@ export function ShellContentComponent({
       calendarHandlers.onEventStatusChange(eventId, newStatus);
     },
     onMarkDayComplete: calendarHandlers.onMarkDayComplete,
+    onZoomIn: handleZoomIn,
+    onZoomOut: handleZoomOut,
   });
 
   const toasts = useToastAggregator(calendarToastMessage);
@@ -558,6 +580,27 @@ export function ShellContentComponent({
                   <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Zoom</DropdownMenuLabel>
+                <div className="flex items-center gap-1.5 px-2 py-1.5">
+                  <button
+                    onClick={handleZoomOut}
+                    disabled={calendarZoom <= MIN_CALENDAR_ZOOM}
+                    className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:pointer-events-none"
+                    title="Zoom out (- key when hovering)"
+                  >
+                    <RiSubtractLine className="size-3.5" />
+                  </button>
+                  <span className="w-12 text-center text-xs tabular-nums">{calendarZoom}%</span>
+                  <button
+                    onClick={handleZoomIn}
+                    disabled={calendarZoom >= MAX_CALENDAR_ZOOM}
+                    className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:pointer-events-none"
+                    title="Zoom in (+ key when hovering)"
+                  >
+                    <RiAddLine className="size-3.5" />
+                  </button>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -680,6 +723,7 @@ export function ShellContentComponent({
                 selectedDate={selectedDate}
                 events={events}
                 weekStartsOn={weekStartsOn}
+                zoom={calendarZoom}
                 {...calendarHandlers}
                 onEventClick={handleEventClick}
                 enableExternalDrop={true}

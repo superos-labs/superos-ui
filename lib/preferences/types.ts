@@ -17,6 +17,26 @@ export type WeekStartDay = 0 | 1;
 export type ProgressMetric = 'completed' | 'focused';
 
 /**
+ * Calendar zoom level as a percentage.
+ * - 50 = most zoomed out (40px/hour)
+ * - 100 = default (80px/hour)
+ * - 150 = most zoomed in (120px/hour)
+ */
+export type CalendarZoom = number;
+
+/** Minimum zoom level (most zoomed out) */
+export const MIN_CALENDAR_ZOOM = 50;
+
+/** Maximum zoom level (most zoomed in) */
+export const MAX_CALENDAR_ZOOM = 200;
+
+/** Default zoom level */
+export const DEFAULT_CALENDAR_ZOOM = 100;
+
+/** Zoom increment step */
+export const CALENDAR_ZOOM_STEP = 10;
+
+/**
  * User preferences for the application.
  */
 export interface UserPreferences {
@@ -28,4 +48,7 @@ export interface UserPreferences {
   
   /** Whether commitment blocks auto-complete when past their end time (default: true) */
   autoCompleteCommitments: boolean;
+  
+  /** Calendar zoom level as percentage (50-150, default: 100) */
+  calendarZoom: CalendarZoom;
 }

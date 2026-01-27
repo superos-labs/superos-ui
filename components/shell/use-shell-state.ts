@@ -52,6 +52,8 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
     progressMetric,
     setProgressMetric,
     autoCompleteCommitments,
+    calendarZoom,
+    setCalendarZoom,
   } = usePreferences();
 
   // -------------------------------------------------------------------------
@@ -294,6 +296,8 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
     onWeekStartsOnChange: setWeekStartsOn,
     progressMetric,
     onProgressMetricChange: setProgressMetric,
+    calendarZoom,
+    onCalendarZoomChange: setCalendarZoom,
 
     // Navigation
     selectedDate,

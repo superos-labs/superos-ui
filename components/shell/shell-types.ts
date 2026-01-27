@@ -22,7 +22,7 @@ import type { WeeklyPlan, IntentionProgress } from "@/lib/weekly-planning";
 import type { ActiveFocusSession } from "@/lib/focus";
 import type { GoalColor } from "@/lib/colors";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
-import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
+import type { WeekStartDay, ProgressMetric, CalendarZoom } from "@/lib/preferences";
 
 // =============================================================================
 // Core Shell Props
@@ -214,6 +214,10 @@ export interface ShellContentProps {
   progressMetric: ProgressMetric;
   /** Set progress metric */
   onProgressMetricChange: (metric: ProgressMetric) => void;
+  /** Calendar zoom level (50-150, default: 100) */
+  calendarZoom: CalendarZoom;
+  /** Set calendar zoom level */
+  onCalendarZoomChange: (zoom: CalendarZoom) => void;
 
   // -------------------------------------------------------------------------
   // Navigation

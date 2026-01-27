@@ -23,6 +23,10 @@ export interface UseCalendarKeyboardOptions {
   onToggleComplete?: (eventId: string, currentStatus: CalendarEvent["status"]) => void;
   /** Called when ⌘Enter is pressed while hovering a day header */
   onMarkDayComplete?: (dayIndex: number) => void;
+  /** Called when user zooms in (⌘=) */
+  onZoomIn?: () => void;
+  /** Called when user zooms out (⌘-) */
+  onZoomOut?: () => void;
 }
 
 export interface UseCalendarKeyboardReturn {
@@ -40,6 +44,8 @@ export interface UseCalendarKeyboardReturn {
  * - ⌘D: Duplicate hovered block to next day
  * - ⌘Enter: Toggle complete on hovered block
  * - Delete/Backspace: Delete hovered block
+ * - + or =: Zoom in (no modifier needed)
+ * - -: Zoom out (no modifier needed)
  */
 export function useCalendarKeyboard({
   hoveredEvent,
@@ -52,6 +58,8 @@ export function useCalendarKeyboard({
   onDelete,
   onToggleComplete,
   onMarkDayComplete,
+  onZoomIn,
+  onZoomOut,
 }: UseCalendarKeyboardOptions): UseCalendarKeyboardReturn {
   const [toastMessage, setToastMessage] = React.useState<string | null>(null);
 
@@ -137,6 +145,22 @@ export function useCalendarKeyboard({
         showToast("Block deleted");
         return;
       }
+
+      // + or = - Zoom in (works when hovering anywhere on calendar, no modifier needed)
+      if (!isMeta && (e.key === "=" || e.key === "+") && onZoomIn) {
+        e.preventDefault();
+        onZoomIn();
+        showToast("Zoomed in");
+        return;
+      }
+
+      // - - Zoom out (works when hovering anywhere on calendar, no modifier needed)
+      if (!isMeta && e.key === "-" && onZoomOut) {
+        e.preventDefault();
+        onZoomOut();
+        showToast("Zoomed out");
+        return;
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -152,6 +176,8 @@ export function useCalendarKeyboard({
     onDelete,
     onToggleComplete,
     onMarkDayComplete,
+    onZoomIn,
+    onZoomOut,
     showToast,
   ]);
 

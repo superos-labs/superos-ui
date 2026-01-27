@@ -1,7 +1,12 @@
 "use client";
 
 import * as React from "react";
-import type { WeekStartDay, ProgressMetric, UserPreferences } from "./types";
+import type { WeekStartDay, ProgressMetric, CalendarZoom, UserPreferences } from "./types";
+import {
+  DEFAULT_CALENDAR_ZOOM,
+  MIN_CALENDAR_ZOOM,
+  MAX_CALENDAR_ZOOM,
+} from "./types";
 
 // =============================================================================
 // Context
@@ -11,6 +16,7 @@ interface PreferencesContextValue extends UserPreferences {
   setWeekStartsOn: (day: WeekStartDay) => void;
   setProgressMetric: (metric: ProgressMetric) => void;
   setAutoCompleteCommitments: (enabled: boolean) => void;
+  setCalendarZoom: (zoom: CalendarZoom) => void;
 }
 
 const PreferencesContext = React.createContext<PreferencesContextValue | null>(null);
@@ -27,6 +33,8 @@ export interface PreferencesProviderProps {
   defaultProgressMetric?: ProgressMetric;
   /** Override the default auto-complete commitments setting */
   defaultAutoCompleteCommitments?: boolean;
+  /** Override the default calendar zoom level */
+  defaultCalendarZoom?: CalendarZoom;
 }
 
 /**
@@ -40,6 +48,7 @@ export function PreferencesProvider({
   defaultWeekStartsOn,
   defaultProgressMetric,
   defaultAutoCompleteCommitments,
+  defaultCalendarZoom,
 }: PreferencesProviderProps) {
   // Week starts on Monday by default
   const [weekStartsOn, setWeekStartsOn] = React.useState<WeekStartDay>(
@@ -55,6 +64,16 @@ export function PreferencesProvider({
   const [autoCompleteCommitments, setAutoCompleteCommitments] = React.useState<boolean>(
     defaultAutoCompleteCommitments ?? true
   );
+  
+  // Calendar zoom: default to 100%
+  const [calendarZoom, setCalendarZoomState] = React.useState<CalendarZoom>(
+    defaultCalendarZoom ?? DEFAULT_CALENDAR_ZOOM
+  );
+  
+  // Clamped setter for calendar zoom
+  const setCalendarZoom = React.useCallback((zoom: CalendarZoom) => {
+    setCalendarZoomState(Math.max(MIN_CALENDAR_ZOOM, Math.min(MAX_CALENDAR_ZOOM, zoom)));
+  }, []);
 
   const value = React.useMemo(
     () => ({
@@ -64,8 +83,10 @@ export function PreferencesProvider({
       setProgressMetric,
       autoCompleteCommitments,
       setAutoCompleteCommitments,
+      calendarZoom,
+      setCalendarZoom,
     }),
-    [weekStartsOn, progressMetric, autoCompleteCommitments]
+    [weekStartsOn, progressMetric, autoCompleteCommitments, calendarZoom, setCalendarZoom]
   );
 
   return (

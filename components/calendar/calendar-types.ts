@@ -56,21 +56,28 @@ export const COMPACT_LAYOUT_THRESHOLD_PX = 44;
  * - compact: Denser layout, more content visible (56px/hour)
  * - default: Balanced readability (80px/hour) - recommended
  * - comfortable: Spacious layout, best for small blocks (120px/hour)
+ * 
+ * @deprecated Use zoom-based configuration instead (50-150%)
  */
 export type CalendarDensity = "compact" | "default" | "comfortable";
 
-/** Grid height in pixels for each density preset (for 24 hours) */
+/** Grid height in pixels for each density preset (for 24 hours) 
+ * @deprecated Use getGridHeightFromZoom instead
+ */
 export const DENSITY_HEIGHTS: Record<CalendarDensity, number> = {
   compact: 1344,     // 56px/hour, 14px per 15-min
   default: 1920,     // 80px/hour, 20px per 15-min
   comfortable: 2880, // 120px/hour, 30px per 15-min
 };
 
-/** Default density for the calendar */
+/** Default density for the calendar 
+ * @deprecated Use DEFAULT_CALENDAR_ZOOM from lib/preferences instead
+ */
 export const DEFAULT_DENSITY: CalendarDensity = "default";
 
 /**
  * Get the grid height in pixels for a given density.
+ * @deprecated Use getGridHeightFromZoom instead
  */
 export function getGridHeight(density: CalendarDensity = DEFAULT_DENSITY): number {
   return DENSITY_HEIGHTS[density];
@@ -79,6 +86,7 @@ export function getGridHeight(density: CalendarDensity = DEFAULT_DENSITY): numbe
 /**
  * Get pixels per minute for a given density.
  * Used for positioning events and drag/resize calculations.
+ * @deprecated Use getPixelsPerMinuteFromZoom instead
  */
 export function getPixelsPerMinute(density: CalendarDensity = DEFAULT_DENSITY): number {
   return DENSITY_HEIGHTS[density] / (24 * 60);
@@ -87,6 +95,32 @@ export function getPixelsPerMinute(density: CalendarDensity = DEFAULT_DENSITY): 
 // Legacy constants for backward compatibility (use getGridHeight/getPixelsPerMinute instead)
 export const GRID_HEIGHT_PX = DENSITY_HEIGHTS[DEFAULT_DENSITY];
 export const PIXELS_PER_MINUTE = getPixelsPerMinute(DEFAULT_DENSITY);
+
+// ============================================================================
+// Zoom-based configuration (replaces density)
+// ============================================================================
+
+/** Base pixels per hour at 100% zoom */
+const BASE_PIXELS_PER_HOUR = 80;
+
+/**
+ * Get the grid height in pixels for a given zoom level.
+ * @param zoomPercent - Zoom level as percentage (50-150, default 100)
+ * @returns Grid height in pixels for 24 hours
+ */
+export function getGridHeightFromZoom(zoomPercent: number = 100): number {
+  const pixelsPerHour = BASE_PIXELS_PER_HOUR * (zoomPercent / 100);
+  return pixelsPerHour * 24;
+}
+
+/**
+ * Get pixels per minute for a given zoom level.
+ * @param zoomPercent - Zoom level as percentage (50-150, default 100)
+ * @returns Pixels per minute for positioning calculations
+ */
+export function getPixelsPerMinuteFromZoom(zoomPercent: number = 100): number {
+  return getGridHeightFromZoom(zoomPercent) / (24 * 60);
+}
 
 // Types
 export type CalendarView = "week" | "day";
@@ -223,8 +257,13 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   headerIsVisible?: boolean;
   /** Events to display on the calendar (required - no default data) */
   events: CalendarEvent[];
-  /** Density preset controlling vertical spacing (default: "default") */
+  /** 
+   * Density preset controlling vertical spacing (default: "default") 
+   * @deprecated Use zoom instead
+   */
   density?: CalendarDensity;
+  /** Zoom level as percentage (50-150, default: 100). Overrides density if provided. */
+  zoom?: number;
   /** Which day the week starts on (0 = Sunday, 1 = Monday, default: 1) */
   weekStartsOn?: WeekStartDay;
   setBlockStyle?: BlockStyle;
@@ -265,8 +304,13 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
   /** Events to display (required - always passed from parent Calendar) */
   events: CalendarEvent[];
   setBlockStyle?: BlockStyle;
-  /** Density preset controlling vertical spacing (default: "default") */
+  /** 
+   * Density preset controlling vertical spacing (default: "default") 
+   * @deprecated Use zoom instead
+   */
   density?: CalendarDensity;
+  /** Zoom level as percentage (50-150, default: 100). Overrides density if provided. */
+  zoom?: number;
   /** Called when mouse enters/leaves the day header (for keyboard shortcuts) */
   onDayHeaderHover?: (dayIndex: number | null) => void;
   /** Called when user wants to mark all blocks on this day as complete */
@@ -279,8 +323,13 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   /** Events to display (required - always passed from parent Calendar) */
   events: CalendarEvent[];
   setBlockStyle?: BlockStyle;
-  /** Density preset controlling vertical spacing (default: "default") */
+  /** 
+   * Density preset controlling vertical spacing (default: "default") 
+   * @deprecated Use zoom instead
+   */
   density?: CalendarDensity;
+  /** Zoom level as percentage (50-150, default: 100). Overrides density if provided. */
+  zoom?: number;
   /** Which day the week starts on (0 = Sunday, 1 = Monday, default: 1) */
   weekStartsOn?: WeekStartDay;
   /** Called when a task is dropped on a day header to set a deadline */

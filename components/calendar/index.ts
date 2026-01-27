@@ -74,8 +74,11 @@ export {
   getDayLabels,
 } from "./calendar-types";
 
-// Density helpers
+// Density helpers (legacy)
 export { getGridHeight, getPixelsPerMinute } from "./calendar-types";
+
+// Zoom helpers (preferred)
+export { getGridHeightFromZoom, getPixelsPerMinuteFromZoom } from "./calendar-types";
 
 // Status helpers (for advanced use cases)
 export {

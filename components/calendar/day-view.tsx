@@ -11,6 +11,8 @@ import {
   getSegmentsForDay,
   getGridHeight,
   getPixelsPerMinute,
+  getGridHeightFromZoom,
+  getPixelsPerMinuteFromZoom,
   type DayViewProps,
 } from "./calendar-types";
 import {
@@ -26,6 +28,7 @@ export function DayView({
   headerIsVisible = true,
   events,
   density,
+  zoom,
   setBlockStyle,
   onEventResize,
   onEventResizeEnd,
@@ -52,9 +55,9 @@ export function DayView({
     .toLocaleDateString("en-US", { weekday: "short" })
     .slice(0, 3);
 
-  // Compute grid dimensions based on density
-  const gridHeight = getGridHeight(density);
-  const pixelsPerMinute = getPixelsPerMinute(density);
+  // Compute grid dimensions based on zoom (preferred) or density (legacy)
+  const gridHeight = zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
+  const pixelsPerMinute = zoom !== undefined ? getPixelsPerMinuteFromZoom(zoom) : getPixelsPerMinute(density);
 
   const headerCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1";
   const gridCols = showHourLabels ? "grid-cols-[3rem_1fr]" : "grid-cols-1";
