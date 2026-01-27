@@ -76,8 +76,10 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   selectedGoalId?: string | null;
   /** Callback when a goal is selected (for goal-detail mode) */
   onSelectGoal?: (goalId: string) => void;
-  /** Callback to browse templates (for goal-detail mode) */
-  onBrowseTemplates?: () => void;
+  /** Callback to browse inspiration gallery (for goal-detail mode) */
+  onBrowseInspiration?: () => void;
+  /** Whether the inspiration gallery is currently active */
+  isInspirationActive?: boolean;
 }
 
 export function Backlog({
@@ -117,7 +119,8 @@ export function Backlog({
   // Goal detail mode props
   selectedGoalId,
   onSelectGoal,
-  onBrowseTemplates,
+  onBrowseInspiration,
+  isInspirationActive,
   className,
   ...props
 }: BacklogProps) {
@@ -135,7 +138,8 @@ export function Backlog({
         onCreateGoal={onCreateGoal}
         lifeAreas={lifeAreas}
         goalIcons={goalIcons}
-        onBrowseTemplates={onBrowseTemplates}
+        onBrowseInspiration={onBrowseInspiration}
+        isInspirationActive={isInspirationActive}
         className={className}
         {...props}
       />

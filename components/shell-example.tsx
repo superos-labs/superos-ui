@@ -16,6 +16,7 @@ import {
 import type { DeadlineTask } from "@/lib/unified-schedule";
 import {
   Backlog,
+  GoalInspirationGallery,
   type BacklogItem,
   type BacklogMode,
   type NewGoalData,
@@ -47,6 +48,7 @@ import {
   GOAL_ICONS,
   type DataSetId,
 } from "@/lib/fixtures/shell-data";
+import { INSPIRATION_CATEGORIES } from "@/lib/fixtures/goal-inspiration-data";
 
 import {
   KnobsProvider,
@@ -452,6 +454,21 @@ function ShellDemoContent({
   );
 
   // -------------------------------------------------------------------------
+  // Inspiration Gallery State (separate from backlog mode)
+  // -------------------------------------------------------------------------
+  const [showInspirationGallery, setShowInspirationGallery] = React.useState(false);
+
+  const handleBrowseInspiration = React.useCallback(() => {
+    setShowInspirationGallery(true);
+    // Clear selected goal so nothing appears active in the goal list
+    setSelectedGoalId(null);
+  }, []);
+
+  const handleCloseInspiration = React.useCallback(() => {
+    setShowInspirationGallery(false);
+  }, []);
+
+  // -------------------------------------------------------------------------
   // Goal Detail Mode
   // -------------------------------------------------------------------------
   const isGoalDetailMode = backlogMode === "goal-detail";
@@ -474,6 +491,8 @@ function ShellDemoContent({
   const handleSelectGoal = React.useCallback((goalId: string) => {
     setSelectedGoalId(goalId);
     setBacklogMode("goal-detail");
+    // Close inspiration gallery if open
+    setShowInspirationGallery(false);
     // Close any open right sidebar content
     setSelectedEventId(null);
     setShowRightSidebar(false);
@@ -648,12 +667,21 @@ function ShellDemoContent({
               // Goal detail mode props
               selectedGoalId={selectedGoalId}
               onSelectGoal={handleSelectGoal}
+              onBrowseInspiration={handleBrowseInspiration}
+              isInspirationActive={showInspirationGallery}
             />
           </div>
 
-          {/* Main Content - Calendar or Goal Detail */}
+          {/* Main Content - Calendar, Goal Detail, or Inspiration Gallery */}
           <ShellContent className="overflow-hidden">
-            {isGoalDetailMode && selectedGoal ? (
+            {showInspirationGallery ? (
+              <GoalInspirationGallery
+                categories={INSPIRATION_CATEGORIES}
+                onAddGoal={handleCreateGoal}
+                onClose={handleCloseInspiration}
+                className="h-full"
+              />
+            ) : isGoalDetailMode && selectedGoal ? (
               <GoalDetail
                 goal={selectedGoal}
                 lifeArea={selectedGoalLifeArea}

@@ -18,7 +18,6 @@ import {
   RiHeartLine,
   RiBookLine,
   RiMoneyDollarCircleLine,
-  RiUserHeartLine,
   RiStarLine,
   RiFlagLine,
   RiGlobalLine,
@@ -27,13 +26,17 @@ import {
   RiPaletteLine,
   RiPlantLine,
 } from "@remixicon/react";
-import type { LifeArea, GoalIconOption } from "@/lib/types";
+import type { GoalIconOption } from "@/lib/types";
 import type { CalendarEvent } from "@/components/calendar";
 import { getWeekDates } from "@/components/calendar";
 import type { ScheduleGoal, ScheduleCommitment } from "@/lib/unified-schedule";
 
+// Re-export life areas from canonical source
+export { LIFE_AREAS, LIFE_AREAS_BY_ID, getLifeArea } from "@/lib/life-areas";
+export type { LifeAreaId } from "@/lib/life-areas";
+
 // Re-export types for convenience
-export type { LifeArea, GoalIconOption };
+export type { LifeArea, GoalIconOption } from "@/lib/types";
 
 // =============================================================================
 // Data Set Types
@@ -46,19 +49,6 @@ export interface DataSet {
   goals: ScheduleGoal[];
   events: CalendarEvent[];
 }
-
-// =============================================================================
-// Life Areas (for categorizing goals)
-// =============================================================================
-
-export const LIFE_AREAS: LifeArea[] = [
-  { id: "career", label: "Career", icon: RiBriefcaseLine, color: "violet" },
-  { id: "health", label: "Health", icon: RiHeartLine, color: "rose" },
-  { id: "learning", label: "Learning", icon: RiBookLine, color: "blue" },
-  { id: "creative", label: "Creative", icon: RiPenNibLine, color: "teal" },
-  { id: "financial", label: "Financial", icon: RiMoneyDollarCircleLine, color: "amber" },
-  { id: "relationships", label: "Relationships", icon: RiUserHeartLine, color: "pink" },
-];
 
 // =============================================================================
 // Goal Icons (curated list for goal creation)
@@ -178,7 +168,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Write a book",
     icon: RiPenNibLine,
     color: "teal",
-    lifeAreaId: "creative",
+    lifeAreaId: "creativity",
     milestones: [
       { id: "book-m1", label: "Complete outline", completed: true },
       { id: "book-m2", label: "Finish chapter 1 draft", completed: true },
@@ -206,7 +196,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Become fluent in Spanish",
     icon: RiCodeLine,
     color: "blue",
-    lifeAreaId: "learning",
+    lifeAreaId: "personal-growth",
     milestones: [
       { id: "spanish-m1", label: "Complete A1 basics", completed: true },
       { id: "spanish-m2", label: "Complete A2 certification", completed: false },

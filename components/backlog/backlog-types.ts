@@ -41,6 +41,25 @@ export interface BacklogItem {
 /** Mode for the backlog display */
 export type BacklogMode = "view" | "edit-commitments" | "goal-detail";
 
+/**
+ * A goal suggestion in the inspiration gallery.
+ */
+export interface InspirationGoal {
+  id: string;
+  label: string;
+  icon: IconComponent;
+  /** Optional description shown on hover */
+  description?: string;
+}
+
+/**
+ * A category of inspiration goals grouped by life area.
+ */
+export interface InspirationCategory {
+  lifeArea: LifeArea;
+  goals: InspirationGoal[];
+}
+
 export interface BacklogGroup {
   id: string;
   title: string;

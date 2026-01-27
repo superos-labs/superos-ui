@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiAddLine, RiFolderLine } from "@remixicon/react";
+import { RiAddLine, RiSparklingLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { GoalStats } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
@@ -106,8 +106,10 @@ export interface BacklogGoalListProps {
   lifeAreas?: LifeArea[];
   /** Available icons for goal creation */
   goalIcons?: GoalIconOption[];
-  /** Callback to browse templates */
-  onBrowseTemplates?: () => void;
+  /** Callback to browse inspiration gallery */
+  onBrowseInspiration?: () => void;
+  /** Whether the inspiration gallery is currently active */
+  isInspirationActive?: boolean;
   className?: string;
 }
 
@@ -119,7 +121,8 @@ export function BacklogGoalList({
   onCreateGoal,
   lifeAreas,
   goalIcons,
-  onBrowseTemplates,
+  onBrowseInspiration,
+  isInspirationActive,
   className,
 }: BacklogGoalListProps) {
   const [isCreating, setIsCreating] = React.useState(false);
@@ -161,6 +164,34 @@ export function BacklogGoalList({
           </button>
         )}
 
+        {/* Browse inspiration button - inline with goal list */}
+        {onBrowseInspiration && !isCreating && (
+          <button
+            onClick={onBrowseInspiration}
+            className={cn(
+              "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all",
+              isInspirationActive ? "bg-muted" : "hover:bg-muted/60",
+            )}
+          >
+            <div
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                isInspirationActive ? "bg-muted" : "bg-muted/60",
+              )}
+            >
+              <RiSparklingLine className="size-4 text-muted-foreground" />
+            </div>
+            <span
+              className={cn(
+                "text-sm",
+                isInspirationActive ? "font-medium text-foreground" : "text-muted-foreground",
+              )}
+            >
+              Browse inspiration
+            </span>
+          </button>
+        )}
+
         {/* Inline goal creator */}
         {isCreating && onCreateGoal && lifeAreas && goalIcons && (
           <InlineGoalCreator
@@ -174,19 +205,6 @@ export function BacklogGoalList({
           />
         )}
       </div>
-
-      {/* Footer actions */}
-      {onBrowseTemplates && (
-        <div className="shrink-0 border-t border-border px-3 py-2">
-          <button
-            onClick={onBrowseTemplates}
-            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-          >
-            <RiFolderLine className="size-4" />
-            <span>Browse templates</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }

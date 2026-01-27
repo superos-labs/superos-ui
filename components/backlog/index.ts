@@ -23,6 +23,9 @@ export type { EditCommitmentsViewProps } from "./edit-commitments-view";
 export { BacklogGoalList } from "./backlog-goal-list";
 export type { BacklogGoalListProps } from "./backlog-goal-list";
 
+export { GoalInspirationGallery } from "./goal-inspiration-gallery";
+export type { GoalInspirationGalleryProps } from "./goal-inspiration-gallery";
+
 // Types
 export type {
   BacklogItem,
@@ -33,6 +36,8 @@ export type {
   LifeArea,
   GoalIconOption,
   Milestone,
+  InspirationGoal,
+  InspirationCategory,
 } from "./backlog-types";
 
 // Re-export types from unified-schedule for convenience
