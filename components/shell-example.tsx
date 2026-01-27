@@ -190,6 +190,7 @@ function ShellDemoContent({
     getTaskDeadline,
     getWeekDeadlines,
     addGoal,
+    updateGoal,
     toggleTaskComplete,
     addTask,
     updateTask,
@@ -717,6 +718,7 @@ function ShellDemoContent({
                 stats={selectedGoalStats}
                 notes={goalNotes[selectedGoal.id] ?? ""}
                 onNotesChange={handleGoalNotesChange}
+                onTitleChange={(title) => updateGoal(selectedGoal.id, { label: title })}
                 getTaskSchedule={getTaskSchedule}
                 getTaskDeadline={getTaskDeadline}
                 onToggleTask={(taskId) => toggleTaskComplete(selectedGoal.id, taskId)}

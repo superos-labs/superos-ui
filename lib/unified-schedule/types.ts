@@ -164,6 +164,7 @@ export interface UseUnifiedScheduleReturn {
 
   // Backlog actions
   addGoal: (goal: ScheduleGoal) => void;
+  updateGoal: (goalId: string, updates: Partial<ScheduleGoal>) => void;
   toggleTaskComplete: (goalId: string, taskId: string) => void;
 
   // Task CRUD actions
