@@ -173,7 +173,6 @@ function GoalDetailDemo() {
           onToggleMilestone={handleToggleMilestone}
           onUpdateMilestone={handleUpdateMilestone}
           onDeleteMilestone={handleDeleteMilestone}
-          onClose={() => console.log("Close clicked")}
           className="h-[600px] w-[480px]"
         />
       </div>

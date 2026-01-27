@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiAddLine, RiSparklingLine } from "@remixicon/react";
+import { RiAddLine, RiArrowLeftSLine, RiSparklingLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { BacklogItem } from "./backlog-types";
 
@@ -72,6 +72,8 @@ export interface BacklogGoalListProps {
   selectedGoalId?: string | null;
   /** Callback when a goal is selected */
   onSelectGoal?: (goalId: string) => void;
+  /** Callback to go back (close goal detail mode) */
+  onBack?: () => void;
   /** Callback to create a new goal and immediately select it */
   onCreateAndSelectGoal?: () => void;
   /** Callback to browse inspiration gallery */
@@ -85,6 +87,7 @@ export function BacklogGoalList({
   goals,
   selectedGoalId,
   onSelectGoal,
+  onBack,
   onCreateAndSelectGoal,
   onBrowseInspiration,
   isInspirationActive,
@@ -98,7 +101,16 @@ export function BacklogGoalList({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center gap-1 px-2 py-3">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Go back"
+          >
+            <RiArrowLeftSLine className="size-5" />
+          </button>
+        )}
         <h3 className="text-sm font-semibold text-foreground">Goals</h3>
       </div>
 

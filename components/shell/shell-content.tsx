@@ -671,6 +671,7 @@ export function ShellContentComponent({
                 onCreateAndSelectGoal={handleCreateAndSelectGoal}
                 selectedGoalId={selectedGoalId}
                 onSelectGoal={handleSelectGoal}
+                onBack={handleCloseGoalDetail}
                 onBrowseInspiration={handleBrowseInspiration}
                 isInspirationActive={showInspirationGallery}
               />
@@ -707,7 +708,6 @@ export function ShellContentComponent({
                 onToggleMilestone={(milestoneId) => onToggleMilestoneComplete(selectedGoal.id, milestoneId)}
                 onUpdateMilestone={(milestoneId, label) => onUpdateMilestone(selectedGoal.id, milestoneId, label)}
                 onDeleteMilestone={(milestoneId) => onDeleteMilestone(selectedGoal.id, milestoneId)}
-                onClose={handleCloseGoalDetail}
                 onDelete={handleDeleteGoal}
                 lifeAreas={lifeAreas}
                 goalIcons={goalIcons}

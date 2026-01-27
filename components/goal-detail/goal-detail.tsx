@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiArrowRightSLine, RiCloseLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiArrowRightSLine, RiDeleteBinLine } from "@remixicon/react";
 import type { ScheduleGoal, ScheduleTask, TaskScheduleInfo, TaskDeadlineInfo, ProgressIndicator } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
@@ -151,8 +151,6 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
   onDeleteMilestone?: (milestoneId: string) => void;
   
-  // Navigation
-  onClose?: () => void;
   /** Callback when goal is deleted */
   onDelete?: () => void;
 }
@@ -183,7 +181,6 @@ export function GoalDetail({
   onToggleMilestone,
   onUpdateMilestone,
   onDeleteMilestone,
-  onClose,
   onDelete,
   className,
   ...props
@@ -255,15 +252,6 @@ export function GoalDetail({
               <RiDeleteBinLine className="size-5" />
             </button>
           )
-        )}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Close goal detail"
-          >
-            <RiCloseLine className="size-5" />
-          </button>
         )}
       </div>
 
