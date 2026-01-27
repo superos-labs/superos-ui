@@ -53,9 +53,9 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
     return (
       <button
         onClick={() => setIsEditing(true)}
-        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-3 pr-3 text-left transition-all hover:bg-muted/60"
+        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 text-left transition-all hover:bg-muted/60"
       >
-        <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/30 text-muted-foreground/40 transition-colors group-hover:border-muted-foreground/50 group-hover:text-muted-foreground/60">
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground/40 transition-colors group-hover:bg-muted/60 group-hover:text-muted-foreground/60">
           <RiAddLine className="size-3" />
         </div>
         <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
@@ -66,8 +66,8 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
   }
 
   return (
-    <div className="flex items-center gap-2.5 rounded-lg py-1.5 pl-3 pr-3">
-      <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-dashed border-muted-foreground/50 text-muted-foreground/50">
+    <div className="flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/60 text-muted-foreground/50">
         <RiAddLine className="size-3" />
       </div>
       <input
@@ -146,7 +146,7 @@ function MilestoneRow({
   return (
     <div
       className={cn(
-        "group flex items-center gap-2.5 rounded-lg py-1.5 pl-3 pr-2 transition-all",
+        "group flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-2 transition-all",
         isCurrent && !milestone.completed && "bg-muted/40",
         !isCurrent && !milestone.completed && "opacity-70",
       )}
