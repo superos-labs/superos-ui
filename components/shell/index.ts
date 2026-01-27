@@ -6,6 +6,10 @@
 export { ShellContentComponent } from "./shell-content";
 export type { ShellContentComponentProps } from "./shell-content";
 
+// Mobile toolbar (for responsive layouts)
+export { MobileToolbar } from "./mobile-toolbar";
+export type { MobileToolbarProps } from "./mobile-toolbar";
+
 // State orchestration hook
 export { useShellState } from "./use-shell-state";
 

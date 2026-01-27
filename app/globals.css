@@ -135,4 +135,25 @@
       height: 0 !important;
     }
   }
+  
+  /* Touch-friendly minimum tap target (44x44px per iOS HIG) */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Expand touch area without changing visual size */
+  .touch-target-expand {
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 44px;
+      height: 44px;
+      transform: translate(-50%, -50%);
+    }
+  }
 }

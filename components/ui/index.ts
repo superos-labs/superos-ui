@@ -16,3 +16,7 @@ export { Separator } from "./separator";
 export { Shell, ShellToolbar, ShellContent } from "./shell";
 export { SubtaskRow } from "./subtask-row";
 export { Textarea } from "./textarea";
+
+// Mobile/Responsive primitives
+export { BottomSheet, type BottomSheetProps } from "./bottom-sheet";
+export { FullScreenOverlay, type FullScreenOverlayProps } from "./full-screen-overlay";

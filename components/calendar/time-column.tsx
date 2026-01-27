@@ -455,9 +455,11 @@ export function TimeColumn({
           };
 
           // Helper to wrap content with context menu
+          // Always applies the key, with or without context menu
           const wrapWithContextMenu = (content: React.ReactNode, key: string) => {
             if (!onEventCopy && !onEventDelete && !onEventStatusChange) {
-              return content;
+              // Return a Fragment with key to ensure AnimatePresence can track elements
+              return <React.Fragment key={key}>{content}</React.Fragment>;
             }
             return (
               <BlockContextMenu
