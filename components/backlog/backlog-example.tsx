@@ -14,8 +14,8 @@ import {
   RiRestaurantLine,
   RiCarLine,
   RiRunLine,
-  RiDropLine,
   RiHome4Line,
+  RiSofaLine,
   RiRocketLine,
   RiCodeLine,
   RiMedalLine,
@@ -27,7 +27,7 @@ const INITIAL_ESSENTIALS: BacklogItem[] = [
   { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber", plannedHours: 14, completedHours: 12 },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "slate", plannedHours: 10, completedHours: 8 },
   { id: "exercise", label: "Exercise", icon: RiRunLine, color: "green", plannedHours: 5, completedHours: 3 },
-  { id: "hygiene", label: "Hygiene", icon: RiDropLine, color: "cyan", plannedHours: 7, completedHours: 7 },
+  { id: "downtime", label: "Downtime", icon: RiSofaLine, color: "cyan", plannedHours: 7, completedHours: 5 },
   { id: "chores", label: "Chores", icon: RiHome4Line, color: "orange", plannedHours: 4, completedHours: 2 },
 ]
 

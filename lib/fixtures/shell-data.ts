@@ -8,8 +8,8 @@ import {
   RiRestaurantLine,
   RiCarLine,
   RiRunLine,
-  RiDropLine,
   RiHome4Line,
+  RiSofaLine,
   RiRocketLine,
   RiCodeLine,
   RiMedalLine,
@@ -86,7 +86,7 @@ export const ALL_ESSENTIALS: ScheduleEssential[] = [
   { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber", mandatory: true },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "slate" },
   { id: "exercise", label: "Exercise", icon: RiRunLine, color: "green" },
-  { id: "hygiene", label: "Hygiene", icon: RiDropLine, color: "cyan" },
+  { id: "downtime", label: "Downtime", icon: RiSofaLine, color: "cyan" },
   { id: "chores", label: "Chores", icon: RiHome4Line, color: "orange" },
 ];
 
