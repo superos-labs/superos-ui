@@ -20,16 +20,6 @@ export const registry: ComponentEntry[] = [
     ),
   },
   {
-    slug: "shell",
-    name: "Shell",
-    layout: "full",
-    component: lazy(() =>
-      import("@/components/shell/shell-example").then((m) => ({
-        default: m.ShellExample,
-      }))
-    ),
-  },
-  {
     slug: "backlog",
     name: "Backlog",
     component: lazy(() =>
