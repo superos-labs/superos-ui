@@ -69,6 +69,7 @@ export interface UseBlockSidebarHandlersReturn {
     onGoalSelect: (goalId: string) => void;
     onMarkComplete: () => void;
     onMarkIncomplete: () => void;
+    onDelete: () => void;
     // Goal task context callbacks (for expanding tasks in goal blocks)
     onUpdateGoalTask: (taskId: string, updates: Partial<{ label: string; description?: string }>) => void;
     onAddGoalTaskSubtask: (taskId: string, label: string) => void;
@@ -319,6 +320,14 @@ export function useBlockSidebarHandlers({
     onToast?.("Marked incomplete");
   }, [selectedEvent, calendarHandlers, onToast]);
 
+  const handleDelete = React.useCallback(() => {
+    if (!selectedEvent) return;
+    // End focus session if this block is being focused
+    onEndFocus?.();
+    calendarHandlers.onEventDelete(selectedEvent.id);
+    onToast?.("Block deleted");
+  }, [selectedEvent, calendarHandlers, onToast, onEndFocus]);
+
   // -------------------------------------------------------------------------
   // Goal Task Context Handlers (for expanding tasks in goal blocks)
   // -------------------------------------------------------------------------
@@ -385,6 +394,7 @@ export function useBlockSidebarHandlers({
       onGoalSelect: handleGoalSelect,
       onMarkComplete: handleMarkComplete,
       onMarkIncomplete: handleMarkIncomplete,
+      onDelete: handleDelete,
       onUpdateGoalTask: handleUpdateGoalTask,
       onAddGoalTaskSubtask: handleAddGoalTaskSubtask,
       onToggleGoalTaskSubtask: handleToggleGoalTaskSubtask,
@@ -408,6 +418,7 @@ export function useBlockSidebarHandlers({
       handleGoalSelect,
       handleMarkComplete,
       handleMarkIncomplete,
+      handleDelete,
       handleUpdateGoalTask,
       handleAddGoalTaskSubtask,
       handleToggleGoalTaskSubtask,

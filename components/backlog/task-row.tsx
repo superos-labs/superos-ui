@@ -7,6 +7,7 @@ import {
   RiTimeLine,
   RiFlagLine,
   RiAddLine,
+  RiDeleteBinLine,
 } from "@remixicon/react";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
@@ -343,12 +344,14 @@ export function TaskRow({
     disabled: !canDrag,
   });
 
-  // Handle click to expand (avoid checkbox, label editing, and during drag)
+  // Handle click to expand (avoid checkbox, label editing, delete, and during drag)
   const handleRowClick = (e: React.MouseEvent) => {
     // Don't expand if clicking the checkbox
     if ((e.target as HTMLElement).closest("[data-checkbox]")) return;
     // Don't expand if clicking the label (for editing)
     if ((e.target as HTMLElement).closest("[data-label]")) return;
+    // Don't expand if clicking the delete button
+    if ((e.target as HTMLElement).closest("[data-delete]")) return;
     // Don't expand if this was a drag operation
     if (dragContext?.state.isDragging) return;
 
@@ -453,6 +456,21 @@ export function TaskRow({
             <RiFlagLine className="size-3" />
             {formatDeadlineDate(deadlineInfo)}
           </span>
+        )}
+
+        {/* Delete button (visible on hover) */}
+        {onDeleteTask && (
+          <button
+            data-delete
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteTask();
+            }}
+            className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-all hover:text-destructive group-hover:opacity-100"
+            aria-label="Delete task"
+          >
+            <RiDeleteBinLine className="size-3.5" />
+          </button>
         )}
       </div>
 

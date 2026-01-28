@@ -13,6 +13,7 @@ import {
   RiCheckboxCircleFill,
   RiFocusLine,
   RiPencilLine,
+  RiDeleteBinLine,
 } from "@remixicon/react";
 import {
   DropdownMenu,
@@ -893,6 +894,8 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   block: BlockSidebarData;
   /** Callback when close button is clicked */
   onClose?: () => void;
+  /** Callback when block is deleted (removed from calendar) */
+  onDelete?: () => void;
   /** Callback when block is marked complete */
   onMarkComplete?: () => void;
   /** Callback when block is marked incomplete */
@@ -976,6 +979,7 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 function BlockSidebar({
   block,
   onClose,
+  onDelete,
   onMarkComplete,
   onMarkIncomplete,
   onTitleChange,
@@ -1113,7 +1117,7 @@ function BlockSidebar({
       {/* Header */}
       <div className="flex flex-col gap-3 px-4 pt-4 pb-2">
         {/* Header actions row */}
-        {(onClose || (block.status === "completed" && onMarkIncomplete)) && (
+        {(onClose || onDelete || (block.status === "completed" && onMarkIncomplete)) && (
           <div className="flex justify-end gap-1">
             {/* Mark incomplete button - only when completed */}
             {block.status === "completed" && onMarkIncomplete && (
@@ -1124,6 +1128,17 @@ function BlockSidebar({
                 className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <RiCheckboxCircleFill className="size-4" />
+              </button>
+            )}
+            {/* Delete button */}
+            {onDelete && (
+              <button
+                onClick={onDelete}
+                aria-label="Delete block"
+                title="Delete block"
+                className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+              >
+                <RiDeleteBinLine className="size-4" />
               </button>
             )}
             {/* Close button */}

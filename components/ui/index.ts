@@ -20,3 +20,6 @@ export { Textarea } from "./textarea";
 // Mobile/Responsive primitives
 export { BottomSheet, type BottomSheetProps } from "./bottom-sheet";
 export { FullScreenOverlay, type FullScreenOverlayProps } from "./full-screen-overlay";
+
+// Overlays
+export { KeyboardShortcuts, type KeyboardShortcutsProps } from "./keyboard-shortcuts";

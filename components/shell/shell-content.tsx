@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { Shell, ShellToolbar, ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
-import { BottomSheet, FullScreenOverlay } from "@/components/ui";
+import { BottomSheet, FullScreenOverlay, KeyboardShortcuts } from "@/components/ui";
 import {
   Calendar,
   KeyboardToast,
@@ -57,6 +57,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import {
   RiArrowLeftSLine,
@@ -68,6 +69,7 @@ import {
   RiAddLine,
   RiSubtractLine,
   RiMenuLine,
+  RiKeyboardLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -209,6 +211,35 @@ export function ShellContentComponent({
   // Mobile Overlay State
   // -------------------------------------------------------------------------
   const [showBacklogOverlay, setShowBacklogOverlay] = React.useState(false);
+
+  // -------------------------------------------------------------------------
+  // Keyboard Shortcuts Modal State
+  // -------------------------------------------------------------------------
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = React.useState(false);
+
+  // Global ? key to open keyboard shortcuts
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Don't trigger if typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.getAttribute("contenteditable") === "true"
+      ) {
+        return;
+      }
+
+      // ? key (Shift + /) opens keyboard shortcuts
+      if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setShowKeyboardShortcuts(true);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // -------------------------------------------------------------------------
   // UI Layout State
@@ -668,6 +699,11 @@ export function ShellContentComponent({
               <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setShowKeyboardShortcuts(true)}>
+              <RiKeyboardLine className="size-4" />
+              Keyboard shortcuts
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -793,6 +829,11 @@ export function ShellContentComponent({
                 <RiAddLine className="size-3.5" />
               </button>
             </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setShowKeyboardShortcuts(true)}>
+              <RiKeyboardLine className="size-4" />
+              Keyboard shortcuts
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -1092,6 +1133,12 @@ export function ShellContentComponent({
           <DragGhost />
         </React.Fragment>
       )}
+
+      {/* Keyboard shortcuts modal */}
+      <KeyboardShortcuts
+        open={showKeyboardShortcuts}
+        onClose={() => setShowKeyboardShortcuts(false)}
+      />
     </>
   );
 }
