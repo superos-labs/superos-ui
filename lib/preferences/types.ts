@@ -49,9 +49,8 @@ export const DEFAULT_DAY_END_MINUTES = 1380;
 /**
  * How to display hours outside day boundaries.
  * - 'dimmed': Show hours but with reduced opacity
- * - 'hidden': Collapse hours entirely (blocks pushed into visible range)
  */
-export type DayBoundariesDisplay = "dimmed" | "hidden";
+export type DayBoundariesDisplay = "dimmed";
 
 /**
  * User preferences for the application.

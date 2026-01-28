@@ -11,7 +11,6 @@ import {
   RiDeleteBinLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
-import type { DayBoundariesDisplay } from "@/lib/preferences";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { BacklogItem } from "./backlog-types";
 import { useActivitySchedule } from "./activity-schedule-editor";
@@ -181,8 +180,6 @@ export interface EditEssentialsViewProps {
   onDayBoundariesChange?: (startMinutes: number, endMinutes: number) => void;
   dayBoundariesEnabled?: boolean;
   onDayBoundariesEnabledChange?: (enabled: boolean) => void;
-  dayBoundariesDisplay?: DayBoundariesDisplay;
-  onDayBoundariesDisplayChange?: (display: DayBoundariesDisplay) => void;
   templates?: EssentialTemplate[];
   onSaveEssentialSchedule?: (
     essentialId: string,
@@ -200,8 +197,6 @@ interface SleepActivityRowProps {
   startMinutes: number;
   endMinutes: number;
   onTimesChange: (startMinutes: number, endMinutes: number) => void;
-  displayMode: DayBoundariesDisplay;
-  onDisplayModeChange: (mode: DayBoundariesDisplay) => void;
 }
 
 function SleepActivityRow({
@@ -210,8 +205,6 @@ function SleepActivityRow({
   startMinutes,
   endMinutes,
   onTimesChange,
-  displayMode,
-  onDisplayModeChange,
 }: SleepActivityRowProps) {
   return (
     <div
@@ -286,37 +279,6 @@ function SleepActivityRow({
               value={endMinutes}
               onChange={(value) => onTimesChange(startMinutes, value)}
             />
-          </div>
-
-          {/* Display mode selector */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              Out-of-bounds hours:
-            </span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => onDisplayModeChange("dimmed")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                  displayMode === "dimmed"
-                    ? "bg-foreground text-background"
-                    : "bg-background text-muted-foreground hover:text-foreground",
-                )}
-              >
-                Dimmed
-              </button>
-              <button
-                onClick={() => onDisplayModeChange("hidden")}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                  displayMode === "hidden"
-                    ? "bg-foreground text-background"
-                    : "bg-background text-muted-foreground hover:text-foreground",
-                )}
-              >
-                Hidden
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -518,8 +480,6 @@ export function EditEssentialsView({
   onDayBoundariesChange,
   dayBoundariesEnabled = false,
   onDayBoundariesEnabledChange,
-  dayBoundariesDisplay = "dimmed",
-  onDayBoundariesDisplayChange,
   templates = [],
   onSaveEssentialSchedule,
 }: EditEssentialsViewProps) {
@@ -529,9 +489,6 @@ export function EditEssentialsView({
   const [localStartMinutes, setLocalStartMinutes] =
     React.useState(dayStartMinutes);
   const [localEndMinutes, setLocalEndMinutes] = React.useState(dayEndMinutes);
-  const [localDisplayMode, setLocalDisplayMode] =
-    React.useState<DayBoundariesDisplay>(dayBoundariesDisplay);
-
   const handleSleepToggle = React.useCallback(() => {
     const newEnabled = !localSleepEnabled;
     setLocalSleepEnabled(newEnabled);
@@ -545,14 +502,6 @@ export function EditEssentialsView({
       onDayBoundariesChange?.(start, end);
     },
     [onDayBoundariesChange],
-  );
-
-  const handleDisplayModeChange = React.useCallback(
-    (mode: DayBoundariesDisplay) => {
-      setLocalDisplayMode(mode);
-      onDayBoundariesDisplayChange?.(mode);
-    },
-    [onDayBoundariesDisplayChange],
   );
 
   const getTemplate = (essentialId: string) =>
@@ -615,8 +564,6 @@ export function EditEssentialsView({
             startMinutes={localStartMinutes}
             endMinutes={localEndMinutes}
             onTimesChange={handleTimesChange}
-            displayMode={localDisplayMode}
-            onDisplayModeChange={handleDisplayModeChange}
           />
 
           {/* Regular activities */}

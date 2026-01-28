@@ -129,46 +129,15 @@ export function TimeColumn({
   dayBoundariesEnabled = false,
   dayBoundariesDisplay = "dimmed",
 }: TimeColumnProps) {
-  // Calculate visible hour range for hidden mode
-  const visibleStartHour =
-    dayBoundariesEnabled &&
-    dayBoundariesDisplay === "hidden" &&
-    dayStartMinutes !== undefined
-      ? Math.floor(dayStartMinutes / 60)
-      : 0;
-  const visibleEndHour =
-    dayBoundariesEnabled &&
-    dayBoundariesDisplay === "hidden" &&
-    dayEndMinutes !== undefined
-      ? Math.ceil(dayEndMinutes / 60)
-      : 24;
-  const visibleHours = HOURS.filter(
-    (h) => h >= visibleStartHour && h < visibleEndHour,
-  );
-  const visibleHoursCount = visibleHours.length;
-  const visibleStartMinutes = visibleStartHour * 60;
-  const visibleDurationMinutes = visibleHoursCount * 60;
-
-  // Helper to calculate position percentage for hidden mode
+  // Helper to calculate position percentage
   const getTopPercent = (minutes: number): number => {
-    if (dayBoundariesEnabled && dayBoundariesDisplay === "hidden") {
-      const clampedMinutes = Math.max(
-        visibleStartMinutes,
-        Math.min(visibleStartMinutes + visibleDurationMinutes, minutes),
-      );
-      return (
-        ((clampedMinutes - visibleStartMinutes) / visibleDurationMinutes) * 100
-      );
-    }
     return (minutes / 1440) * 100;
   };
 
   const getHeightPercent = (durationMinutes: number): number => {
-    if (dayBoundariesEnabled && dayBoundariesDisplay === "hidden") {
-      return (durationMinutes / visibleDurationMinutes) * 100;
-    }
     return (durationMinutes / 1440) * 100;
   };
+
   const columnRef = React.useRef<HTMLDivElement>(null);
   const dragContext = useDragContextOptional();
 
@@ -361,10 +330,7 @@ export function TimeColumn({
       onPointerLeave={enableExternalDrop ? handlePointerLeave : undefined}
     >
       {/* Hour Cells */}
-      {(dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
-        ? visibleHours
-        : HOURS
-      ).map((hour, hourIndex) => {
+      {HOURS.map((hour) => {
         const hourStartMinutes = hour * 60;
         const hourEndMinutes = hourStartMinutes + 60;
 
@@ -372,20 +338,12 @@ export function TimeColumn({
         // An hour is "outside" if it ends before day start OR starts after day end
         const isOutsideDayBoundaries =
           dayBoundariesEnabled &&
-          dayBoundariesDisplay === "dimmed" &&
           ((dayStartMinutes !== undefined &&
             hourEndMinutes <= dayStartMinutes) ||
             (dayEndMinutes !== undefined && hourStartMinutes >= dayEndMinutes));
 
-        // Calculate position for hidden mode
-        const topPercent =
-          dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
-            ? (hourIndex / visibleHoursCount) * 100
-            : (hour / 24) * 100;
-        const heightPercent =
-          dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
-            ? 100 / visibleHoursCount
-            : 100 / 24;
+        const topPercent = (hour / 24) * 100;
+        const heightPercent = 100 / 24;
 
         return (
           <EmptySpaceContextMenu
@@ -437,21 +395,7 @@ export function TimeColumn({
           const segmentKey = `${event.id}-${position}`;
           const segmentDuration = endMinutes - startMinutes;
 
-          // Clamp segment to visible range in hidden mode
-          const clampedStartMinutes =
-            dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
-              ? Math.max(
-                  visibleStartMinutes,
-                  Math.min(
-                    visibleStartMinutes +
-                      visibleDurationMinutes -
-                      segmentDuration,
-                    startMinutes,
-                  ),
-                )
-              : startMinutes;
-
-          const topPercent = getTopPercent(clampedStartMinutes);
+          const topPercent = getTopPercent(startMinutes);
           const heightPercent = getHeightPercent(segmentDuration);
 
           // Get positioning style based on overlap layout

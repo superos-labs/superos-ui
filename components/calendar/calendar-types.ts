@@ -302,8 +302,8 @@ export interface CalendarProps
   dayEndMinutes?: number;
   /** Whether day boundaries are enabled */
   dayBoundariesEnabled?: boolean;
-  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
-  dayBoundariesDisplay?: "dimmed" | "hidden";
+  /** How to display hours outside day boundaries: 'dimmed' */
+  dayBoundariesDisplay?: "dimmed";
 }
 
 export interface CalendarDayHeaderProps {
@@ -351,8 +351,8 @@ export interface DayViewProps
   dayEndMinutes?: number;
   /** Whether day boundaries are enabled */
   dayBoundariesEnabled?: boolean;
-  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
-  dayBoundariesDisplay?: "dimmed" | "hidden";
+  /** How to display hours outside day boundaries: 'dimmed' */
+  dayBoundariesDisplay?: "dimmed";
 }
 
 export interface WeekViewProps
@@ -395,8 +395,8 @@ export interface WeekViewProps
   dayEndMinutes?: number;
   /** Whether day boundaries are enabled */
   dayBoundariesEnabled?: boolean;
-  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
-  dayBoundariesDisplay?: "dimmed" | "hidden";
+  /** How to display hours outside day boundaries: 'dimmed' */
+  dayBoundariesDisplay?: "dimmed";
 }
 
 /**
@@ -441,8 +441,8 @@ export interface TimeColumnProps
   dayEndMinutes?: number;
   /** Whether day boundaries are enabled */
   dayBoundariesEnabled?: boolean;
-  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
-  dayBoundariesDisplay?: "dimmed" | "hidden";
+  /** How to display hours outside day boundaries: 'dimmed' */
+  dayBoundariesDisplay?: "dimmed";
 }
 
 // Helper to convert BlockStyle to BlockStatus
