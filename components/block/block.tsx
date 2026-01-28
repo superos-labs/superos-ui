@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiCheckLine, RiCircleLine } from "@remixicon/react";
 import { BLOCK_COLORS, type BlockColor } from "./block-colors";
-import type { BlockStatus } from "@/lib/types";
+import type { BlockStatus, BlockType } from "@/lib/types";
 
 type BlockDuration = 30 | 60 | 240;
 
@@ -44,6 +44,10 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   isDropTarget?: boolean;
   /** Whether the drag is currently hovering over this block */
   isDragOver?: boolean;
+  /** Block type for visual differentiation (task blocks show checkbox) */
+  blockType?: BlockType;
+  /** Called when the task checkbox is clicked (task blocks only) */
+  onToggleComplete?: () => void;
 }
 
 function Block({
@@ -60,6 +64,8 @@ function Block({
   compactLayout,
   isDropTarget = false,
   isDragOver = false,
+  blockType,
+  onToggleComplete,
   className,
   style,
   ...props
@@ -116,11 +122,43 @@ function Block({
       style={{ height, ...style }}
       {...props}
     >
-      <span className="truncate font-medium leading-tight">{title}</span>
+      <span 
+        className={cn(
+          "truncate font-medium leading-tight",
+          blockType === "task" && "pr-6" // Reserve space for checkbox
+        )}
+      >
+        {title}
+      </span>
       {timeDisplay && !isCompact && (
         <span className="mt-0.5 truncate text-[11px]">{timeDisplay}</span>
       )}
-      {(() => {
+      {/* Task block checkbox indicator */}
+      {blockType === "task" && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleComplete?.();
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className={cn(
+            "absolute flex shrink-0 items-center justify-center rounded transition-colors",
+            "size-4",
+            isCompact
+              ? "top-1/2 right-1.5 -translate-y-1/2"
+              : "top-1.5 right-1.5",
+            isCompleted
+              ? "bg-white/80 text-muted-foreground"
+              : "bg-white/60 text-muted-foreground/50 hover:bg-white/80 hover:text-muted-foreground",
+          )}
+        >
+          {isCompleted && <RiCheckLine className="size-2.5" />}
+        </button>
+      )}
+      {/* Task count badge for goal blocks */}
+      {blockType !== "task" && (() => {
         const pending = pendingTaskCount ?? 0;
         const completed = completedTaskCount ?? 0;
         const total = pending + completed;
@@ -151,4 +189,4 @@ function Block({
 }
 
 export { Block };
-export type { BlockProps, BlockStatus, BlockDuration, SegmentPosition };
+export type { BlockProps, BlockStatus, BlockType, BlockDuration, SegmentPosition };

@@ -424,6 +424,22 @@ export function TimeColumn({
                 fillContainer
                 isDropTarget={isValidDropTarget}
                 isDragOver={isDragOver}
+                blockType={
+                  position === "start" || position === "only"
+                    ? event.blockType
+                    : undefined
+                }
+                onToggleComplete={
+                  (position === "start" || position === "only") &&
+                  event.blockType === "task" &&
+                  onEventStatusChange
+                    ? () => {
+                        const newStatus =
+                          event.status === "completed" ? "planned" : "completed";
+                        onEventStatusChange(event.id, newStatus);
+                      }
+                    : undefined
+                }
               />
             );
           };
