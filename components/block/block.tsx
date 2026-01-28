@@ -34,9 +34,9 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   fillContainer?: boolean;
   /** Position within an overnight block for corner styling */
   segmentPosition?: SegmentPosition;
-  /** 
-   * Override compact layout detection. When provided, this takes precedence 
-   * over the duration-based calculation. Use when the actual rendered height 
+  /**
+   * Override compact layout detection. When provided, this takes precedence
+   * over the duration-based calculation. Use when the actual rendered height
    * is known (e.g., in calendar context with variable density).
    */
   compactLayout?: boolean;
@@ -122,10 +122,10 @@ function Block({
       style={{ height, ...style }}
       {...props}
     >
-      <span 
+      <span
         className={cn(
           "truncate font-medium leading-tight",
-          blockType === "task" && "pr-6" // Reserve space for checkbox
+          blockType === "task" && "pr-6", // Reserve space for checkbox
         )}
       >
         {title}
@@ -158,35 +158,42 @@ function Block({
         </button>
       )}
       {/* Task count badge for goal blocks */}
-      {blockType !== "task" && (() => {
-        const pending = pendingTaskCount ?? 0;
-        const completed = completedTaskCount ?? 0;
-        const total = pending + completed;
-        const allCompleted = total > 0 && pending === 0;
+      {blockType !== "task" &&
+        (() => {
+          const pending = pendingTaskCount ?? 0;
+          const completed = completedTaskCount ?? 0;
+          const total = pending + completed;
+          const allCompleted = total > 0 && pending === 0;
 
-        if (total === 0) return null;
+          if (total === 0) return null;
 
-        return (
-          <div
-            className={cn(
-              "flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium shadow-sm",
-              isCompact
-                ? "absolute top-1/2 right-1.5 -translate-y-1/2"
-                : "absolute bottom-1.5 right-1.5",
-            )}
-          >
-            {allCompleted ? (
-              <RiCheckLine className="size-3" />
-            ) : (
-              <RiCircleLine className="size-3" />
-            )}
-            <span>{allCompleted ? total : pending}</span>
-          </div>
-        );
-      })()}
+          return (
+            <div
+              className={cn(
+                "flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-[10px] font-medium shadow-sm",
+                isCompact
+                  ? "absolute top-1/2 right-1.5 -translate-y-1/2"
+                  : "absolute bottom-1.5 right-1.5",
+              )}
+            >
+              {allCompleted ? (
+                <RiCheckLine className="size-3" />
+              ) : (
+                <RiCircleLine className="size-3" />
+              )}
+              <span>{allCompleted ? total : pending}</span>
+            </div>
+          );
+        })()}
     </div>
   );
 }
 
 export { Block };
-export type { BlockProps, BlockStatus, BlockType, BlockDuration, SegmentPosition };
+export type {
+  BlockProps,
+  BlockStatus,
+  BlockType,
+  BlockDuration,
+  SegmentPosition,
+};

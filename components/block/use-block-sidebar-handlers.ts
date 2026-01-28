@@ -39,6 +39,8 @@ export interface UseBlockSidebarHandlersOptions {
   onToast?: (message: string) => void;
   /** Callback to end any active focus session (called when marking block complete) */
   onEndFocus?: () => void;
+  /** Callback to close the sidebar (called after deleting block) */
+  onClose?: () => void;
 }
 
 export interface UseBlockSidebarHandlersReturn {
@@ -91,6 +93,7 @@ export function useBlockSidebarHandlers({
   schedule,
   onToast,
   onEndFocus,
+  onClose,
 }: UseBlockSidebarHandlersOptions): UseBlockSidebarHandlersReturn {
   const {
     updateEvent,
@@ -326,7 +329,9 @@ export function useBlockSidebarHandlers({
     onEndFocus?.();
     calendarHandlers.onEventDelete(selectedEvent.id);
     onToast?.("Block deleted");
-  }, [selectedEvent, calendarHandlers, onToast, onEndFocus]);
+    // Close the sidebar after deletion
+    onClose?.();
+  }, [selectedEvent, calendarHandlers, onToast, onEndFocus, onClose]);
 
   // -------------------------------------------------------------------------
   // Goal Task Context Handlers (for expanding tasks in goal blocks)

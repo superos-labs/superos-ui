@@ -26,7 +26,7 @@ export const blockAnimations = {
  */
 export function getWeekDates(
   referenceDate: Date = new Date(),
-  weekStartsOn: WeekStartDay = 1
+  weekStartsOn: WeekStartDay = 1,
 ): Date[] {
   const date = new Date(referenceDate);
   const currentDay = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
@@ -56,7 +56,10 @@ export function getWeekDates(
 /**
  * Get the ISO date string (YYYY-MM-DD) for a day in the week.
  */
-export function getDateForDayIndex(weekDates: Date[], dayIndex: number): string {
+export function getDateForDayIndex(
+  weekDates: Date[],
+  dayIndex: number,
+): string {
   return weekDates[dayIndex].toISOString().split("T")[0];
 }
 
@@ -66,7 +69,10 @@ export function getDateForDayIndex(weekDates: Date[], dayIndex: number): string 
  * @param weekStartsOn - Which day the week starts on (0 = Sunday, 1 = Monday, defaults to 1)
  * @returns Day index where 0 is the first day of the week
  */
-export function getDayIndexFromDate(date: string, weekStartsOn: WeekStartDay = 1): number {
+export function getDayIndexFromDate(
+  date: string,
+  weekStartsOn: WeekStartDay = 1,
+): number {
   const d = new Date(date + "T00:00:00"); // Ensure consistent parsing
   const day = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
@@ -340,14 +346,14 @@ export interface AdaptiveDropInfo {
  * Calculate adaptive drop position that fits within available gaps.
  * This is the DEFAULT behavior when dragging blocks to the calendar.
  * Hold Shift to disable gap-fitting and allow overlap placement.
- * 
+ *
  * Behavior:
  * - Finds the gap that contains the cursor position
  * - Centers the block within the gap when possible
  * - Snaps to gap boundaries when the block doesn't fit centered
  * - Constrains duration to fit within the gap (minimum 10 minutes)
  * - Falls back to standard placement if gap is too small
- * 
+ *
  * @param segments - Event segments for the target day
  * @param cursorMinutes - Raw cursor position (not centered)
  * @param defaultDuration - Default duration for the drag item type
@@ -358,11 +364,11 @@ export function calculateAdaptiveDrop(
   segments: EventDaySegment[],
   cursorMinutes: number,
   defaultDuration: number,
-  minGap: number = ADAPTIVE_DROP_MIN_GAP
+  minGap: number = ADAPTIVE_DROP_MIN_GAP,
 ): AdaptiveDropInfo {
   // Sort segments by start time, only consider primary segments (not "end" of overnight)
   const sorted = [...segments]
-    .filter(s => s.position !== "end")
+    .filter((s) => s.position !== "end")
     .sort((a, b) => a.startMinutes - b.startMinutes);
 
   // If no blocks, return centered position with default duration
@@ -382,17 +388,23 @@ export function calculateAdaptiveDrop(
 
   for (let i = 0; i < sorted.length; i++) {
     const block = sorted[i];
-    
+
     if (cursorMinutes < block.startMinutes) {
       // Cursor is before this block - gap is from previous block end to this block start
       gapEnd = block.startMinutes;
       break;
-    } else if (cursorMinutes >= block.startMinutes && cursorMinutes < block.endMinutes) {
+    } else if (
+      cursorMinutes >= block.startMinutes &&
+      cursorMinutes < block.endMinutes
+    ) {
       // Cursor is inside a block - find the nearest gap
       // Check gap before this block vs gap after this block
-      const gapBefore = block.startMinutes - (i > 0 ? sorted[i - 1].endMinutes : 0);
-      const gapAfter = (i < sorted.length - 1 ? sorted[i + 1].startMinutes : 1440) - block.endMinutes;
-      
+      const gapBefore =
+        block.startMinutes - (i > 0 ? sorted[i - 1].endMinutes : 0);
+      const gapAfter =
+        (i < sorted.length - 1 ? sorted[i + 1].startMinutes : 1440) -
+        block.endMinutes;
+
       if (gapBefore >= gapAfter && gapBefore >= minGap) {
         // Use gap before
         gapStart = i > 0 ? sorted[i - 1].endMinutes : 0;
@@ -436,7 +448,7 @@ export function calculateAdaptiveDrop(
 
   // Try to center the block on the cursor within the gap
   let idealStart = cursorMinutes - effectiveDuration / 2;
-  
+
   // Clamp to gap boundaries
   if (idealStart < gapStart) {
     idealStart = gapStart;
@@ -446,7 +458,7 @@ export function calculateAdaptiveDrop(
 
   // Snap to grid while staying within gap
   let finalStart = snapToGrid(idealStart);
-  
+
   // Ensure we don't snap outside the gap
   if (finalStart < gapStart) {
     finalStart = gapStart;
@@ -456,8 +468,9 @@ export function calculateAdaptiveDrop(
   }
 
   // Determine if we adapted (constrained duration or snapped to boundary)
-  const isAdapted = effectiveDuration < defaultDuration || 
-    finalStart === gapStart || 
+  const isAdapted =
+    effectiveDuration < defaultDuration ||
+    finalStart === gapStart ||
     finalStart + effectiveDuration === gapEnd;
 
   return {

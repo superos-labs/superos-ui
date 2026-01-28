@@ -67,29 +67,32 @@ export function DragProvider({ children }: DragProviderProps) {
   // Track initial shift state when drag starts
   const initialShiftRef = React.useRef(false);
 
-  const startDrag = React.useCallback((item: DragItem, e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const startDrag = React.useCallback(
+    (item: DragItem, e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    // Capture initial shift state
-    initialShiftRef.current = e.shiftKey;
+      // Capture initial shift state
+      initialShiftRef.current = e.shiftKey;
 
-    // Enter pending state
-    pendingDragRef.current = {
-      item,
-      startX: e.clientX,
-      startY: e.clientY,
-    };
+      // Enter pending state
+      pendingDragRef.current = {
+        item,
+        startX: e.clientX,
+        startY: e.clientY,
+      };
 
-    setState({
-      item: null,
-      position: { x: e.clientX, y: e.clientY },
-      previewPosition: null,
-      startPosition: { x: e.clientX, y: e.clientY },
-      isDragging: false,
-      isOverlapModeEnabled: e.shiftKey,
-    });
-  }, []);
+      setState({
+        item: null,
+        position: { x: e.clientX, y: e.clientY },
+        previewPosition: null,
+        startPosition: { x: e.clientX, y: e.clientY },
+        isDragging: false,
+        isOverlapModeEnabled: e.shiftKey,
+      });
+    },
+    [],
+  );
 
   const endDrag = React.useCallback(() => {
     pendingDragRef.current = null;
@@ -117,9 +120,12 @@ export function DragProvider({ children }: DragProviderProps) {
     });
   }, []);
 
-  const setPreviewPosition = React.useCallback((position: DropPosition | null) => {
-    setState((prev) => ({ ...prev, previewPosition: position }));
-  }, []);
+  const setPreviewPosition = React.useCallback(
+    (position: DropPosition | null) => {
+      setState((prev) => ({ ...prev, previewPosition: position }));
+    },
+    [],
+  );
 
   // Global pointer move handler
   React.useEffect(() => {
@@ -203,7 +209,7 @@ export function DragProvider({ children }: DragProviderProps) {
       cancelDrag,
       setPreviewPosition,
     }),
-    [state, startDrag, endDrag, cancelDrag, setPreviewPosition]
+    [state, startDrag, endDrag, cancelDrag, setPreviewPosition],
   );
 
   return <DragContext.Provider value={value}>{children}</DragContext.Provider>;
