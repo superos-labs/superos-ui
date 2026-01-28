@@ -14,12 +14,24 @@ export type { BacklogItemRowProps } from "./backlog-item-row";
 export { TaskRow, SubtaskRow } from "./task-row";
 export type { TaskRowProps } from "./task-row";
 
-export { InlineTaskCreator, InlineGoalCreator } from "./inline-creators";
+export {
+  InlineTaskCreator,
+  InlineGoalCreator,
+  InlineEssentialCreator,
+} from "./inline-creators";
 export type {
   InlineTaskCreatorProps,
   InlineGoalCreatorProps,
+  InlineEssentialCreatorProps,
 } from "./inline-creators";
 
+export { EssentialsSection } from "./essentials-section";
+export type { EssentialsSectionProps } from "./essentials-section";
+
+export { EssentialRow, SleepRow } from "./essential-row";
+export type { EssentialRowProps, SleepRowProps } from "./essential-row";
+
+// Legacy components (kept for backward compatibility)
 export { EditEssentialsView } from "./edit-essentials-view";
 export type { EditEssentialsViewProps } from "./edit-essentials-view";
 
@@ -45,6 +57,7 @@ export type {
   BacklogGroup,
   BacklogMode,
   NewGoalData,
+  NewEssentialData,
   LifeArea,
   GoalIconOption,
   Milestone,

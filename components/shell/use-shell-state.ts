@@ -46,6 +46,7 @@ import {
 import type { WeeklyIntention } from "@/lib/weekly-planning";
 import { usePreferences } from "@/lib/preferences";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
+import type { NewEssentialData } from "@/components/backlog";
 import type { UseShellStateOptions, UseShellStateReturn } from "./shell-types";
 
 // =============================================================================
@@ -63,6 +64,14 @@ export function useShellState(
     lifeAreas,
     goalIcons,
   } = options;
+
+  // -------------------------------------------------------------------------
+  // Mutable Essentials List
+  // -------------------------------------------------------------------------
+  // Keep a mutable copy of allEssentials so we can add/remove essentials
+  const [allEssentialsState, setAllEssentialsState] = React.useState<
+    ScheduleEssential[]
+  >(() => allEssentialsInput);
 
   // -------------------------------------------------------------------------
   // Preferences
@@ -90,7 +99,7 @@ export function useShellState(
   // Generate initial templates for enabled essentials with default slots
   const initialTemplates = React.useMemo(() => {
     const enabledIds =
-      initialEnabledEssentialIds ?? allEssentialsInput.map((e) => e.id);
+      initialEnabledEssentialIds ?? allEssentialsState.map((e) => e.id);
     return enabledIds.map(
       (essentialId): EssentialTemplate => ({
         essentialId,
@@ -100,11 +109,11 @@ export function useShellState(
         })),
       }),
     );
-  }, [initialEnabledEssentialIds, allEssentialsInput]);
+  }, [initialEnabledEssentialIds, allEssentialsState]);
 
   const essentialConfig = useEssentialConfig({
     initialEnabledIds:
-      initialEnabledEssentialIds ?? allEssentialsInput.map((e) => e.id),
+      initialEnabledEssentialIds ?? allEssentialsState.map((e) => e.id),
     initialTemplates,
   });
 
@@ -168,7 +177,7 @@ export function useShellState(
   // -------------------------------------------------------------------------
   const schedule = useUnifiedSchedule({
     initialGoals,
-    allEssentials: allEssentialsInput,
+    allEssentials: allEssentialsState,
     initialEnabledEssentialIds,
     initialEvents,
     weekDates,
@@ -309,6 +318,51 @@ export function useShellState(
   ]);
 
   // -------------------------------------------------------------------------
+  // Create/Delete Essential Handlers
+  // -------------------------------------------------------------------------
+  const handleCreateEssential = React.useCallback(
+    (data: NewEssentialData, slots: EssentialSlot[]) => {
+      // Generate a unique ID for the new essential
+      const id = `essential-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+      // Create the new essential
+      const newEssential: ScheduleEssential = {
+        id,
+        label: data.label,
+        icon: data.icon,
+        color: data.color,
+      };
+
+      // Add to allEssentials state
+      setAllEssentialsState((prev) => [...prev, newEssential]);
+
+      // Enable the essential and set its slots
+      // We need to manually add the template since enableEssential uses defaults
+      essentialConfig.enableEssential(id);
+
+      // Set the slots after enabling (with a small delay to ensure template exists)
+      setTimeout(() => {
+        essentialConfig.setSlots(id, slots);
+      }, 0);
+    },
+    [essentialConfig],
+  );
+
+  const handleDeleteEssential = React.useCallback(
+    (essentialId: string) => {
+      // Don't allow deleting Sleep
+      if (essentialId === "sleep") return;
+
+      // Disable in config (removes from enabledIds and templates)
+      essentialConfig.disableEssential(essentialId);
+
+      // Remove from allEssentials state
+      setAllEssentialsState((prev) => prev.filter((e) => e.id !== essentialId));
+    },
+    [essentialConfig],
+  );
+
+  // -------------------------------------------------------------------------
   // Return Value
   // -------------------------------------------------------------------------
   return {
@@ -335,6 +389,8 @@ export function useShellState(
     onStartEditingEssentials: schedule.startEditingEssentials,
     onSaveEssentialChanges: schedule.saveEssentialChanges,
     onCancelEssentialChanges: schedule.cancelEssentialChanges,
+    onCreateEssential: handleCreateEssential,
+    onDeleteEssential: handleDeleteEssential,
 
     // Day boundaries
     dayStartMinutes,

@@ -72,3 +72,10 @@ export interface NewGoalData {
   color: GoalColor;
   lifeAreaId: string;
 }
+
+/** Data for creating a new essential */
+export interface NewEssentialData {
+  label: string;
+  icon: IconComponent;
+  color: GoalColor;
+}

@@ -135,6 +135,8 @@ export function ShellContentComponent({
   onStartEditingEssentials,
   onSaveEssentialChanges,
   onCancelEssentialChanges,
+  onCreateEssential,
+  onDeleteEssential,
   // Day boundaries
   dayStartMinutes,
   dayEndMinutes,
@@ -998,32 +1000,13 @@ export function ShellContentComponent({
                   getTaskDeadline={getTaskDeadline}
                   draggable={true}
                   mode={backlogMode}
-                  allEssentials={allEssentials as BacklogItem[]}
-                  enabledEssentialIds={
-                    draftEnabledEssentialIds ?? enabledEssentialIds
-                  }
-                  onToggleEssentialEnabled={onToggleEssentialEnabled}
-                  dayStartMinutes={dayStartMinutes}
-                  dayEndMinutes={dayEndMinutes}
-                  onDayBoundariesChange={onDayBoundariesChange}
-                  dayBoundariesEnabled={dayBoundariesEnabled}
-                  onDayBoundariesEnabledChange={onDayBoundariesEnabledChange}
-                  dayBoundariesDisplay={dayBoundariesDisplay}
-                  onDayBoundariesDisplayChange={onDayBoundariesDisplayChange}
                   essentialTemplates={essentialTemplates}
                   onSaveEssentialSchedule={onSaveEssentialSchedule}
-                  onEditEssentials={() => {
-                    onStartEditingEssentials();
-                    setBacklogMode("edit-essentials");
-                  }}
-                  onSaveEssentials={() => {
-                    onSaveEssentialChanges();
-                    setBacklogMode("view");
-                  }}
-                  onCancelEditEssentials={() => {
-                    onCancelEssentialChanges();
-                    setBacklogMode("view");
-                  }}
+                  onCreateEssential={onCreateEssential}
+                  onDeleteEssential={onDeleteEssential}
+                  wakeUpMinutes={dayStartMinutes}
+                  windDownMinutes={dayEndMinutes}
+                  onSleepTimesChange={onDayBoundariesChange}
                   onCreateGoal={handleCreateGoal}
                   lifeAreas={lifeAreas}
                   goalIcons={goalIcons}

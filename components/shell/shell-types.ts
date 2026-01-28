@@ -10,7 +10,11 @@ import type {
   HoverPosition,
   CalendarEventCallbacks,
 } from "@/components/calendar";
-import type { BacklogMode, NewGoalData } from "@/components/backlog";
+import type {
+  BacklogMode,
+  NewGoalData,
+  NewEssentialData,
+} from "@/components/backlog";
 import type {
   ScheduleGoal,
   ScheduleEssential,
@@ -88,6 +92,10 @@ export interface ShellContentProps {
   onSaveEssentialChanges: () => void;
   /** Cancel essential changes */
   onCancelEssentialChanges: () => void;
+  /** Create a new essential */
+  onCreateEssential: (data: NewEssentialData, slots: EssentialSlot[]) => void;
+  /** Delete an essential */
+  onDeleteEssential: (essentialId: string) => void;
 
   // -------------------------------------------------------------------------
   // Day Boundaries (for dimming hours outside active day)
