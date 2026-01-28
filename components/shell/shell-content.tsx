@@ -72,7 +72,7 @@ import {
   RiArrowRightSLine,
   RiMoreFill,
   RiSideBarLine,
-  RiCheckLine,
+  RiCalendarCheckLine,
   RiPieChartLine,
   RiAddLine,
   RiSubtractLine,
@@ -140,6 +140,14 @@ export function ShellContentComponent({
   dayStartMinutes,
   dayEndMinutes,
   onDayBoundariesChange,
+  dayBoundariesEnabled,
+  onDayBoundariesEnabledChange,
+  dayBoundariesDisplay,
+  onDayBoundariesDisplayChange,
+  // Essential templates
+  essentialTemplates,
+  onSaveEssentialSchedule,
+  onAddEssentialsToWeek,
   // Goal CRUD
   onAddGoal,
   onDeleteGoal,
@@ -335,6 +343,8 @@ export function ShellContentComponent({
     setShowRightSidebar,
     showTasks,
     setShowTasks,
+    showEssentialsPanel,
+    setShowEssentialsPanel,
     showInspirationGallery,
     backlogMode,
     setBacklogMode,
@@ -781,12 +791,21 @@ export function ShellContentComponent({
           <button
             className={cn(
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-              showTasks ? "text-foreground" : "text-muted-foreground",
+              showEssentialsPanel ? "text-foreground" : "text-muted-foreground",
             )}
-            onClick={() => setShowTasks(!showTasks)}
-            title="Toggle tasks"
+            onClick={() => {
+              // If no essentials are enabled, go directly to edit mode
+              if (enabledEssentialIds.size === 0) {
+                onStartEditingEssentials();
+                setBacklogMode("edit-essentials");
+                setShowEssentialsPanel(true);
+              } else {
+                setShowEssentialsPanel(!showEssentialsPanel);
+              }
+            }}
+            title="Toggle essentials"
           >
-            <RiCheckLine className="size-4" />
+            <RiCalendarCheckLine className="size-4" />
           </button>
         )}
       </div>
@@ -927,6 +946,8 @@ export function ShellContentComponent({
               deadlines={weekDeadlines}
               dayStartMinutes={dayStartMinutes}
               dayEndMinutes={dayEndMinutes}
+              dayBoundariesEnabled={dayBoundariesEnabled}
+              dayBoundariesDisplay={dayBoundariesDisplay}
             />
           </ShellContentPrimitive>
         ) : (
@@ -977,7 +998,7 @@ export function ShellContentComponent({
                   goals={goals as BacklogItem[]}
                   className="h-full w-[360px] max-w-none"
                   showTasks={showTasks}
-                  showEssentials={true}
+                  showEssentials={showEssentialsPanel}
                   onToggleGoalTask={onToggleTaskComplete}
                   onAddTask={onAddTask}
                   onUpdateTask={onUpdateTask}
@@ -999,6 +1020,13 @@ export function ShellContentComponent({
                   dayStartMinutes={dayStartMinutes}
                   dayEndMinutes={dayEndMinutes}
                   onDayBoundariesChange={onDayBoundariesChange}
+                  dayBoundariesEnabled={dayBoundariesEnabled}
+                  onDayBoundariesEnabledChange={onDayBoundariesEnabledChange}
+                  dayBoundariesDisplay={dayBoundariesDisplay}
+                  onDayBoundariesDisplayChange={onDayBoundariesDisplayChange}
+                  essentialTemplates={essentialTemplates}
+                  onSaveEssentialSchedule={onSaveEssentialSchedule}
+                  onAddEssentialsToWeek={onAddEssentialsToWeek}
                   onEditEssentials={() => {
                     onStartEditingEssentials();
                     setBacklogMode("edit-essentials");
@@ -1114,6 +1142,8 @@ export function ShellContentComponent({
                   onDeadlineHover={setHoveredDeadline}
                   dayStartMinutes={dayStartMinutes}
                   dayEndMinutes={dayEndMinutes}
+                  dayBoundariesEnabled={dayBoundariesEnabled}
+                  dayBoundariesDisplay={dayBoundariesDisplay}
                 />
               ) : null}
             </ShellContentPrimitive>

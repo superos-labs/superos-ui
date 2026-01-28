@@ -7,15 +7,19 @@ import {
   RiCloseLine,
   RiMoonLine,
   RiSunLine,
+  RiAddLine,
+  RiDeleteBinLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
+import type { DayBoundariesDisplay } from "@/lib/preferences";
+import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { BacklogItem } from "./backlog-types";
+import { useActivitySchedule } from "./activity-schedule-editor";
 
 // =============================================================================
 // Time Formatting Utilities
 // =============================================================================
 
-/** Format minutes from midnight to 12-hour time string (e.g., "7:00 AM") */
 function formatTime(minutes: number): string {
   const hours24 = Math.floor(minutes / 60);
   const mins = minutes % 60;
@@ -24,38 +28,25 @@ function formatTime(minutes: number): string {
   return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
 }
 
-/**
- * Parse a time string into minutes from midnight.
- * Supports formats: "7", "7:30", "7am", "7:30am", "7 AM", "7:30 AM", "19:30"
- */
 function parseTime(input: string): number | null {
   const trimmed = input.trim().toLowerCase();
   if (!trimmed) return null;
 
-  // Match patterns like: 7, 7:30, 7am, 7:30am, 7 am, 7:30 am, 19:30
   const match = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?$/i);
-
   if (!match) return null;
 
   let hours = parseInt(match[1], 10);
   const minutes = match[2] ? parseInt(match[2], 10) : 0;
   const period = match[3]?.toLowerCase();
 
-  // Validate ranges
   if (minutes < 0 || minutes > 59) return null;
 
-  // Handle 24-hour format (no am/pm specified and hours > 12)
   if (!period && hours >= 0 && hours <= 23) {
-    // If hours > 12, treat as 24-hour format
-    // If hours <= 12, assume AM for morning times, but this is ambiguous
-    // For simplicity, treat as 24-hour when no period specified
     return hours * 60 + minutes;
   }
 
-  // Handle 12-hour format with am/pm
   if (period) {
     if (hours < 1 || hours > 12) return null;
-
     if (period === "pm" || period === "p") {
       if (hours !== 12) hours += 12;
     } else if (period === "am" || period === "a") {
@@ -65,6 +56,13 @@ function parseTime(input: string): number | null {
 
   return hours * 60 + minutes;
 }
+
+// =============================================================================
+// Day Labels
+// =============================================================================
+
+const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
+const DAY_FULL_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 // =============================================================================
 // Time Input Component
@@ -80,7 +78,6 @@ function TimeInput({ value, onChange, className }: TimeInputProps) {
   const [inputValue, setInputValue] = React.useState(formatTime(value));
   const [isFocused, setIsFocused] = React.useState(false);
 
-  // Update input when value prop changes (and not focused)
   React.useEffect(() => {
     if (!isFocused) {
       setInputValue(formatTime(value));
@@ -94,7 +91,6 @@ function TimeInput({ value, onChange, className }: TimeInputProps) {
       onChange(parsed);
       setInputValue(formatTime(parsed));
     } else {
-      // Reset to current value if invalid
       setInputValue(formatTime(value));
     }
   };
@@ -114,11 +110,59 @@ function TimeInput({ value, onChange, className }: TimeInputProps) {
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-[90px] rounded-md border border-border bg-background px-2 py-1 text-right text-sm text-foreground",
+        "w-[80px] rounded-md border border-border bg-background px-2 py-1 text-center text-sm text-foreground",
         "focus:outline-none focus:ring-2 focus:ring-ring",
         className,
       )}
     />
+  );
+}
+
+// =============================================================================
+// Time Range Row
+// =============================================================================
+
+interface TimeRangeRowProps {
+  startMinutes: number;
+  durationMinutes: number;
+  onStartChange: (minutes: number) => void;
+  onDurationChange: (minutes: number) => void;
+  onDelete: () => void;
+  canDelete: boolean;
+}
+
+function TimeRangeRow({
+  startMinutes,
+  durationMinutes,
+  onStartChange,
+  onDurationChange,
+  onDelete,
+  canDelete,
+}: TimeRangeRowProps) {
+  const endMinutes = startMinutes + durationMinutes;
+
+  const handleEndChange = (newEnd: number) => {
+    const newDuration = newEnd - startMinutes;
+    if (newDuration > 0) {
+      onDurationChange(newDuration);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <TimeInput value={startMinutes} onChange={onStartChange} />
+      <span className="text-muted-foreground">–</span>
+      <TimeInput value={endMinutes} onChange={handleEndChange} />
+      {canDelete && (
+        <button
+          onClick={onDelete}
+          className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          title="Remove time range"
+        >
+          <RiDeleteBinLine className="size-3.5" />
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -132,66 +176,329 @@ export interface EditEssentialsViewProps {
   onToggle: (id: string) => void;
   onSave: () => void;
   onCancel: () => void;
-  /** Day start time in minutes from midnight */
   dayStartMinutes?: number;
-  /** Day end time in minutes from midnight */
   dayEndMinutes?: number;
-  /** Callback when day boundaries change */
   onDayBoundariesChange?: (startMinutes: number, endMinutes: number) => void;
+  dayBoundariesEnabled?: boolean;
+  onDayBoundariesEnabledChange?: (enabled: boolean) => void;
+  dayBoundariesDisplay?: DayBoundariesDisplay;
+  onDayBoundariesDisplayChange?: (display: DayBoundariesDisplay) => void;
+  templates?: EssentialTemplate[];
+  onSaveEssentialSchedule?: (
+    essentialId: string,
+    slots: EssentialSlot[],
+  ) => void;
 }
 
 // =============================================================================
-// Day Boundaries Section
+// Sleep Activity Row (special case with wake up/wind down)
 // =============================================================================
 
-interface DayBoundariesProps {
+interface SleepActivityRowProps {
+  isEnabled: boolean;
+  onToggle: () => void;
   startMinutes: number;
   endMinutes: number;
-  onChange: (startMinutes: number, endMinutes: number) => void;
+  onTimesChange: (startMinutes: number, endMinutes: number) => void;
+  displayMode: DayBoundariesDisplay;
+  onDisplayModeChange: (mode: DayBoundariesDisplay) => void;
 }
 
-function DayBoundaries({
+function SleepActivityRow({
+  isEnabled,
+  onToggle,
   startMinutes,
   endMinutes,
-  onChange,
-}: DayBoundariesProps) {
+  onTimesChange,
+  displayMode,
+  onDisplayModeChange,
+}: SleepActivityRowProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-muted/30 px-4 py-3">
-      <div className="flex items-center gap-2">
-        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Day Boundaries
-        </h4>
-      </div>
+    <div
+      className={cn(
+        "flex flex-col rounded-xl transition-colors",
+        isEnabled ? "bg-muted/30" : "hover:bg-muted/60",
+      )}
+    >
+      {/* Main row */}
+      <div className="flex items-center gap-3 px-3 py-2.5">
+        {/* Checkbox */}
+        <button
+          onClick={onToggle}
+          className={cn(
+            "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
+            isEnabled
+              ? "bg-foreground text-background"
+              : "bg-muted/60 text-transparent",
+          )}
+        >
+          <RiCheckLine className="size-3" />
+        </button>
 
-      <div className="flex flex-col gap-2">
-        {/* Wake up time */}
-        <div className="flex items-center gap-3">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-            <RiSunLine className="size-4 text-amber-500" />
-          </div>
-          <span className="flex-1 text-sm text-foreground">Wake up</span>
-          <TimeInput
-            value={startMinutes}
-            onChange={(value) => onChange(value, endMinutes)}
+        {/* Icon */}
+        <div
+          className={cn(
+            "flex size-8 shrink-0 items-center justify-center rounded-lg",
+            isEnabled ? "bg-background" : "bg-muted/60",
+          )}
+        >
+          <RiMoonLine
+            className={cn(
+              "size-4",
+              isEnabled ? "text-indigo-400" : "text-muted-foreground",
+            )}
           />
         </div>
 
-        {/* Wind down time */}
-        <div className="flex items-center gap-3">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-            <RiMoonLine className="size-4 text-indigo-400" />
-          </div>
-          <span className="flex-1 text-sm text-foreground">Wind down</span>
-          <TimeInput
-            value={endMinutes}
-            onChange={(value) => onChange(startMinutes, value)}
-          />
-        </div>
+        {/* Label */}
+        <span
+          className={cn(
+            "flex-1 text-left text-sm font-medium",
+            isEnabled ? "text-foreground" : "text-muted-foreground",
+          )}
+        >
+          Sleep
+        </span>
       </div>
 
-      <p className="text-[11px] text-muted-foreground">
-        Hours outside these times will appear dimmed on your calendar.
-      </p>
+      {/* Expanded content when enabled */}
+      {isEnabled && (
+        <div className="flex flex-col gap-3 px-3 pb-3">
+          {/* Wake up time */}
+          <div className="flex items-center gap-3">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
+              <RiSunLine className="size-4 text-amber-500" />
+            </div>
+            <span className="flex-1 text-sm text-foreground">Wake up</span>
+            <TimeInput
+              value={startMinutes}
+              onChange={(value) => onTimesChange(value, endMinutes)}
+            />
+          </div>
+
+          {/* Wind down time */}
+          <div className="flex items-center gap-3">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
+              <RiMoonLine className="size-4 text-indigo-400" />
+            </div>
+            <span className="flex-1 text-sm text-foreground">Wind down</span>
+            <TimeInput
+              value={endMinutes}
+              onChange={(value) => onTimesChange(startMinutes, value)}
+            />
+          </div>
+
+          {/* Display mode selector */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              Out-of-bounds hours:
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onDisplayModeChange("dimmed")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  displayMode === "dimmed"
+                    ? "bg-foreground text-background"
+                    : "bg-background text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Dimmed
+              </button>
+              <button
+                onClick={() => onDisplayModeChange("hidden")}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                  displayMode === "hidden"
+                    ? "bg-foreground text-background"
+                    : "bg-background text-muted-foreground hover:text-foreground",
+                )}
+              >
+                Hidden
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Activity Row Component (for regular activities)
+// =============================================================================
+
+interface ActivityRowProps {
+  essential: BacklogItem;
+  isEnabled: boolean;
+  onToggle: () => void;
+  template?: EssentialTemplate;
+  onSaveSchedule: (slots: EssentialSlot[]) => void;
+}
+
+function ActivityRow({
+  essential,
+  isEnabled,
+  onToggle,
+  template,
+  onSaveSchedule,
+}: ActivityRowProps) {
+  const IconComponent = essential.icon;
+  const scheduleState = useActivitySchedule({
+    initialSlots: template?.slots ?? [],
+  });
+
+  // Reset schedule state when template changes
+  React.useEffect(() => {
+    if (template?.slots) {
+      scheduleState.resetFromSlots(template.slots);
+    }
+  }, [template?.slots]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSave = () => {
+    const slots = scheduleState.toSlots();
+    onSaveSchedule(slots);
+  };
+
+  const toggleDay = (dayIndex: number) => {
+    if (scheduleState.selectedDays.includes(dayIndex)) {
+      scheduleState.setSelectedDays(
+        scheduleState.selectedDays.filter((d) => d !== dayIndex),
+      );
+    } else {
+      scheduleState.setSelectedDays(
+        [...scheduleState.selectedDays, dayIndex].sort((a, b) => a - b),
+      );
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col rounded-xl transition-colors",
+        isEnabled ? "bg-muted/30" : "hover:bg-muted/60",
+      )}
+    >
+      {/* Main row */}
+      <div className="flex items-center gap-3 px-3 py-2.5">
+        {/* Checkbox */}
+        <button
+          onClick={onToggle}
+          className={cn(
+            "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
+            isEnabled
+              ? "bg-foreground text-background"
+              : "bg-muted/60 text-transparent",
+          )}
+        >
+          <RiCheckLine className="size-3" />
+        </button>
+
+        {/* Icon */}
+        <div
+          className={cn(
+            "flex size-8 shrink-0 items-center justify-center rounded-lg",
+            isEnabled ? "bg-background" : "bg-muted/60",
+          )}
+        >
+          <IconComponent
+            className={cn(
+              "size-4",
+              isEnabled
+                ? getIconColorClass(essential.color)
+                : "text-muted-foreground",
+            )}
+          />
+        </div>
+
+        {/* Label */}
+        <span
+          className={cn(
+            "flex-1 text-left text-sm font-medium",
+            isEnabled ? "text-foreground" : "text-muted-foreground",
+          )}
+        >
+          {essential.label}
+        </span>
+
+        {/* Save button (only when enabled) */}
+        {isEnabled && (
+          <button
+            onClick={handleSave}
+            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-emerald-500/10 hover:text-emerald-600"
+            title="Save schedule"
+          >
+            <RiCheckLine className="size-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Schedule editor (auto-expanded when enabled) */}
+      {isEnabled && (
+        <div className="flex flex-col gap-3 px-3 pb-3">
+          {/* Day selector */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Days
+            </span>
+            <div className="flex gap-1">
+              {DAY_LABELS.map((label, index) => {
+                const isSelected = scheduleState.selectedDays.includes(index);
+                return (
+                  <button
+                    key={index}
+                    onClick={() => toggleDay(index)}
+                    className={cn(
+                      "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
+                      isSelected
+                        ? "bg-foreground text-background"
+                        : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                    title={DAY_FULL_LABELS[index]}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Time ranges */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Time ranges
+            </span>
+            <div className="flex flex-col gap-2">
+              {scheduleState.timeRanges.map((range) => (
+                <TimeRangeRow
+                  key={range.id}
+                  startMinutes={range.startMinutes}
+                  durationMinutes={range.durationMinutes}
+                  onStartChange={(minutes) =>
+                    scheduleState.updateTimeRange(range.id, {
+                      startMinutes: minutes,
+                    })
+                  }
+                  onDurationChange={(minutes) =>
+                    scheduleState.updateTimeRange(range.id, {
+                      durationMinutes: minutes,
+                    })
+                  }
+                  onDelete={() => scheduleState.deleteTimeRange(range.id)}
+                  canDelete={scheduleState.timeRanges.length > 1}
+                />
+              ))}
+            </div>
+            <button
+              onClick={scheduleState.addTimeRange}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <RiAddLine className="size-3.5" />
+              Add another time
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -206,22 +513,56 @@ export function EditEssentialsView({
   onToggle,
   onSave,
   onCancel,
-  dayStartMinutes = 420, // 7:00 AM
-  dayEndMinutes = 1380, // 11:00 PM
+  dayStartMinutes = 420,
+  dayEndMinutes = 1380,
   onDayBoundariesChange,
+  dayBoundariesEnabled = false,
+  onDayBoundariesEnabledChange,
+  dayBoundariesDisplay = "dimmed",
+  onDayBoundariesDisplayChange,
+  templates = [],
+  onSaveEssentialSchedule,
 }: EditEssentialsViewProps) {
-  // Local state for day boundaries (in case parent doesn't provide callback)
+  // Local state for day boundaries (Sleep)
+  const [localSleepEnabled, setLocalSleepEnabled] =
+    React.useState(dayBoundariesEnabled);
   const [localStartMinutes, setLocalStartMinutes] =
     React.useState(dayStartMinutes);
   const [localEndMinutes, setLocalEndMinutes] = React.useState(dayEndMinutes);
+  const [localDisplayMode, setLocalDisplayMode] =
+    React.useState<DayBoundariesDisplay>(dayBoundariesDisplay);
 
-  const handleDayBoundariesChange = React.useCallback(
+  const handleSleepToggle = React.useCallback(() => {
+    const newEnabled = !localSleepEnabled;
+    setLocalSleepEnabled(newEnabled);
+    onDayBoundariesEnabledChange?.(newEnabled);
+  }, [localSleepEnabled, onDayBoundariesEnabledChange]);
+
+  const handleTimesChange = React.useCallback(
     (start: number, end: number) => {
       setLocalStartMinutes(start);
       setLocalEndMinutes(end);
       onDayBoundariesChange?.(start, end);
     },
     [onDayBoundariesChange],
+  );
+
+  const handleDisplayModeChange = React.useCallback(
+    (mode: DayBoundariesDisplay) => {
+      setLocalDisplayMode(mode);
+      onDayBoundariesDisplayChange?.(mode);
+    },
+    [onDayBoundariesDisplayChange],
+  );
+
+  const getTemplate = (essentialId: string) =>
+    templates.find((t) => t.essentialId === essentialId);
+
+  const handleSaveSchedule = React.useCallback(
+    (essentialId: string, slots: EssentialSlot[]) => {
+      onSaveEssentialSchedule?.(essentialId, slots);
+    },
+    [onSaveEssentialSchedule],
   );
 
   return (
@@ -254,65 +595,45 @@ export function EditEssentialsView({
         </div>
       </div>
 
-      {/* Day Boundaries */}
-      <div className="px-3">
-        <DayBoundaries
-          startMinutes={localStartMinutes}
-          endMinutes={localEndMinutes}
-          onChange={handleDayBoundariesChange}
-        />
-      </div>
-
-      {/* Activities to Track */}
-      <div className="flex flex-col gap-1 px-3">
-        <h4 className="px-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Activities to Track
-        </h4>
+      {/* Activities Section */}
+      <div className="flex flex-col gap-2 px-3">
         <div className="flex flex-col gap-0.5">
+          <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Activities
+          </h4>
+          <p className="text-[11px] text-muted-foreground">
+            Make time for what matters. Visibility increases awareness and helps
+            protect your time.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          {/* Sleep (special activity for day boundaries) */}
+          <SleepActivityRow
+            isEnabled={localSleepEnabled}
+            onToggle={handleSleepToggle}
+            startMinutes={localStartMinutes}
+            endMinutes={localEndMinutes}
+            onTimesChange={handleTimesChange}
+            displayMode={localDisplayMode}
+            onDisplayModeChange={handleDisplayModeChange}
+          />
+
+          {/* Regular activities */}
           {allEssentials.map((essential) => {
             const isEnabled = enabledIds.has(essential.id);
-            const IconComponent = essential.icon;
 
             return (
-              <button
+              <ActivityRow
                 key={essential.id}
-                onClick={() => onToggle(essential.id)}
-                className="group relative flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-muted/60"
-              >
-                {/* Checkbox */}
-                <div
-                  className={cn(
-                    "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
-                    isEnabled
-                      ? "bg-foreground text-background"
-                      : "bg-muted/60 text-transparent",
-                  )}
-                >
-                  <RiCheckLine className="size-3" />
-                </div>
-
-                {/* Icon */}
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-                  <IconComponent
-                    className={cn(
-                      "size-4",
-                      isEnabled
-                        ? getIconColorClass(essential.color)
-                        : "text-muted-foreground",
-                    )}
-                  />
-                </div>
-
-                {/* Label */}
-                <span
-                  className={cn(
-                    "flex-1 text-left text-sm font-medium",
-                    isEnabled ? "text-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {essential.label}
-                </span>
-              </button>
+                essential={essential}
+                isEnabled={isEnabled}
+                onToggle={() => onToggle(essential.id)}
+                template={getTemplate(essential.id)}
+                onSaveSchedule={(slots) =>
+                  handleSaveSchedule(essential.id, slots)
+                }
+              />
             );
           })}
         </div>

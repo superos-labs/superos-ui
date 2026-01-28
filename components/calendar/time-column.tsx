@@ -126,7 +126,49 @@ export function TimeColumn({
   externalDragPreview,
   dayStartMinutes,
   dayEndMinutes,
+  dayBoundariesEnabled = false,
+  dayBoundariesDisplay = "dimmed",
 }: TimeColumnProps) {
+  // Calculate visible hour range for hidden mode
+  const visibleStartHour =
+    dayBoundariesEnabled &&
+    dayBoundariesDisplay === "hidden" &&
+    dayStartMinutes !== undefined
+      ? Math.floor(dayStartMinutes / 60)
+      : 0;
+  const visibleEndHour =
+    dayBoundariesEnabled &&
+    dayBoundariesDisplay === "hidden" &&
+    dayEndMinutes !== undefined
+      ? Math.ceil(dayEndMinutes / 60)
+      : 24;
+  const visibleHours = HOURS.filter(
+    (h) => h >= visibleStartHour && h < visibleEndHour,
+  );
+  const visibleHoursCount = visibleHours.length;
+  const visibleStartMinutes = visibleStartHour * 60;
+  const visibleDurationMinutes = visibleHoursCount * 60;
+
+  // Helper to calculate position percentage for hidden mode
+  const getTopPercent = (minutes: number): number => {
+    if (dayBoundariesEnabled && dayBoundariesDisplay === "hidden") {
+      const clampedMinutes = Math.max(
+        visibleStartMinutes,
+        Math.min(visibleStartMinutes + visibleDurationMinutes, minutes),
+      );
+      return (
+        ((clampedMinutes - visibleStartMinutes) / visibleDurationMinutes) * 100
+      );
+    }
+    return (minutes / 1440) * 100;
+  };
+
+  const getHeightPercent = (durationMinutes: number): number => {
+    if (dayBoundariesEnabled && dayBoundariesDisplay === "hidden") {
+      return (durationMinutes / visibleDurationMinutes) * 100;
+    }
+    return (durationMinutes / 1440) * 100;
+  };
   const columnRef = React.useRef<HTMLDivElement>(null);
   const dragContext = useDragContextOptional();
 
@@ -319,16 +361,31 @@ export function TimeColumn({
       onPointerLeave={enableExternalDrop ? handlePointerLeave : undefined}
     >
       {/* Hour Cells */}
-      {HOURS.map((hour) => {
+      {(dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+        ? visibleHours
+        : HOURS
+      ).map((hour, hourIndex) => {
         const hourStartMinutes = hour * 60;
         const hourEndMinutes = hourStartMinutes + 60;
 
         // Check if this hour is outside the day boundaries (for dimming)
         // An hour is "outside" if it ends before day start OR starts after day end
         const isOutsideDayBoundaries =
-          (dayStartMinutes !== undefined &&
+          dayBoundariesEnabled &&
+          dayBoundariesDisplay === "dimmed" &&
+          ((dayStartMinutes !== undefined &&
             hourEndMinutes <= dayStartMinutes) ||
-          (dayEndMinutes !== undefined && hourStartMinutes >= dayEndMinutes);
+            (dayEndMinutes !== undefined && hourStartMinutes >= dayEndMinutes));
+
+        // Calculate position for hidden mode
+        const topPercent =
+          dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+            ? (hourIndex / visibleHoursCount) * 100
+            : (hour / 24) * 100;
+        const heightPercent =
+          dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+            ? 100 / visibleHoursCount
+            : 100 / 24;
 
         return (
           <EmptySpaceContextMenu
@@ -349,8 +406,8 @@ export function TimeColumn({
                 isOutsideDayBoundaries && "bg-muted/40",
               )}
               style={{
-                top: `${(hour / 24) * 100}%`,
-                height: `${100 / 24}%`,
+                top: `${topPercent}%`,
+                height: `${heightPercent}%`,
               }}
               onPointerDown={(e) => onPointerDown?.(e, dayIndex, hour * 60)}
               onMouseEnter={() =>
@@ -380,8 +437,22 @@ export function TimeColumn({
           const segmentKey = `${event.id}-${position}`;
           const segmentDuration = endMinutes - startMinutes;
 
-          const topPercent = (startMinutes / 1440) * 100;
-          const heightPercent = (segmentDuration / 1440) * 100;
+          // Clamp segment to visible range in hidden mode
+          const clampedStartMinutes =
+            dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+              ? Math.max(
+                  visibleStartMinutes,
+                  Math.min(
+                    visibleStartMinutes +
+                      visibleDurationMinutes -
+                      segmentDuration,
+                    startMinutes,
+                  ),
+                )
+              : startMinutes;
+
+          const topPercent = getTopPercent(clampedStartMinutes);
+          const heightPercent = getHeightPercent(segmentDuration);
 
           // Get positioning style based on overlap layout
           const positionStyle = getBlockPositionStyle(
@@ -675,8 +746,8 @@ export function TimeColumn({
             <div
               className="pointer-events-none absolute right-1 left-1 z-40"
               style={{
-                top: `${(createPreview.startMinutes / 1440) * 100}%`,
-                height: `${(createPreview.durationMinutes / 1440) * 100}%`,
+                top: `${getTopPercent(createPreview.startMinutes)}%`,
+                height: `${getHeightPercent(createPreview.durationMinutes)}%`,
               }}
             >
               <Block
@@ -708,8 +779,8 @@ export function TimeColumn({
               className="pointer-events-none absolute right-1 left-1 z-40 opacity-70"
               initial={false}
               animate={{
-                top: `${(externalDragPreview.startMinutes / 1440) * 100}%`,
-                height: `${(externalDragPreview.durationMinutes / 1440) * 100}%`,
+                top: `${getTopPercent(externalDragPreview.startMinutes)}%`,
+                height: `${getHeightPercent(externalDragPreview.durationMinutes)}%`,
               }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
             >

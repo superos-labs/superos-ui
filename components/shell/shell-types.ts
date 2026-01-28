@@ -30,7 +30,9 @@ import type {
   WeekStartDay,
   ProgressMetric,
   CalendarZoom,
+  DayBoundariesDisplay,
 } from "@/lib/preferences";
+import type { EssentialTemplate, EssentialSlot } from "@/lib/essentials";
 
 // =============================================================================
 // Core Shell Props
@@ -96,6 +98,27 @@ export interface ShellContentProps {
   dayEndMinutes: number;
   /** Update day boundaries */
   onDayBoundariesChange: (startMinutes: number, endMinutes: number) => void;
+  /** Whether day boundaries are enabled */
+  dayBoundariesEnabled: boolean;
+  /** Update day boundaries enabled state */
+  onDayBoundariesEnabledChange: (enabled: boolean) => void;
+  /** How to display out-of-bounds hours */
+  dayBoundariesDisplay: DayBoundariesDisplay;
+  /** Update day boundaries display mode */
+  onDayBoundariesDisplayChange: (display: DayBoundariesDisplay) => void;
+
+  // -------------------------------------------------------------------------
+  // Essential Templates (for scheduling)
+  // -------------------------------------------------------------------------
+  /** Essential schedule templates */
+  essentialTemplates: EssentialTemplate[];
+  /** Save an essential's schedule */
+  onSaveEssentialSchedule: (
+    essentialId: string,
+    slots: EssentialSlot[],
+  ) => void;
+  /** Add all essentials to the current week */
+  onAddEssentialsToWeek: () => void;
 
   // -------------------------------------------------------------------------
   // Goal CRUD

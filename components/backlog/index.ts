@@ -15,10 +15,22 @@ export { TaskRow, SubtaskRow } from "./task-row";
 export type { TaskRowProps } from "./task-row";
 
 export { InlineTaskCreator, InlineGoalCreator } from "./inline-creators";
-export type { InlineTaskCreatorProps, InlineGoalCreatorProps } from "./inline-creators";
+export type {
+  InlineTaskCreatorProps,
+  InlineGoalCreatorProps,
+} from "./inline-creators";
 
 export { EditEssentialsView } from "./edit-essentials-view";
 export type { EditEssentialsViewProps } from "./edit-essentials-view";
+
+export { EssentialsSummary } from "./essentials-summary";
+export type { EssentialsSummaryProps } from "./essentials-summary";
+
+export {
+  ActivityScheduleEditor,
+  useActivitySchedule,
+} from "./activity-schedule-editor";
+export type { ActivityScheduleEditorProps } from "./activity-schedule-editor";
 
 export { BacklogGoalList } from "./backlog-goal-list";
 export type { BacklogGoalListProps } from "./backlog-goal-list";
@@ -41,4 +53,8 @@ export type {
 } from "./backlog-types";
 
 // Re-export types from unified-schedule for convenience
-export type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
+export type {
+  GoalStats,
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+} from "@/lib/unified-schedule";

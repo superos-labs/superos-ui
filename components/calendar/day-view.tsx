@@ -53,6 +53,8 @@ export function DayView({
   onMarkDayComplete,
   dayStartMinutes,
   dayEndMinutes,
+  dayBoundariesEnabled,
+  dayBoundariesDisplay,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -207,6 +209,8 @@ export function DayView({
             externalDragPreview={externalDragPreview}
             dayStartMinutes={dayStartMinutes}
             dayEndMinutes={dayEndMinutes}
+            dayBoundariesEnabled={dayBoundariesEnabled}
+            dayBoundariesDisplay={dayBoundariesDisplay}
           />
 
           {/* Current Time Indicator */}

@@ -60,6 +60,8 @@ export function WeekView({
   onMarkDayComplete,
   dayStartMinutes,
   dayEndMinutes,
+  dayBoundariesEnabled,
+  dayBoundariesDisplay,
 }: WeekViewProps) {
   // Get day labels based on week start preference
   const dayLabels = getDayLabels(weekStartsOn);
@@ -226,6 +228,8 @@ export function WeekView({
                 externalDragPreview={externalDragPreview}
                 dayStartMinutes={dayStartMinutes}
                 dayEndMinutes={dayEndMinutes}
+                dayBoundariesEnabled={dayBoundariesEnabled}
+                dayBoundariesDisplay={dayBoundariesDisplay}
               />
             );
           })}

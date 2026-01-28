@@ -3,6 +3,7 @@ export type {
   WeekStartDay,
   ProgressMetric,
   CalendarZoom,
+  DayBoundariesDisplay,
   UserPreferences,
 } from "./types";
 

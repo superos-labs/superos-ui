@@ -4,7 +4,7 @@
  * Composable hooks for the Shell example component.
  * These hooks extract focused concerns from ShellDemoContent to improve
  * maintainability and testability.
- * 
+ *
  * These are internal demo utilities and are NOT part of the public API.
  */
 
@@ -15,7 +15,11 @@ import type { UseBlockSidebarHandlersReturn } from "@/components/block";
 import type { DragContextValue } from "@/components/drag";
 import type { DragItem, DropPosition } from "@/lib/drag-types";
 import type { GoalColor } from "@/lib/colors";
-import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types";
+import {
+  getDefaultDuration,
+  getDragItemTitle,
+  getDragItemColor,
+} from "@/lib/drag-types";
 
 // =============================================================================
 // useShellLayout - UI visibility and panel state management
@@ -38,13 +42,15 @@ export interface UseShellLayoutReturn {
   setShowRightSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   showTasks: boolean;
   setShowTasks: React.Dispatch<React.SetStateAction<boolean>>;
+  showEssentialsPanel: boolean;
+  setShowEssentialsPanel: React.Dispatch<React.SetStateAction<boolean>>;
   showInspirationGallery: boolean;
   setShowInspirationGallery: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Mode state
   backlogMode: BacklogMode;
   setBacklogMode: React.Dispatch<React.SetStateAction<BacklogMode>>;
-  
+
   // Planning mode
   isPlanningMode: boolean;
   setIsPlanningMode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -63,7 +69,9 @@ export interface UseShellLayoutReturn {
   renderedContent: "block" | "analytics" | null;
   frozenSidebarData: UseBlockSidebarHandlersReturn["sidebarData"];
   isRightSidebarOpen: boolean;
-  updateFrozenSidebarData: (data: UseBlockSidebarHandlersReturn["sidebarData"]) => void;
+  updateFrozenSidebarData: (
+    data: UseBlockSidebarHandlersReturn["sidebarData"],
+  ) => void;
 
   // Computed values
   isPlanning: boolean;
@@ -90,7 +98,9 @@ export function useShellLayout(): UseShellLayoutReturn {
   const [showSidebar, setShowSidebar] = React.useState(true);
   const [showRightSidebar, setShowRightSidebar] = React.useState(false);
   const [showTasks, setShowTasks] = React.useState(true);
-  const [showInspirationGallery, setShowInspirationGallery] = React.useState(false);
+  const [showEssentialsPanel, setShowEssentialsPanel] = React.useState(false);
+  const [showInspirationGallery, setShowInspirationGallery] =
+    React.useState(false);
 
   // -------------------------------------------------------------------------
   // Mode State
@@ -101,8 +111,12 @@ export function useShellLayout(): UseShellLayoutReturn {
   // -------------------------------------------------------------------------
   // Selection State
   // -------------------------------------------------------------------------
-  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null);
-  const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
+    null,
+  );
+  const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
+    null,
+  );
 
   // -------------------------------------------------------------------------
   // Goal Notes (local state for demo)
@@ -112,8 +126,11 @@ export function useShellLayout(): UseShellLayoutReturn {
   // -------------------------------------------------------------------------
   // Right Sidebar Content State
   // -------------------------------------------------------------------------
-  const [renderedContent, setRenderedContent] = React.useState<"block" | "analytics" | null>(null);
-  const [frozenSidebarData, setFrozenSidebarData] = React.useState<UseBlockSidebarHandlersReturn["sidebarData"]>(null);
+  const [renderedContent, setRenderedContent] = React.useState<
+    "block" | "analytics" | null
+  >(null);
+  const [frozenSidebarData, setFrozenSidebarData] =
+    React.useState<UseBlockSidebarHandlersReturn["sidebarData"]>(null);
 
   // Compute target content based on selection state
   const targetContent: "block" | "analytics" | null = selectedEventId
@@ -137,7 +154,7 @@ export function useShellLayout(): UseShellLayoutReturn {
         setFrozenSidebarData(data);
       }
     },
-    []
+    [],
   );
 
   // -------------------------------------------------------------------------
@@ -189,14 +206,17 @@ export function useShellLayout(): UseShellLayoutReturn {
     setBacklogMode("view");
   }, []);
 
-  const handleGoalNotesChange = React.useCallback((notes: string) => {
-    setGoalNotes((prev) => {
-      if (selectedGoalId) {
-        return { ...prev, [selectedGoalId]: notes };
-      }
-      return prev;
-    });
-  }, [selectedGoalId]);
+  const handleGoalNotesChange = React.useCallback(
+    (notes: string) => {
+      setGoalNotes((prev) => {
+        if (selectedGoalId) {
+          return { ...prev, [selectedGoalId]: notes };
+        }
+        return prev;
+      });
+    },
+    [selectedGoalId],
+  );
 
   // -------------------------------------------------------------------------
   // Inspiration Gallery Handlers
@@ -242,6 +262,8 @@ export function useShellLayout(): UseShellLayoutReturn {
     setShowRightSidebar,
     showTasks,
     setShowTasks,
+    showEssentialsPanel,
+    setShowEssentialsPanel,
     showInspirationGallery,
     setShowInspirationGallery,
 
@@ -327,7 +349,8 @@ export function useShellFocus({
 }: UseShellFocusOptions): UseShellFocusReturn {
   // Computed values
   const isSidebarBlockFocused = focusSession?.blockId === selectedEventId;
-  const showFocusIndicator = focusSession !== null && selectedEventId !== focusSession?.blockId;
+  const showFocusIndicator =
+    focusSession !== null && selectedEventId !== focusSession?.blockId;
 
   // Handlers
   const handleStartFocus = React.useCallback(() => {
@@ -391,7 +414,8 @@ export function useExternalDragPreview({
     if (!color) return null;
 
     // Use adaptive duration when available (shift+drag mode), otherwise default
-    const duration = previewPosition.adaptiveDuration ?? getDefaultDuration(dragItem.type);
+    const duration =
+      previewPosition.adaptiveDuration ?? getDefaultDuration(dragItem.type);
 
     return {
       dayIndex: previewPosition.dayIndex,
@@ -405,7 +429,7 @@ export function useExternalDragPreview({
   const handleExternalDrop = React.useCallback(
     (dayIndex: number, startMinutes: number) => {
       if (!dragItem) return;
-      
+
       let position: DropPosition;
       if (previewPosition && previewPosition.dropTarget === "existing-block") {
         position = previewPosition;
@@ -420,7 +444,7 @@ export function useExternalDragPreview({
       }
       onDrop(dragItem, position, weekDates);
     },
-    [dragItem, previewPosition, onDrop, weekDates]
+    [dragItem, previewPosition, onDrop, weekDates],
   );
 
   const handleDeadlineDrop = React.useCallback(
@@ -429,7 +453,7 @@ export function useExternalDragPreview({
       onDrop(dragItem, { dayIndex, dropTarget: "day-header" }, weekDates);
       dragContext.endDrag();
     },
-    [dragItem, dragContext, onDrop, weekDates]
+    [dragItem, dragContext, onDrop, weekDates],
   );
 
   return {
@@ -455,10 +479,14 @@ export interface UseToastAggregatorReturn {
 
 export function useToastAggregator(
   /** Toast message from calendar keyboard shortcuts */
-  calendarToastMessage: string | null
+  calendarToastMessage: string | null,
 ): UseToastAggregatorReturn {
-  const [sidebarToastMessage, setSidebarToastMessage] = React.useState<string | null>(null);
-  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<string | null>(null);
+  const [sidebarToastMessage, setSidebarToastMessage] = React.useState<
+    string | null
+  >(null);
+  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<
+    string | null
+  >(null);
 
   // Auto-clear sidebar toast
   React.useEffect(() => {
@@ -477,7 +505,8 @@ export function useToastAggregator(
   }, [deadlineToastMessage]);
 
   // Priority: calendar > sidebar > deadline
-  const toastMessage = calendarToastMessage ?? sidebarToastMessage ?? deadlineToastMessage;
+  const toastMessage =
+    calendarToastMessage ?? sidebarToastMessage ?? deadlineToastMessage;
 
   return {
     toastMessage,

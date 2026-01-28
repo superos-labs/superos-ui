@@ -28,6 +28,8 @@ import type {
   ScheduleEssential,
   DeadlineTask,
 } from "@/lib/unified-schedule";
+import { useEssentialConfig, importEssentialsToEvents } from "@/lib/essentials";
+import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import { useFocusSession, useFocusNotifications } from "@/lib/focus";
 import {
   useBlueprint,
@@ -72,10 +74,19 @@ export function useShellState(
     autoCompleteEssentials,
     calendarZoom,
     setCalendarZoom,
+    dayBoundariesEnabled,
+    setDayBoundariesEnabled,
+    dayBoundariesDisplay,
+    setDayBoundariesDisplay,
     dayStartMinutes,
     dayEndMinutes,
     setDayBoundaries,
   } = usePreferences();
+
+  // -------------------------------------------------------------------------
+  // Essential Config (templates)
+  // -------------------------------------------------------------------------
+  const essentialConfig = useEssentialConfig();
 
   // -------------------------------------------------------------------------
   // Week Navigation
@@ -234,6 +245,47 @@ export function useShellState(
   ) as Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
 
   // -------------------------------------------------------------------------
+  // Essential Schedule Handlers
+  // -------------------------------------------------------------------------
+  const handleSaveEssentialSchedule = React.useCallback(
+    (essentialId: string, slots: EssentialSlot[]) => {
+      essentialConfig.setSlots(essentialId, slots);
+    },
+    [essentialConfig],
+  );
+
+  const handleAddEssentialsToWeek = React.useCallback(() => {
+    // Get enabled templates
+    const enabledTemplates = essentialConfig.config.templates.filter((t) =>
+      essentialConfig.config.enabledIds.includes(t.essentialId),
+    );
+
+    // Map essentials to the format expected by importEssentialsToEvents
+    const essentialsData = schedule.allEssentials.map((e) => ({
+      id: e.id,
+      label: e.label,
+      color: e.color,
+    }));
+
+    // Import essentials to events
+    const newEvents = importEssentialsToEvents({
+      templates: enabledTemplates,
+      weekDates,
+      essentials: essentialsData,
+    });
+
+    // Add all new events
+    newEvents.forEach((event) => {
+      schedule.addEvent(event);
+    });
+  }, [
+    essentialConfig.config,
+    schedule.allEssentials,
+    weekDates,
+    schedule.addEvent,
+  ]);
+
+  // -------------------------------------------------------------------------
   // Return Value
   // -------------------------------------------------------------------------
   return {
@@ -265,6 +317,15 @@ export function useShellState(
     dayStartMinutes,
     dayEndMinutes,
     onDayBoundariesChange: setDayBoundaries,
+    dayBoundariesEnabled,
+    onDayBoundariesEnabledChange: setDayBoundariesEnabled,
+    dayBoundariesDisplay,
+    onDayBoundariesDisplayChange: setDayBoundariesDisplay,
+
+    // Essential templates
+    essentialTemplates: essentialConfig.config.templates,
+    onSaveEssentialSchedule: handleSaveEssentialSchedule,
+    onAddEssentialsToWeek: handleAddEssentialsToWeek,
 
     // Goal CRUD
     onAddGoal: schedule.addGoal,

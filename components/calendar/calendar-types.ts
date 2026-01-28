@@ -300,6 +300,10 @@ export interface CalendarProps
   dayStartMinutes?: number;
   /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
   dayEndMinutes?: number;
+  /** Whether day boundaries are enabled */
+  dayBoundariesEnabled?: boolean;
+  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
+  dayBoundariesDisplay?: "dimmed" | "hidden";
 }
 
 export interface CalendarDayHeaderProps {
@@ -345,6 +349,10 @@ export interface DayViewProps
   dayStartMinutes?: number;
   /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
   dayEndMinutes?: number;
+  /** Whether day boundaries are enabled */
+  dayBoundariesEnabled?: boolean;
+  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
+  dayBoundariesDisplay?: "dimmed" | "hidden";
 }
 
 export interface WeekViewProps
@@ -385,6 +393,10 @@ export interface WeekViewProps
   dayStartMinutes?: number;
   /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
   dayEndMinutes?: number;
+  /** Whether day boundaries are enabled */
+  dayBoundariesEnabled?: boolean;
+  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
+  dayBoundariesDisplay?: "dimmed" | "hidden";
 }
 
 /**
@@ -427,6 +439,10 @@ export interface TimeColumnProps
   dayStartMinutes?: number;
   /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
   dayEndMinutes?: number;
+  /** Whether day boundaries are enabled */
+  dayBoundariesEnabled?: boolean;
+  /** How to display hours outside day boundaries: 'dimmed' or 'hidden' */
+  dayBoundariesDisplay?: "dimmed" | "hidden";
 }
 
 // Helper to convert BlockStyle to BlockStatus

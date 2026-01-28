@@ -47,6 +47,13 @@ export const DEFAULT_DAY_START_MINUTES = 420;
 export const DEFAULT_DAY_END_MINUTES = 1380;
 
 /**
+ * How to display hours outside day boundaries.
+ * - 'dimmed': Show hours but with reduced opacity
+ * - 'hidden': Collapse hours entirely (blocks pushed into visible range)
+ */
+export type DayBoundariesDisplay = "dimmed" | "hidden";
+
+/**
  * User preferences for the application.
  */
 export interface UserPreferences {
@@ -62,9 +69,15 @@ export interface UserPreferences {
   /** Calendar zoom level as percentage (50-150, default: 100) */
   calendarZoom: CalendarZoom;
 
-  /** Day start time in minutes from midnight (e.g., 420 = 7:00 AM). Hours before this are dimmed. */
+  /** Whether day boundaries are enabled (default: false) */
+  dayBoundariesEnabled: boolean;
+
+  /** How to display out-of-bounds hours when enabled (default: 'dimmed') */
+  dayBoundariesDisplay: DayBoundariesDisplay;
+
+  /** Day start time in minutes from midnight (e.g., 420 = 7:00 AM). Hours before this are dimmed/hidden. */
   dayStartMinutes: number;
 
-  /** Day end time in minutes from midnight (e.g., 1380 = 11:00 PM). Hours after this are dimmed. */
+  /** Day end time in minutes from midnight (e.g., 1380 = 11:00 PM). Hours after this are dimmed/hidden. */
   dayEndMinutes: number;
 }

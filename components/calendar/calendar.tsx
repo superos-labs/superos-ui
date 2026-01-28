@@ -43,6 +43,8 @@ export function Calendar({
   onMarkDayComplete,
   dayStartMinutes,
   dayEndMinutes,
+  dayBoundariesEnabled,
+  dayBoundariesDisplay,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
@@ -83,6 +85,8 @@ export function Calendar({
         onMarkDayComplete={onMarkDayComplete}
         dayStartMinutes={dayStartMinutes}
         dayEndMinutes={dayEndMinutes}
+        dayBoundariesEnabled={dayBoundariesEnabled}
+        dayBoundariesDisplay={dayBoundariesDisplay}
       />
     );
   }
@@ -123,6 +127,8 @@ export function Calendar({
       onMarkDayComplete={onMarkDayComplete}
       dayStartMinutes={dayStartMinutes}
       dayEndMinutes={dayEndMinutes}
+      dayBoundariesEnabled={dayBoundariesEnabled}
+      dayBoundariesDisplay={dayBoundariesDisplay}
     />
   );
 }

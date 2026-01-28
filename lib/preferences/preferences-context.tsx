@@ -5,6 +5,7 @@ import type {
   WeekStartDay,
   ProgressMetric,
   CalendarZoom,
+  DayBoundariesDisplay,
   UserPreferences,
 } from "./types";
 import {
@@ -24,6 +25,8 @@ interface PreferencesContextValue extends UserPreferences {
   setProgressMetric: (metric: ProgressMetric) => void;
   setAutoCompleteEssentials: (enabled: boolean) => void;
   setCalendarZoom: (zoom: CalendarZoom) => void;
+  setDayBoundariesEnabled: (enabled: boolean) => void;
+  setDayBoundariesDisplay: (display: DayBoundariesDisplay) => void;
   setDayStartMinutes: (minutes: number) => void;
   setDayEndMinutes: (minutes: number) => void;
   setDayBoundaries: (startMinutes: number, endMinutes: number) => void;
@@ -47,6 +50,10 @@ export interface PreferencesProviderProps {
   defaultAutoCompleteEssentials?: boolean;
   /** Override the default calendar zoom level */
   defaultCalendarZoom?: CalendarZoom;
+  /** Override whether day boundaries are enabled */
+  defaultDayBoundariesEnabled?: boolean;
+  /** Override the default day boundaries display mode */
+  defaultDayBoundariesDisplay?: DayBoundariesDisplay;
   /** Override the default day start time (minutes from midnight) */
   defaultDayStartMinutes?: number;
   /** Override the default day end time (minutes from midnight) */
@@ -65,6 +72,8 @@ export function PreferencesProvider({
   defaultProgressMetric,
   defaultAutoCompleteEssentials,
   defaultCalendarZoom,
+  defaultDayBoundariesEnabled,
+  defaultDayBoundariesDisplay,
   defaultDayStartMinutes,
   defaultDayEndMinutes,
 }: PreferencesProviderProps) {
@@ -86,6 +95,16 @@ export function PreferencesProvider({
   const [calendarZoom, setCalendarZoomState] = React.useState<CalendarZoom>(
     defaultCalendarZoom ?? DEFAULT_CALENDAR_ZOOM,
   );
+
+  // Day boundaries enabled: default to false
+  const [dayBoundariesEnabled, setDayBoundariesEnabled] =
+    React.useState<boolean>(defaultDayBoundariesEnabled ?? false);
+
+  // Day boundaries display mode: default to 'dimmed'
+  const [dayBoundariesDisplay, setDayBoundariesDisplay] =
+    React.useState<DayBoundariesDisplay>(
+      defaultDayBoundariesDisplay ?? "dimmed",
+    );
 
   // Day boundaries: default to 7am - 11pm
   const [dayStartMinutes, setDayStartMinutesState] = React.useState<number>(
@@ -130,6 +149,10 @@ export function PreferencesProvider({
       setAutoCompleteEssentials,
       calendarZoom,
       setCalendarZoom,
+      dayBoundariesEnabled,
+      setDayBoundariesEnabled,
+      dayBoundariesDisplay,
+      setDayBoundariesDisplay,
       dayStartMinutes,
       setDayStartMinutes,
       dayEndMinutes,
@@ -142,6 +165,8 @@ export function PreferencesProvider({
       autoCompleteEssentials,
       calendarZoom,
       setCalendarZoom,
+      dayBoundariesEnabled,
+      dayBoundariesDisplay,
       dayStartMinutes,
       setDayStartMinutes,
       dayEndMinutes,

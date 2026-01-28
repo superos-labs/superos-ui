@@ -9,9 +9,12 @@ import type {
   ScheduleTask,
 } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
+import type { DayBoundariesDisplay } from "@/lib/preferences";
+import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { BacklogItem, BacklogMode, NewGoalData } from "./backlog-types";
 import { BacklogSection } from "./backlog-section";
 import { EditEssentialsView } from "./edit-essentials-view";
+import { EssentialsSummary } from "./essentials-summary";
 import { BacklogGoalList } from "./backlog-goal-list";
 
 export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -77,6 +80,23 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   dayEndMinutes?: number;
   /** Callback when day boundaries change (for edit essentials view) */
   onDayBoundariesChange?: (startMinutes: number, endMinutes: number) => void;
+  /** Whether day boundaries are enabled */
+  dayBoundariesEnabled?: boolean;
+  /** Callback when day boundaries enabled state changes */
+  onDayBoundariesEnabledChange?: (enabled: boolean) => void;
+  /** How to display out-of-bounds hours */
+  dayBoundariesDisplay?: DayBoundariesDisplay;
+  /** Callback when day boundaries display mode changes */
+  onDayBoundariesDisplayChange?: (display: DayBoundariesDisplay) => void;
+  /** Essential templates (for schedule editing and summary display) */
+  essentialTemplates?: EssentialTemplate[];
+  /** Callback when an essential's schedule is saved */
+  onSaveEssentialSchedule?: (
+    essentialId: string,
+    slots: EssentialSlot[],
+  ) => void;
+  /** Callback when "Add to week" is clicked */
+  onAddEssentialsToWeek?: () => void;
 
   // Goal creation props (for goal-detail mode's BacklogGoalList)
   /** Callback for creating a new goal */
@@ -131,6 +151,13 @@ export function Backlog({
   dayStartMinutes,
   dayEndMinutes,
   onDayBoundariesChange,
+  dayBoundariesEnabled,
+  onDayBoundariesEnabledChange,
+  dayBoundariesDisplay,
+  onDayBoundariesDisplayChange,
+  essentialTemplates,
+  onSaveEssentialSchedule,
+  onAddEssentialsToWeek,
   // Goal creation props
   onCreateGoal,
   lifeAreas,
@@ -191,19 +218,19 @@ export function Backlog({
               dayStartMinutes={dayStartMinutes}
               dayEndMinutes={dayEndMinutes}
               onDayBoundariesChange={onDayBoundariesChange}
+              dayBoundariesEnabled={dayBoundariesEnabled}
+              onDayBoundariesEnabledChange={onDayBoundariesEnabledChange}
+              dayBoundariesDisplay={dayBoundariesDisplay}
+              onDayBoundariesDisplayChange={onDayBoundariesDisplayChange}
+              templates={essentialTemplates}
+              onSaveEssentialSchedule={onSaveEssentialSchedule}
             />
           ) : (
-            <BacklogSection
-              title="Essentials"
-              description="Non-negotiables"
-              items={essentials}
-              onAddItem={onAddEssential}
-              getTaskSchedule={getTaskSchedule}
-              getTaskDeadline={getTaskDeadline}
-              draggable={draggable}
-              dragType="essential"
-              onEdit={onEditEssentials}
-              className="py-2"
+            <EssentialsSummary
+              essentials={essentials}
+              templates={essentialTemplates ?? []}
+              onAddToWeek={onAddEssentialsToWeek ?? (() => {})}
+              onEdit={onEditEssentials ?? (() => {})}
             />
           ))}
 
