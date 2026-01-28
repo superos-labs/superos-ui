@@ -587,6 +587,21 @@ export function ShellContentComponent({
   );
 
   // -------------------------------------------------------------------------
+  // Sleep/Day Boundaries Handler
+  // -------------------------------------------------------------------------
+  // When sleep times are configured via SleepRow, also enable day boundaries
+  const handleSleepTimesChange = React.useCallback(
+    (wakeUp: number, windDown: number) => {
+      onDayBoundariesChange(wakeUp, windDown);
+      // Auto-enable day boundaries when user configures sleep times
+      if (!dayBoundariesEnabled) {
+        onDayBoundariesEnabledChange(true);
+      }
+    },
+    [onDayBoundariesChange, onDayBoundariesEnabledChange, dayBoundariesEnabled],
+  );
+
+  // -------------------------------------------------------------------------
   // Goal Creation Handlers
   // -------------------------------------------------------------------------
   const handleCreateGoal = React.useCallback(
@@ -1006,7 +1021,8 @@ export function ShellContentComponent({
                   onDeleteEssential={onDeleteEssential}
                   wakeUpMinutes={dayStartMinutes}
                   windDownMinutes={dayEndMinutes}
-                  onSleepTimesChange={onDayBoundariesChange}
+                  onSleepTimesChange={handleSleepTimesChange}
+                  isSleepConfigured={dayBoundariesEnabled}
                   onCreateGoal={handleCreateGoal}
                   lifeAreas={lifeAreas}
                   goalIcons={goalIcons}

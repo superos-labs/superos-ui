@@ -7,6 +7,7 @@ import {
   RiAddLine,
   RiMoonLine,
   RiSunLine,
+  RiCloseLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
@@ -448,6 +449,8 @@ export interface SleepRowProps {
   wakeUpMinutes: number;
   windDownMinutes: number;
   onTimesChange: (wakeUp: number, windDown: number) => void;
+  /** Whether sleep visualization is configured/enabled */
+  isConfigured?: boolean;
   className?: string;
 }
 
@@ -458,12 +461,36 @@ export function SleepRow({
   wakeUpMinutes,
   windDownMinutes,
   onTimesChange,
+  isConfigured = false,
   className,
 }: SleepRowProps) {
   const IconComponent = essential.icon;
 
+  // Local state for editing times (only saved on confirm)
+  const [localWakeUp, setLocalWakeUp] = React.useState(wakeUpMinutes);
+  const [localWindDown, setLocalWindDown] = React.useState(windDownMinutes);
+
+  // Sync local state when props change (e.g., after save)
+  React.useEffect(() => {
+    setLocalWakeUp(wakeUpMinutes);
+    setLocalWindDown(windDownMinutes);
+  }, [wakeUpMinutes, windDownMinutes]);
+
+  // Check if local values differ from saved values, or if not yet configured
+  const hasChanges =
+    !isConfigured ||
+    localWakeUp !== wakeUpMinutes ||
+    localWindDown !== windDownMinutes;
+
+  // Handle confirm button click
+  const handleConfirm = () => {
+    onTimesChange(localWakeUp, localWindDown);
+  };
+
   // Format sleep schedule summary
-  const scheduleSummary = `${formatTimeShort(wakeUpMinutes)} – ${formatTimeShort(windDownMinutes)}`;
+  const scheduleSummary = isConfigured
+    ? `${formatTimeShort(wakeUpMinutes)} – ${formatTimeShort(windDownMinutes)}`
+    : "Visualize your sleep time";
 
   return (
     <div
@@ -474,34 +501,46 @@ export function SleepRow({
       )}
     >
       {/* Main row */}
-      <button
-        onClick={onToggleExpand}
-        className="flex w-full items-center gap-3 px-3 py-2.5 text-left"
-      >
-        {/* Icon */}
-        <div
-          className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg",
-            isExpanded ? "bg-background" : "bg-muted/60",
-          )}
+      <div className="flex w-full items-center gap-3 px-3 py-2.5">
+        {/* Clickable area for expand/collapse */}
+        <button
+          onClick={onToggleExpand}
+          className="flex flex-1 items-center gap-3 text-left"
         >
-          <IconComponent
-            className={cn("size-4", getIconColorClass(essential.color))}
-          />
-        </div>
+          {/* Icon */}
+          <div
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-lg",
+              isExpanded ? "bg-background" : "bg-muted/60",
+            )}
+          >
+            <IconComponent
+              className={cn("size-4", getIconColorClass(essential.color))}
+            />
+          </div>
 
-        {/* Content */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-medium text-foreground">
-            {essential.label}
-          </span>
-          {!isExpanded && (
+          {/* Content - always show two lines */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-sm font-medium text-foreground">
+              {essential.label}
+            </span>
             <span className="truncate text-xs text-muted-foreground">
               {scheduleSummary}
             </span>
-          )}
-        </div>
-      </button>
+          </div>
+        </button>
+
+        {/* Close button when expanded */}
+        {isExpanded && (
+          <button
+            onClick={onToggleExpand}
+            className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Collapse"
+          >
+            <RiCloseLine className="size-4" />
+          </button>
+        )}
+      </div>
 
       {/* Expanded content */}
       {isExpanded && (
@@ -512,10 +551,7 @@ export function SleepRow({
               <RiSunLine className="size-4 text-amber-500" />
             </div>
             <span className="flex-1 text-sm text-foreground">Wake up</span>
-            <TimeInput
-              value={wakeUpMinutes}
-              onChange={(value) => onTimesChange(value, windDownMinutes)}
-            />
+            <TimeInput value={localWakeUp} onChange={setLocalWakeUp} />
           </div>
 
           {/* Wind down time */}
@@ -524,11 +560,22 @@ export function SleepRow({
               <RiMoonLine className="size-4 text-indigo-400" />
             </div>
             <span className="flex-1 text-sm text-foreground">Wind down</span>
-            <TimeInput
-              value={windDownMinutes}
-              onChange={(value) => onTimesChange(wakeUpMinutes, value)}
-            />
+            <TimeInput value={localWindDown} onChange={setLocalWindDown} />
           </div>
+
+          {/* Confirm button */}
+          <button
+            onClick={handleConfirm}
+            disabled={!hasChanges}
+            className={cn(
+              "w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+              hasChanges
+                ? "bg-foreground text-background hover:bg-foreground/90"
+                : "bg-muted text-muted-foreground cursor-not-allowed",
+            )}
+          >
+            Confirm
+          </button>
         </div>
       )}
     </div>

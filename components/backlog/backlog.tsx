@@ -80,6 +80,8 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   windDownMinutes?: number;
   /** Callback when sleep times change */
   onSleepTimesChange?: (wakeUp: number, windDown: number) => void;
+  /** Whether sleep visualization is configured/enabled */
+  isSleepConfigured?: boolean;
 
   // Goal creation props (for goal-detail mode's BacklogGoalList)
   /** Callback for creating a new goal */
@@ -130,6 +132,7 @@ export function Backlog({
   wakeUpMinutes = 420, // 7:00 AM default
   windDownMinutes = 1380, // 11:00 PM default
   onSleepTimesChange,
+  isSleepConfigured = false,
   // Goal creation props
   onCreateGoal,
   lifeAreas,
@@ -182,6 +185,7 @@ export function Backlog({
           wakeUpMinutes={wakeUpMinutes}
           windDownMinutes={windDownMinutes}
           onSleepTimesChange={onSleepTimesChange ?? (() => {})}
+          isSleepConfigured={isSleepConfigured}
           essentialIcons={goalIcons ?? []}
         />
 

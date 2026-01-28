@@ -30,6 +30,8 @@ export interface EssentialsSectionProps {
   windDownMinutes: number;
   /** Called when sleep times change */
   onSleepTimesChange: (wakeUp: number, windDown: number) => void;
+  /** Whether sleep visualization is configured/enabled */
+  isSleepConfigured?: boolean;
   /** Available icons for essential creation */
   essentialIcons: GoalIconOption[];
   className?: string;
@@ -48,6 +50,7 @@ export function EssentialsSection({
   wakeUpMinutes,
   windDownMinutes,
   onSleepTimesChange,
+  isSleepConfigured = false,
   essentialIcons,
   className,
 }: EssentialsSectionProps) {
@@ -118,6 +121,7 @@ export function EssentialsSection({
           wakeUpMinutes={wakeUpMinutes}
           windDownMinutes={windDownMinutes}
           onTimesChange={onSleepTimesChange}
+          isConfigured={isSleepConfigured}
         />
 
         {/* Other essentials */}
