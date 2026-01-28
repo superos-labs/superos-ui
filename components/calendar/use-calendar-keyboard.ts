@@ -121,11 +121,11 @@ export function useCalendarKeyboard({
         return;
       }
 
-      // ⌘Enter on day header - Mark all blocks on that day complete
+      // ⌘Enter on day header - Mark all blocks and deadlines on that day complete
       if (isMeta && e.key === "Enter" && !isHoveringBlock && hoveredDayIndex !== null && hoveredDayIndex !== undefined && onMarkDayComplete) {
         e.preventDefault();
         onMarkDayComplete(hoveredDayIndex);
-        showToast("All blocks completed");
+        showToast("Day completed");
         return;
       }
 

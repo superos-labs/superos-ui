@@ -343,6 +343,28 @@ export function useUnifiedSchedule({
   // Enhanced Calendar Handlers
   // -------------------------------------------------------------------------
 
+  // Enhanced mark day complete that also completes deadline tasks
+  const handleMarkDayComplete = React.useCallback(
+    (dayIndex: number) => {
+      const targetDate = weekDates[dayIndex].toISOString().split("T")[0];
+
+      // 1. Mark all calendar events on this day as complete (via base handler)
+      baseCalendarHandlers.onMarkDayComplete(dayIndex);
+
+      // 2. Mark all deadline tasks for this day as complete
+      for (const goal of goals) {
+        if (!goal.tasks) continue;
+        for (const task of goal.tasks) {
+          // Check if task has a deadline on this day and is not already completed
+          if (task.deadline === targetDate && !task.completed) {
+            baseUpdateTask(goal.id, task.id, { completed: true });
+          }
+        }
+      }
+    },
+    [weekDates, baseCalendarHandlers, goals, baseUpdateTask]
+  );
+
   const calendarHandlers = React.useMemo(
     () => ({
       ...baseCalendarHandlers,
@@ -356,8 +378,9 @@ export function useUnifiedSchedule({
           updateEvent(eventId, { status });
         }
       },
+      onMarkDayComplete: handleMarkDayComplete,
     }),
-    [baseCalendarHandlers, deleteEvent, markEventComplete, markEventIncomplete, updateEvent]
+    [baseCalendarHandlers, deleteEvent, markEventComplete, markEventIncomplete, updateEvent, handleMarkDayComplete]
   );
 
   // -------------------------------------------------------------------------
