@@ -39,8 +39,9 @@ export function useEssentialVisibility({
   allEssentials: allEssentialsInput,
   initialEnabledEssentialIds,
 }: UseEssentialVisibilityOptions): UseEssentialVisibilityReturn {
-  const [allEssentials] =
-    React.useState<ScheduleEssential[]>(allEssentialsInput);
+  // Use the prop directly instead of storing in state
+  // This ensures the hook reacts to changes when new essentials are added
+  const allEssentials = allEssentialsInput;
 
   // Enabled essential IDs (committed state)
   // Defaults to empty set - users opt-in to which essentials they want to track

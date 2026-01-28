@@ -313,49 +313,49 @@ export function EssentialRow({
         className,
       )}
     >
-      {/* Main row - clickable to expand/collapse */}
-      <button
-        onClick={handleToggle}
-        className="flex w-full items-center gap-3 px-3 py-2.5 text-left"
-      >
-        {/* Icon */}
-        <div
-          className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg",
-            isExpanded ? "bg-background" : "bg-muted/60",
-          )}
+      {/* Main row */}
+      <div className="group flex w-full items-center gap-3 px-3 py-2.5">
+        {/* Clickable area for expand/collapse */}
+        <button
+          onClick={handleToggle}
+          className="flex flex-1 items-center gap-3 text-left"
         >
-          <IconComponent
-            className={cn("size-4", getIconColorClass(essential.color))}
-          />
-        </div>
+          {/* Icon */}
+          <div
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-lg",
+              isExpanded ? "bg-background" : "bg-muted/60",
+            )}
+          >
+            <IconComponent
+              className={cn("size-4", getIconColorClass(essential.color))}
+            />
+          </div>
 
-        {/* Content */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-medium text-foreground">
-            {essential.label}
-          </span>
-          {!isExpanded && (
-            <span className="truncate text-xs text-muted-foreground">
-              {schedule}
+          {/* Content */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-sm font-medium text-foreground">
+              {essential.label}
             </span>
-          )}
-        </div>
+            {!isExpanded && (
+              <span className="truncate text-xs text-muted-foreground">
+                {schedule}
+              </span>
+            )}
+          </div>
+        </button>
 
         {/* Delete button (only for non-required essentials) */}
         {onDelete && !isExpanded && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
+            onClick={onDelete}
             className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
             title="Remove essential"
           >
             <RiDeleteBinLine className="size-3.5" />
           </button>
         )}
-      </button>
+      </div>
 
       {/* Expanded schedule editor */}
       {isExpanded && (

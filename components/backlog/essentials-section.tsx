@@ -107,7 +107,9 @@ export function EssentialsSection({
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex flex-col">
           <h3 className="text-sm font-semibold text-foreground">Essentials</h3>
-          <p className="text-xs text-muted-foreground">Recurring activities</p>
+          <p className="text-xs text-muted-foreground">
+            Non-negotiables that shape your time
+          </p>
         </div>
       </div>
 
@@ -155,7 +157,7 @@ export function EssentialsSection({
             <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
               <RiAddLine className="size-4 text-muted-foreground" />
             </div>
-            <span className="text-sm text-muted-foreground">New essential</span>
+            <span className="text-sm text-muted-foreground">Add essential</span>
           </button>
         )}
       </div>

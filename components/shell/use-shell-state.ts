@@ -336,7 +336,11 @@ export function useShellState(
       // Add to allEssentials state
       setAllEssentialsState((prev) => [...prev, newEssential]);
 
-      // Enable the essential and set its slots
+      // Enable the essential in the visibility system (for UI display)
+      // This updates useEssentialVisibility's enabledEssentialIds
+      schedule.toggleEssentialEnabled(id);
+
+      // Enable the essential and set its slots in config (for templates)
       // We need to manually add the template since enableEssential uses defaults
       essentialConfig.enableEssential(id);
 
@@ -345,7 +349,7 @@ export function useShellState(
         essentialConfig.setSlots(id, slots);
       }, 0);
     },
-    [essentialConfig],
+    [essentialConfig, schedule.toggleEssentialEnabled],
   );
 
   const handleDeleteEssential = React.useCallback(

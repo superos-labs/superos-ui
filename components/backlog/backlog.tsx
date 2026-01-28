@@ -191,7 +191,7 @@ export function Backlog({
 
         <BacklogSection
           title="Goals"
-          description="Chosen priorities"
+          description="Things you intentionally want to do"
           items={goals}
           showTasks={showTasks}
           onAddItem={onAddGoal}
