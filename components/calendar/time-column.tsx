@@ -207,8 +207,8 @@ export function TimeColumn({
       const rawMinutes = getRawMinutesFromY(e.clientY);
       const defaultDuration = getDefaultDuration(dragItem.type);
       
-      // Adaptive drop mode when shift is held - fits block to available gaps
-      if (dragContext.state.isShiftHeld) {
+      // Default: Adaptive drop - fits block to available gaps
+      if (!dragContext.state.isOverlapModeEnabled) {
         // Pass raw cursor position - adaptive algorithm handles centering within gaps
         const adaptive = calculateAdaptiveDrop(
           segments,
@@ -222,7 +222,7 @@ export function TimeColumn({
           adaptiveDuration: adaptive.isAdapted ? adaptive.durationMinutes : undefined,
         });
       } else {
-        // Standard behavior - center on cursor and snap to 15-minute grid
+        // Shift held: Override to allow overlap placement
         const centeredMinutes = Math.max(0, rawMinutes - defaultDuration / 2);
         const snappedMinutes = snapToGrid(centeredMinutes);
         dragContext.setPreviewPosition({

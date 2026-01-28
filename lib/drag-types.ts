@@ -53,7 +53,7 @@ export interface DropPosition {
   dropTarget: DropTarget;
   /** Block ID when dropping onto an existing block */
   targetBlockId?: string;
-  /** Duration adapted to fit available gap (when shift is held for adaptive drop) */
+  /** Duration adapted to fit available gap (default behavior; Shift disables gap-fitting) */
   adaptiveDuration?: number;
 }
 

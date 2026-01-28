@@ -18,8 +18,8 @@ export interface DragState {
   startPosition: { x: number; y: number } | null;
   /** Whether the drag threshold has been exceeded */
   isDragging: boolean;
-  /** Whether shift key is held (for adaptive drop mode) */
-  isShiftHeld: boolean;
+  /** Whether shift key is held (enables overlap placement instead of gap-filling) */
+  isOverlapModeEnabled: boolean;
 }
 
 export interface DragContextValue {
@@ -54,7 +54,7 @@ export function DragProvider({ children }: DragProviderProps) {
     previewPosition: null,
     startPosition: null,
     isDragging: false,
-    isShiftHeld: false,
+    isOverlapModeEnabled: false,
   });
 
   // Track whether we're in a pending drag state (pointer down but threshold not met)
@@ -87,7 +87,7 @@ export function DragProvider({ children }: DragProviderProps) {
       previewPosition: null,
       startPosition: { x: e.clientX, y: e.clientY },
       isDragging: false,
-      isShiftHeld: e.shiftKey,
+      isOverlapModeEnabled: e.shiftKey,
     });
   }, []);
 
@@ -100,7 +100,7 @@ export function DragProvider({ children }: DragProviderProps) {
       previewPosition: null,
       startPosition: null,
       isDragging: false,
-      isShiftHeld: false,
+      isOverlapModeEnabled: false,
     });
   }, []);
 
@@ -113,7 +113,7 @@ export function DragProvider({ children }: DragProviderProps) {
       previewPosition: null,
       startPosition: null,
       isDragging: false,
-      isShiftHeld: false,
+      isOverlapModeEnabled: false,
     });
   }, []);
 
@@ -141,7 +141,7 @@ export function DragProvider({ children }: DragProviderProps) {
               y: pendingDragRef.current.startY,
             },
             isDragging: true,
-            isShiftHeld: initialShiftRef.current,
+            isOverlapModeEnabled: initialShiftRef.current,
           });
         }
         return;
@@ -167,18 +167,18 @@ export function DragProvider({ children }: DragProviderProps) {
       if (e.key === "Escape" && (state.isDragging || pendingDragRef.current)) {
         cancelDrag();
       }
-      // Track shift key for adaptive drop mode
+      // Track shift key for overlap mode
       if (e.key === "Shift" && state.isDragging) {
         initialShiftRef.current = true;
-        setState((prev) => ({ ...prev, isShiftHeld: true }));
+        setState((prev) => ({ ...prev, isOverlapModeEnabled: true }));
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      // Track shift key release for adaptive drop mode
+      // Track shift key release for overlap mode
       if (e.key === "Shift" && state.isDragging) {
         initialShiftRef.current = false;
-        setState((prev) => ({ ...prev, isShiftHeld: false }));
+        setState((prev) => ({ ...prev, isOverlapModeEnabled: false }));
       }
     };
 

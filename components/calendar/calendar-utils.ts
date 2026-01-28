@@ -338,14 +338,15 @@ export interface AdaptiveDropInfo {
 
 /**
  * Calculate adaptive drop position that fits within available gaps.
- * Used when Shift is held during drag to fit blocks into gaps between existing blocks.
+ * This is the DEFAULT behavior when dragging blocks to the calendar.
+ * Hold Shift to disable gap-fitting and allow overlap placement.
  * 
  * Behavior:
  * - Finds the gap that contains the cursor position
  * - Centers the block within the gap when possible
  * - Snaps to gap boundaries when the block doesn't fit centered
  * - Constrains duration to fit within the gap (minimum 10 minutes)
- * - Falls back to default behavior if gap is too small
+ * - Falls back to standard placement if gap is too small
  * 
  * @param segments - Event segments for the target day
  * @param cursorMinutes - Raw cursor position (not centered)
