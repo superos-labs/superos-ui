@@ -346,7 +346,7 @@ export function TimeColumn({
                 "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
                 "hover:bg-muted/30",
                 // Dim hours outside day boundaries
-                isOutsideDayBoundaries && "bg-muted/20",
+                isOutsideDayBoundaries && "bg-muted/40",
               )}
               style={{
                 top: `${(hour / 24) * 100}%`,

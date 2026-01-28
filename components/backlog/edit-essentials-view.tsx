@@ -24,16 +24,103 @@ function formatTime(minutes: number): string {
   return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
 }
 
-/** Generate time options in 30-minute increments */
-function generateTimeOptions(): { value: number; label: string }[] {
-  const options: { value: number; label: string }[] = [];
-  for (let minutes = 0; minutes < 1440; minutes += 30) {
-    options.push({ value: minutes, label: formatTime(minutes) });
+/**
+ * Parse a time string into minutes from midnight.
+ * Supports formats: "7", "7:30", "7am", "7:30am", "7 AM", "7:30 AM", "19:30"
+ */
+function parseTime(input: string): number | null {
+  const trimmed = input.trim().toLowerCase();
+  if (!trimmed) return null;
+
+  // Match patterns like: 7, 7:30, 7am, 7:30am, 7 am, 7:30 am, 19:30
+  const match = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?$/i);
+
+  if (!match) return null;
+
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2] ? parseInt(match[2], 10) : 0;
+  const period = match[3]?.toLowerCase();
+
+  // Validate ranges
+  if (minutes < 0 || minutes > 59) return null;
+
+  // Handle 24-hour format (no am/pm specified and hours > 12)
+  if (!period && hours >= 0 && hours <= 23) {
+    // If hours > 12, treat as 24-hour format
+    // If hours <= 12, assume AM for morning times, but this is ambiguous
+    // For simplicity, treat as 24-hour when no period specified
+    return hours * 60 + minutes;
   }
-  return options;
+
+  // Handle 12-hour format with am/pm
+  if (period) {
+    if (hours < 1 || hours > 12) return null;
+
+    if (period === "pm" || period === "p") {
+      if (hours !== 12) hours += 12;
+    } else if (period === "am" || period === "a") {
+      if (hours === 12) hours = 0;
+    }
+  }
+
+  return hours * 60 + minutes;
 }
 
-const TIME_OPTIONS = generateTimeOptions();
+// =============================================================================
+// Time Input Component
+// =============================================================================
+
+interface TimeInputProps {
+  value: number;
+  onChange: (minutes: number) => void;
+  className?: string;
+}
+
+function TimeInput({ value, onChange, className }: TimeInputProps) {
+  const [inputValue, setInputValue] = React.useState(formatTime(value));
+  const [isFocused, setIsFocused] = React.useState(false);
+
+  // Update input when value prop changes (and not focused)
+  React.useEffect(() => {
+    if (!isFocused) {
+      setInputValue(formatTime(value));
+    }
+  }, [value, isFocused]);
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    const parsed = parseTime(inputValue);
+    if (parsed !== null) {
+      onChange(parsed);
+      setInputValue(formatTime(parsed));
+    } else {
+      // Reset to current value if invalid
+      setInputValue(formatTime(value));
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur();
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      value={inputValue}
+      onChange={(e) => setInputValue(e.target.value)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      className={cn(
+        "w-[90px] rounded-md border border-border bg-background px-2 py-1 text-right text-sm text-foreground",
+        "focus:outline-none focus:ring-2 focus:ring-ring",
+        className,
+      )}
+    />
+  );
+}
 
 // =============================================================================
 // Types
@@ -83,17 +170,10 @@ function DayBoundaries({
             <RiSunLine className="size-4 text-amber-500" />
           </div>
           <span className="flex-1 text-sm text-foreground">Wake up</span>
-          <select
+          <TimeInput
             value={startMinutes}
-            onChange={(e) => onChange(Number(e.target.value), endMinutes)}
-            className="rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {TIME_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => onChange(value, endMinutes)}
+          />
         </div>
 
         {/* Wind down time */}
@@ -102,17 +182,10 @@ function DayBoundaries({
             <RiMoonLine className="size-4 text-indigo-400" />
           </div>
           <span className="flex-1 text-sm text-foreground">Wind down</span>
-          <select
+          <TimeInput
             value={endMinutes}
-            onChange={(e) => onChange(startMinutes, Number(e.target.value))}
-            className="rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {TIME_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => onChange(startMinutes, value)}
+          />
         </div>
       </div>
 
