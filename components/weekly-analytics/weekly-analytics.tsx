@@ -391,8 +391,6 @@ export function WeeklyAnalyticsHeader({
 
 export interface WeeklyAnalyticsProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  /** Array of essential items */
-  essentials: WeeklyAnalyticsItem[];
   /** Array of goal items */
   goals: WeeklyAnalyticsItem[];
   /** Label for the week (e.g., "This Week", "Jan 20-26") */
@@ -406,7 +404,6 @@ export interface WeeklyAnalyticsProps
 }
 
 export function WeeklyAnalytics({
-  essentials,
   goals,
   weekLabel = "This Week",
   showSummary = true,
@@ -418,18 +415,31 @@ export function WeeklyAnalytics({
   // Hover state for distribution bar → row highlighting
   const [hoveredItemId, setHoveredItemId] = React.useState<string | null>(null);
 
-  // Calculate totals only from items with planned hours
-  const allItems = [...essentials, ...goals];
-  const plannedItems = allItems.filter((i) => i.plannedHours > 0);
+  // Calculate totals only from goals with planned hours
+  // (Essentials excluded — they provide no actionable insight for weekly progress)
+  const plannedGoals = goals.filter((i) => i.plannedHours > 0);
 
-  const totalPlanned = plannedItems.reduce(
+  const totalPlanned = plannedGoals.reduce(
     (sum, item) => sum + item.plannedHours,
     0
   );
-  const totalCompleted = plannedItems.reduce(
+  const totalCompleted = plannedGoals.reduce(
     (sum, item) => sum + item.completedHours,
     0
   );
+
+  // Sort: items with planned hours first (by % desc), then not planned
+  const sortedGoals = React.useMemo(() => {
+    const planned = goals
+      .filter((i) => i.plannedHours > 0)
+      .sort(
+        (a, b) =>
+          getProgress(b.completedHours, b.plannedHours) -
+          getProgress(a.completedHours, a.plannedHours)
+      );
+    const notPlanned = goals.filter((i) => i.plannedHours === 0);
+    return [...planned, ...notPlanned];
+  }, [goals]);
 
   return (
     <div
@@ -443,29 +453,22 @@ export function WeeklyAnalytics({
         <WeeklyAnalyticsHeader
           totalPlanned={totalPlanned}
           totalCompleted={totalCompleted}
-          allItems={allItems}
+          allItems={goals}
           weekLabel={weekLabel}
           onHoverItem={setHoveredItemId}
           progressMetric={progressMetric}
           onProgressMetricChange={onProgressMetricChange}
-          className="border-b border-border"
         />
       )}
 
-      <div className="flex flex-col divide-y divide-border">
-        <WeeklyAnalyticsSection
-          title="Essentials"
-          items={essentials}
-          hoveredItemId={hoveredItemId}
-          className="py-2"
-        />
-
-        <WeeklyAnalyticsSection
-          title="Goals"
-          items={goals}
-          hoveredItemId={hoveredItemId}
-          className="py-2"
-        />
+      <div className="flex flex-col gap-0.5 px-2 py-3">
+        {sortedGoals.map((item) => (
+          <WeeklyAnalyticsItemRow
+            key={item.id}
+            item={item}
+            isHighlighted={hoveredItemId === item.id}
+          />
+        ))}
       </div>
     </div>
   );

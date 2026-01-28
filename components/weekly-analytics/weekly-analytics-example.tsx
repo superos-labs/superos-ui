@@ -10,68 +10,11 @@ import {
   KnobBoolean,
 } from "@/components/_playground/knobs";
 import {
-  RiMoonLine,
-  RiRestaurantLine,
-  RiCarLine,
-  RiRunLine,
-  RiHome4Line,
-  RiSofaLine,
   RiRocketLine,
   RiMedalLine,
   RiPenNibLine,
   RiTranslate2,
 } from "@remixicon/react";
-
-const SAMPLE_ESSENTIALS: WeeklyAnalyticsItem[] = [
-  {
-    id: "sleep",
-    label: "Sleep",
-    icon: RiMoonLine,
-    color: "text-indigo-500",
-    plannedHours: 56,
-    completedHours: 48,
-  },
-  {
-    id: "eat",
-    label: "Eat",
-    icon: RiRestaurantLine,
-    color: "text-amber-500",
-    plannedHours: 14,
-    completedHours: 12,
-  },
-  {
-    id: "commute",
-    label: "Commute",
-    icon: RiCarLine,
-    color: "text-slate-500",
-    plannedHours: 10,
-    completedHours: 8,
-  },
-  {
-    id: "exercise",
-    label: "Exercise",
-    icon: RiRunLine,
-    color: "text-green-500",
-    plannedHours: 5,
-    completedHours: 3,
-  },
-  {
-    id: "downtime",
-    label: "Downtime",
-    icon: RiSofaLine,
-    color: "text-cyan-500",
-    plannedHours: 7,
-    completedHours: 5,
-  },
-  {
-    id: "chores",
-    label: "Chores",
-    icon: RiHome4Line,
-    color: "text-orange-500",
-    plannedHours: 4,
-    completedHours: 2,
-  },
-];
 
 const SAMPLE_GOALS: WeeklyAnalyticsItem[] = [
   {
@@ -114,7 +57,6 @@ export function WeeklyAnalyticsExample() {
   return (
     <KnobsProvider>
       <WeeklyAnalytics
-        essentials={SAMPLE_ESSENTIALS}
         goals={SAMPLE_GOALS}
         weekLabel="Jan 20 – 26"
         showSummary={showSummary}

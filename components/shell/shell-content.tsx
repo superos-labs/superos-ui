@@ -496,6 +496,7 @@ export function ShellContentComponent({
     },
     onToast: toasts.setSidebarToast,
     onEndFocus: focusSession?.blockId === selectedEvent?.id ? onEndFocus : undefined,
+    onClose: handleCloseSidebar,
   });
 
   // Update frozen sidebar data for animation
@@ -509,10 +510,6 @@ export function ShellContentComponent({
   // Analytics Data
   // -------------------------------------------------------------------------
   const useFocusedHours = progressMetric === "focused";
-  const analyticsEssentials = React.useMemo(
-    () => toAnalyticsItems(essentials, getEssentialStats, { useFocusedHours }),
-    [essentials, getEssentialStats, useFocusedHours]
-  );
   const analyticsGoals = React.useMemo(
     () => toAnalyticsItems(goals, getGoalStats, {
       useFocusedHours,
@@ -1046,7 +1043,6 @@ export function ShellContentComponent({
                 />
               ) : renderedContent === "analytics" ? (
                 <WeeklyAnalytics
-                  essentials={analyticsEssentials}
                   goals={analyticsGoals}
                   weekLabel={formatWeekRange(weekDates)}
                   progressMetric={progressMetric}
