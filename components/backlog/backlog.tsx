@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
+import type {
+  GoalStats,
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+  ScheduleTask,
+} from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { BacklogItem, BacklogMode, NewGoalData } from "./backlog-types";
 import { BacklogSection } from "./backlog-section";
@@ -22,13 +27,22 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Callback to add a new task to a goal */
   onAddTask?: (goalId: string, label: string) => void;
   /** Callback to update a task's properties */
-  onUpdateTask?: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
+  onUpdateTask?: (
+    goalId: string,
+    taskId: string,
+    updates: Partial<ScheduleTask>,
+  ) => void;
   /** Callback to add a subtask to a task */
   onAddSubtask?: (goalId: string, taskId: string, label: string) => void;
   /** Callback to toggle a subtask's completion */
   onToggleSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to update a subtask's label */
-  onUpdateSubtask?: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
+  onUpdateSubtask?: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
   /** Callback to delete a subtask */
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
@@ -41,7 +55,7 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Enable drag-and-drop (requires DragProvider wrapper) */
   draggable?: boolean;
-  
+
   // Edit essentials mode props
   /** Current display mode */
   mode?: BacklogMode;
@@ -49,8 +63,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   allEssentials?: BacklogItem[];
   /** Set of enabled essential IDs (for edit mode, uses draft during editing) */
   enabledEssentialIds?: Set<string>;
-  /** Set of mandatory essential IDs (cannot be disabled) */
-  mandatoryEssentialIds?: Set<string>;
   /** Toggle essential enabled state */
   onToggleEssentialEnabled?: (id: string) => void;
   /** Enter edit mode */
@@ -59,7 +71,13 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onSaveEssentials?: () => void;
   /** Cancel and exit edit mode */
   onCancelEditEssentials?: () => void;
-  
+  /** Day start time in minutes from midnight (for edit essentials view) */
+  dayStartMinutes?: number;
+  /** Day end time in minutes from midnight (for edit essentials view) */
+  dayEndMinutes?: number;
+  /** Callback when day boundaries change (for edit essentials view) */
+  onDayBoundariesChange?: (startMinutes: number, endMinutes: number) => void;
+
   // Goal creation props (for goal-detail mode's BacklogGoalList)
   /** Callback for creating a new goal */
   onCreateGoal?: (goal: NewGoalData) => void;
@@ -69,7 +87,7 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   goalIcons?: GoalIconOption[];
   /** Callback to create a new goal and immediately select it (for main backlog view) */
   onCreateAndSelectGoal?: () => void;
-  
+
   // Goal detail mode props
   /** Currently selected goal ID (for goal-detail mode) */
   selectedGoalId?: string | null;
@@ -106,11 +124,13 @@ export function Backlog({
   mode = "view",
   allEssentials,
   enabledEssentialIds,
-  mandatoryEssentialIds,
   onToggleEssentialEnabled,
   onEditEssentials,
   onSaveEssentials,
   onCancelEditEssentials,
+  dayStartMinutes,
+  dayEndMinutes,
+  onDayBoundariesChange,
   // Goal creation props
   onCreateGoal,
   lifeAreas,
@@ -155,15 +175,22 @@ export function Backlog({
     >
       {/* Content */}
       <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto">
-        {showEssentials && (
-          isEditingEssentials && allEssentials && enabledEssentialIds && mandatoryEssentialIds && onToggleEssentialEnabled && onSaveEssentials && onCancelEditEssentials ? (
+        {showEssentials &&
+          (isEditingEssentials &&
+          allEssentials &&
+          enabledEssentialIds &&
+          onToggleEssentialEnabled &&
+          onSaveEssentials &&
+          onCancelEditEssentials ? (
             <EditEssentialsView
               allEssentials={allEssentials}
               enabledIds={enabledEssentialIds}
-              mandatoryIds={mandatoryEssentialIds}
               onToggle={onToggleEssentialEnabled}
               onSave={onSaveEssentials}
               onCancel={onCancelEditEssentials}
+              dayStartMinutes={dayStartMinutes}
+              dayEndMinutes={dayEndMinutes}
+              onDayBoundariesChange={onDayBoundariesChange}
             />
           ) : (
             <BacklogSection
@@ -178,8 +205,7 @@ export function Backlog({
               onEdit={onEditEssentials}
               className="py-2"
             />
-          )
-        )}
+          ))}
 
         <BacklogSection
           title="Goals"

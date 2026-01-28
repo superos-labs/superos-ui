@@ -21,8 +21,6 @@ export interface UseEssentialVisibilityReturn {
   enabledEssentialIds: Set<string>;
   /** Draft enabled IDs during editing (null when not editing) */
   draftEnabledEssentialIds: Set<string> | null;
-  /** Set of mandatory essential IDs (cannot be disabled) */
-  mandatoryEssentialIds: Set<string>;
   /** Toggle an essential's enabled state (works on draft when editing) */
   toggleEssentialEnabled: (id: string) => void;
   /** Start editing essentials (creates draft from current state) */
@@ -41,27 +39,18 @@ export function useEssentialVisibility({
   allEssentials: allEssentialsInput,
   initialEnabledEssentialIds,
 }: UseEssentialVisibilityOptions): UseEssentialVisibilityReturn {
-  const [allEssentials] = React.useState<ScheduleEssential[]>(allEssentialsInput);
-
-  // Compute mandatory IDs from allEssentials
-  const mandatoryEssentialIds = React.useMemo(
-    () => new Set(allEssentials.filter((c) => c.mandatory).map((c) => c.id)),
-    [allEssentials]
-  );
+  const [allEssentials] =
+    React.useState<ScheduleEssential[]>(allEssentialsInput);
 
   // Enabled essential IDs (committed state)
-  // Always ensure mandatory essentials are included
-  const [enabledEssentialIds, setEnabledEssentialIds] = React.useState<Set<string>>(
-    () => {
-      const mandatoryIds = allEssentials.filter((c) => c.mandatory).map((c) => c.id);
-      const initialIds = initialEnabledEssentialIds ?? allEssentials.map((c) => c.id);
-      // Combine initial with mandatory to ensure mandatory are always included
-      return new Set([...mandatoryIds, ...initialIds]);
-    }
-  );
+  // Defaults to empty set - users opt-in to which essentials they want to track
+  const [enabledEssentialIds, setEnabledEssentialIds] = React.useState<
+    Set<string>
+  >(() => new Set(initialEnabledEssentialIds ?? []));
 
   // Draft state for editing (null when not editing)
-  const [draftEnabledEssentialIds, setDraftEnabledEssentialIds] = React.useState<Set<string> | null>(null);
+  const [draftEnabledEssentialIds, setDraftEnabledEssentialIds] =
+    React.useState<Set<string> | null>(null);
 
   // Start editing: create draft from current state
   const startEditingEssentials = React.useCallback(() => {
@@ -71,9 +60,6 @@ export function useEssentialVisibility({
   // Toggle essential enabled state (works on draft if editing, otherwise on committed state)
   const toggleEssentialEnabled = React.useCallback(
     (id: string) => {
-      // Cannot toggle mandatory essentials
-      if (mandatoryEssentialIds.has(id)) return;
-
       if (draftEnabledEssentialIds !== null) {
         // Editing mode: update draft
         setDraftEnabledEssentialIds((prev) => {
@@ -93,7 +79,7 @@ export function useEssentialVisibility({
         });
       }
     },
-    [mandatoryEssentialIds, draftEnabledEssentialIds]
+    [draftEnabledEssentialIds],
   );
 
   // Save draft to committed state
@@ -112,7 +98,7 @@ export function useEssentialVisibility({
   // Filtered essentials: only enabled ones
   const essentials = React.useMemo(
     () => allEssentials.filter((c) => enabledEssentialIds.has(c.id)),
-    [allEssentials, enabledEssentialIds]
+    [allEssentials, enabledEssentialIds],
   );
 
   return {
@@ -120,7 +106,6 @@ export function useEssentialVisibility({
     essentials,
     enabledEssentialIds,
     draftEnabledEssentialIds,
-    mandatoryEssentialIds,
     toggleEssentialEnabled,
     startEditingEssentials,
     saveEssentialChanges,

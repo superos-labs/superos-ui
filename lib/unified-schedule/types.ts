@@ -6,7 +6,11 @@
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent } from "@/lib/types";
 import type { DragItem, DropPosition } from "@/lib/drag-types";
-import type { CalendarEvent, BlockStatus, HoverPosition } from "@/components/calendar";
+import type {
+  CalendarEvent,
+  BlockStatus,
+  HoverPosition,
+} from "@/components/calendar";
 
 // ============================================================================
 // Progress Indicator Types
@@ -17,11 +21,11 @@ import type { CalendarEvent, BlockStatus, HoverPosition } from "@/components/cal
  * Determines what "100%" means in weekly analytics.
  */
 export type ProgressIndicator =
-  | "completed-time"    // Hours from completed blocks (default)
-  | "focused-time"      // Actual focus session time
-  | "blocks-completed"  // Count of completed blocks
-  | "days-with-blocks"  // Days with ≥1 completed block
-  | "specific-tasks";   // Named tasks to complete
+  | "completed-time" // Hours from completed blocks (default)
+  | "focused-time" // Actual focus session time
+  | "blocks-completed" // Count of completed blocks
+  | "days-with-blocks" // Days with ≥1 completed block
+  | "specific-tasks"; // Named tasks to complete
 
 /**
  * Human-readable labels for progress indicators.
@@ -101,8 +105,6 @@ export interface ScheduleEssential {
   label: string;
   icon: IconComponent;
   color: GoalColor;
-  /** If true, essential cannot be disabled by the user */
-  mandatory?: boolean;
 }
 
 // ============================================================================
@@ -152,7 +154,7 @@ export interface DeadlineTask {
 export interface UseUnifiedScheduleOptions {
   /** Initial goals for the backlog */
   initialGoals: ScheduleGoal[];
-  /** All available essentials (includes mandatory flag) */
+  /** All available essentials (for edit mode) */
   allEssentials: ScheduleEssential[];
   /** Initial set of enabled essential IDs (defaults to all) */
   initialEnabledEssentialIds?: string[];
@@ -185,8 +187,6 @@ export interface UseUnifiedScheduleReturn {
   enabledEssentialIds: Set<string>;
   /** Draft enabled IDs during editing (null when not editing) */
   draftEnabledEssentialIds: Set<string> | null;
-  /** Set of mandatory essential IDs (cannot be disabled) */
-  mandatoryEssentialIds: Set<string>;
   /** Toggle an essential's enabled state (works on draft) */
   toggleEssentialEnabled: (id: string) => void;
   /** Start editing essentials (creates draft from current state) */
@@ -211,13 +211,26 @@ export interface UseUnifiedScheduleReturn {
 
   // Task CRUD actions
   addTask: (goalId: string, label: string) => string;
-  updateTask: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
+  updateTask: (
+    goalId: string,
+    taskId: string,
+    updates: Partial<ScheduleTask>,
+  ) => void;
   deleteTask: (goalId: string, taskId: string) => void;
 
   // Subtask CRUD actions
   addSubtask: (goalId: string, taskId: string, label: string) => void;
-  updateSubtask: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
-  toggleSubtaskComplete: (goalId: string, taskId: string, subtaskId: string) => void;
+  updateSubtask: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
+  toggleSubtaskComplete: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+  ) => void;
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
   // Milestone CRUD actions
@@ -229,17 +242,21 @@ export interface UseUnifiedScheduleReturn {
   toggleMilestonesEnabled: (goalId: string) => void;
 
   // Scheduling actions (from drag-drop)
-  scheduleGoal: (goalId: string, dayIndex: number, startMinutes: number) => void;
+  scheduleGoal: (
+    goalId: string,
+    dayIndex: number,
+    startMinutes: number,
+  ) => void;
   scheduleTask: (
     goalId: string,
     taskId: string,
     dayIndex: number,
-    startMinutes: number
+    startMinutes: number,
   ) => void;
   scheduleEssential: (
     essentialId: string,
     dayIndex: number,
-    startMinutes: number
+    startMinutes: number,
   ) => void;
 
   // Deadline actions
@@ -259,12 +276,20 @@ export interface UseUnifiedScheduleReturn {
 
   // Block drop handlers (for dropping tasks onto existing blocks)
   /** Assign a task to an existing goal block (removes from any previous block) */
-  assignTaskToGoalBlock: (blockId: string, goalId: string, taskId: string) => void;
+  assignTaskToGoalBlock: (
+    blockId: string,
+    goalId: string,
+    taskId: string,
+  ) => void;
   /** Convert a task block into a goal block containing both tasks */
   convertTaskBlockToGoalBlock: (blockId: string, droppedTaskId: string) => void;
 
   // Handler to process drops from drag context (supports grid, header, and block drops)
-  handleDrop: (item: DragItem, position: DropPosition, weekDates: Date[]) => void;
+  handleDrop: (
+    item: DragItem,
+    position: DropPosition,
+    weekDates: Date[],
+  ) => void;
 
   // Hover state (for keyboard shortcuts)
   hoveredEvent: CalendarEvent | null;
@@ -276,24 +301,24 @@ export interface UseUnifiedScheduleReturn {
     onEventResize: (
       eventId: string,
       newStartMinutes: number,
-      newDurationMinutes: number
+      newDurationMinutes: number,
     ) => void;
     onEventResizeEnd: () => void;
     onEventDragEnd: (
       eventId: string,
       newDayIndex: number,
-      newStartMinutes: number
+      newStartMinutes: number,
     ) => void;
     onEventDuplicate: (
       sourceEventId: string,
       newDayIndex: number,
-      newStartMinutes: number
+      newStartMinutes: number,
     ) => void;
     onGridDoubleClick: (dayIndex: number, startMinutes: number) => void;
     onGridDragCreate: (
       dayIndex: number,
       startMinutes: number,
-      durationMinutes: number
+      durationMinutes: number,
     ) => void;
     onEventCopy: (event: CalendarEvent) => void;
     onEventDelete: (eventId: string) => void;

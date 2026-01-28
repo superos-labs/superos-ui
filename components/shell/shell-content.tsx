@@ -2,13 +2,13 @@
 
 /**
  * ShellContent - The core shell component for orchestrating the full application UI.
- * 
+ *
  * This component handles the rendering of the calendar, backlog, analytics,
  * focus mode, and planning features. It manages its own UI layout state
  * (panel visibility, selections) while accepting business data and handlers via props.
- * 
+ *
  * This is a feature component - it does NOT contain sample data or demo logic.
- * 
+ *
  * Responsive behavior:
  * - Mobile/Tablet Portrait: Day view, bottom sheet for block details, full-screen overlay for backlog
  * - Tablet Landscape: Week view, bottom sheet for block details, full-screen overlay for backlog
@@ -16,8 +16,16 @@
  */
 
 import * as React from "react";
-import { Shell, ShellToolbar, ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
-import { BottomSheet, FullScreenOverlay, KeyboardShortcuts } from "@/components/ui";
+import {
+  Shell,
+  ShellToolbar,
+  ShellContent as ShellContentPrimitive,
+} from "@/components/ui/shell";
+import {
+  BottomSheet,
+  FullScreenOverlay,
+  KeyboardShortcuts,
+} from "@/components/ui";
 import {
   Calendar,
   KeyboardToast,
@@ -97,7 +105,10 @@ export interface ShellContentComponentProps extends ShellContentProps {
   /** Categories for goal inspiration gallery */
   inspirationCategories?: InspirationCategory[];
   /** Callback when UI layout changes (for persistence) */
-  onLayoutChange?: (layout: { showSidebar: boolean; showRightSidebar: boolean }) => void;
+  onLayoutChange?: (layout: {
+    showSidebar: boolean;
+    showRightSidebar: boolean;
+  }) => void;
 }
 
 // =============================================================================
@@ -121,11 +132,14 @@ export function ShellContentComponent({
   // Essential management
   enabledEssentialIds,
   draftEnabledEssentialIds,
-  mandatoryEssentialIds,
   onToggleEssentialEnabled,
   onStartEditingEssentials,
   onSaveEssentialChanges,
   onCancelEssentialChanges,
+  // Day boundaries
+  dayStartMinutes,
+  dayEndMinutes,
+  onDayBoundariesChange,
   // Goal CRUD
   onAddGoal,
   onDeleteGoal,
@@ -198,11 +212,18 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // Responsive Breakpoint Detection
   // -------------------------------------------------------------------------
-  const { isMobile, isTablet, isTabletPortrait, isTabletLandscape, isDesktop, isTouchDevice } = useBreakpoint();
-  
+  const {
+    isMobile,
+    isTablet,
+    isTabletPortrait,
+    isTabletLandscape,
+    isDesktop,
+    isTouchDevice,
+  } = useBreakpoint();
+
   // Determine if we should use mobile/tablet layout (overlays instead of sidebars)
   const useMobileLayout = isMobile || isTablet;
-  
+
   // Determine calendar view based on breakpoint
   // Mobile/Tablet Portrait → Day view, Tablet Landscape/Desktop → Week view
   const shouldShowWeekView = isTabletLandscape || isDesktop;
@@ -215,7 +236,8 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // Keyboard Shortcuts Modal State
   // -------------------------------------------------------------------------
-  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = React.useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] =
+    React.useState(false);
 
   // Global ? key to open keyboard shortcuts
   React.useEffect(() => {
@@ -245,10 +267,12 @@ export function ShellContentComponent({
   // UI Layout State
   // -------------------------------------------------------------------------
   const layout = useShellLayout();
-  
+
   // Scroll-to-current-time key (changes on mount and "Today" click)
-  const [scrollToCurrentTimeKey, setScrollToCurrentTimeKey] = React.useState(() => Date.now());
-  
+  const [scrollToCurrentTimeKey, setScrollToCurrentTimeKey] = React.useState(
+    () => Date.now(),
+  );
+
   // Handler for "Today" button that also triggers scroll to current time
   const handleTodayClick = React.useCallback(() => {
     onToday();
@@ -256,19 +280,25 @@ export function ShellContentComponent({
   }, [onToday]);
 
   // Mobile navigation state (track which day within the week to show)
-  const [mobileSelectedDayIndex, setMobileSelectedDayIndex] = React.useState(() => {
-    // Default to today's index within the week, or 0
-    const today = new Date();
-    const todayStr = today.toISOString().split("T")[0];
-    const idx = weekDates.findIndex(d => d.toISOString().split("T")[0] === todayStr);
-    return idx >= 0 ? idx : 0;
-  });
+  const [mobileSelectedDayIndex, setMobileSelectedDayIndex] = React.useState(
+    () => {
+      // Default to today's index within the week, or 0
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
+      const idx = weekDates.findIndex(
+        (d) => d.toISOString().split("T")[0] === todayStr,
+      );
+      return idx >= 0 ? idx : 0;
+    },
+  );
 
   // Reset mobile day index when week changes
   React.useEffect(() => {
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
-    const idx = weekDates.findIndex(d => d.toISOString().split("T")[0] === todayStr);
+    const idx = weekDates.findIndex(
+      (d) => d.toISOString().split("T")[0] === todayStr,
+    );
     setMobileSelectedDayIndex(idx >= 0 ? idx : 0);
   }, [weekDates]);
 
@@ -335,7 +365,8 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // Deadline Hover State
   // -------------------------------------------------------------------------
-  const [hoveredDeadline, setHoveredDeadline] = React.useState<DeadlineTask | null>(null);
+  const [hoveredDeadline, setHoveredDeadline] =
+    React.useState<DeadlineTask | null>(null);
 
   // -------------------------------------------------------------------------
   // Planning Flow
@@ -356,10 +387,12 @@ export function ShellContentComponent({
       // On first planning, save the blueprint
       if (!hasBlueprint) {
         const blueprintBlocks = eventsToBlueprint(events, weekDates);
-        const blueprintIntentions: BlueprintIntention[] = intentions.map((i) => ({
-          goalId: i.goalId,
-          target: i.target,
-        }));
+        const blueprintIntentions: BlueprintIntention[] = intentions.map(
+          (i) => ({
+            goalId: i.goalId,
+            target: i.target,
+          }),
+        );
         onSaveBlueprint({
           blocks: blueprintBlocks,
           intentions: blueprintIntentions,
@@ -384,7 +417,7 @@ export function ShellContentComponent({
           blueprint.intentions.map((i) => ({
             goalId: i.goalId,
             target: i.target,
-          }))
+          })),
         );
       } else {
         planningFlow.reset(initialIntentions);
@@ -412,11 +445,15 @@ export function ShellContentComponent({
   // Zoom Handlers
   // -------------------------------------------------------------------------
   const handleZoomIn = React.useCallback(() => {
-    onCalendarZoomChange(Math.min(MAX_CALENDAR_ZOOM, calendarZoom + CALENDAR_ZOOM_STEP));
+    onCalendarZoomChange(
+      Math.min(MAX_CALENDAR_ZOOM, calendarZoom + CALENDAR_ZOOM_STEP),
+    );
   }, [calendarZoom, onCalendarZoomChange]);
 
   const handleZoomOut = React.useCallback(() => {
-    onCalendarZoomChange(Math.max(MIN_CALENDAR_ZOOM, calendarZoom - CALENDAR_ZOOM_STEP));
+    onCalendarZoomChange(
+      Math.max(MIN_CALENDAR_ZOOM, calendarZoom - CALENDAR_ZOOM_STEP),
+    );
   }, [calendarZoom, onCalendarZoomChange]);
 
   // -------------------------------------------------------------------------
@@ -454,29 +491,38 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // Focus Mode Computed Values
   // -------------------------------------------------------------------------
-  const { isSidebarBlockFocused, showFocusIndicator, handleStartFocus, handleNavigateToFocusedBlock } =
-    useShellFocus({
-      focusSession,
-      selectedEventId,
-      selectedEvent,
-      startFocus: onStartFocus,
-      onNavigateToBlock: setSelectedEventId,
-    });
+  const {
+    isSidebarBlockFocused,
+    showFocusIndicator,
+    handleStartFocus,
+    handleNavigateToFocusedBlock,
+  } = useShellFocus({
+    focusSession,
+    selectedEventId,
+    selectedEvent,
+    startFocus: onStartFocus,
+    onNavigateToBlock: setSelectedEventId,
+  });
 
   // -------------------------------------------------------------------------
   // External Drag & Drop
   // -------------------------------------------------------------------------
   const dragContext = useDragContextOptional();
-  const { externalDragPreview, handleExternalDrop, handleDeadlineDrop } = useExternalDragPreview({
-    dragContext,
-    weekDates,
-    onDrop,
-  });
+  const { externalDragPreview, handleExternalDrop, handleDeadlineDrop } =
+    useExternalDragPreview({
+      dragContext,
+      weekDates,
+      onDrop,
+    });
 
   // -------------------------------------------------------------------------
   // Block Sidebar Handlers
   // -------------------------------------------------------------------------
-  const { sidebarData, availableGoals, handlers: sidebarHandlers } = useBlockSidebarHandlers({
+  const {
+    sidebarData,
+    availableGoals,
+    handlers: sidebarHandlers,
+  } = useBlockSidebarHandlers({
     selectedEvent,
     goals,
     essentials,
@@ -495,7 +541,8 @@ export function ShellContentComponent({
       calendarHandlers,
     },
     onToast: toasts.setSidebarToast,
-    onEndFocus: focusSession?.blockId === selectedEvent?.id ? onEndFocus : undefined,
+    onEndFocus:
+      focusSession?.blockId === selectedEvent?.id ? onEndFocus : undefined,
     onClose: handleCloseSidebar,
   });
 
@@ -511,11 +558,12 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   const useFocusedHours = progressMetric === "focused";
   const analyticsGoals = React.useMemo(
-    () => toAnalyticsItems(goals, getGoalStats, {
-      useFocusedHours,
-      getIntentionProgress,
-    }),
-    [goals, getGoalStats, useFocusedHours, getIntentionProgress]
+    () =>
+      toAnalyticsItems(goals, getGoalStats, {
+        useFocusedHours,
+        getIntentionProgress,
+      }),
+    [goals, getGoalStats, useFocusedHours, getIntentionProgress],
   );
 
   // -------------------------------------------------------------------------
@@ -536,7 +584,7 @@ export function ShellContentComponent({
         setSelectedGoalId(newGoalId);
       }
     },
-    [onAddGoal, backlogMode, setSelectedGoalId]
+    [onAddGoal, backlogMode, setSelectedGoalId],
   );
 
   const handleCreateAndSelectGoal = React.useCallback(() => {
@@ -586,9 +634,12 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // Mobile Event Click Handler (opens bottom sheet)
   // -------------------------------------------------------------------------
-  const handleMobileEventClick = React.useCallback((event: CalendarEvent) => {
-    setSelectedEventId(event.id);
-  }, [setSelectedEventId]);
+  const handleMobileEventClick = React.useCallback(
+    (event: CalendarEvent) => {
+      setSelectedEventId(event.id);
+    },
+    [setSelectedEventId],
+  );
 
   // Close bottom sheet handler for mobile
   const handleCloseBottomSheet = React.useCallback(() => {
@@ -602,8 +653,10 @@ export function ShellContentComponent({
       const weekStart = weekDates[0];
       const weekEnd = weekDates[6];
       if (!weekStart || !weekEnd) return "";
-      
-      const startMonth = weekStart.toLocaleDateString("en-US", { month: "short" });
+
+      const startMonth = weekStart.toLocaleDateString("en-US", {
+        month: "short",
+      });
       const endMonth = weekEnd.toLocaleDateString("en-US", { month: "short" });
       const startDay = weekStart.getDate();
       const endDay = weekEnd.getDate();
@@ -640,7 +693,9 @@ export function ShellContentComponent({
       {/* Center: Date navigation */}
       <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
         <button
-          onClick={shouldShowWeekView ? onPreviousWeek : handleMobilePreviousDay}
+          onClick={
+            shouldShowWeekView ? onPreviousWeek : handleMobilePreviousDay
+          }
           className="flex size-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
           aria-label={shouldShowWeekView ? "Previous week" : "Previous day"}
         >
@@ -691,7 +746,9 @@ export function ShellContentComponent({
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup
               value={weekStartsOn.toString()}
-              onValueChange={(v) => onWeekStartsOnChange(Number(v) as WeekStartDay)}
+              onValueChange={(v) =>
+                onWeekStartsOnChange(Number(v) as WeekStartDay)
+              }
             >
               <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
@@ -714,7 +771,7 @@ export function ShellContentComponent({
         <button
           className={cn(
             "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-            showSidebar ? "text-foreground" : "text-muted-foreground"
+            showSidebar ? "text-foreground" : "text-muted-foreground",
           )}
           onClick={() => setShowSidebar(!showSidebar)}
         >
@@ -724,7 +781,7 @@ export function ShellContentComponent({
           <button
             className={cn(
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-              showTasks ? "text-foreground" : "text-muted-foreground"
+              showTasks ? "text-foreground" : "text-muted-foreground",
             )}
             onClick={() => setShowTasks(!showTasks)}
             title="Toggle tasks"
@@ -782,7 +839,7 @@ export function ShellContentComponent({
             "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
             showRightSidebar || selectedEvent
               ? "text-foreground"
-              : "text-muted-foreground"
+              : "text-muted-foreground",
           )}
           onClick={handleAnalyticsToggle}
           title="Toggle analytics"
@@ -800,7 +857,9 @@ export function ShellContentComponent({
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup
               value={weekStartsOn.toString()}
-              onValueChange={(v) => onWeekStartsOnChange(Number(v) as WeekStartDay)}
+              onValueChange={(v) =>
+                onWeekStartsOnChange(Number(v) as WeekStartDay)
+              }
             >
               <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
@@ -816,7 +875,9 @@ export function ShellContentComponent({
               >
                 <RiSubtractLine className="size-3.5" />
               </button>
-              <span className="w-12 text-center text-xs tabular-nums">{calendarZoom}%</span>
+              <span className="w-12 text-center text-xs tabular-nums">
+                {calendarZoom}%
+              </span>
               <button
                 onClick={handleZoomIn}
                 disabled={calendarZoom >= MAX_CALENDAR_ZOOM}
@@ -849,7 +910,9 @@ export function ShellContentComponent({
           <ShellContentPrimitive className="overflow-hidden">
             <Calendar
               view={shouldShowWeekView ? "week" : "day"}
-              selectedDate={shouldShowWeekView ? selectedDate : mobileSelectedDate}
+              selectedDate={
+                shouldShowWeekView ? selectedDate : mobileSelectedDate
+              }
               events={events}
               weekStartsOn={weekStartsOn}
               zoom={calendarZoom}
@@ -862,16 +925,24 @@ export function ShellContentComponent({
               onDeadlineToggleComplete={onToggleTaskComplete}
               onDeadlineUnassign={onClearTaskDeadline}
               deadlines={weekDeadlines}
+              dayStartMinutes={dayStartMinutes}
+              dayEndMinutes={dayEndMinutes}
             />
           </ShellContentPrimitive>
         ) : (
           // Desktop: Three-panel layout
-          <div className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning ? "gap-4" : "gap-0"}`}>
+          <div
+            className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning ? "gap-4" : "gap-0"}`}
+          >
             {/* Left Sidebar - Backlog or Planning Panel */}
             <div
               className={cn(
                 "shrink-0 overflow-hidden transition-all duration-300 ease-out",
-                isPlanning ? "w-[420px] opacity-100" : showSidebar ? "w-[360px] opacity-100" : "w-0 opacity-0"
+                isPlanning
+                  ? "w-[420px] opacity-100"
+                  : showSidebar
+                    ? "w-[360px] opacity-100"
+                    : "w-0 opacity-0",
               )}
             >
               {isPlanning ? (
@@ -883,7 +954,9 @@ export function ShellContentComponent({
                   intentions={planningFlow.draftIntentions}
                   onSetIntention={planningFlow.setIntention}
                   onClearIntention={planningFlow.clearIntention}
-                  onImportBlueprint={hasBlueprint ? handleImportBlueprint : undefined}
+                  onImportBlueprint={
+                    hasBlueprint ? handleImportBlueprint : undefined
+                  }
                   onConfirm={planningFlow.confirm}
                   onCancel={planningFlow.cancel}
                   isFirstPlan={!hasBlueprint}
@@ -919,9 +992,13 @@ export function ShellContentComponent({
                   draggable={true}
                   mode={backlogMode}
                   allEssentials={allEssentials as BacklogItem[]}
-                  enabledEssentialIds={draftEnabledEssentialIds ?? enabledEssentialIds}
-                  mandatoryEssentialIds={mandatoryEssentialIds}
+                  enabledEssentialIds={
+                    draftEnabledEssentialIds ?? enabledEssentialIds
+                  }
                   onToggleEssentialEnabled={onToggleEssentialEnabled}
+                  dayStartMinutes={dayStartMinutes}
+                  dayEndMinutes={dayEndMinutes}
+                  onDayBoundariesChange={onDayBoundariesChange}
                   onEditEssentials={() => {
                     onStartEditingEssentials();
                     setBacklogMode("edit-essentials");
@@ -962,28 +1039,60 @@ export function ShellContentComponent({
                   lifeArea={selectedGoalLifeArea}
                   notes={goalNotes[selectedGoal.id] ?? ""}
                   onNotesChange={handleGoalNotesChange}
-                  onTitleChange={(title) => onUpdateGoal(selectedGoal.id, { label: title })}
+                  onTitleChange={(title) =>
+                    onUpdateGoal(selectedGoal.id, { label: title })
+                  }
                   getTaskSchedule={getTaskSchedule}
                   getTaskDeadline={getTaskDeadline}
-                  onToggleTask={(taskId) => onToggleTaskComplete(selectedGoal.id, taskId)}
+                  onToggleTask={(taskId) =>
+                    onToggleTaskComplete(selectedGoal.id, taskId)
+                  }
                   onAddTask={(label) => onAddTask(selectedGoal.id, label)}
-                  onUpdateTask={(taskId, updates) => onUpdateTask(selectedGoal.id, taskId, updates)}
-                  onDeleteTask={(taskId) => onDeleteTask(selectedGoal.id, taskId)}
-                  onAddSubtask={(taskId, label) => onAddSubtask(selectedGoal.id, taskId, label)}
-                  onToggleSubtask={(taskId, subtaskId) => onToggleSubtaskComplete(selectedGoal.id, taskId, subtaskId)}
-                  onUpdateSubtask={(taskId, subtaskId, label) => onUpdateSubtask(selectedGoal.id, taskId, subtaskId, label)}
-                  onDeleteSubtask={(taskId, subtaskId) => onDeleteSubtask(selectedGoal.id, taskId, subtaskId)}
-                  onAddMilestone={(label) => onAddMilestone(selectedGoal.id, label)}
-                  onToggleMilestone={(milestoneId) => onToggleMilestoneComplete(selectedGoal.id, milestoneId)}
-                  onUpdateMilestone={(milestoneId, label) => onUpdateMilestone(selectedGoal.id, milestoneId, label)}
-                  onDeleteMilestone={(milestoneId) => onDeleteMilestone(selectedGoal.id, milestoneId)}
+                  onUpdateTask={(taskId, updates) =>
+                    onUpdateTask(selectedGoal.id, taskId, updates)
+                  }
+                  onDeleteTask={(taskId) =>
+                    onDeleteTask(selectedGoal.id, taskId)
+                  }
+                  onAddSubtask={(taskId, label) =>
+                    onAddSubtask(selectedGoal.id, taskId, label)
+                  }
+                  onToggleSubtask={(taskId, subtaskId) =>
+                    onToggleSubtaskComplete(selectedGoal.id, taskId, subtaskId)
+                  }
+                  onUpdateSubtask={(taskId, subtaskId, label) =>
+                    onUpdateSubtask(selectedGoal.id, taskId, subtaskId, label)
+                  }
+                  onDeleteSubtask={(taskId, subtaskId) =>
+                    onDeleteSubtask(selectedGoal.id, taskId, subtaskId)
+                  }
+                  onAddMilestone={(label) =>
+                    onAddMilestone(selectedGoal.id, label)
+                  }
+                  onToggleMilestone={(milestoneId) =>
+                    onToggleMilestoneComplete(selectedGoal.id, milestoneId)
+                  }
+                  onUpdateMilestone={(milestoneId, label) =>
+                    onUpdateMilestone(selectedGoal.id, milestoneId, label)
+                  }
+                  onDeleteMilestone={(milestoneId) =>
+                    onDeleteMilestone(selectedGoal.id, milestoneId)
+                  }
                   onDelete={handleDeleteGoal}
                   lifeAreas={lifeAreas}
                   goalIcons={goalIcons}
-                  onIconChange={(icon) => onUpdateGoal(selectedGoal.id, { icon })}
-                  onColorChange={(color) => onUpdateGoal(selectedGoal.id, { color })}
-                  onLifeAreaChange={(lifeAreaId) => onUpdateGoal(selectedGoal.id, { lifeAreaId })}
-                  onProgressIndicatorChange={(progressIndicator) => onUpdateGoal(selectedGoal.id, { progressIndicator })}
+                  onIconChange={(icon) =>
+                    onUpdateGoal(selectedGoal.id, { icon })
+                  }
+                  onColorChange={(color) =>
+                    onUpdateGoal(selectedGoal.id, { color })
+                  }
+                  onLifeAreaChange={(lifeAreaId) =>
+                    onUpdateGoal(selectedGoal.id, { lifeAreaId })
+                  }
+                  onProgressIndicatorChange={(progressIndicator) =>
+                    onUpdateGoal(selectedGoal.id, { progressIndicator })
+                  }
                   className="h-full"
                 />
               ) : showCalendar ? (
@@ -1003,6 +1112,8 @@ export function ShellContentComponent({
                   onDeadlineToggleComplete={onToggleTaskComplete}
                   onDeadlineUnassign={onClearTaskDeadline}
                   onDeadlineHover={setHoveredDeadline}
+                  dayStartMinutes={dayStartMinutes}
+                  dayEndMinutes={dayEndMinutes}
                 />
               ) : null}
             </ShellContentPrimitive>
@@ -1011,7 +1122,7 @@ export function ShellContentComponent({
             <div
               className={cn(
                 "shrink-0 overflow-hidden transition-all duration-300 ease-out",
-                isRightSidebarOpen ? "w-[380px] opacity-100" : "w-0 opacity-0"
+                isRightSidebarOpen ? "w-[380px] opacity-100" : "w-0 opacity-0",
               )}
             >
               {renderedContent === "block" && sidebarDataToRender ? (
@@ -1028,7 +1139,9 @@ export function ShellContentComponent({
                   onPauseFocus={onPauseFocus}
                   onResumeFocus={onResumeFocus}
                   onEndFocus={onEndFocus}
-                  focusDisabled={focusSession !== null && !isSidebarBlockFocused}
+                  focusDisabled={
+                    focusSession !== null && !isSidebarBlockFocused
+                  }
                   totalFocusedMinutes={
                     selectedEvent?.blockType !== "essential"
                       ? (selectedEvent?.focusedMinutes ?? 0)
@@ -1036,7 +1149,10 @@ export function ShellContentComponent({
                   }
                   onFocusedMinutesChange={
                     selectedEvent?.blockType !== "essential" && selectedEvent
-                      ? (minutes) => onUpdateEvent(selectedEvent.id, { focusedMinutes: minutes })
+                      ? (minutes) =>
+                          onUpdateEvent(selectedEvent.id, {
+                            focusedMinutes: minutes,
+                          })
                       : undefined
                   }
                   className="h-full w-[380px] max-w-none overflow-y-auto"

@@ -51,6 +51,8 @@ export function DayView({
   externalDragPreview,
   onDayHeaderHover,
   onMarkDayComplete,
+  dayStartMinutes,
+  dayEndMinutes,
 }: DayViewProps) {
   const today = isToday(selectedDate);
   const dayName = selectedDate
@@ -58,8 +60,12 @@ export function DayView({
     .slice(0, 3);
 
   // Compute grid dimensions based on zoom (preferred) or density (legacy)
-  const gridHeight = zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
-  const pixelsPerMinute = zoom !== undefined ? getPixelsPerMinuteFromZoom(zoom) : getPixelsPerMinute(density);
+  const gridHeight =
+    zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
+  const pixelsPerMinute =
+    zoom !== undefined
+      ? getPixelsPerMinuteFromZoom(zoom)
+      : getPixelsPerMinute(density);
 
   // Scroll to current time on mount and when "Today" is clicked
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -131,7 +137,10 @@ export function DayView({
       )}
 
       {/* Time Grid */}
-      <div ref={scrollContainerRef} className="relative flex-1 overflow-y-auto overflow-x-hidden">
+      <div
+        ref={scrollContainerRef}
+        className="relative flex-1 overflow-y-auto overflow-x-hidden"
+      >
         <div
           ref={dayColumnRef}
           className={cn("relative grid", gridCols)}
@@ -196,6 +205,8 @@ export function DayView({
             enableExternalDrop={enableExternalDrop}
             onExternalDrop={onExternalDrop}
             externalDragPreview={externalDragPreview}
+            dayStartMinutes={dayStartMinutes}
+            dayEndMinutes={dayEndMinutes}
           />
 
           {/* Current Time Indicator */}

@@ -34,8 +34,6 @@ export interface BacklogItem {
   milestonesEnabled?: boolean;
   /** Tasks associated with this item */
   tasks?: BacklogTask[];
-  /** If true, essential cannot be disabled (only for essentials) */
-  mandatory?: boolean;
 }
 
 /** Mode for the backlog display */

@@ -41,12 +41,14 @@ export function Calendar({
   onDeadlineHover,
   onDayHeaderHover,
   onMarkDayComplete,
+  dayStartMinutes,
+  dayEndMinutes,
 }: CalendarProps) {
   const today = React.useMemo(() => new Date(), []);
   const dateToUse = selectedDate ?? today;
   const weekDates = React.useMemo(
     () => getWeekDates(dateToUse, weekStartsOn),
-    [dateToUse, weekStartsOn]
+    [dateToUse, weekStartsOn],
   );
 
   if (view === "day") {
@@ -79,6 +81,8 @@ export function Calendar({
         externalDragPreview={externalDragPreview}
         onDayHeaderHover={onDayHeaderHover}
         onMarkDayComplete={onMarkDayComplete}
+        dayStartMinutes={dayStartMinutes}
+        dayEndMinutes={dayEndMinutes}
       />
     );
   }
@@ -117,6 +121,8 @@ export function Calendar({
       onDeadlineHover={onDeadlineHover}
       onDayHeaderHover={onDayHeaderHover}
       onMarkDayComplete={onMarkDayComplete}
+      dayStartMinutes={dayStartMinutes}
+      dayEndMinutes={dayEndMinutes}
     />
   );
 }

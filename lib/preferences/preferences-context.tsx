@@ -1,11 +1,18 @@
 "use client";
 
 import * as React from "react";
-import type { WeekStartDay, ProgressMetric, CalendarZoom, UserPreferences } from "./types";
+import type {
+  WeekStartDay,
+  ProgressMetric,
+  CalendarZoom,
+  UserPreferences,
+} from "./types";
 import {
   DEFAULT_CALENDAR_ZOOM,
   MIN_CALENDAR_ZOOM,
   MAX_CALENDAR_ZOOM,
+  DEFAULT_DAY_START_MINUTES,
+  DEFAULT_DAY_END_MINUTES,
 } from "./types";
 
 // =============================================================================
@@ -17,9 +24,14 @@ interface PreferencesContextValue extends UserPreferences {
   setProgressMetric: (metric: ProgressMetric) => void;
   setAutoCompleteEssentials: (enabled: boolean) => void;
   setCalendarZoom: (zoom: CalendarZoom) => void;
+  setDayStartMinutes: (minutes: number) => void;
+  setDayEndMinutes: (minutes: number) => void;
+  setDayBoundaries: (startMinutes: number, endMinutes: number) => void;
 }
 
-const PreferencesContext = React.createContext<PreferencesContextValue | null>(null);
+const PreferencesContext = React.createContext<PreferencesContextValue | null>(
+  null,
+);
 
 // =============================================================================
 // Provider
@@ -35,6 +47,10 @@ export interface PreferencesProviderProps {
   defaultAutoCompleteEssentials?: boolean;
   /** Override the default calendar zoom level */
   defaultCalendarZoom?: CalendarZoom;
+  /** Override the default day start time (minutes from midnight) */
+  defaultDayStartMinutes?: number;
+  /** Override the default day end time (minutes from midnight) */
+  defaultDayEndMinutes?: number;
 }
 
 /**
@@ -49,31 +65,60 @@ export function PreferencesProvider({
   defaultProgressMetric,
   defaultAutoCompleteEssentials,
   defaultCalendarZoom,
+  defaultDayStartMinutes,
+  defaultDayEndMinutes,
 }: PreferencesProviderProps) {
   // Week starts on Monday by default
   const [weekStartsOn, setWeekStartsOn] = React.useState<WeekStartDay>(
-    defaultWeekStartsOn ?? DEFAULT_WEEK_START
+    defaultWeekStartsOn ?? DEFAULT_WEEK_START,
   );
-  
+
   // Progress metric: default to 'completed'
   const [progressMetric, setProgressMetric] = React.useState<ProgressMetric>(
-    defaultProgressMetric ?? 'completed'
+    defaultProgressMetric ?? "completed",
   );
-  
+
   // Auto-complete essentials: default to true
-  const [autoCompleteEssentials, setAutoCompleteEssentials] = React.useState<boolean>(
-    defaultAutoCompleteEssentials ?? true
-  );
-  
+  const [autoCompleteEssentials, setAutoCompleteEssentials] =
+    React.useState<boolean>(defaultAutoCompleteEssentials ?? true);
+
   // Calendar zoom: default to 100%
   const [calendarZoom, setCalendarZoomState] = React.useState<CalendarZoom>(
-    defaultCalendarZoom ?? DEFAULT_CALENDAR_ZOOM
+    defaultCalendarZoom ?? DEFAULT_CALENDAR_ZOOM,
   );
-  
+
+  // Day boundaries: default to 7am - 11pm
+  const [dayStartMinutes, setDayStartMinutesState] = React.useState<number>(
+    defaultDayStartMinutes ?? DEFAULT_DAY_START_MINUTES,
+  );
+  const [dayEndMinutes, setDayEndMinutesState] = React.useState<number>(
+    defaultDayEndMinutes ?? DEFAULT_DAY_END_MINUTES,
+  );
+
   // Clamped setter for calendar zoom
   const setCalendarZoom = React.useCallback((zoom: CalendarZoom) => {
-    setCalendarZoomState(Math.max(MIN_CALENDAR_ZOOM, Math.min(MAX_CALENDAR_ZOOM, zoom)));
+    setCalendarZoomState(
+      Math.max(MIN_CALENDAR_ZOOM, Math.min(MAX_CALENDAR_ZOOM, zoom)),
+    );
   }, []);
+
+  // Clamped setters for day boundaries (0-1440 minutes)
+  const setDayStartMinutes = React.useCallback((minutes: number) => {
+    setDayStartMinutesState(Math.max(0, Math.min(1440, minutes)));
+  }, []);
+
+  const setDayEndMinutes = React.useCallback((minutes: number) => {
+    setDayEndMinutesState(Math.max(0, Math.min(1440, minutes)));
+  }, []);
+
+  // Set both boundaries at once (useful for the UI)
+  const setDayBoundaries = React.useCallback(
+    (startMinutes: number, endMinutes: number) => {
+      setDayStartMinutesState(Math.max(0, Math.min(1440, startMinutes)));
+      setDayEndMinutesState(Math.max(0, Math.min(1440, endMinutes)));
+    },
+    [],
+  );
 
   const value = React.useMemo(
     () => ({
@@ -85,8 +130,24 @@ export function PreferencesProvider({
       setAutoCompleteEssentials,
       calendarZoom,
       setCalendarZoom,
+      dayStartMinutes,
+      setDayStartMinutes,
+      dayEndMinutes,
+      setDayEndMinutes,
+      setDayBoundaries,
     }),
-    [weekStartsOn, progressMetric, autoCompleteEssentials, calendarZoom, setCalendarZoom]
+    [
+      weekStartsOn,
+      progressMetric,
+      autoCompleteEssentials,
+      calendarZoom,
+      setCalendarZoom,
+      dayStartMinutes,
+      setDayStartMinutes,
+      dayEndMinutes,
+      setDayEndMinutes,
+      setDayBoundaries,
+    ],
   );
 
   return (

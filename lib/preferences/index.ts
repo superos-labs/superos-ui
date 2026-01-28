@@ -1,5 +1,10 @@
 // Types
-export type { WeekStartDay, ProgressMetric, CalendarZoom, UserPreferences } from "./types";
+export type {
+  WeekStartDay,
+  ProgressMetric,
+  CalendarZoom,
+  UserPreferences,
+} from "./types";
 
 // Zoom constants
 export {
@@ -8,6 +13,9 @@ export {
   DEFAULT_CALENDAR_ZOOM,
   CALENDAR_ZOOM_STEP,
 } from "./types";
+
+// Day boundary constants
+export { DEFAULT_DAY_START_MINUTES, DEFAULT_DAY_END_MINUTES } from "./types";
 
 // Context and hooks
 export {

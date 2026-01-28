@@ -1,11 +1,15 @@
 /**
  * Type definitions for the Shell component.
- * 
+ *
  * The Shell is the top-level application frame that orchestrates
  * calendar, backlog, analytics, focus mode, and planning features.
  */
 
-import type { CalendarEvent, HoverPosition, CalendarEventCallbacks } from "@/components/calendar";
+import type {
+  CalendarEvent,
+  HoverPosition,
+  CalendarEventCallbacks,
+} from "@/components/calendar";
 import type { BacklogMode, NewGoalData } from "@/components/backlog";
 import type {
   ScheduleGoal,
@@ -22,7 +26,11 @@ import type { WeeklyPlan, IntentionProgress } from "@/lib/weekly-planning";
 import type { ActiveFocusSession } from "@/lib/focus";
 import type { GoalColor } from "@/lib/colors";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
-import type { WeekStartDay, ProgressMetric, CalendarZoom } from "@/lib/preferences";
+import type {
+  WeekStartDay,
+  ProgressMetric,
+  CalendarZoom,
+} from "@/lib/preferences";
 
 // =============================================================================
 // Core Shell Props
@@ -70,8 +78,6 @@ export interface ShellContentProps {
   enabledEssentialIds: Set<string>;
   /** Draft enabled IDs during editing (null when not editing) */
   draftEnabledEssentialIds: Set<string> | null;
-  /** IDs of mandatory essentials that cannot be disabled */
-  mandatoryEssentialIds: Set<string>;
   /** Toggle an essential's enabled state */
   onToggleEssentialEnabled: (essentialId: string) => void;
   /** Start editing essentials */
@@ -80,6 +86,16 @@ export interface ShellContentProps {
   onSaveEssentialChanges: () => void;
   /** Cancel essential changes */
   onCancelEssentialChanges: () => void;
+
+  // -------------------------------------------------------------------------
+  // Day Boundaries (for dimming hours outside active day)
+  // -------------------------------------------------------------------------
+  /** Day start time in minutes from midnight */
+  dayStartMinutes: number;
+  /** Day end time in minutes from midnight */
+  dayEndMinutes: number;
+  /** Update day boundaries */
+  onDayBoundariesChange: (startMinutes: number, endMinutes: number) => void;
 
   // -------------------------------------------------------------------------
   // Goal CRUD
@@ -99,7 +115,11 @@ export interface ShellContentProps {
   /** Add a task to a goal (returns the new task ID) */
   onAddTask: (goalId: string, label: string) => string;
   /** Update a task */
-  onUpdateTask: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
+  onUpdateTask: (
+    goalId: string,
+    taskId: string,
+    updates: Partial<ScheduleTask>,
+  ) => void;
   /** Delete a task */
   onDeleteTask: (goalId: string, taskId: string) => void;
 
@@ -109,9 +129,18 @@ export interface ShellContentProps {
   /** Add a subtask */
   onAddSubtask: (goalId: string, taskId: string, label: string) => void;
   /** Toggle subtask completion */
-  onToggleSubtaskComplete: (goalId: string, taskId: string, subtaskId: string) => void;
+  onToggleSubtaskComplete: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+  ) => void;
   /** Update a subtask */
-  onUpdateSubtask: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
+  onUpdateSubtask: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
   /** Delete a subtask */
   onDeleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
@@ -123,7 +152,11 @@ export interface ShellContentProps {
   /** Toggle milestone completion */
   onToggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   /** Update a milestone */
-  onUpdateMilestone: (goalId: string, milestoneId: string, label: string) => void;
+  onUpdateMilestone: (
+    goalId: string,
+    milestoneId: string,
+    label: string,
+  ) => void;
   /** Delete a milestone */
   onDeleteMilestone: (goalId: string, milestoneId: string) => void;
 
@@ -167,7 +200,11 @@ export interface ShellContentProps {
   // Drop Handling
   // -------------------------------------------------------------------------
   /** Handle drops from backlog onto calendar */
-  onDrop: (item: import("@/lib/drag-types").DragItem, position: import("@/lib/drag-types").DropPosition, weekDates: Date[]) => void;
+  onDrop: (
+    item: import("@/lib/drag-types").DragItem,
+    position: import("@/lib/drag-types").DropPosition,
+    weekDates: Date[],
+  ) => void;
 
   // -------------------------------------------------------------------------
   // Focus Mode

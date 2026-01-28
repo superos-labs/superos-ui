@@ -87,7 +87,10 @@ function getBlockPositionStyle(
     width: `calc(${widthPercent}% - ${widthReduction}px)`,
   };
 }
-import { BlockContextMenu, EmptySpaceContextMenu } from "./calendar-context-menu";
+import {
+  BlockContextMenu,
+  EmptySpaceContextMenu,
+} from "./calendar-context-menu";
 
 /**
  * TimeColumn renders a single day column with hour cells and event segments.
@@ -121,29 +124,37 @@ export function TimeColumn({
   enableExternalDrop = false,
   onExternalDrop,
   externalDragPreview,
+  dayStartMinutes,
+  dayEndMinutes,
 }: TimeColumnProps) {
   const columnRef = React.useRef<HTMLDivElement>(null);
   const dragContext = useDragContextOptional();
-  
+
   // Track block element refs for hit detection
   const blockRefsMap = React.useRef<Map<string, HTMLDivElement>>(new Map());
-  
+
   // Register a block element ref
-  const registerBlockRef = React.useCallback((blockId: string, el: HTMLDivElement | null) => {
-    if (el) {
-      blockRefsMap.current.set(blockId, el);
-    } else {
-      blockRefsMap.current.delete(blockId);
-    }
-  }, []);
-  
+  const registerBlockRef = React.useCallback(
+    (blockId: string, el: HTMLDivElement | null) => {
+      if (el) {
+        blockRefsMap.current.set(blockId, el);
+      } else {
+        blockRefsMap.current.delete(blockId);
+      }
+    },
+    [],
+  );
+
   // Check if a point is inside a block's bounding rect
   const getBlockAtPoint = React.useCallback(
-    (clientX: number, clientY: number): { blockId: string; event: typeof segments[0]["event"] } | null => {
+    (
+      clientX: number,
+      clientY: number,
+    ): { blockId: string; event: (typeof segments)[0]["event"] } | null => {
       const dragItem = dragContext?.state.item;
       // Only check for task drags
       if (!dragItem || dragItem.type !== "task") return null;
-      
+
       for (const segment of segments) {
         const event = segment.event;
         // Skip essentials - they don't accept drops
@@ -152,10 +163,10 @@ export function TimeColumn({
         if (event.sourceGoalId !== dragItem.goalId) continue;
         // Only goal and task blocks can accept task drops
         if (event.blockType !== "goal" && event.blockType !== "task") continue;
-        
+
         const blockEl = blockRefsMap.current.get(event.id);
         if (!blockEl) continue;
-        
+
         const rect = blockEl.getBoundingClientRect();
         if (
           clientX >= rect.left &&
@@ -168,31 +179,31 @@ export function TimeColumn({
       }
       return null;
     },
-    [dragContext?.state.item, segments]
+    [dragContext?.state.item, segments],
   );
-  
+
   // Calculate raw minutes from Y position for external drops (no snapping)
   const getRawMinutesFromY = React.useCallback(
     (clientY: number): number => {
       if (!columnRef.current) return 0;
       const rect = columnRef.current.getBoundingClientRect();
-      const scrollParent = columnRef.current.closest('[data-calendar-scroll]');
+      const scrollParent = columnRef.current.closest("[data-calendar-scroll]");
       const scrollTop = scrollParent?.scrollTop ?? 0;
       const y = clientY - rect.top + scrollTop;
       const rawMinutes = y / pixelsPerMinute;
       return Math.max(0, Math.min(1440 - 15, rawMinutes));
     },
-    [pixelsPerMinute]
+    [pixelsPerMinute],
   );
-  
+
   // Handle pointer move for external drag preview
   const handleExternalDragMove = React.useCallback(
     (e: React.PointerEvent) => {
       if (!enableExternalDrop || !dragContext?.state.isDragging) return;
-      
+
       const dragItem = dragContext.state.item;
       if (!dragItem) return;
-      
+
       // Check if pointer is over a valid block drop target
       const blockHit = getBlockAtPoint(e.clientX, e.clientY);
       if (blockHit) {
@@ -203,23 +214,25 @@ export function TimeColumn({
         });
         return;
       }
-      
+
       const rawMinutes = getRawMinutesFromY(e.clientY);
       const defaultDuration = getDefaultDuration(dragItem.type);
-      
+
       // Default: Adaptive drop - fits block to available gaps
       if (!dragContext.state.isOverlapModeEnabled) {
         // Pass raw cursor position - adaptive algorithm handles centering within gaps
         const adaptive = calculateAdaptiveDrop(
           segments,
           rawMinutes,
-          defaultDuration
+          defaultDuration,
         );
         dragContext.setPreviewPosition({
           dayIndex,
           startMinutes: adaptive.startMinutes,
           dropTarget: "time-grid",
-          adaptiveDuration: adaptive.isAdapted ? adaptive.durationMinutes : undefined,
+          adaptiveDuration: adaptive.isAdapted
+            ? adaptive.durationMinutes
+            : undefined,
         });
       } else {
         // Shift held: Override to allow overlap placement
@@ -232,14 +245,26 @@ export function TimeColumn({
         });
       }
     },
-    [enableExternalDrop, dragContext, dayIndex, getRawMinutesFromY, getBlockAtPoint, segments]
+    [
+      enableExternalDrop,
+      dragContext,
+      dayIndex,
+      getRawMinutesFromY,
+      getBlockAtPoint,
+      segments,
+    ],
   );
-  
+
   // Handle pointer up for external drop
   const handleExternalDrop = React.useCallback(
     (e: React.PointerEvent) => {
-      if (!enableExternalDrop || !dragContext?.state.isDragging || !dragContext.state.item) return;
-      
+      if (
+        !enableExternalDrop ||
+        !dragContext?.state.isDragging ||
+        !dragContext.state.item
+      )
+        return;
+
       // Check if dropping on a block
       const blockHit = getBlockAtPoint(e.clientX, e.clientY);
       if (blockHit) {
@@ -248,16 +273,24 @@ export function TimeColumn({
         dragContext.endDrag();
         return;
       }
-      
+
       // Grid drop - use the snapped position from preview if available
       const previewPos = dragContext.state.previewPosition;
-      const startMinutes = previewPos?.startMinutes ?? snapToGrid(getRawMinutesFromY(e.clientY));
+      const startMinutes =
+        previewPos?.startMinutes ?? snapToGrid(getRawMinutesFromY(e.clientY));
       onExternalDrop?.(dayIndex, startMinutes);
       dragContext.endDrag();
     },
-    [enableExternalDrop, dragContext, dayIndex, getRawMinutesFromY, onExternalDrop, getBlockAtPoint]
+    [
+      enableExternalDrop,
+      dragContext,
+      dayIndex,
+      getRawMinutesFromY,
+      onExternalDrop,
+      getBlockAtPoint,
+    ],
   );
-  
+
   // Handle pointer leave - clear preview if leaving this column
   const handlePointerLeave = React.useCallback(() => {
     if (!dragContext?.state.isDragging) return;
@@ -265,10 +298,11 @@ export function TimeColumn({
       dragContext.setPreviewPosition(null);
     }
   }, [dragContext, dayIndex]);
-  
+
   // Check if external drag is over this column (time-grid only, not header)
-  const isExternalDragOver = enableExternalDrop && 
-    dragContext?.state.isDragging && 
+  const isExternalDragOver =
+    enableExternalDrop &&
+    dragContext?.state.isDragging &&
     dragContext?.state.previewPosition?.dayIndex === dayIndex &&
     dragContext?.state.previewPosition?.dropTarget === "time-grid";
 
@@ -287,6 +321,15 @@ export function TimeColumn({
       {/* Hour Cells */}
       {HOURS.map((hour) => {
         const hourStartMinutes = hour * 60;
+        const hourEndMinutes = hourStartMinutes + 60;
+
+        // Check if this hour is outside the day boundaries (for dimming)
+        // An hour is "outside" if it ends before day start OR starts after day end
+        const isOutsideDayBoundaries =
+          (dayStartMinutes !== undefined &&
+            hourEndMinutes <= dayStartMinutes) ||
+          (dayEndMinutes !== undefined && hourStartMinutes >= dayEndMinutes);
+
         return (
           <EmptySpaceContextMenu
             key={hour}
@@ -302,6 +345,8 @@ export function TimeColumn({
               className={cn(
                 "border-border/40 absolute right-0 left-0 border-b transition-colors touch-none",
                 "hover:bg-muted/30",
+                // Dim hours outside day boundaries
+                isOutsideDayBoundaries && "bg-muted/20",
               )}
               style={{
                 top: `${(hour / 24) * 100}%`,
@@ -347,12 +392,13 @@ export function TimeColumn({
 
           // Compute actual pixel height to determine layout mode
           const segmentHeightPx = segmentDuration * pixelsPerMinute;
-          const useCompactLayout = segmentHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
+          const useCompactLayout =
+            segmentHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
 
           // Compute drop target state for this block
           const dragItem = dragContext?.state.item;
           const previewPos = dragContext?.state.previewPosition;
-          
+
           // A block is a valid drop target if:
           // 1. We're dragging a task
           // 2. Block type is goal or task (not essential)
@@ -362,14 +408,14 @@ export function TimeColumn({
             dragItem?.type === "task" &&
             (event.blockType === "goal" || event.blockType === "task") &&
             event.sourceGoalId &&
-            dragItem.goalId === event.sourceGoalId
+            dragItem.goalId === event.sourceGoalId,
           );
-          
+
           // Check if drag is currently over this specific block
           const isDragOver = Boolean(
             isValidDropTarget &&
             previewPos?.dropTarget === "existing-block" &&
-            previewPos?.targetBlockId === event.id
+            previewPos?.targetBlockId === event.id,
           );
 
           // Helper to get display times for the segment
@@ -435,7 +481,9 @@ export function TimeColumn({
                   onEventStatusChange
                     ? () => {
                         const newStatus =
-                          event.status === "completed" ? "planned" : "completed";
+                          event.status === "completed"
+                            ? "planned"
+                            : "completed";
                         onEventStatusChange(event.id, newStatus);
                       }
                     : undefined
@@ -472,7 +520,10 @@ export function TimeColumn({
 
           // Helper to wrap content with context menu
           // Always applies the key, with or without context menu
-          const wrapWithContextMenu = (content: React.ReactNode, key: string) => {
+          const wrapWithContextMenu = (
+            content: React.ReactNode,
+            key: string,
+          ) => {
             if (!onEventCopy && !onEventDelete && !onEventStatusChange) {
               // Return a Fragment with key to ensure AnimatePresence can track elements
               return <React.Fragment key={key}>{content}</React.Fragment>;
@@ -491,7 +542,9 @@ export function TimeColumn({
                   canMarkComplete(event.status) && onEventStatusChange
                     ? () => {
                         const newStatus =
-                          event.status === "completed" ? "planned" : "completed";
+                          event.status === "completed"
+                            ? "planned"
+                            : "completed";
                         onEventStatusChange(event.id, newStatus);
                       }
                     : undefined
@@ -611,62 +664,73 @@ export function TimeColumn({
       </AnimatePresence>
 
       {/* Drag-to-create preview */}
-      {createPreview && createPreview.dayIndex === dayIndex && (() => {
-        const previewHeightPx = createPreview.durationMinutes * pixelsPerMinute;
-        const previewCompactLayout = previewHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
-        return (
-          <div
-            className="pointer-events-none absolute right-1 left-1 z-40"
-            style={{
-              top: `${(createPreview.startMinutes / 1440) * 100}%`,
-              height: `${(createPreview.durationMinutes / 1440) * 100}%`,
-            }}
-          >
-            <Block
-              title="New Block"
-              startTime={formatTimeFromMinutes(createPreview.startMinutes)}
-              endTime={formatTimeFromMinutes(
-                createPreview.startMinutes + createPreview.durationMinutes,
-              )}
-              color="indigo"
-              status="planned"
-              duration={createPreview.durationMinutes <= 30 ? 30 : 60}
-              compactLayout={previewCompactLayout}
-              fillContainer
-            />
-          </div>
-        );
-      })()}
-      
+      {createPreview &&
+        createPreview.dayIndex === dayIndex &&
+        (() => {
+          const previewHeightPx =
+            createPreview.durationMinutes * pixelsPerMinute;
+          const previewCompactLayout =
+            previewHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
+          return (
+            <div
+              className="pointer-events-none absolute right-1 left-1 z-40"
+              style={{
+                top: `${(createPreview.startMinutes / 1440) * 100}%`,
+                height: `${(createPreview.durationMinutes / 1440) * 100}%`,
+              }}
+            >
+              <Block
+                title="New Block"
+                startTime={formatTimeFromMinutes(createPreview.startMinutes)}
+                endTime={formatTimeFromMinutes(
+                  createPreview.startMinutes + createPreview.durationMinutes,
+                )}
+                color="indigo"
+                status="planned"
+                duration={createPreview.durationMinutes <= 30 ? 30 : 60}
+                compactLayout={previewCompactLayout}
+                fillContainer
+              />
+            </div>
+          );
+        })()}
+
       {/* External drag preview (from backlog) - animated for smooth snapping */}
-      {externalDragPreview && externalDragPreview.dayIndex === dayIndex && (() => {
-        const previewHeightPx = externalDragPreview.durationMinutes * pixelsPerMinute;
-        const previewCompactLayout = previewHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
-        return (
-          <motion.div
-            className="pointer-events-none absolute right-1 left-1 z-40 opacity-70"
-            initial={false}
-            animate={{
-              top: `${(externalDragPreview.startMinutes / 1440) * 100}%`,
-              height: `${(externalDragPreview.durationMinutes / 1440) * 100}%`,
-            }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          >
-            <Block
-              title={externalDragPreview.title}
-              startTime={formatTimeFromMinutes(externalDragPreview.startMinutes)}
-              endTime={formatTimeFromMinutes(
-                externalDragPreview.startMinutes + externalDragPreview.durationMinutes,
-              )}
-              color={externalDragPreview.color}
-              status="planned"
-              duration={externalDragPreview.durationMinutes <= 30 ? 30 : 60}
-              compactLayout={previewCompactLayout}
-              fillContainer
-            />
-          </motion.div>
-        );
-      })()}
+      {externalDragPreview &&
+        externalDragPreview.dayIndex === dayIndex &&
+        (() => {
+          const previewHeightPx =
+            externalDragPreview.durationMinutes * pixelsPerMinute;
+          const previewCompactLayout =
+            previewHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
+          return (
+            <motion.div
+              className="pointer-events-none absolute right-1 left-1 z-40 opacity-70"
+              initial={false}
+              animate={{
+                top: `${(externalDragPreview.startMinutes / 1440) * 100}%`,
+                height: `${(externalDragPreview.durationMinutes / 1440) * 100}%`,
+              }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            >
+              <Block
+                title={externalDragPreview.title}
+                startTime={formatTimeFromMinutes(
+                  externalDragPreview.startMinutes,
+                )}
+                endTime={formatTimeFromMinutes(
+                  externalDragPreview.startMinutes +
+                    externalDragPreview.durationMinutes,
+                )}
+                color={externalDragPreview.color}
+                status="planned"
+                duration={externalDragPreview.durationMinutes <= 30 ? 30 : 60}
+                compactLayout={previewCompactLayout}
+                fillContainer
+              />
+            </motion.div>
+          );
+        })()}
     </div>
   );
 }

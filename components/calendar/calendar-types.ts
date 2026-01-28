@@ -10,7 +10,15 @@ export type { BlockType, BlockStatus };
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 /** Day labels for Sunday-start weeks */
-export const DAYS_SUNDAY_START = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+export const DAYS_SUNDAY_START = [
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+] as const;
 
 export const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -19,7 +27,9 @@ export const HOURS = Array.from({ length: 24 }, (_, i) => i);
  * @param weekStartsOn - Which day the week starts on (0 = Sunday, 1 = Monday)
  * @returns Array of day abbreviations in order
  */
-export function getDayLabels(weekStartsOn: WeekStartDay = 1): readonly string[] {
+export function getDayLabels(
+  weekStartsOn: WeekStartDay = 1,
+): readonly string[] {
   return weekStartsOn === 0 ? DAYS_SUNDAY_START : DAYS;
 }
 
@@ -56,21 +66,21 @@ export const COMPACT_LAYOUT_THRESHOLD_PX = 44;
  * - compact: Denser layout, more content visible (56px/hour)
  * - default: Balanced readability (80px/hour) - recommended
  * - comfortable: Spacious layout, best for small blocks (120px/hour)
- * 
+ *
  * @deprecated Use zoom-based configuration instead (50-150%)
  */
 export type CalendarDensity = "compact" | "default" | "comfortable";
 
-/** Grid height in pixels for each density preset (for 24 hours) 
+/** Grid height in pixels for each density preset (for 24 hours)
  * @deprecated Use getGridHeightFromZoom instead
  */
 export const DENSITY_HEIGHTS: Record<CalendarDensity, number> = {
-  compact: 1344,     // 56px/hour, 14px per 15-min
-  default: 1920,     // 80px/hour, 20px per 15-min
+  compact: 1344, // 56px/hour, 14px per 15-min
+  default: 1920, // 80px/hour, 20px per 15-min
   comfortable: 2880, // 120px/hour, 30px per 15-min
 };
 
-/** Default density for the calendar 
+/** Default density for the calendar
  * @deprecated Use DEFAULT_CALENDAR_ZOOM from lib/preferences instead
  */
 export const DEFAULT_DENSITY: CalendarDensity = "default";
@@ -79,7 +89,9 @@ export const DEFAULT_DENSITY: CalendarDensity = "default";
  * Get the grid height in pixels for a given density.
  * @deprecated Use getGridHeightFromZoom instead
  */
-export function getGridHeight(density: CalendarDensity = DEFAULT_DENSITY): number {
+export function getGridHeight(
+  density: CalendarDensity = DEFAULT_DENSITY,
+): number {
   return DENSITY_HEIGHTS[density];
 }
 
@@ -88,7 +100,9 @@ export function getGridHeight(density: CalendarDensity = DEFAULT_DENSITY): numbe
  * Used for positioning events and drag/resize calculations.
  * @deprecated Use getPixelsPerMinuteFromZoom instead
  */
-export function getPixelsPerMinute(density: CalendarDensity = DEFAULT_DENSITY): number {
+export function getPixelsPerMinute(
+  density: CalendarDensity = DEFAULT_DENSITY,
+): number {
   return DENSITY_HEIGHTS[density] / (24 * 60);
 }
 
@@ -142,7 +156,7 @@ export interface CalendarEvent {
   /** Number of completed tasks assigned to this block */
   completedTaskCount?: number;
   status?: BlockStatus; // "planned" | "completed"
-  
+
   // Block identity and source tracking
   /** Whether this block is for a goal work session, a specific task, or an essential */
   blockType?: BlockType;
@@ -250,7 +264,8 @@ export interface ExternalDropCallbacks {
 // Component Props
 // =============================================================================
 
-export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallbacks {
+export interface CalendarProps
+  extends CalendarEventCallbacks, ExternalDropCallbacks {
   view?: CalendarView;
   selectedDate?: Date;
   showHourLabels?: boolean;
@@ -259,8 +274,8 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   events: CalendarEvent[];
   /** Key that triggers scroll-to-current-time when changed (used for initial load and "Today" button) */
   scrollToCurrentTimeKey?: string | number;
-  /** 
-   * Density preset controlling vertical spacing (default: "default") 
+  /**
+   * Density preset controlling vertical spacing (default: "default")
    * @deprecated Use zoom instead
    */
   density?: CalendarDensity;
@@ -278,7 +293,13 @@ export interface CalendarProps extends CalendarEventCallbacks, ExternalDropCallb
   /** Called when a deadline is removed (unassigned) */
   onDeadlineUnassign?: (goalId: string, taskId: string) => void;
   /** Called when mouse enters/leaves a deadline pill (for keyboard shortcuts) */
-  onDeadlineHover?: (deadline: import("@/lib/unified-schedule").DeadlineTask | null) => void;
+  onDeadlineHover?: (
+    deadline: import("@/lib/unified-schedule").DeadlineTask | null,
+  ) => void;
+  /** Day start time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayStartMinutes?: number;
+  /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayEndMinutes?: number;
 }
 
 export interface CalendarDayHeaderProps {
@@ -299,7 +320,8 @@ export interface CalendarDayHeaderProps {
   onDayHeaderHover?: (dayIndex: number | null) => void;
 }
 
-export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
+export interface DayViewProps
+  extends CalendarEventCallbacks, ExternalDropCallbacks {
   selectedDate: Date;
   showHourLabels?: boolean;
   headerIsVisible?: boolean;
@@ -308,8 +330,8 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
   setBlockStyle?: BlockStyle;
   /** Key that triggers scroll-to-current-time when changed */
   scrollToCurrentTimeKey?: string | number;
-  /** 
-   * Density preset controlling vertical spacing (default: "default") 
+  /**
+   * Density preset controlling vertical spacing (default: "default")
    * @deprecated Use zoom instead
    */
   density?: CalendarDensity;
@@ -319,9 +341,14 @@ export interface DayViewProps extends CalendarEventCallbacks, ExternalDropCallba
   onDayHeaderHover?: (dayIndex: number | null) => void;
   /** Called when user wants to mark all blocks on this day as complete */
   onMarkDayComplete?: (dayIndex: number) => void;
+  /** Day start time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayStartMinutes?: number;
+  /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayEndMinutes?: number;
 }
 
-export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallbacks {
+export interface WeekViewProps
+  extends CalendarEventCallbacks, ExternalDropCallbacks {
   weekDates: Date[];
   showHourLabels?: boolean;
   /** Events to display (required - always passed from parent Calendar) */
@@ -329,8 +356,8 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   setBlockStyle?: BlockStyle;
   /** Key that triggers scroll-to-current-time when changed */
   scrollToCurrentTimeKey?: string | number;
-  /** 
-   * Density preset controlling vertical spacing (default: "default") 
+  /**
+   * Density preset controlling vertical spacing (default: "default")
    * @deprecated Use zoom instead
    */
   density?: CalendarDensity;
@@ -347,18 +374,25 @@ export interface WeekViewProps extends CalendarEventCallbacks, ExternalDropCallb
   /** Called when a deadline is removed (unassigned) */
   onDeadlineUnassign?: (goalId: string, taskId: string) => void;
   /** Called when mouse enters/leaves a deadline pill (for keyboard shortcuts) */
-  onDeadlineHover?: (deadline: import("@/lib/unified-schedule").DeadlineTask | null) => void;
+  onDeadlineHover?: (
+    deadline: import("@/lib/unified-schedule").DeadlineTask | null,
+  ) => void;
   /** Called when mouse enters/leaves a day header (for keyboard shortcuts) */
   onDayHeaderHover?: (dayIndex: number | null) => void;
   /** Called when user wants to mark all blocks on a day as complete */
   onMarkDayComplete?: (dayIndex: number) => void;
+  /** Day start time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayStartMinutes?: number;
+  /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayEndMinutes?: number;
 }
 
 /**
  * Props for the TimeColumn component - a shared component for rendering
  * a single day column with events, used by both DayView and WeekView.
  */
-export interface TimeColumnProps extends CalendarEventCallbacks, ExternalDropCallbacks {
+export interface TimeColumnProps
+  extends CalendarEventCallbacks, ExternalDropCallbacks {
   /** The day index for this column (0 = Monday, 6 = Sunday) */
   dayIndex: number;
   /** Whether this day is today (for highlighting) */
@@ -384,7 +418,15 @@ export interface TimeColumnProps extends CalendarEventCallbacks, ExternalDropCal
   /** Maximum day index for drag constraints (DayView uses this) */
   maxDayIndex?: number;
   /** Pointer down handler for drag-to-create */
-  onPointerDown?: (e: React.PointerEvent, dayIndex: number, minutes: number) => void;
+  onPointerDown?: (
+    e: React.PointerEvent,
+    dayIndex: number,
+    minutes: number,
+  ) => void;
+  /** Day start time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayStartMinutes?: number;
+  /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
+  dayEndMinutes?: number;
 }
 
 // Helper to convert BlockStyle to BlockStatus
@@ -408,7 +450,9 @@ export function canMarkComplete(status: BlockStatus | undefined): boolean {
  * Determine the status for a pasted or duplicated block.
  * Completed blocks become planned when pasted.
  */
-export function statusOnPaste(sourceStatus: BlockStatus | undefined): BlockStatus {
+export function statusOnPaste(
+  sourceStatus: BlockStatus | undefined,
+): BlockStatus {
   if (sourceStatus === "completed") return "planned";
   return sourceStatus ?? "planned";
 }
@@ -539,7 +583,9 @@ export function getSegmentsForDay(
         event,
         dayIndex: targetDayIndex,
         startMinutes: event.startMinutes,
-        endMinutes: isOvernight ? 1440 : event.startMinutes + event.durationMinutes,
+        endMinutes: isOvernight
+          ? 1440
+          : event.startMinutes + event.durationMinutes,
         position: isOvernight ? "start" : "only",
       });
     }

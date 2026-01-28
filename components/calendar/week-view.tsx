@@ -58,13 +58,19 @@ export function WeekView({
   onDeadlineHover,
   onDayHeaderHover,
   onMarkDayComplete,
+  dayStartMinutes,
+  dayEndMinutes,
 }: WeekViewProps) {
   // Get day labels based on week start preference
   const dayLabels = getDayLabels(weekStartsOn);
 
   // Compute grid dimensions based on zoom (preferred) or density (legacy)
-  const gridHeight = zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
-  const pixelsPerMinute = zoom !== undefined ? getPixelsPerMinuteFromZoom(zoom) : getPixelsPerMinute(density);
+  const gridHeight =
+    zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
+  const pixelsPerMinute =
+    zoom !== undefined
+      ? getPixelsPerMinuteFromZoom(zoom)
+      : getPixelsPerMinute(density);
 
   // Scroll to current time on mount and when "Today" is clicked
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -144,7 +150,10 @@ export function WeekView({
       />
 
       {/* Time Grid */}
-      <div ref={scrollContainerRef} className="relative flex-1 overflow-y-auto overflow-x-hidden">
+      <div
+        ref={scrollContainerRef}
+        className="relative flex-1 overflow-y-auto overflow-x-hidden"
+      >
         <div
           ref={gridRef}
           className={cn("relative grid", gridCols)}
@@ -215,12 +224,18 @@ export function WeekView({
                 enableExternalDrop={enableExternalDrop}
                 onExternalDrop={onExternalDrop}
                 externalDragPreview={externalDragPreview}
+                dayStartMinutes={dayStartMinutes}
+                dayEndMinutes={dayEndMinutes}
               />
             );
           })}
 
           {/* Current Time Indicator */}
-          <CurrentTimeLine view="week" showHourLabels={showHourLabels} weekStartsOn={weekStartsOn} />
+          <CurrentTimeLine
+            view="week"
+            showHourLabels={showHourLabels}
+            weekStartsOn={weekStartsOn}
+          />
         </div>
       </div>
     </div>

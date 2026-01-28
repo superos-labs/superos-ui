@@ -4,7 +4,6 @@
  */
 
 import {
-  RiMoonLine,
   RiRestaurantLine,
   RiCarLine,
   RiRunLine,
@@ -74,16 +73,16 @@ export const GOAL_ICONS: GoalIconOption[] = [
 ];
 
 // =============================================================================
-// Essentials (recurring non-negotiables)
+// Essentials (recurring activities to track)
 // =============================================================================
 
 /**
- * All available essentials with mandatory flag.
- * Mandatory essentials (Sleep, Eat) cannot be disabled by the user.
+ * All available essentials.
+ * All essentials are optional - users choose which to track.
+ * Note: Sleep is no longer an essential; it's handled via day boundaries in preferences.
  */
 export const ALL_ESSENTIALS: ScheduleEssential[] = [
-  { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo", mandatory: true },
-  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber", mandatory: true },
+  { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber" },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "slate" },
   { id: "exercise", label: "Exercise", icon: RiRunLine, color: "green" },
   { id: "downtime", label: "Downtime", icon: RiSofaLine, color: "cyan" },
@@ -93,13 +92,8 @@ export const ALL_ESSENTIALS: ScheduleEssential[] = [
 /** @deprecated Use ALL_ESSENTIALS instead */
 export const SHELL_ESSENTIALS: ScheduleEssential[] = ALL_ESSENTIALS;
 
-/** Default enabled essential IDs (all enabled by default) */
-export const DEFAULT_ENABLED_ESSENTIAL_IDS = ALL_ESSENTIALS.map(c => c.id);
-
-/** Mandatory essential IDs that cannot be disabled */
-export const MANDATORY_ESSENTIAL_IDS = new Set(
-  ALL_ESSENTIALS.filter(c => c.mandatory).map(c => c.id)
-);
+/** Default enabled essential IDs (none enabled by default - user chooses) */
+export const DEFAULT_ENABLED_ESSENTIAL_IDS: string[] = [];
 
 // =============================================================================
 // Goals with Tasks
@@ -120,22 +114,36 @@ export const SHELL_GOALS: ScheduleGoal[] = [
       { id: "superos-m5", label: "Launch to beta users", completed: false },
     ],
     tasks: [
-      { 
-        id: "superos-1", 
-        label: "Set up Stripe webhook handlers", 
-        completed: true, 
+      {
+        id: "superos-1",
+        label: "Set up Stripe webhook handlers",
+        completed: true,
         scheduledBlockId: "shell-superos-task-1",
-        description: "Handle subscription.created, subscription.updated, and payment_failed events.",
+        description:
+          "Handle subscription.created, subscription.updated, and payment_failed events.",
       },
-      { 
-        id: "superos-2", 
-        label: "Build subscription management UI", 
+      {
+        id: "superos-2",
+        label: "Build subscription management UI",
         completed: false,
-        description: "Allow users to view their current plan, upgrade/downgrade, and cancel.",
+        description:
+          "Allow users to view their current plan, upgrade/downgrade, and cancel.",
         subtasks: [
-          { id: "superos-2-1", label: "Design plan comparison table", completed: true },
-          { id: "superos-2-2", label: "Implement plan selector component", completed: false },
-          { id: "superos-2-3", label: "Add confirmation modal", completed: false },
+          {
+            id: "superos-2-1",
+            label: "Design plan comparison table",
+            completed: true,
+          },
+          {
+            id: "superos-2-2",
+            label: "Implement plan selector component",
+            completed: false,
+          },
+          {
+            id: "superos-2-3",
+            label: "Add confirmation modal",
+            completed: false,
+          },
         ],
       },
       { id: "superos-3", label: "Add invoice generation", completed: false },
@@ -149,17 +157,26 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     lifeAreaId: "health",
     milestones: [
       { id: "marathon-m1", label: "Run 5K without stopping", completed: true },
-      { id: "marathon-m2", label: "Complete 10K under 50min", completed: false },
+      {
+        id: "marathon-m2",
+        label: "Complete 10K under 50min",
+        completed: false,
+      },
       { id: "marathon-m3", label: "Run half marathon", completed: false },
       { id: "marathon-m4", label: "Complete full marathon", completed: false },
     ],
     tasks: [
-      { id: "marathon-1", label: "Run 5K three times this week", completed: true },
-      { 
-        id: "marathon-2", 
-        label: "Do interval training on Saturday", 
+      {
+        id: "marathon-1",
+        label: "Run 5K three times this week",
+        completed: true,
+      },
+      {
+        id: "marathon-2",
+        label: "Do interval training on Saturday",
         completed: false,
-        description: "8x400m repeats with 90s recovery. Target pace: 1:45 per 400m.",
+        description:
+          "8x400m repeats with 90s recovery. Target pace: 1:45 per 400m.",
       },
     ],
   },
@@ -179,14 +196,23 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     tasks: [
       { id: "book-1", label: "Outline the main conflict", completed: true },
       { id: "book-2", label: "Write the opening scene", completed: true },
-      { 
-        id: "book-3", 
-        label: "Develop supporting characters", 
+      {
+        id: "book-3",
+        label: "Develop supporting characters",
         completed: false,
-        description: "Focus on the mentor figure and the antagonist's backstory.",
+        description:
+          "Focus on the mentor figure and the antagonist's backstory.",
         subtasks: [
-          { id: "book-3-1", label: "Write character backstory for mentor", completed: false },
-          { id: "book-3-2", label: "Define antagonist motivations", completed: false },
+          {
+            id: "book-3-1",
+            label: "Write character backstory for mentor",
+            completed: false,
+          },
+          {
+            id: "book-3-2",
+            label: "Define antagonist motivations",
+            completed: false,
+          },
         ],
       },
     ],
@@ -199,14 +225,30 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     lifeAreaId: "personal-growth",
     milestones: [
       { id: "spanish-m1", label: "Complete A1 basics", completed: true },
-      { id: "spanish-m2", label: "Complete A2 certification", completed: false },
+      {
+        id: "spanish-m2",
+        label: "Complete A2 certification",
+        completed: false,
+      },
       { id: "spanish-m3", label: "Pass B1 exam", completed: false },
-      { id: "spanish-m4", label: "Achieve conversational fluency", completed: false },
+      {
+        id: "spanish-m4",
+        label: "Achieve conversational fluency",
+        completed: false,
+      },
     ],
     tasks: [
       { id: "spanish-1", label: "Complete Duolingo lesson", completed: true },
-      { id: "spanish-2", label: "Watch Spanish movie with subtitles", completed: false },
-      { id: "spanish-3", label: "Practice conversation with tutor", completed: false },
+      {
+        id: "spanish-2",
+        label: "Watch Spanish movie with subtitles",
+        completed: false,
+      },
+      {
+        id: "spanish-3",
+        label: "Practice conversation with tutor",
+        completed: false,
+      },
     ],
   },
 ];
@@ -225,76 +267,257 @@ const hoursToMinutes = (hours: number) => hours * 60;
  */
 function createSampleEvents(): CalendarEvent[] {
   const weekDates = getWeekDates(new Date());
-  const getDate = (dayIndex: number) => weekDates[dayIndex].toISOString().split("T")[0];
+  const getDate = (dayIndex: number) =>
+    weekDates[dayIndex].toISOString().split("T")[0];
 
   return [
-    // =============================================================================
-    // Sleep - 12a-7a (7 hours) every day
-    // =============================================================================
-    { id: "shell-sleep-0", title: "Sleep", date: getDate(0), dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep", status: "completed" },
-    { id: "shell-sleep-1", title: "Sleep", date: getDate(1), dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep", status: "completed" },
-    { id: "shell-sleep-2", title: "Sleep", date: getDate(2), dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
-    { id: "shell-sleep-3", title: "Sleep", date: getDate(3), dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
-    { id: "shell-sleep-4", title: "Sleep", date: getDate(4), dayIndex: 4, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
-    { id: "shell-sleep-5", title: "Sleep", date: getDate(5), dayIndex: 5, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
-    { id: "shell-sleep-6", title: "Sleep", date: getDate(6), dayIndex: 6, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
-
     // =============================================================================
     // SuperOS Goal - Morning blocks
     // M/W/F: 8a-10:45a (165 min), Tu/Th: 8a-12:30p (270 min)
     // =============================================================================
-    { id: "shell-superos-am-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
-    { id: "shell-superos-am-1", title: "Get SuperOS to $1M ARR", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-    { id: "shell-superos-am-2", title: "Get SuperOS to $1M ARR", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-    { id: "shell-superos-am-3", title: "Get SuperOS to $1M ARR", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(8), durationMinutes: 270, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-    { id: "shell-superos-am-4", title: "Get SuperOS to $1M ARR", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(8), durationMinutes: 165, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    {
+      id: "shell-superos-am-0",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(0),
+      dayIndex: 0,
+      startMinutes: hoursToMinutes(8),
+      durationMinutes: 165,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+      status: "completed",
+    },
+    {
+      id: "shell-superos-am-1",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: hoursToMinutes(8),
+      durationMinutes: 270,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "shell-superos-am-2",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(2),
+      dayIndex: 2,
+      startMinutes: hoursToMinutes(8),
+      durationMinutes: 165,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "shell-superos-am-3",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: hoursToMinutes(8),
+      durationMinutes: 270,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "shell-superos-am-4",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(4),
+      dayIndex: 4,
+      startMinutes: hoursToMinutes(8),
+      durationMinutes: 165,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
 
     // =============================================================================
-    // Exercise - 11a-12:30p (90 min) on M/W/F
+    // SuperOS Goal - Afternoon blocks (12p-6p = 360 min on Mon, 2p-6p = 240 min Tu-Fri)
     // =============================================================================
-    { id: "shell-exercise-0", title: "Exercise", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "essential", sourceEssentialId: "exercise", status: "completed" },
-    { id: "shell-exercise-2", title: "Exercise", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "essential", sourceEssentialId: "exercise" },
-    { id: "shell-exercise-4", title: "Exercise", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "essential", sourceEssentialId: "exercise" },
+    {
+      id: "shell-superos-pm-0",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(0),
+      dayIndex: 0,
+      startMinutes: hoursToMinutes(12),
+      durationMinutes: 360,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+      status: "completed",
+    },
+    {
+      id: "shell-superos-pm-1",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: hoursToMinutes(14),
+      durationMinutes: 240,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "shell-superos-pm-2",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(2),
+      dayIndex: 2,
+      startMinutes: hoursToMinutes(14),
+      durationMinutes: 240,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "shell-superos-pm-3",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: hoursToMinutes(14),
+      durationMinutes: 240,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "shell-superos-pm-4",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(4),
+      dayIndex: 4,
+      startMinutes: hoursToMinutes(14),
+      durationMinutes: 240,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
 
     // =============================================================================
-    // Eat (Lunch) - 12:30p-1p on Mon (completed), 1p-2p Tu-Fri
+    // Marathon Goal - Morning runs (6:30a-7:30a on Tu/Th/Sat)
     // =============================================================================
-    { id: "shell-eat-lunch-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(12.5), durationMinutes: 30, color: "amber", blockType: "essential", sourceEssentialId: "eat", status: "completed" },
-    { id: "shell-eat-lunch-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
-    { id: "shell-eat-lunch-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
-    { id: "shell-eat-lunch-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
-    { id: "shell-eat-lunch-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
+    {
+      id: "shell-marathon-1",
+      title: "Run a marathon",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: hoursToMinutes(6.5),
+      durationMinutes: 60,
+      color: "rose",
+      blockType: "goal",
+      sourceGoalId: "marathon",
+    },
+    {
+      id: "shell-marathon-3",
+      title: "Run a marathon",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: hoursToMinutes(6.5),
+      durationMinutes: 60,
+      color: "rose",
+      blockType: "goal",
+      sourceGoalId: "marathon",
+    },
+    {
+      id: "shell-marathon-5",
+      title: "Run a marathon",
+      date: getDate(5),
+      dayIndex: 5,
+      startMinutes: hoursToMinutes(7),
+      durationMinutes: 90,
+      color: "rose",
+      blockType: "goal",
+      sourceGoalId: "marathon",
+    },
 
     // =============================================================================
-    // SuperOS Goal - Afternoon blocks (1p-7:45p = 405 min on Mon, 2p-6p = 240 min Tu-Fri)
+    // Write a Book - Evening writing sessions (7p-9p on Mon/Wed, 8p-10p on Sun)
     // =============================================================================
-    { id: "shell-superos-pm-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(13), durationMinutes: 405, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
-    { id: "shell-superos-pm-1", title: "Get SuperOS to $1M ARR", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-    { id: "shell-superos-pm-2", title: "Get SuperOS to $1M ARR", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-    { id: "shell-superos-pm-3", title: "Get SuperOS to $1M ARR", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
-    { id: "shell-superos-pm-4", title: "Get SuperOS to $1M ARR", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(14), durationMinutes: 240, color: "violet", blockType: "goal", sourceGoalId: "superos" },
+    {
+      id: "shell-book-0",
+      title: "Write a book",
+      date: getDate(0),
+      dayIndex: 0,
+      startMinutes: hoursToMinutes(19),
+      durationMinutes: 120,
+      color: "teal",
+      blockType: "goal",
+      sourceGoalId: "book",
+      status: "completed",
+    },
+    {
+      id: "shell-book-2",
+      title: "Write a book",
+      date: getDate(2),
+      dayIndex: 2,
+      startMinutes: hoursToMinutes(19),
+      durationMinutes: 120,
+      color: "teal",
+      blockType: "goal",
+      sourceGoalId: "book",
+    },
+    {
+      id: "shell-book-6",
+      title: "Write a book",
+      date: getDate(6),
+      dayIndex: 6,
+      startMinutes: hoursToMinutes(20),
+      durationMinutes: 120,
+      color: "teal",
+      blockType: "goal",
+      sourceGoalId: "book",
+    },
 
     // =============================================================================
-    // Chores - 6:30p-7:30p (60 min) Tu-Fri
+    // Spanish Learning - Lunch breaks (1p-1:30p Tu/Th) and weekend (10a-11a Sat)
     // =============================================================================
-    { id: "shell-chores-1", title: "Chores", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
-    { id: "shell-chores-2", title: "Chores", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
-    { id: "shell-chores-3", title: "Chores", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
-    { id: "shell-chores-4", title: "Chores", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
+    {
+      id: "shell-spanish-1",
+      title: "Become fluent in Spanish",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: hoursToMinutes(13),
+      durationMinutes: 30,
+      color: "blue",
+      blockType: "goal",
+      sourceGoalId: "spanish",
+    },
+    {
+      id: "shell-spanish-3",
+      title: "Become fluent in Spanish",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: hoursToMinutes(13),
+      durationMinutes: 30,
+      color: "blue",
+      blockType: "goal",
+      sourceGoalId: "spanish",
+    },
+    {
+      id: "shell-spanish-5",
+      title: "Become fluent in Spanish",
+      date: getDate(5),
+      dayIndex: 5,
+      startMinutes: hoursToMinutes(10),
+      durationMinutes: 60,
+      color: "blue",
+      blockType: "goal",
+      sourceGoalId: "spanish",
+    },
 
     // =============================================================================
-    // Eat (Dinner) - 8p-9p (60 min) Mon-Fri
+    // Weekend - More variety (SuperOS catch-up on Sunday afternoon)
     // =============================================================================
-    { id: "shell-eat-dinner-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat", status: "completed" },
-    { id: "shell-eat-dinner-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
-    { id: "shell-eat-dinner-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
-    { id: "shell-eat-dinner-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
-    { id: "shell-eat-dinner-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
-
-    // =============================================================================
-    // SuperOS Goal - Evening block (10:30p-12a = 90 min on Mon)
-    // =============================================================================
-    { id: "shell-superos-eve-0", title: "Get SuperOS to $1M ARR", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(22.5), durationMinutes: 90, color: "violet", blockType: "goal", sourceGoalId: "superos", status: "completed" },
+    {
+      id: "shell-superos-sun",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(6),
+      dayIndex: 6,
+      startMinutes: hoursToMinutes(14),
+      durationMinutes: 180,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
   ];
 }
 

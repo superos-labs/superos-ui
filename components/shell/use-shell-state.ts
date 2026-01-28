@@ -2,14 +2,14 @@
 
 /**
  * Composed state orchestration hook for the Shell component.
- * 
+ *
  * This hook brings together all the sub-hooks needed to run the shell:
  * - Unified schedule (goals, events, tasks, essentials)
  * - Focus session management
  * - Blueprint and weekly planning
  * - Week navigation
  * - Preferences
- * 
+ *
  * This is the primary integration point that consumers use to get all
  * the state and handlers needed by ShellContent.
  */
@@ -18,12 +18,28 @@ import * as React from "react";
 import { getWeekDates } from "@/components/calendar";
 import type { CalendarEvent } from "@/components/calendar";
 import { useCalendarClipboard } from "@/components/calendar";
-import { useUnifiedSchedule, useWeekNavigation, useEssentialAutoComplete } from "@/lib/unified-schedule";
-import type { ScheduleGoal, ScheduleEssential, DeadlineTask } from "@/lib/unified-schedule";
+import {
+  useUnifiedSchedule,
+  useWeekNavigation,
+  useEssentialAutoComplete,
+} from "@/lib/unified-schedule";
+import type {
+  ScheduleGoal,
+  ScheduleEssential,
+  DeadlineTask,
+} from "@/lib/unified-schedule";
 import { useFocusSession, useFocusNotifications } from "@/lib/focus";
-import { useBlueprint, blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
+import {
+  useBlueprint,
+  blueprintToEvents,
+  eventsToBlueprint,
+} from "@/lib/blueprint";
 import type { BlueprintIntention } from "@/lib/blueprint";
-import { useWeeklyPlan, usePlanningFlow, useIntentionProgress } from "@/lib/weekly-planning";
+import {
+  useWeeklyPlan,
+  usePlanningFlow,
+  useIntentionProgress,
+} from "@/lib/weekly-planning";
 import type { WeeklyIntention } from "@/lib/weekly-planning";
 import { usePreferences } from "@/lib/preferences";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
@@ -33,7 +49,9 @@ import type { UseShellStateOptions, UseShellStateReturn } from "./shell-types";
 // Hook Implementation
 // =============================================================================
 
-export function useShellState(options: UseShellStateOptions): UseShellStateReturn {
+export function useShellState(
+  options: UseShellStateOptions,
+): UseShellStateReturn {
   const {
     initialGoals,
     allEssentials: allEssentialsInput,
@@ -54,6 +72,9 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
     autoCompleteEssentials,
     calendarZoom,
     setCalendarZoom,
+    dayStartMinutes,
+    dayEndMinutes,
+    setDayBoundaries,
   } = usePreferences();
 
   // -------------------------------------------------------------------------
@@ -63,7 +84,7 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
 
   const weekDates = React.useMemo(
     () => getWeekDates(selectedDate, weekStartsOn),
-    [selectedDate, weekStartsOn]
+    [selectedDate, weekStartsOn],
   );
 
   const goToPreviousWeek = React.useCallback(() => {
@@ -95,13 +116,21 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
   // -------------------------------------------------------------------------
   // Selection State (lifted here for coordination)
   // -------------------------------------------------------------------------
-  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(null);
-  const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
+    null,
+  );
+  const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
+    null,
+  );
 
   // -------------------------------------------------------------------------
   // Clipboard
   // -------------------------------------------------------------------------
-  const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard();
+  const {
+    copy,
+    paste,
+    hasContent: hasClipboardContent,
+  } = useCalendarClipboard();
 
   // -------------------------------------------------------------------------
   // Unified Schedule
@@ -138,7 +167,9 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
   } = useFocusSession({
     onSessionEnd: (completed) => {
       // Find the event using ref to get current value
-      const event = calendarEventsRef.current.find((e) => e.id === completed.blockId);
+      const event = calendarEventsRef.current.find(
+        (e) => e.id === completed.blockId,
+      );
       if (!event) return;
 
       // Skip essentials (they don't track focus time)
@@ -199,7 +230,7 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
   const weekDeadlines = React.useMemo(
     () => schedule.getWeekDeadlines(weekDates),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [schedule.getWeekDeadlines, weekDates]
+    [schedule.getWeekDeadlines, weekDates],
   ) as Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
 
   // -------------------------------------------------------------------------
@@ -223,12 +254,17 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
 
     // Essential management
     enabledEssentialIds: schedule.enabledEssentialIds as Set<string>,
-    draftEnabledEssentialIds: schedule.draftEnabledEssentialIds as Set<string> | null,
-    mandatoryEssentialIds: schedule.mandatoryEssentialIds as Set<string>,
+    draftEnabledEssentialIds:
+      schedule.draftEnabledEssentialIds as Set<string> | null,
     onToggleEssentialEnabled: schedule.toggleEssentialEnabled,
     onStartEditingEssentials: schedule.startEditingEssentials,
     onSaveEssentialChanges: schedule.saveEssentialChanges,
     onCancelEssentialChanges: schedule.cancelEssentialChanges,
+
+    // Day boundaries
+    dayStartMinutes,
+    dayEndMinutes,
+    onDayBoundariesChange: setDayBoundaries,
 
     // Goal CRUD
     onAddGoal: schedule.addGoal,
