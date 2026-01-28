@@ -61,9 +61,32 @@ export function DayView({
     .toLocaleDateString("en-US", { weekday: "short" })
     .slice(0, 3);
 
+  // Calculate visible hour range for hidden mode
+  const visibleStartHour =
+    dayBoundariesEnabled &&
+    dayBoundariesDisplay === "hidden" &&
+    dayStartMinutes !== undefined
+      ? Math.floor(dayStartMinutes / 60)
+      : 0;
+  const visibleEndHour =
+    dayBoundariesEnabled &&
+    dayBoundariesDisplay === "hidden" &&
+    dayEndMinutes !== undefined
+      ? Math.ceil(dayEndMinutes / 60)
+      : 24;
+  const visibleHours = HOURS.filter(
+    (h) => h >= visibleStartHour && h < visibleEndHour,
+  );
+  const visibleHoursCount = visibleHours.length;
+
   // Compute grid dimensions based on zoom (preferred) or density (legacy)
-  const gridHeight =
+  // Adjust for visible hours when in hidden mode
+  const fullGridHeight =
     zoom !== undefined ? getGridHeightFromZoom(zoom) : getGridHeight(density);
+  const gridHeight =
+    dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+      ? (fullGridHeight / 24) * visibleHoursCount
+      : fullGridHeight;
   const pixelsPerMinute =
     zoom !== undefined
       ? getPixelsPerMinuteFromZoom(zoom)
@@ -154,27 +177,41 @@ export function DayView({
           {/* Hour Labels */}
           {showHourLabels && (
             <div className="border-border/40 relative border-r">
-              {HOURS.map((hour) => (
-                <div
-                  key={hour}
-                  className="absolute right-0 left-0"
-                  style={{
-                    top: `${(hour / 24) * 100}%`,
-                    height: `${100 / 24}%`,
-                  }}
-                >
-                  <span
-                    className={cn(
-                      "absolute -top-2.5 right-2 text-[10px] font-medium tabular-nums",
-                      isCurrentHour(hour)
-                        ? "text-primary"
-                        : "text-muted-foreground/50",
-                    )}
+              {(dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+                ? visibleHours
+                : HOURS
+              ).map((hour, hourIndex) => {
+                const topPercent =
+                  dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+                    ? (hourIndex / visibleHoursCount) * 100
+                    : (hour / 24) * 100;
+                const heightPercent =
+                  dayBoundariesEnabled && dayBoundariesDisplay === "hidden"
+                    ? 100 / visibleHoursCount
+                    : 100 / 24;
+
+                return (
+                  <div
+                    key={hour}
+                    className="absolute right-0 left-0"
+                    style={{
+                      top: `${topPercent}%`,
+                      height: `${heightPercent}%`,
+                    }}
                   >
-                    {hour === 0 ? "" : formatHour(hour)}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      className={cn(
+                        "absolute -top-2.5 right-2 text-[10px] font-medium tabular-nums",
+                        isCurrentHour(hour)
+                          ? "text-primary"
+                          : "text-muted-foreground/50",
+                      )}
+                    >
+                      {hour === 0 ? "" : formatHour(hour)}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
 
