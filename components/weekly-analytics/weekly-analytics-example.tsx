@@ -22,7 +22,7 @@ import {
   RiTranslate2,
 } from "@remixicon/react";
 
-const SAMPLE_COMMITMENTS: WeeklyAnalyticsItem[] = [
+const SAMPLE_ESSENTIALS: WeeklyAnalyticsItem[] = [
   {
     id: "sleep",
     label: "Sleep",
@@ -114,7 +114,7 @@ export function WeeklyAnalyticsExample() {
   return (
     <KnobsProvider>
       <WeeklyAnalytics
-        commitments={SAMPLE_COMMITMENTS}
+        essentials={SAMPLE_ESSENTIALS}
         goals={SAMPLE_GOALS}
         weekLabel="Jan 20 – 26"
         showSummary={showSummary}

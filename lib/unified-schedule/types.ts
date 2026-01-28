@@ -95,13 +95,13 @@ export interface ScheduleGoal {
   progressIndicator?: ProgressIndicator;
 }
 
-/** Commitment in the backlog (simpler than goals, no tasks) */
-export interface ScheduleCommitment {
+/** Essential in the backlog (simpler than goals, no tasks) */
+export interface ScheduleEssential {
   id: string;
   label: string;
   icon: IconComponent;
   color: GoalColor;
-  /** If true, commitment cannot be disabled by the user */
+  /** If true, essential cannot be disabled by the user */
   mandatory?: boolean;
 }
 
@@ -152,10 +152,10 @@ export interface DeadlineTask {
 export interface UseUnifiedScheduleOptions {
   /** Initial goals for the backlog */
   initialGoals: ScheduleGoal[];
-  /** All available commitments (includes mandatory flag) */
-  allCommitments: ScheduleCommitment[];
-  /** Initial set of enabled commitment IDs (defaults to all) */
-  initialEnabledCommitmentIds?: string[];
+  /** All available essentials (includes mandatory flag) */
+  allEssentials: ScheduleEssential[];
+  /** Initial set of enabled essential IDs (defaults to all) */
+  initialEnabledEssentialIds?: string[];
   /** Initial calendar events */
   initialEvents: CalendarEvent[];
   /** Current week dates (required for week-scoped operations) */
@@ -173,32 +173,32 @@ export interface UseUnifiedScheduleOptions {
 export interface UseUnifiedScheduleReturn {
   // Data
   goals: ScheduleGoal[];
-  /** Filtered commitments (only enabled ones) */
-  commitments: ScheduleCommitment[];
-  /** All available commitments (for edit mode) */
-  allCommitments: ScheduleCommitment[];
-  /** Filtered events (excludes disabled commitment blocks) */
+  /** Filtered essentials (only enabled ones) */
+  essentials: ScheduleEssential[];
+  /** All available essentials (for edit mode) */
+  allEssentials: ScheduleEssential[];
+  /** Filtered events (excludes disabled essential blocks) */
   events: CalendarEvent[];
 
-  // Commitment visibility management
-  /** Current set of enabled commitment IDs */
-  enabledCommitmentIds: Set<string>;
+  // Essential visibility management
+  /** Current set of enabled essential IDs */
+  enabledEssentialIds: Set<string>;
   /** Draft enabled IDs during editing (null when not editing) */
-  draftEnabledCommitmentIds: Set<string> | null;
-  /** Set of mandatory commitment IDs (cannot be disabled) */
-  mandatoryCommitmentIds: Set<string>;
-  /** Toggle a commitment's enabled state (works on draft) */
-  toggleCommitmentEnabled: (id: string) => void;
-  /** Start editing commitments (creates draft from current state) */
-  startEditingCommitments: () => void;
+  draftEnabledEssentialIds: Set<string> | null;
+  /** Set of mandatory essential IDs (cannot be disabled) */
+  mandatoryEssentialIds: Set<string>;
+  /** Toggle an essential's enabled state (works on draft) */
+  toggleEssentialEnabled: (id: string) => void;
+  /** Start editing essentials (creates draft from current state) */
+  startEditingEssentials: () => void;
   /** Save draft to actual enabled state */
-  saveCommitmentChanges: () => void;
+  saveEssentialChanges: () => void;
   /** Discard draft changes */
-  cancelCommitmentChanges: () => void;
+  cancelEssentialChanges: () => void;
 
   // Computed data accessors
   getGoalStats: (goalId: string) => GoalStats;
-  getCommitmentStats: (commitmentId: string) => GoalStats;
+  getEssentialStats: (essentialId: string) => GoalStats;
   getTaskSchedule: (taskId: string) => TaskScheduleInfo | null;
   getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
@@ -236,8 +236,8 @@ export interface UseUnifiedScheduleReturn {
     dayIndex: number,
     startMinutes: number
   ) => void;
-  scheduleCommitment: (
-    commitmentId: string,
+  scheduleEssential: (
+    essentialId: string,
     dayIndex: number,
     startMinutes: number
   ) => void;

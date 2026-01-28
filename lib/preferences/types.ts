@@ -46,8 +46,8 @@ export interface UserPreferences {
   /** How progress is measured in analytics (default: 'completed') */
   progressMetric: ProgressMetric;
   
-  /** Whether commitment blocks auto-complete when past their end time (default: true) */
-  autoCompleteCommitments: boolean;
+  /** Whether essential blocks auto-complete when past their end time (default: true) */
+  autoCompleteEssentials: boolean;
   
   /** Calendar zoom level as percentage (50-150, default: 100) */
   calendarZoom: CalendarZoom;

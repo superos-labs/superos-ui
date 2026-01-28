@@ -7,8 +7,8 @@ export { useUnifiedSchedule } from "./use-unified-schedule";
 export { useGoalState } from "./use-goal-state";
 export type { UseGoalStateOptions, UseGoalStateReturn } from "./use-goal-state";
 
-export { useCommitmentVisibility } from "./use-commitment-visibility";
-export type { UseCommitmentVisibilityOptions, UseCommitmentVisibilityReturn } from "./use-commitment-visibility";
+export { useEssentialVisibility } from "./use-essential-visibility";
+export type { UseEssentialVisibilityOptions, UseEssentialVisibilityReturn } from "./use-essential-visibility";
 
 export { useEventState } from "./use-event-state";
 export type { UseEventStateOptions, UseEventStateReturn } from "./use-event-state";
@@ -19,8 +19,8 @@ export type { UseScheduleStatsOptions, UseScheduleStatsReturn } from "./use-sche
 export { useScheduling } from "./use-scheduling";
 export type { UseSchedulingOptions, UseSchedulingReturn } from "./use-scheduling";
 
-export { useCommitmentAutoComplete } from "./use-commitment-auto-complete";
-export type { UseCommitmentAutoCompleteOptions } from "./use-commitment-auto-complete";
+export { useEssentialAutoComplete } from "./use-essential-auto-complete";
+export type { UseEssentialAutoCompleteOptions } from "./use-essential-auto-complete";
 
 // Week navigation hook
 export { useWeekNavigation } from "./use-week-navigation";
@@ -35,7 +35,7 @@ export type {
   Milestone,
   ScheduleTask,
   ScheduleGoal,
-  ScheduleCommitment,
+  ScheduleEssential,
   // Computed/derived types
   GoalStats,
   TaskScheduleInfo,

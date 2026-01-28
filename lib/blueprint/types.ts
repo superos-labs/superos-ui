@@ -27,12 +27,12 @@ export interface BlueprintBlock {
   title: string;
   /** Block color */
   color: BlockColor;
-  /** Block type: goal, task, or commitment */
+  /** Block type: goal, task, or essential */
   blockType: BlockType;
   /** For goal/task blocks: the associated goal ID */
   sourceGoalId?: string;
-  /** For commitment blocks: the associated commitment ID */
-  sourceCommitmentId?: string;
+  /** For essential blocks: the associated essential ID */
+  sourceEssentialId?: string;
 }
 
 // ============================================================================

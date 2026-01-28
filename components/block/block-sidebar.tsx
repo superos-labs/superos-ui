@@ -42,7 +42,7 @@ interface BlockSubtask {
   done: boolean;
 }
 
-/** Associated goal or commitment for the block */
+/** Associated goal or essential for the block */
 interface BlockSidebarSource {
   id: string;
   label: string;
@@ -56,7 +56,7 @@ type BlockSidebarGoal = BlockSidebarSource;
 interface BlockSidebarData {
   id: string;
   title: string;
-  /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'commitment' shows notes only */
+  /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'essential' shows notes only */
   blockType: BlockType;
   /** Block status: 'planned' or 'completed' */
   status?: BlockStatus;
@@ -78,8 +78,8 @@ interface BlockSidebarData {
   color: BlockColor;
   /** Associated goal (for goal/task blocks) */
   goal?: BlockSidebarSource;
-  /** Associated commitment (for commitment blocks) */
-  commitment?: BlockSidebarSource;
+  /** Associated essential (for essential blocks) */
+  essential?: BlockSidebarSource;
 }
 
 // Helper to format date for display
@@ -1018,10 +1018,10 @@ function BlockSidebar({
 }: BlockSidebarProps) {
   const isGoalBlock = block.blockType === "goal";
   const isTaskBlock = block.blockType === "task";
-  const isCommitmentBlock = block.blockType === "commitment";
+  const isEssentialBlock = block.blockType === "essential";
   
-  // Get the source info (goal or commitment)
-  const sourceInfo = block.goal ?? block.commitment;
+  // Get the source info (goal or essential)
+  const sourceInfo = block.goal ?? block.essential;
 
   // Goal task expansion state (accordion - one at a time)
   const [expandedGoalTaskId, setExpandedGoalTaskId] = React.useState<string | null>(null);
@@ -1164,7 +1164,7 @@ function BlockSidebar({
           </h2>
         )}
 
-        {/* Associated goal or commitment / Goal selector */}
+        {/* Associated goal or essential / Goal selector */}
         {sourceInfo ? (
           <div className="flex items-center gap-2">
             <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
@@ -1299,8 +1299,8 @@ function BlockSidebar({
           </div>
         </BlockSidebarSection>
 
-        {/* Focus Time (only for goal/task blocks, not commitments) */}
-        {!isCommitmentBlock && totalFocusedMinutes !== undefined && (
+        {/* Focus Time (only for goal/task blocks, not essentials) */}
+        {!isEssentialBlock && totalFocusedMinutes !== undefined && (
           <FocusTimeSection
             focusedMinutes={totalFocusedMinutes}
             onFocusedMinutesChange={onFocusedMinutesChange}

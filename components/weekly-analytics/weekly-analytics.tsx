@@ -391,8 +391,8 @@ export function WeeklyAnalyticsHeader({
 
 export interface WeeklyAnalyticsProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  /** Array of commitment items */
-  commitments: WeeklyAnalyticsItem[];
+  /** Array of essential items */
+  essentials: WeeklyAnalyticsItem[];
   /** Array of goal items */
   goals: WeeklyAnalyticsItem[];
   /** Label for the week (e.g., "This Week", "Jan 20-26") */
@@ -406,7 +406,7 @@ export interface WeeklyAnalyticsProps
 }
 
 export function WeeklyAnalytics({
-  commitments,
+  essentials,
   goals,
   weekLabel = "This Week",
   showSummary = true,
@@ -419,7 +419,7 @@ export function WeeklyAnalytics({
   const [hoveredItemId, setHoveredItemId] = React.useState<string | null>(null);
 
   // Calculate totals only from items with planned hours
-  const allItems = [...commitments, ...goals];
+  const allItems = [...essentials, ...goals];
   const plannedItems = allItems.filter((i) => i.plannedHours > 0);
 
   const totalPlanned = plannedItems.reduce(
@@ -454,8 +454,8 @@ export function WeeklyAnalytics({
 
       <div className="flex flex-col divide-y divide-border">
         <WeeklyAnalyticsSection
-          title="Commitments"
-          items={commitments}
+          title="Essentials"
+          items={essentials}
           hoveredItemId={hoveredItemId}
           className="py-2"
         />

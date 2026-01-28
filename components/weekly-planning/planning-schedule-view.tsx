@@ -3,7 +3,7 @@
 /**
  * PlanningScheduleView - Backlog-like view for scheduling during weekly planning.
  * 
- * Shows commitments and goals with their tasks, allowing drag-to-calendar scheduling.
+ * Shows essentials and goals with their tasks, allowing drag-to-calendar scheduling.
  * Tasks that were selected as "specific-tasks" intentions in Step 1 are highlighted.
  */
 
@@ -20,7 +20,7 @@ import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
 import type {
   ScheduleGoal,
-  ScheduleCommitment,
+  ScheduleEssential,
   TaskScheduleInfo,
   TaskDeadlineInfo,
   ScheduleTask,
@@ -32,8 +32,8 @@ import { formatScheduledTime, formatDeadlineDate } from "@/components/backlog/ba
 // =============================================================================
 
 export interface PlanningScheduleViewProps {
-  /** Commitments to display */
-  commitments: ScheduleCommitment[];
+  /** Essentials to display */
+  essentials: ScheduleEssential[];
   /** Goals to display (with their tasks) */
   goals: ScheduleGoal[];
   /** Task IDs to highlight (from specific-tasks intentions) */
@@ -48,24 +48,24 @@ export interface PlanningScheduleViewProps {
 }
 
 // =============================================================================
-// Commitment Row
+// Essential Row
 // =============================================================================
 
-interface CommitmentRowProps {
-  commitment: ScheduleCommitment;
+interface EssentialRowProps {
+  essential: ScheduleEssential;
   draggable?: boolean;
 }
 
-function CommitmentRow({ commitment, draggable = false }: CommitmentRowProps) {
-  const IconComponent = commitment.icon;
+function EssentialRow({ essential, draggable = false }: EssentialRowProps) {
+  const IconComponent = essential.icon;
   const dragContext = useDragContextOptional();
   const canDrag = draggable && dragContext;
 
   const dragItem: DragItem = {
-    type: "commitment",
-    commitmentId: commitment.id,
-    commitmentLabel: commitment.label,
-    commitmentColor: commitment.color,
+    type: "essential",
+    essentialId: essential.id,
+    essentialLabel: essential.label,
+    essentialColor: essential.color,
   };
 
   const { draggableProps, isDragging } = useDraggable({
@@ -84,9 +84,9 @@ function CommitmentRow({ commitment, draggable = false }: CommitmentRowProps) {
       {...(canDrag ? draggableProps : {})}
     >
       <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted/60">
-        <IconComponent className={cn("size-3.5", getIconColorClass(commitment.color))} />
+        <IconComponent className={cn("size-3.5", getIconColorClass(essential.color))} />
       </div>
-      <span className="truncate text-sm text-foreground">{commitment.label}</span>
+      <span className="truncate text-sm text-foreground">{essential.label}</span>
     </div>
   );
 }
@@ -284,7 +284,7 @@ function GoalRow({
 // =============================================================================
 
 export function PlanningScheduleView({
-  commitments,
+  essentials,
   goals,
   highlightedTaskIds = [],
   getTaskSchedule,
@@ -312,17 +312,17 @@ export function PlanningScheduleView({
         )}
       </div>
 
-      {/* Commitments section */}
-      {commitments.length > 0 && (
+      {/* Essentials section */}
+      {essentials.length > 0 && (
         <div className="flex flex-col">
           <div className="px-4 pb-1">
-            <h4 className="text-xs font-medium text-muted-foreground">Commitments</h4>
+            <h4 className="text-xs font-medium text-muted-foreground">Essentials</h4>
           </div>
           <div className="flex flex-col gap-0.5 px-2">
-            {commitments.map((commitment) => (
-              <CommitmentRow
-                key={commitment.id}
-                commitment={commitment}
+            {essentials.map((essential) => (
+              <EssentialRow
+                key={essential.id}
+                essential={essential}
                 draggable={draggable}
               />
             ))}
@@ -352,13 +352,13 @@ export function PlanningScheduleView({
       )}
 
       {/* Empty state */}
-      {commitments.length === 0 && goals.length === 0 && (
+      {essentials.length === 0 && goals.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <p className="text-sm text-muted-foreground">
             No items to schedule.
           </p>
           <p className="mt-1 text-xs text-muted-foreground/70">
-            Add goals and commitments to start planning.
+            Add goals and essentials to start planning.
           </p>
         </div>
       )}

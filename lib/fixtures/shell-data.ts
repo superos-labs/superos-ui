@@ -29,7 +29,7 @@ import {
 import type { GoalIconOption } from "@/lib/types";
 import type { CalendarEvent } from "@/components/calendar";
 import { getWeekDates } from "@/components/calendar";
-import type { ScheduleGoal, ScheduleCommitment } from "@/lib/unified-schedule";
+import type { ScheduleGoal, ScheduleEssential } from "@/lib/unified-schedule";
 
 // Re-export life areas from canonical source
 export { LIFE_AREAS, LIFE_AREAS_BY_ID, getLifeArea } from "@/lib/life-areas";
@@ -45,7 +45,7 @@ export type { LifeArea, GoalIconOption } from "@/lib/types";
 export type DataSetId = "sample" | "empty";
 
 export interface DataSet {
-  commitments: ScheduleCommitment[];
+  essentials: ScheduleEssential[];
   goals: ScheduleGoal[];
   events: CalendarEvent[];
 }
@@ -74,14 +74,14 @@ export const GOAL_ICONS: GoalIconOption[] = [
 ];
 
 // =============================================================================
-// Commitments (recurring essentials)
+// Essentials (recurring non-negotiables)
 // =============================================================================
 
 /**
- * All available commitments with mandatory flag.
- * Mandatory commitments (Sleep, Eat) cannot be disabled by the user.
+ * All available essentials with mandatory flag.
+ * Mandatory essentials (Sleep, Eat) cannot be disabled by the user.
  */
-export const ALL_COMMITMENTS: ScheduleCommitment[] = [
+export const ALL_ESSENTIALS: ScheduleEssential[] = [
   { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo", mandatory: true },
   { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber", mandatory: true },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "slate" },
@@ -90,15 +90,15 @@ export const ALL_COMMITMENTS: ScheduleCommitment[] = [
   { id: "chores", label: "Chores", icon: RiHome4Line, color: "orange" },
 ];
 
-/** @deprecated Use ALL_COMMITMENTS instead */
-export const SHELL_COMMITMENTS: ScheduleCommitment[] = ALL_COMMITMENTS;
+/** @deprecated Use ALL_ESSENTIALS instead */
+export const SHELL_ESSENTIALS: ScheduleEssential[] = ALL_ESSENTIALS;
 
-/** Default enabled commitment IDs (all enabled by default) */
-export const DEFAULT_ENABLED_COMMITMENT_IDS = ALL_COMMITMENTS.map(c => c.id);
+/** Default enabled essential IDs (all enabled by default) */
+export const DEFAULT_ENABLED_ESSENTIAL_IDS = ALL_ESSENTIALS.map(c => c.id);
 
-/** Mandatory commitment IDs that cannot be disabled */
-export const MANDATORY_COMMITMENT_IDS = new Set(
-  ALL_COMMITMENTS.filter(c => c.mandatory).map(c => c.id)
+/** Mandatory essential IDs that cannot be disabled */
+export const MANDATORY_ESSENTIAL_IDS = new Set(
+  ALL_ESSENTIALS.filter(c => c.mandatory).map(c => c.id)
 );
 
 // =============================================================================
@@ -231,13 +231,13 @@ function createSampleEvents(): CalendarEvent[] {
     // =============================================================================
     // Sleep - 12a-7a (7 hours) every day
     // =============================================================================
-    { id: "shell-sleep-0", title: "Sleep", date: getDate(0), dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep", status: "completed" },
-    { id: "shell-sleep-1", title: "Sleep", date: getDate(1), dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep", status: "completed" },
-    { id: "shell-sleep-2", title: "Sleep", date: getDate(2), dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-    { id: "shell-sleep-3", title: "Sleep", date: getDate(3), dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-    { id: "shell-sleep-4", title: "Sleep", date: getDate(4), dayIndex: 4, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-    { id: "shell-sleep-5", title: "Sleep", date: getDate(5), dayIndex: 5, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
-    { id: "shell-sleep-6", title: "Sleep", date: getDate(6), dayIndex: 6, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "commitment", sourceCommitmentId: "sleep" },
+    { id: "shell-sleep-0", title: "Sleep", date: getDate(0), dayIndex: 0, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep", status: "completed" },
+    { id: "shell-sleep-1", title: "Sleep", date: getDate(1), dayIndex: 1, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep", status: "completed" },
+    { id: "shell-sleep-2", title: "Sleep", date: getDate(2), dayIndex: 2, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
+    { id: "shell-sleep-3", title: "Sleep", date: getDate(3), dayIndex: 3, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
+    { id: "shell-sleep-4", title: "Sleep", date: getDate(4), dayIndex: 4, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
+    { id: "shell-sleep-5", title: "Sleep", date: getDate(5), dayIndex: 5, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
+    { id: "shell-sleep-6", title: "Sleep", date: getDate(6), dayIndex: 6, startMinutes: 0, durationMinutes: hoursToMinutes(7), color: "indigo", blockType: "essential", sourceEssentialId: "sleep" },
 
     // =============================================================================
     // SuperOS Goal - Morning blocks
@@ -252,18 +252,18 @@ function createSampleEvents(): CalendarEvent[] {
     // =============================================================================
     // Exercise - 11a-12:30p (90 min) on M/W/F
     // =============================================================================
-    { id: "shell-exercise-0", title: "Exercise", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise", status: "completed" },
-    { id: "shell-exercise-2", title: "Exercise", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
-    { id: "shell-exercise-4", title: "Exercise", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "commitment", sourceCommitmentId: "exercise" },
+    { id: "shell-exercise-0", title: "Exercise", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "essential", sourceEssentialId: "exercise", status: "completed" },
+    { id: "shell-exercise-2", title: "Exercise", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "essential", sourceEssentialId: "exercise" },
+    { id: "shell-exercise-4", title: "Exercise", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(11), durationMinutes: 90, color: "green", blockType: "essential", sourceEssentialId: "exercise" },
 
     // =============================================================================
     // Eat (Lunch) - 12:30p-1p on Mon (completed), 1p-2p Tu-Fri
     // =============================================================================
-    { id: "shell-eat-lunch-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(12.5), durationMinutes: 30, color: "amber", blockType: "commitment", sourceCommitmentId: "eat", status: "completed" },
-    { id: "shell-eat-lunch-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-    { id: "shell-eat-lunch-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-    { id: "shell-eat-lunch-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-    { id: "shell-eat-lunch-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-lunch-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(12.5), durationMinutes: 30, color: "amber", blockType: "essential", sourceEssentialId: "eat", status: "completed" },
+    { id: "shell-eat-lunch-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
+    { id: "shell-eat-lunch-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
+    { id: "shell-eat-lunch-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
+    { id: "shell-eat-lunch-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(13), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
 
     // =============================================================================
     // SuperOS Goal - Afternoon blocks (1p-7:45p = 405 min on Mon, 2p-6p = 240 min Tu-Fri)
@@ -277,19 +277,19 @@ function createSampleEvents(): CalendarEvent[] {
     // =============================================================================
     // Chores - 6:30p-7:30p (60 min) Tu-Fri
     // =============================================================================
-    { id: "shell-chores-1", title: "Chores", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
-    { id: "shell-chores-2", title: "Chores", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
-    { id: "shell-chores-3", title: "Chores", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
-    { id: "shell-chores-4", title: "Chores", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "commitment", sourceCommitmentId: "chores" },
+    { id: "shell-chores-1", title: "Chores", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
+    { id: "shell-chores-2", title: "Chores", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
+    { id: "shell-chores-3", title: "Chores", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
+    { id: "shell-chores-4", title: "Chores", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(18.5), durationMinutes: 60, color: "orange", blockType: "essential", sourceEssentialId: "chores" },
 
     // =============================================================================
     // Eat (Dinner) - 8p-9p (60 min) Mon-Fri
     // =============================================================================
-    { id: "shell-eat-dinner-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat", status: "completed" },
-    { id: "shell-eat-dinner-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-    { id: "shell-eat-dinner-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-    { id: "shell-eat-dinner-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
-    { id: "shell-eat-dinner-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "commitment", sourceCommitmentId: "eat" },
+    { id: "shell-eat-dinner-0", title: "Eat", date: getDate(0), dayIndex: 0, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat", status: "completed" },
+    { id: "shell-eat-dinner-1", title: "Eat", date: getDate(1), dayIndex: 1, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
+    { id: "shell-eat-dinner-2", title: "Eat", date: getDate(2), dayIndex: 2, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
+    { id: "shell-eat-dinner-3", title: "Eat", date: getDate(3), dayIndex: 3, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
+    { id: "shell-eat-dinner-4", title: "Eat", date: getDate(4), dayIndex: 4, startMinutes: hoursToMinutes(20), durationMinutes: 60, color: "amber", blockType: "essential", sourceEssentialId: "eat" },
 
     // =============================================================================
     // SuperOS Goal - Evening block (10:30p-12a = 90 min on Mon)
@@ -305,7 +305,7 @@ export const SHELL_CALENDAR_EVENTS: CalendarEvent[] = createSampleEvents();
 // Empty Data Set (clean slate)
 // =============================================================================
 
-export const EMPTY_COMMITMENTS: ScheduleCommitment[] = [];
+export const EMPTY_ESSENTIALS: ScheduleEssential[] = [];
 export const EMPTY_GOALS: ScheduleGoal[] = [];
 export const EMPTY_CALENDAR_EVENTS: CalendarEvent[] = [];
 
@@ -315,12 +315,12 @@ export const EMPTY_CALENDAR_EVENTS: CalendarEvent[] = [];
 
 export const DATA_SETS: Record<DataSetId, DataSet> = {
   sample: {
-    commitments: SHELL_COMMITMENTS,
+    essentials: SHELL_ESSENTIALS,
     goals: SHELL_GOALS,
     events: SHELL_CALENDAR_EVENTS,
   },
   empty: {
-    commitments: EMPTY_COMMITMENTS,
+    essentials: EMPTY_ESSENTIALS,
     goals: EMPTY_GOALS,
     events: EMPTY_CALENDAR_EVENTS,
   },

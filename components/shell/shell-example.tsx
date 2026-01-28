@@ -30,7 +30,7 @@ import { useShellState } from "./use-shell-state";
 // Sample data from fixtures
 import {
   DATA_SETS,
-  ALL_COMMITMENTS,
+  ALL_ESSENTIALS,
   LIFE_AREAS,
   GOAL_ICONS,
   type DataSetId,
@@ -52,8 +52,8 @@ function ShellDemoContent({ dataSetId, onDataSetChange }: ShellDemoContentProps)
   // Get all state and handlers from the composed hook
   const state = useShellState({
     initialGoals: dataSet.goals,
-    allCommitments: ALL_COMMITMENTS,
-    initialEnabledCommitmentIds: dataSetId === "empty" ? [] : undefined,
+    allEssentials: ALL_ESSENTIALS,
+    initialEnabledEssentialIds: dataSetId === "empty" ? [] : undefined,
     initialEvents: dataSet.events,
     lifeAreas: LIFE_AREAS,
     goalIcons: GOAL_ICONS,

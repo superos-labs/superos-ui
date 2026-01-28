@@ -9,7 +9,7 @@ import type { CalendarEvent, HoverPosition, CalendarEventCallbacks } from "@/com
 import type { BacklogMode, NewGoalData } from "@/components/backlog";
 import type {
   ScheduleGoal,
-  ScheduleCommitment,
+  ScheduleEssential,
   ScheduleTask,
   GoalStats,
   TaskScheduleInfo,
@@ -38,10 +38,10 @@ export interface ShellContentProps {
   // -------------------------------------------------------------------------
   /** Goals with their tasks */
   goals: ScheduleGoal[];
-  /** Enabled commitments for display */
-  commitments: ScheduleCommitment[];
-  /** All available commitments (for editing) */
-  allCommitments: ScheduleCommitment[];
+  /** Enabled essentials for display */
+  essentials: ScheduleEssential[];
+  /** All available essentials (for editing) */
+  allEssentials: ScheduleEssential[];
   /** Calendar events for the current week */
   events: CalendarEvent[];
   /** Week dates array (7 dates) */
@@ -64,22 +64,22 @@ export interface ShellContentProps {
   hoveredDayIndex: number | null;
 
   // -------------------------------------------------------------------------
-  // Commitment Management
+  // Essential Management
   // -------------------------------------------------------------------------
-  /** IDs of enabled commitments */
-  enabledCommitmentIds: Set<string>;
+  /** IDs of enabled essentials */
+  enabledEssentialIds: Set<string>;
   /** Draft enabled IDs during editing (null when not editing) */
-  draftEnabledCommitmentIds: Set<string> | null;
-  /** IDs of mandatory commitments that cannot be disabled */
-  mandatoryCommitmentIds: Set<string>;
-  /** Toggle a commitment's enabled state */
-  onToggleCommitmentEnabled: (commitmentId: string) => void;
-  /** Start editing commitments */
-  onStartEditingCommitments: () => void;
-  /** Save commitment changes */
-  onSaveCommitmentChanges: () => void;
-  /** Cancel commitment changes */
-  onCancelCommitmentChanges: () => void;
+  draftEnabledEssentialIds: Set<string> | null;
+  /** IDs of mandatory essentials that cannot be disabled */
+  mandatoryEssentialIds: Set<string>;
+  /** Toggle an essential's enabled state */
+  onToggleEssentialEnabled: (essentialId: string) => void;
+  /** Start editing essentials */
+  onStartEditingEssentials: () => void;
+  /** Save essential changes */
+  onSaveEssentialChanges: () => void;
+  /** Cancel essential changes */
+  onCancelEssentialChanges: () => void;
 
   // -------------------------------------------------------------------------
   // Goal CRUD
@@ -138,8 +138,8 @@ export interface ShellContentProps {
   // -------------------------------------------------------------------------
   /** Get stats for a goal */
   getGoalStats: (goalId: string) => GoalStats;
-  /** Get stats for a commitment */
-  getCommitmentStats: (commitmentId: string) => GoalStats;
+  /** Get stats for an essential */
+  getEssentialStats: (essentialId: string) => GoalStats;
   /** Get schedule info for a task */
   getTaskSchedule: (taskId: string) => TaskScheduleInfo | null;
   /** Get deadline info for a task */
@@ -250,10 +250,10 @@ export interface ShellContentProps {
 export interface UseShellStateOptions {
   /** Initial goals */
   initialGoals: ScheduleGoal[];
-  /** All available commitments */
-  allCommitments: ScheduleCommitment[];
-  /** Initial enabled commitment IDs (defaults to all) */
-  initialEnabledCommitmentIds?: string[];
+  /** All available essentials */
+  allEssentials: ScheduleEssential[];
+  /** Initial enabled essential IDs (defaults to all) */
+  initialEnabledEssentialIds?: string[];
   /** Initial calendar events */
   initialEvents: CalendarEvent[];
   /** Life areas for goal creation */

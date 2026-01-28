@@ -40,9 +40,9 @@ export interface BacklogSectionProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled */
   draggable?: boolean;
-  /** Type of drag item to create ("goal" for goals, "commitment" for commitments) */
-  dragType?: "goal" | "commitment";
-  /** Callback to enter edit mode (only for commitments section) */
+  /** Type of drag item to create ("goal" for goals, "essential" for essentials) */
+  dragType?: "goal" | "essential";
+  /** Callback to enter edit mode (only for essentials section) */
   onEdit?: () => void;
   /** Callback to create a new goal and immediately select it (for goals section) */
   onCreateAndSelectGoal?: () => void;
@@ -92,7 +92,7 @@ export function BacklogSection({
             <button
               onClick={onEdit}
               className="flex h-6 w-0 items-center justify-center overflow-hidden rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground group-hover/section:w-6"
-              title="Edit commitments"
+              title="Edit essentials"
             >
               <RiPencilLine className="size-3.5 shrink-0" />
             </button>
@@ -102,7 +102,7 @@ export function BacklogSection({
 
       <div
         className={cn(
-          dragType === "commitment"
+          dragType === "essential"
             ? "grid grid-cols-2 gap-1"
             : "flex flex-col gap-0.5"
         )}
@@ -125,7 +125,7 @@ export function BacklogSection({
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
             dragType={dragType}
-            compact={dragType === "commitment"}
+            compact={dragType === "essential"}
           />
         ))}
 

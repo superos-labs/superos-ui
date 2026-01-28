@@ -4,7 +4,7 @@
  * Composed state orchestration hook for the Shell component.
  * 
  * This hook brings together all the sub-hooks needed to run the shell:
- * - Unified schedule (goals, events, tasks, commitments)
+ * - Unified schedule (goals, events, tasks, essentials)
  * - Focus session management
  * - Blueprint and weekly planning
  * - Week navigation
@@ -18,8 +18,8 @@ import * as React from "react";
 import { getWeekDates } from "@/components/calendar";
 import type { CalendarEvent } from "@/components/calendar";
 import { useCalendarClipboard } from "@/components/calendar";
-import { useUnifiedSchedule, useWeekNavigation, useCommitmentAutoComplete } from "@/lib/unified-schedule";
-import type { ScheduleGoal, ScheduleCommitment, DeadlineTask } from "@/lib/unified-schedule";
+import { useUnifiedSchedule, useWeekNavigation, useEssentialAutoComplete } from "@/lib/unified-schedule";
+import type { ScheduleGoal, ScheduleEssential, DeadlineTask } from "@/lib/unified-schedule";
 import { useFocusSession, useFocusNotifications } from "@/lib/focus";
 import { useBlueprint, blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
 import type { BlueprintIntention } from "@/lib/blueprint";
@@ -36,8 +36,8 @@ import type { UseShellStateOptions, UseShellStateReturn } from "./shell-types";
 export function useShellState(options: UseShellStateOptions): UseShellStateReturn {
   const {
     initialGoals,
-    allCommitments: allCommitmentsInput,
-    initialEnabledCommitmentIds,
+    allEssentials: allEssentialsInput,
+    initialEnabledEssentialIds,
     initialEvents,
     lifeAreas,
     goalIcons,
@@ -51,7 +51,7 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
     setWeekStartsOn,
     progressMetric,
     setProgressMetric,
-    autoCompleteCommitments,
+    autoCompleteEssentials,
     calendarZoom,
     setCalendarZoom,
   } = usePreferences();
@@ -108,8 +108,8 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
   // -------------------------------------------------------------------------
   const schedule = useUnifiedSchedule({
     initialGoals,
-    allCommitments: allCommitmentsInput,
-    initialEnabledCommitmentIds,
+    allEssentials: allEssentialsInput,
+    initialEnabledEssentialIds,
     initialEvents,
     weekDates,
     onCopy: copy,
@@ -141,8 +141,8 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
       const event = calendarEventsRef.current.find((e) => e.id === completed.blockId);
       if (!event) return;
 
-      // Skip commitments (they don't track focus time)
-      if (event.blockType === "commitment") return;
+      // Skip essentials (they don't track focus time)
+      if (event.blockType === "essential") return;
 
       // Accumulate focus time on the event
       const additionalMinutes = Math.round(completed.totalMs / 60000);
@@ -153,11 +153,11 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
   });
 
   // -------------------------------------------------------------------------
-  // Commitment Auto-Complete
+  // Essential Auto-Complete
   // -------------------------------------------------------------------------
-  useCommitmentAutoComplete({
+  useEssentialAutoComplete({
     events: schedule.events,
-    enabled: autoCompleteCommitments,
+    enabled: autoCompleteEssentials,
     markComplete: schedule.markEventComplete,
   });
 
@@ -208,8 +208,8 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
   return {
     // Data
     goals: schedule.goals,
-    commitments: schedule.commitments,
-    allCommitments: schedule.allCommitments,
+    essentials: schedule.essentials,
+    allEssentials: schedule.allEssentials,
     events: schedule.events,
     weekDates,
     weekDeadlines,
@@ -221,14 +221,14 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
     hoverPosition: schedule.hoverPosition,
     hoveredDayIndex: schedule.hoveredDayIndex,
 
-    // Commitment management
-    enabledCommitmentIds: schedule.enabledCommitmentIds as Set<string>,
-    draftEnabledCommitmentIds: schedule.draftEnabledCommitmentIds as Set<string> | null,
-    mandatoryCommitmentIds: schedule.mandatoryCommitmentIds as Set<string>,
-    onToggleCommitmentEnabled: schedule.toggleCommitmentEnabled,
-    onStartEditingCommitments: schedule.startEditingCommitments,
-    onSaveCommitmentChanges: schedule.saveCommitmentChanges,
-    onCancelCommitmentChanges: schedule.cancelCommitmentChanges,
+    // Essential management
+    enabledEssentialIds: schedule.enabledEssentialIds as Set<string>,
+    draftEnabledEssentialIds: schedule.draftEnabledEssentialIds as Set<string> | null,
+    mandatoryEssentialIds: schedule.mandatoryEssentialIds as Set<string>,
+    onToggleEssentialEnabled: schedule.toggleEssentialEnabled,
+    onStartEditingEssentials: schedule.startEditingEssentials,
+    onSaveEssentialChanges: schedule.saveEssentialChanges,
+    onCancelEssentialChanges: schedule.cancelEssentialChanges,
 
     // Goal CRUD
     onAddGoal: schedule.addGoal,
@@ -258,7 +258,7 @@ export function useShellState(options: UseShellStateOptions): UseShellStateRetur
 
     // Stats accessors
     getGoalStats: schedule.getGoalStats,
-    getCommitmentStats: schedule.getCommitmentStats,
+    getEssentialStats: schedule.getEssentialStats,
     getTaskSchedule: schedule.getTaskSchedule,
     getTaskDeadline: schedule.getTaskDeadline,
 

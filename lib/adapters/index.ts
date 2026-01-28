@@ -9,7 +9,7 @@ export {
 export type { 
   EventToSidebarResult, 
   SidebarGoal, 
-  SidebarCommitment 
+  SidebarEssential 
 } from "./sidebar-adapter";
 
 // Analytics adapter

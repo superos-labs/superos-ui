@@ -146,8 +146,8 @@ export function TimeColumn({
       
       for (const segment of segments) {
         const event = segment.event;
-        // Skip commitments - they don't accept drops
-        if (event.blockType === "commitment") continue;
+        // Skip essentials - they don't accept drops
+        if (event.blockType === "essential") continue;
         // Skip if goal doesn't match
         if (event.sourceGoalId !== dragItem.goalId) continue;
         // Only goal and task blocks can accept task drops
@@ -355,7 +355,7 @@ export function TimeColumn({
           
           // A block is a valid drop target if:
           // 1. We're dragging a task
-          // 2. Block type is goal or task (not commitment)
+          // 2. Block type is goal or task (not essential)
           // 3. The dragged task's goalId matches this block's sourceGoalId
           const isValidDropTarget = Boolean(
             dragContext?.state.isDragging &&

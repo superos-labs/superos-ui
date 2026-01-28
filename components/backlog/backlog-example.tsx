@@ -22,7 +22,7 @@ import {
   RiPenNibLine,
 } from "@remixicon/react"
 
-const INITIAL_COMMITMENTS: BacklogItem[] = [
+const INITIAL_ESSENTIALS: BacklogItem[] = [
   { id: "sleep", label: "Sleep", icon: RiMoonLine, color: "indigo", plannedHours: 56, completedHours: 48 },
   { id: "eat", label: "Eat", icon: RiRestaurantLine, color: "amber", plannedHours: 14, completedHours: 12 },
   { id: "commute", label: "Commute", icon: RiCarLine, color: "slate", plannedHours: 10, completedHours: 8 },
@@ -118,7 +118,7 @@ const INITIAL_GOALS: BacklogItem[] = [
 
 export function BacklogExample() {
   const [showTasks, setShowTasks] = React.useState(true)
-  const [showCommitments, setShowCommitments] = React.useState(true)
+  const [showEssentials, setShowEssentials] = React.useState(true)
   const [goals, setGoals] = React.useState(INITIAL_GOALS)
 
   const handleToggleGoalTask = React.useCallback((goalId: string, taskId: string) => {
@@ -240,10 +240,10 @@ export function BacklogExample() {
   return (
     <KnobsProvider>
       <Backlog
-        commitments={INITIAL_COMMITMENTS}
+        essentials={INITIAL_ESSENTIALS}
         goals={goals}
         showTasks={showTasks}
-        showCommitments={showCommitments}
+        showEssentials={showEssentials}
         onToggleGoalTask={handleToggleGoalTask}
         onAddTask={handleAddTask}
         onUpdateTask={handleUpdateTask}
@@ -256,9 +256,9 @@ export function BacklogExample() {
       <KnobsToggle />
       <KnobsPanel>
         <KnobBoolean
-          label="Show Commitments"
-          value={showCommitments}
-          onChange={setShowCommitments}
+          label="Show Essentials"
+          value={showEssentials}
+          onChange={setShowEssentials}
         />
         <KnobBoolean
           label="Show Tasks"

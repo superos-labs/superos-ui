@@ -9,8 +9,8 @@ import type { GoalColor } from "./colors";
  * Represents an item being dragged from the backlog or deadline tray to the calendar.
  */
 export interface DragItem {
-  /** Whether dragging a goal, task, or commitment */
-  type: "goal" | "task" | "commitment";
+  /** Whether dragging a goal, task, or essential */
+  type: "goal" | "task" | "essential";
   /** The goal ID (for goal/task drags) */
   goalId?: string;
   /** Goal label for display (for goal/task drags) */
@@ -21,12 +21,12 @@ export interface DragItem {
   taskId?: string;
   /** Task label (only for task drags) */
   taskLabel?: string;
-  /** The commitment ID (for commitment drags) */
-  commitmentId?: string;
-  /** Commitment label for display (for commitment drags) */
-  commitmentLabel?: string;
-  /** Commitment color (for commitment drags) */
-  commitmentColor?: GoalColor;
+  /** The essential ID (for essential drags) */
+  essentialId?: string;
+  /** Essential label for display (for essential drags) */
+  essentialLabel?: string;
+  /** Essential color (for essential drags) */
+  essentialColor?: GoalColor;
   /** ISO date string if dragging an existing deadline from the tray */
   sourceDeadline?: string;
 }
@@ -64,11 +64,11 @@ export const ADAPTIVE_DROP_MIN_GAP = 10;
  * Get the default duration for a drag item type.
  * Goals: 60 minutes (1 hour)
  * Tasks: 30 minutes
- * Commitments: 60 minutes (1 hour)
+ * Essentials: 60 minutes (1 hour)
  */
 export function getDefaultDuration(type: DragItem["type"]): number {
   if (type === "task") return 30;
-  return 60; // goal and commitment default to 1 hour
+  return 60; // goal and essential default to 1 hour
 }
 
 /**
@@ -76,7 +76,7 @@ export function getDefaultDuration(type: DragItem["type"]): number {
  */
 export function getDragItemTitle(item: DragItem): string {
   if (item.type === "task") return item.taskLabel ?? item.goalLabel ?? "";
-  if (item.type === "commitment") return item.commitmentLabel ?? "";
+  if (item.type === "essential") return item.essentialLabel ?? "";
   return item.goalLabel ?? "";
 }
 
@@ -84,6 +84,6 @@ export function getDragItemTitle(item: DragItem): string {
  * Get the color for a drag item.
  */
 export function getDragItemColor(item: DragItem): GoalColor | undefined {
-  if (item.type === "commitment") return item.commitmentColor;
+  if (item.type === "essential") return item.essentialColor;
   return item.goalColor;
 }

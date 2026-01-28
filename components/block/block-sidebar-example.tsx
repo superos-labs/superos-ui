@@ -72,11 +72,11 @@ const SAMPLE_BLOCK: BlockSidebarData = {
 const BLOCK_TYPE_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "goal", label: "Goal Block" },
   { value: "task", label: "Task Block" },
-  { value: "commitment", label: "Commitment Block" },
+  { value: "essential", label: "Essential Block" },
 ];
 
-const SAMPLE_COMMITMENT: BlockSidebarGoal = {
-  id: "commitment-1",
+const SAMPLE_ESSENTIAL: BlockSidebarGoal = {
+  id: "essential-1",
   label: "Exercise",
   icon: RiRocketLine, // In real use, this would be a different icon
   color: "text-green-500",
@@ -187,7 +187,7 @@ export function BlockSidebarExample() {
     subtasks: blockType === "task" ? subtasks : [],
     notes,
     goal: (blockType === "goal" || blockType === "task") && hasGoalAssigned ? assignedGoal : undefined,
-    commitment: blockType === "commitment" ? SAMPLE_COMMITMENT : undefined,
+    essential: blockType === "essential" ? SAMPLE_ESSENTIAL : undefined,
   };
 
   return (

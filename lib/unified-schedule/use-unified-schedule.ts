@@ -10,7 +10,7 @@ import type {
 
 // Import composable hooks
 import { useGoalState } from "./use-goal-state";
-import { useCommitmentVisibility } from "./use-commitment-visibility";
+import { useEssentialVisibility } from "./use-essential-visibility";
 import { useEventState } from "./use-event-state";
 import { useScheduleStats } from "./use-schedule-stats";
 import { useScheduling } from "./use-scheduling";
@@ -22,15 +22,15 @@ import { useScheduling } from "./use-scheduling";
 /**
  * Unified schedule hook that composes smaller, focused hooks for:
  * - Goal state management (goals, tasks, subtasks)
- * - Commitment visibility management
+ * - Essential visibility management
  * - Event state management (calendar events)
  * - Schedule statistics (computed hours, task schedules, deadlines)
  * - Scheduling actions (drop handlers, scheduling operations)
  */
 export function useUnifiedSchedule({
   initialGoals,
-  allCommitments: allCommitmentsInput,
-  initialEnabledCommitmentIds,
+  allEssentials: allEssentialsInput,
+  initialEnabledEssentialIds,
   initialEvents,
   weekDates,
   onCopy,
@@ -65,21 +65,21 @@ export function useUnifiedSchedule({
   } = useGoalState({ initialGoals });
 
   // -------------------------------------------------------------------------
-  // Compose Commitment Visibility
+  // Compose Essential Visibility
   // -------------------------------------------------------------------------
   const {
-    allCommitments,
-    commitments,
-    enabledCommitmentIds,
-    draftEnabledCommitmentIds,
-    mandatoryCommitmentIds,
-    toggleCommitmentEnabled,
-    startEditingCommitments,
-    saveCommitmentChanges,
-    cancelCommitmentChanges,
-  } = useCommitmentVisibility({
-    allCommitments: allCommitmentsInput,
-    initialEnabledCommitmentIds,
+    allEssentials,
+    essentials,
+    enabledEssentialIds,
+    draftEnabledEssentialIds,
+    mandatoryEssentialIds,
+    toggleEssentialEnabled,
+    startEditingEssentials,
+    saveEssentialChanges,
+    cancelEssentialChanges,
+  } = useEssentialVisibility({
+    allEssentials: allEssentialsInput,
+    initialEnabledEssentialIds,
   });
 
   // -------------------------------------------------------------------------
@@ -111,7 +111,7 @@ export function useUnifiedSchedule({
   // -------------------------------------------------------------------------
   const {
     getGoalStats,
-    getCommitmentStats,
+    getEssentialStats,
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
@@ -120,7 +120,7 @@ export function useUnifiedSchedule({
     goals,
     events: allEvents,
     weekDates,
-    enabledCommitmentIds,
+    enabledEssentialIds,
   });
 
   // -------------------------------------------------------------------------
@@ -129,7 +129,7 @@ export function useUnifiedSchedule({
   const {
     scheduleGoal,
     scheduleTask,
-    scheduleCommitment,
+    scheduleEssential,
     setTaskDeadline,
     clearTaskDeadline,
     assignTaskToBlock,
@@ -139,7 +139,7 @@ export function useUnifiedSchedule({
     handleDrop,
   } = useScheduling({
     goals,
-    allCommitments,
+    allEssentials,
     events: allEvents,
     weekDates,
     setGoals,
@@ -389,20 +389,20 @@ export function useUnifiedSchedule({
 
   return {
     goals,
-    commitments,
-    allCommitments,
+    essentials,
+    allEssentials,
     events: filteredEvents,
-    // Commitment visibility management
-    enabledCommitmentIds,
-    draftEnabledCommitmentIds,
-    mandatoryCommitmentIds,
-    toggleCommitmentEnabled,
-    startEditingCommitments,
-    saveCommitmentChanges,
-    cancelCommitmentChanges,
+    // Essential visibility management
+    enabledEssentialIds,
+    draftEnabledEssentialIds,
+    mandatoryEssentialIds,
+    toggleEssentialEnabled,
+    startEditingEssentials,
+    saveEssentialChanges,
+    cancelEssentialChanges,
     // Computed data accessors
     getGoalStats,
-    getCommitmentStats,
+    getEssentialStats,
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
@@ -427,7 +427,7 @@ export function useUnifiedSchedule({
     toggleMilestonesEnabled,
     scheduleGoal,
     scheduleTask,
-    scheduleCommitment,
+    scheduleEssential,
     setTaskDeadline,
     clearTaskDeadline,
     handleDrop,

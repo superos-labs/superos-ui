@@ -9,7 +9,7 @@ export {
   eventsToBlueprint,
   getBlueprintTotalHours,
   getBlueprintBlocksForGoal,
-  getBlueprintBlocksForCommitment,
+  getBlueprintBlocksForEssential,
 } from "./blueprint-utils";
 
 // Types

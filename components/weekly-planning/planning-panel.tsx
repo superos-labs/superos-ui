@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import type { ScheduleGoal, ScheduleCommitment, ProgressIndicator, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
+import type { ScheduleGoal, ScheduleEssential, ProgressIndicator, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
 import type { WeeklyIntention, PlanningStep } from "@/lib/weekly-planning";
 import type { Blueprint } from "@/lib/blueprint";
 import { formatWeekRange } from "@/components/calendar";
@@ -17,8 +17,8 @@ import { RiCalendarLine, RiDownloadLine, RiCloseLine, RiArrowLeftLine } from "@r
 export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Goals to set intentions for */
   goals: ScheduleGoal[];
-  /** Commitments for scheduling step */
-  commitments?: ScheduleCommitment[];
+  /** Essentials for scheduling step */
+  essentials?: ScheduleEssential[];
   /** Blueprint template (if exists) */
   blueprint: Blueprint | null;
   /** Current week dates */
@@ -68,7 +68,7 @@ export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement>
 
 export function PlanningPanel({
   goals,
-  commitments = [],
+  essentials = [],
   blueprint,
   weekDates,
   intentions,
@@ -233,7 +233,7 @@ export function PlanningPanel({
         <>
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             <PlanningScheduleView
-              commitments={commitments}
+              essentials={essentials}
               goals={goals}
               highlightedTaskIds={highlightedTaskIds}
               getTaskSchedule={getTaskSchedule}

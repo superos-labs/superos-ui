@@ -15,7 +15,7 @@ import {
 interface PreferencesContextValue extends UserPreferences {
   setWeekStartsOn: (day: WeekStartDay) => void;
   setProgressMetric: (metric: ProgressMetric) => void;
-  setAutoCompleteCommitments: (enabled: boolean) => void;
+  setAutoCompleteEssentials: (enabled: boolean) => void;
   setCalendarZoom: (zoom: CalendarZoom) => void;
 }
 
@@ -31,8 +31,8 @@ export interface PreferencesProviderProps {
   defaultWeekStartsOn?: WeekStartDay;
   /** Override the default progress metric */
   defaultProgressMetric?: ProgressMetric;
-  /** Override the default auto-complete commitments setting */
-  defaultAutoCompleteCommitments?: boolean;
+  /** Override the default auto-complete essentials setting */
+  defaultAutoCompleteEssentials?: boolean;
   /** Override the default calendar zoom level */
   defaultCalendarZoom?: CalendarZoom;
 }
@@ -47,7 +47,7 @@ export function PreferencesProvider({
   children,
   defaultWeekStartsOn,
   defaultProgressMetric,
-  defaultAutoCompleteCommitments,
+  defaultAutoCompleteEssentials,
   defaultCalendarZoom,
 }: PreferencesProviderProps) {
   // Week starts on Monday by default
@@ -60,9 +60,9 @@ export function PreferencesProvider({
     defaultProgressMetric ?? 'completed'
   );
   
-  // Auto-complete commitments: default to true
-  const [autoCompleteCommitments, setAutoCompleteCommitments] = React.useState<boolean>(
-    defaultAutoCompleteCommitments ?? true
+  // Auto-complete essentials: default to true
+  const [autoCompleteEssentials, setAutoCompleteEssentials] = React.useState<boolean>(
+    defaultAutoCompleteEssentials ?? true
   );
   
   // Calendar zoom: default to 100%
@@ -81,12 +81,12 @@ export function PreferencesProvider({
       setWeekStartsOn,
       progressMetric,
       setProgressMetric,
-      autoCompleteCommitments,
-      setAutoCompleteCommitments,
+      autoCompleteEssentials,
+      setAutoCompleteEssentials,
       calendarZoom,
       setCalendarZoom,
     }),
-    [weekStartsOn, progressMetric, autoCompleteCommitments, calendarZoom, setCalendarZoom]
+    [weekStartsOn, progressMetric, autoCompleteEssentials, calendarZoom, setCalendarZoom]
   );
 
   return (

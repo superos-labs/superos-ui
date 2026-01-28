@@ -19,21 +19,21 @@ export interface UseScheduleStatsOptions {
   goals: ScheduleGoal[];
   events: CalendarEvent[];
   weekDates: Date[];
-  enabledCommitmentIds: Set<string>;
+  enabledEssentialIds: Set<string>;
 }
 
 export interface UseScheduleStatsReturn {
   /** Get computed stats for a goal */
   getGoalStats: (goalId: string) => GoalStats;
-  /** Get computed stats for a commitment */
-  getCommitmentStats: (commitmentId: string) => GoalStats;
+  /** Get computed stats for an essential */
+  getEssentialStats: (essentialId: string) => GoalStats;
   /** Get schedule info for a task */
   getTaskSchedule: (taskId: string) => TaskScheduleInfo | null;
   /** Get deadline info for a task */
   getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
   /** Get all deadlines for a week */
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
-  /** Events filtered by week and commitment visibility */
+  /** Events filtered by week and essential visibility */
   filteredEvents: CalendarEvent[];
 }
 
@@ -45,7 +45,7 @@ export function useScheduleStats({
   goals,
   events,
   weekDates,
-  enabledCommitmentIds,
+  enabledEssentialIds,
 }: UseScheduleStatsOptions): UseScheduleStatsReturn {
   // Memoize week boundaries for filtering
   const weekStart = React.useMemo(
@@ -77,7 +77,7 @@ export function useScheduleStats({
     [weekStart, weekEnd]
   );
 
-  // Filtered events: exclude blocks from disabled commitments AND filter to current week
+  // Filtered events: exclude blocks from disabled essentials AND filter to current week
   const filteredEvents = React.useMemo(
     () =>
       events.filter((event) => {
@@ -85,12 +85,12 @@ export function useScheduleStats({
         if (!isEventInWeek(event)) {
           return false;
         }
-        // Keep all non-commitment blocks
-        if (event.blockType !== "commitment") return true;
-        // For commitment blocks, only keep if commitment is enabled
-        return event.sourceCommitmentId && enabledCommitmentIds.has(event.sourceCommitmentId);
+        // Keep all non-essential blocks
+        if (event.blockType !== "essential") return true;
+        // For essential blocks, only keep if essential is enabled
+        return event.sourceEssentialId && enabledEssentialIds.has(event.sourceEssentialId);
       }),
-    [events, enabledCommitmentIds, isEventInWeek]
+    [events, enabledEssentialIds, isEventInWeek]
   );
 
   const getGoalStats = React.useCallback(
@@ -122,22 +122,22 @@ export function useScheduleStats({
     [events, isEventInWeek]
   );
 
-  const getCommitmentStats = React.useCallback(
-    (commitmentId: string): GoalStats => {
-      // filteredEvents already includes week filtering, just filter by commitment
-      const commitmentEvents = filteredEvents.filter((e) => e.sourceCommitmentId === commitmentId);
-      const plannedMinutes = commitmentEvents.reduce(
+  const getEssentialStats = React.useCallback(
+    (essentialId: string): GoalStats => {
+      // filteredEvents already includes week filtering, just filter by essential
+      const essentialEvents = filteredEvents.filter((e) => e.sourceEssentialId === essentialId);
+      const plannedMinutes = essentialEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
         0
       );
-      const completedMinutes = commitmentEvents
+      const completedMinutes = essentialEvents
         .filter((e) => e.status === "completed")
         .reduce((sum, e) => sum + e.durationMinutes, 0);
 
       return {
         plannedHours: Math.round((plannedMinutes / 60) * 10) / 10,
         completedHours: Math.round((completedMinutes / 60) * 10) / 10,
-        focusedHours: 0, // Commitments don't track focus time
+        focusedHours: 0, // Essentials don't track focus time
       };
     },
     [filteredEvents]
@@ -222,7 +222,7 @@ export function useScheduleStats({
 
   return {
     getGoalStats,
-    getCommitmentStats,
+    getEssentialStats,
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,

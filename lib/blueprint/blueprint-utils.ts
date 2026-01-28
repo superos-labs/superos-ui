@@ -38,7 +38,7 @@ export function blueprintToEvents(
       status: "planned" as const,
       blockType: block.blockType,
       sourceGoalId: block.sourceGoalId,
-      sourceCommitmentId: block.sourceCommitmentId,
+      sourceEssentialId: block.sourceEssentialId,
     };
   });
 }
@@ -82,7 +82,7 @@ export function eventsToBlueprint(
       color: event.color,
       blockType: event.blockType ?? "goal",
       sourceGoalId: event.sourceGoalId,
-      sourceCommitmentId: event.sourceCommitmentId,
+      sourceEssentialId: event.sourceEssentialId,
     }));
 }
 
@@ -112,13 +112,13 @@ export function getBlueprintBlocksForGoal(
 }
 
 /**
- * Get all blocks for a specific commitment from the blueprint.
+ * Get all blocks for a specific essential from the blueprint.
  */
-export function getBlueprintBlocksForCommitment(
+export function getBlueprintBlocksForEssential(
   blueprint: Blueprint,
-  commitmentId: string
+  essentialId: string
 ): BlueprintBlock[] {
   return blueprint.blocks.filter(
-    (block) => block.sourceCommitmentId === commitmentId
+    (block) => block.sourceEssentialId === essentialId
   );
 }

@@ -105,8 +105,8 @@ export interface ShellContentComponentProps extends ShellContentProps {
 export function ShellContentComponent({
   // Data
   goals,
-  commitments,
-  allCommitments,
+  essentials,
+  allEssentials,
   events,
   weekDates,
   weekDeadlines,
@@ -116,14 +116,14 @@ export function ShellContentComponent({
   hoveredEvent,
   hoverPosition,
   hoveredDayIndex,
-  // Commitment management
-  enabledCommitmentIds,
-  draftEnabledCommitmentIds,
-  mandatoryCommitmentIds,
-  onToggleCommitmentEnabled,
-  onStartEditingCommitments,
-  onSaveCommitmentChanges,
-  onCancelCommitmentChanges,
+  // Essential management
+  enabledEssentialIds,
+  draftEnabledEssentialIds,
+  mandatoryEssentialIds,
+  onToggleEssentialEnabled,
+  onStartEditingEssentials,
+  onSaveEssentialChanges,
+  onCancelEssentialChanges,
   // Goal CRUD
   onAddGoal,
   onDeleteGoal,
@@ -147,7 +147,7 @@ export function ShellContentComponent({
   onClearTaskDeadline,
   // Stats accessors
   getGoalStats,
-  getCommitmentStats,
+  getEssentialStats,
   getTaskSchedule,
   getTaskDeadline,
   // Calendar handlers
@@ -448,7 +448,7 @@ export function ShellContentComponent({
   const { sidebarData, availableGoals, handlers: sidebarHandlers } = useBlockSidebarHandlers({
     selectedEvent,
     goals,
-    commitments,
+    essentials,
     weekDates,
     schedule: {
       updateEvent: onUpdateEvent,
@@ -478,9 +478,9 @@ export function ShellContentComponent({
   // Analytics Data
   // -------------------------------------------------------------------------
   const useFocusedHours = progressMetric === "focused";
-  const analyticsCommitments = React.useMemo(
-    () => toAnalyticsItems(commitments, getCommitmentStats, { useFocusedHours }),
-    [commitments, getCommitmentStats, useFocusedHours]
+  const analyticsEssentials = React.useMemo(
+    () => toAnalyticsItems(essentials, getEssentialStats, { useFocusedHours }),
+    [essentials, getEssentialStats, useFocusedHours]
   );
   const analyticsGoals = React.useMemo(
     () => toAnalyticsItems(goals, getGoalStats, {
@@ -839,7 +839,7 @@ export function ShellContentComponent({
               {isPlanning ? (
                 <PlanningPanel
                   goals={goals}
-                  commitments={commitments}
+                  essentials={essentials}
                   blueprint={blueprint}
                   weekDates={weekDates}
                   intentions={planningFlow.draftIntentions}
@@ -862,11 +862,11 @@ export function ShellContentComponent({
                 />
               ) : (
                 <Backlog
-                  commitments={commitments as BacklogItem[]}
+                  essentials={essentials as BacklogItem[]}
                   goals={goals as BacklogItem[]}
                   className="h-full w-[360px] max-w-none"
                   showTasks={showTasks}
-                  showCommitments={true}
+                  showEssentials={true}
                   onToggleGoalTask={onToggleTaskComplete}
                   onAddTask={onAddTask}
                   onUpdateTask={onUpdateTask}
@@ -880,20 +880,20 @@ export function ShellContentComponent({
                   getTaskDeadline={getTaskDeadline}
                   draggable={true}
                   mode={backlogMode}
-                  allCommitments={allCommitments as BacklogItem[]}
-                  enabledCommitmentIds={draftEnabledCommitmentIds ?? enabledCommitmentIds}
-                  mandatoryCommitmentIds={mandatoryCommitmentIds}
-                  onToggleCommitmentEnabled={onToggleCommitmentEnabled}
-                  onEditCommitments={() => {
-                    onStartEditingCommitments();
-                    setBacklogMode("edit-commitments");
+                  allEssentials={allEssentials as BacklogItem[]}
+                  enabledEssentialIds={draftEnabledEssentialIds ?? enabledEssentialIds}
+                  mandatoryEssentialIds={mandatoryEssentialIds}
+                  onToggleEssentialEnabled={onToggleEssentialEnabled}
+                  onEditEssentials={() => {
+                    onStartEditingEssentials();
+                    setBacklogMode("edit-essentials");
                   }}
-                  onSaveCommitments={() => {
-                    onSaveCommitmentChanges();
+                  onSaveEssentials={() => {
+                    onSaveEssentialChanges();
                     setBacklogMode("view");
                   }}
-                  onCancelEditCommitments={() => {
-                    onCancelCommitmentChanges();
+                  onCancelEditEssentials={() => {
+                    onCancelEssentialChanges();
                     setBacklogMode("view");
                   }}
                   onCreateGoal={handleCreateGoal}
@@ -992,12 +992,12 @@ export function ShellContentComponent({
                   onEndFocus={onEndFocus}
                   focusDisabled={focusSession !== null && !isSidebarBlockFocused}
                   totalFocusedMinutes={
-                    selectedEvent?.blockType !== "commitment"
+                    selectedEvent?.blockType !== "essential"
                       ? (selectedEvent?.focusedMinutes ?? 0)
                       : undefined
                   }
                   onFocusedMinutesChange={
-                    selectedEvent?.blockType !== "commitment" && selectedEvent
+                    selectedEvent?.blockType !== "essential" && selectedEvent
                       ? (minutes) => onUpdateEvent(selectedEvent.id, { focusedMinutes: minutes })
                       : undefined
                   }
@@ -1005,7 +1005,7 @@ export function ShellContentComponent({
                 />
               ) : renderedContent === "analytics" ? (
                 <WeeklyAnalytics
-                  commitments={analyticsCommitments}
+                  essentials={analyticsEssentials}
                   goals={analyticsGoals}
                   weekLabel={formatWeekRange(weekDates)}
                   progressMetric={progressMetric}
@@ -1028,11 +1028,11 @@ export function ShellContentComponent({
           closeStyle="close"
         >
           <Backlog
-            commitments={commitments as BacklogItem[]}
+            essentials={essentials as BacklogItem[]}
             goals={goals as BacklogItem[]}
             className="h-full max-w-none border-0 rounded-none shadow-none"
             showTasks={true}
-            showCommitments={true}
+            showEssentials={true}
             onToggleGoalTask={onToggleTaskComplete}
             onAddTask={onAddTask}
             onUpdateTask={onUpdateTask}
@@ -1076,7 +1076,7 @@ export function ShellContentComponent({
             onEndFocus={onEndFocus}
             focusDisabled={focusSession !== null && !isSidebarBlockFocused}
             totalFocusedMinutes={
-              selectedEvent?.blockType !== "commitment"
+              selectedEvent?.blockType !== "essential"
                 ? (selectedEvent?.focusedMinutes ?? 0)
                 : undefined
             }

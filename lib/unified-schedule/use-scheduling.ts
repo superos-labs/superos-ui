@@ -3,7 +3,7 @@
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";
 import type { DragItem, DropPosition } from "@/lib/drag-types";
-import type { ScheduleGoal, ScheduleCommitment, ScheduleTask } from "./types";
+import type { ScheduleGoal, ScheduleEssential, ScheduleTask } from "./types";
 
 // ============================================================================
 // Types
@@ -11,7 +11,7 @@ import type { ScheduleGoal, ScheduleCommitment, ScheduleTask } from "./types";
 
 export interface UseSchedulingOptions {
   goals: ScheduleGoal[];
-  allCommitments: ScheduleCommitment[];
+  allEssentials: ScheduleEssential[];
   events: CalendarEvent[];
   weekDates: Date[];
   setGoals: React.Dispatch<React.SetStateAction<ScheduleGoal[]>>;
@@ -29,9 +29,9 @@ export interface UseSchedulingReturn {
     startMinutes: number,
     durationMinutes?: number
   ) => void;
-  /** Schedule a commitment on the calendar */
-  scheduleCommitment: (
-    commitmentId: string,
+  /** Schedule an essential on the calendar */
+  scheduleEssential: (
+    essentialId: string,
     dayIndex: number,
     startMinutes: number,
     durationMinutes?: number
@@ -58,7 +58,7 @@ export interface UseSchedulingReturn {
 
 export function useScheduling({
   goals,
-  allCommitments,
+  allEssentials,
   events,
   weekDates,
   setGoals,
@@ -143,26 +143,26 @@ export function useScheduling({
     [weekDates, setGoals, setEvents]
   );
 
-  const scheduleCommitment = React.useCallback(
-    (commitmentId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => {
-      const commitment = allCommitments.find((c) => c.id === commitmentId);
-      if (!commitment) return;
+  const scheduleEssential = React.useCallback(
+    (essentialId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => {
+      const essential = allEssentials.find((c) => c.id === essentialId);
+      if (!essential) return;
 
       const newEvent: CalendarEvent = {
         id: crypto.randomUUID(),
-        title: commitment.label,
+        title: essential.label,
         date: weekDates[dayIndex].toISOString().split("T")[0],
         dayIndex,
         startMinutes,
-        durationMinutes: durationMinutes ?? 60, // Default 1 hour for commitments
-        color: commitment.color,
-        blockType: "commitment",
-        sourceCommitmentId: commitmentId,
+        durationMinutes: durationMinutes ?? 60, // Default 1 hour for essentials
+        color: essential.color,
+        blockType: "essential",
+        sourceEssentialId: essentialId,
         status: "planned",
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [allCommitments, weekDates, setEvents]
+    [allEssentials, weekDates, setEvents]
   );
 
   const setTaskDeadline = React.useCallback(
@@ -390,8 +390,8 @@ export function useScheduling({
           scheduleGoal(item.goalId, position.dayIndex, startMinutes, duration);
         } else if (item.type === "task" && item.taskId && item.goalId) {
           scheduleTask(item.goalId, item.taskId, position.dayIndex, startMinutes, duration);
-        } else if (item.type === "commitment" && item.commitmentId) {
-          scheduleCommitment(item.commitmentId, position.dayIndex, startMinutes, duration);
+        } else if (item.type === "essential" && item.essentialId) {
+          scheduleEssential(item.essentialId, position.dayIndex, startMinutes, duration);
         }
       }
     },
@@ -399,7 +399,7 @@ export function useScheduling({
       events,
       scheduleGoal,
       scheduleTask,
-      scheduleCommitment,
+      scheduleEssential,
       setTaskDeadline,
       assignTaskToGoalBlock,
       convertTaskBlockToGoalBlock,
@@ -409,7 +409,7 @@ export function useScheduling({
   return {
     scheduleGoal,
     scheduleTask,
-    scheduleCommitment,
+    scheduleEssential,
     setTaskDeadline,
     clearTaskDeadline,
     assignTaskToBlock,

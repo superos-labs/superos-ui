@@ -42,8 +42,8 @@ export interface SidebarGoal {
   }>;
 }
 
-/** Commitment structure for sidebar adapter */
-export interface SidebarCommitment {
+/** Essential structure for sidebar adapter */
+export interface SidebarEssential {
   id: string;
   label: string;
   icon: IconComponent;
@@ -68,14 +68,14 @@ export function parseTimeToMinutes(time: string): number {
  * 
  * @param event - The calendar event to convert
  * @param goals - Array of goals to look up source goal/task data
- * @param commitments - Array of commitments to look up source commitment data
+ * @param essentials - Array of essentials to look up source essential data
  * @param weekDates - Array of dates for the current week (to compute ISO date)
  * @returns Object containing the sidebar data and available tasks for assignment
  */
 export function eventToBlockSidebarData(
   event: CalendarEvent,
   goals: SidebarGoal[],
-  commitments: SidebarCommitment[],
+  essentials: SidebarEssential[],
   weekDates: Date[]
 ): EventToSidebarResult {
   // Find source goal for goal/task blocks
@@ -83,9 +83,9 @@ export function eventToBlockSidebarData(
     ? goals.find((g) => g.id === event.sourceGoalId)
     : undefined;
 
-  // Find source commitment for commitment blocks
-  const sourceCommitment = event.sourceCommitmentId
-    ? commitments.find((c) => c.id === event.sourceCommitmentId)
+  // Find source essential for essential blocks
+  const sourceEssential = event.sourceEssentialId
+    ? essentials.find((c) => c.id === event.sourceEssentialId)
     : undefined;
 
   // Find source task (for task blocks)
@@ -191,12 +191,12 @@ export function eventToBlockSidebarData(
             color: getIconColorClass(sourceGoal.color),
           }
         : undefined,
-      commitment: sourceCommitment
+      essential: sourceEssential
         ? {
-            id: sourceCommitment.id,
-            label: sourceCommitment.label,
-            icon: sourceCommitment.icon,
-            color: getIconColorClass(sourceCommitment.color),
+            id: sourceEssential.id,
+            label: sourceEssential.label,
+            icon: sourceEssential.icon,
+            color: getIconColorClass(sourceEssential.color),
           }
         : undefined,
     },

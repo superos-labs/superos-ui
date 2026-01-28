@@ -17,8 +17,8 @@ export type { TaskRowProps } from "./task-row";
 export { InlineTaskCreator, InlineGoalCreator } from "./inline-creators";
 export type { InlineTaskCreatorProps, InlineGoalCreatorProps } from "./inline-creators";
 
-export { EditCommitmentsView } from "./edit-commitments-view";
-export type { EditCommitmentsViewProps } from "./edit-commitments-view";
+export { EditEssentialsView } from "./edit-essentials-view";
+export type { EditEssentialsViewProps } from "./edit-essentials-view";
 
 export { BacklogGoalList } from "./backlog-goal-list";
 export type { BacklogGoalListProps } from "./backlog-goal-list";

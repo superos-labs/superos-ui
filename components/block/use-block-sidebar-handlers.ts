@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";
-import type { ScheduleGoal, ScheduleCommitment, UseUnifiedScheduleReturn } from "@/lib/unified-schedule";
+import type { ScheduleGoal, ScheduleEssential, UseUnifiedScheduleReturn } from "@/lib/unified-schedule";
 import { eventToBlockSidebarData, parseTimeToMinutes } from "@/lib/adapters";
 import type { EventToSidebarResult } from "@/lib/adapters";
 import { getIconColorClass } from "@/lib/colors";
@@ -16,8 +16,8 @@ export interface UseBlockSidebarHandlersOptions {
   selectedEvent: CalendarEvent | null;
   /** Goals from unified schedule */
   goals: ScheduleGoal[];
-  /** Commitments from unified schedule */
-  commitments: ScheduleCommitment[];
+  /** Essentials from unified schedule */
+  essentials: ScheduleEssential[];
   /** Week dates for the current view */
   weekDates: Date[];
   /** Unified schedule methods */
@@ -85,7 +85,7 @@ export interface UseBlockSidebarHandlersReturn {
 export function useBlockSidebarHandlers({
   selectedEvent,
   goals,
-  commitments,
+  essentials,
   weekDates,
   schedule,
   onToast,
@@ -108,8 +108,8 @@ export function useBlockSidebarHandlers({
   // Compute sidebar data for the selected event
   const sidebarData = React.useMemo(() => {
     if (!selectedEvent) return null;
-    return eventToBlockSidebarData(selectedEvent, goals, commitments, weekDates);
-  }, [selectedEvent, goals, commitments, weekDates]);
+    return eventToBlockSidebarData(selectedEvent, goals, essentials, weekDates);
+  }, [selectedEvent, goals, essentials, weekDates]);
 
   // Available goals for goal selection
   const availableGoals = React.useMemo(

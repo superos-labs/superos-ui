@@ -32,7 +32,7 @@ This document defines the structure and guidelines for building scalable, mainta
 
 ### `lib/unified-schedule/` — App-Level Orchestration
 
-The unified schedule system provides a complete state management solution for apps that need to coordinate goals, commitments, calendar events, and deadlines.
+The unified schedule system provides a complete state management solution for apps that need to coordinate goals, essentials, calendar events, and deadlines.
 
 ```tsx
 import { useUnifiedSchedule } from "@/lib/unified-schedule";
@@ -40,14 +40,14 @@ import type { ScheduleGoal, GoalStats } from "@/lib/unified-schedule";
 
 const { goals, events, calendarHandlers, getGoalStats } = useUnifiedSchedule({
   initialGoals,
-  allCommitments,
+  allEssentials,
   initialEvents,
 });
 ```
 
 **Exports:**
 - `useUnifiedSchedule` — Main orchestration hook
-- Types: `ScheduleGoal`, `ScheduleTask`, `ScheduleCommitment`, `GoalStats`, etc.
+- Types: `ScheduleGoal`, `ScheduleTask`, `ScheduleEssential`, `GoalStats`, etc.
 
 ### `lib/adapters/` — Data Conversion
 
@@ -57,9 +57,9 @@ Adapters convert between component-specific data formats:
 import { eventToBlockSidebarData, toAnalyticsItems } from "@/lib/adapters";
 
 // Convert CalendarEvent → BlockSidebarData
-const { block, availableGoalTasks } = eventToBlockSidebarData(event, goals, commitments, weekDates);
+const { block, availableGoalTasks } = eventToBlockSidebarData(event, goals, essentials, weekDates);
 
-// Convert goals/commitments → WeeklyAnalyticsItem[]
+// Convert goals/essentials → WeeklyAnalyticsItem[]
 const analyticsItems = toAnalyticsItems(goals, getGoalStats);
 ```
 
@@ -147,14 +147,14 @@ The reusable, stateless (or minimally stateful) UI building blocks.
 ```tsx
 // backlog.tsx
 interface BacklogProps {
-  commitments: BacklogItem[];
+  essentials: BacklogItem[];
   goals: BacklogItem[];
   showTasks?: boolean;
   onToggleTask?: (goalId: string, taskId: string) => void;
 }
 
 function Backlog({
-  commitments,
+  essentials,
   goals,
   showTasks = true,
   onToggleTask,
@@ -204,7 +204,7 @@ export function BacklogExample() {
   return (
     <KnobsProvider>
       <Backlog
-        commitments={SAMPLE_COMMITMENTS}
+        essentials={SAMPLE_ESSENTIALS}
         goals={goals}
         showTasks={showTasks}
         onToggleTask={handleToggleTask}

@@ -7,7 +7,7 @@ import type { CalendarEvent } from "@/components/calendar";
 // Types
 // =============================================================================
 
-export interface UseCommitmentAutoCompleteOptions {
+export interface UseEssentialAutoCompleteOptions {
   /** Current calendar events */
   events: CalendarEvent[];
   /** Whether auto-complete is enabled */
@@ -41,17 +41,17 @@ function getEventEndTimestamp(event: CalendarEvent): number {
 }
 
 /**
- * Find commitment blocks that should be auto-completed.
+ * Find essential blocks that should be auto-completed.
  * Returns IDs of blocks that are:
- * - Commitment blocks (blockType === "commitment")
+ * - Essential blocks (blockType === "essential")
  * - Currently planned (status === "planned" or undefined)
  * - End time is in the past
  */
 function findBlocksToAutoComplete(events: CalendarEvent[], now: number): string[] {
   return events
     .filter((event) => {
-      // Must be a commitment block
-      if (event.blockType !== "commitment") return false;
+      // Must be an essential block
+      if (event.blockType !== "essential") return false;
       
       // Must be planned (not already completed)
       if (event.status === "completed") return false;
@@ -68,23 +68,23 @@ function findBlocksToAutoComplete(events: CalendarEvent[], now: number): string[
 // =============================================================================
 
 /**
- * Hook to auto-complete commitment blocks when their end time passes.
+ * Hook to auto-complete essential blocks when their end time passes.
  * 
  * @example
  * ```tsx
- * useCommitmentAutoComplete({
+ * useEssentialAutoComplete({
  *   events,
- *   enabled: preferences.autoCompleteCommitments,
+ *   enabled: preferences.autoCompleteEssentials,
  *   markComplete: (eventId) => markEventComplete(eventId),
  * });
  * ```
  */
-export function useCommitmentAutoComplete({
+export function useEssentialAutoComplete({
   events,
   enabled,
   markComplete,
   checkInterval = 60000, // 1 minute
-}: UseCommitmentAutoCompleteOptions): void {
+}: UseEssentialAutoCompleteOptions): void {
   // Stable reference to markComplete to avoid re-running effects
   const markCompleteRef = React.useRef(markComplete);
   React.useEffect(() => {

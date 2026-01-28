@@ -10,8 +10,8 @@ import {
 import { getIconColorClass } from "@/lib/colors";
 import type { BacklogItem } from "./backlog-types";
 
-export interface EditCommitmentsViewProps {
-  allCommitments: BacklogItem[];
+export interface EditEssentialsViewProps {
+  allEssentials: BacklogItem[];
   enabledIds: Set<string>;
   mandatoryIds: Set<string>;
   onToggle: (id: string) => void;
@@ -19,19 +19,19 @@ export interface EditCommitmentsViewProps {
   onCancel: () => void;
 }
 
-export function EditCommitmentsView({
-  allCommitments,
+export function EditEssentialsView({
+  allEssentials,
   enabledIds,
   mandatoryIds,
   onToggle,
   onSave,
   onCancel,
-}: EditCommitmentsViewProps) {
+}: EditEssentialsViewProps) {
   return (
     <div className="flex flex-col px-3 py-2">
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex flex-col">
-          <h3 className="text-sm font-semibold text-foreground">Edit Commitments</h3>
+          <h3 className="text-sm font-semibold text-foreground">Edit Essentials</h3>
           <p className="text-xs text-muted-foreground">Choose which to track</p>
         </div>
         <div className="flex items-center gap-1">
@@ -53,15 +53,15 @@ export function EditCommitmentsView({
       </div>
 
       <div className="flex flex-col gap-0.5">
-        {allCommitments.map((commitment) => {
-          const isMandatory = mandatoryIds.has(commitment.id);
-          const isEnabled = enabledIds.has(commitment.id);
-          const IconComponent = commitment.icon;
+        {allEssentials.map((essential) => {
+          const isMandatory = mandatoryIds.has(essential.id);
+          const isEnabled = enabledIds.has(essential.id);
+          const IconComponent = essential.icon;
 
           return (
             <button
-              key={commitment.id}
-              onClick={() => !isMandatory && onToggle(commitment.id)}
+              key={essential.id}
+              onClick={() => !isMandatory && onToggle(essential.id)}
               disabled={isMandatory}
               className={cn(
                 "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
@@ -94,7 +94,7 @@ export function EditCommitmentsView({
                   className={cn(
                     "size-4",
                     isEnabled
-                      ? getIconColorClass(commitment.color)
+                      ? getIconColorClass(essential.color)
                       : "text-muted-foreground",
                   )}
                 />
@@ -107,7 +107,7 @@ export function EditCommitmentsView({
                   isEnabled ? "text-foreground" : "text-muted-foreground",
                 )}
               >
-                {commitment.label}
+                {essential.label}
               </span>
 
               {/* Required badge */}

@@ -6,17 +6,17 @@ import type { GoalStats, TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { BacklogItem, BacklogMode, NewGoalData } from "./backlog-types";
 import { BacklogSection } from "./backlog-section";
-import { EditCommitmentsView } from "./edit-commitments-view";
+import { EditEssentialsView } from "./edit-essentials-view";
 import { BacklogGoalList } from "./backlog-goal-list";
 
 export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Array of commitment items to display (filtered by enabled state) */
-  commitments: BacklogItem[];
+  /** Array of essential items to display (filtered by enabled state) */
+  essentials: BacklogItem[];
   /** Array of goal items to display */
   goals: BacklogItem[];
   showTasks?: boolean;
-  showCommitments?: boolean;
-  onAddCommitment?: () => void;
+  showEssentials?: boolean;
+  onAddEssential?: () => void;
   onAddGoal?: () => void;
   onToggleGoalTask?: (goalId: string, taskId: string) => void;
   /** Callback to add a new task to a goal */
@@ -42,23 +42,23 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Enable drag-and-drop (requires DragProvider wrapper) */
   draggable?: boolean;
   
-  // Edit commitments mode props
+  // Edit essentials mode props
   /** Current display mode */
   mode?: BacklogMode;
-  /** All available commitments (for edit mode) */
-  allCommitments?: BacklogItem[];
-  /** Set of enabled commitment IDs (for edit mode, uses draft during editing) */
-  enabledCommitmentIds?: Set<string>;
-  /** Set of mandatory commitment IDs (cannot be disabled) */
-  mandatoryCommitmentIds?: Set<string>;
-  /** Toggle commitment enabled state */
-  onToggleCommitmentEnabled?: (id: string) => void;
+  /** All available essentials (for edit mode) */
+  allEssentials?: BacklogItem[];
+  /** Set of enabled essential IDs (for edit mode, uses draft during editing) */
+  enabledEssentialIds?: Set<string>;
+  /** Set of mandatory essential IDs (cannot be disabled) */
+  mandatoryEssentialIds?: Set<string>;
+  /** Toggle essential enabled state */
+  onToggleEssentialEnabled?: (id: string) => void;
   /** Enter edit mode */
-  onEditCommitments?: () => void;
+  onEditEssentials?: () => void;
   /** Save and exit edit mode */
-  onSaveCommitments?: () => void;
+  onSaveEssentials?: () => void;
   /** Cancel and exit edit mode */
-  onCancelEditCommitments?: () => void;
+  onCancelEditEssentials?: () => void;
   
   // Goal creation props (for goal-detail mode's BacklogGoalList)
   /** Callback for creating a new goal */
@@ -84,11 +84,11 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function Backlog({
-  commitments,
+  essentials,
   goals,
   showTasks = true,
-  showCommitments = true,
-  onAddCommitment,
+  showEssentials = true,
+  onAddEssential,
   onAddGoal,
   onToggleGoalTask,
   onAddTask,
@@ -102,15 +102,15 @@ export function Backlog({
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
-  // Edit commitments props
+  // Edit essentials props
   mode = "view",
-  allCommitments,
-  enabledCommitmentIds,
-  mandatoryCommitmentIds,
-  onToggleCommitmentEnabled,
-  onEditCommitments,
-  onSaveCommitments,
-  onCancelEditCommitments,
+  allEssentials,
+  enabledEssentialIds,
+  mandatoryEssentialIds,
+  onToggleEssentialEnabled,
+  onEditEssentials,
+  onSaveEssentials,
+  onCancelEditEssentials,
   // Goal creation props
   onCreateGoal,
   lifeAreas,
@@ -125,7 +125,7 @@ export function Backlog({
   className,
   ...props
 }: BacklogProps) {
-  const isEditingCommitments = mode === "edit-commitments";
+  const isEditingEssentials = mode === "edit-essentials";
   const isGoalDetailMode = mode === "goal-detail";
 
   // Goal detail mode: render simplified goal list
@@ -155,27 +155,27 @@ export function Backlog({
     >
       {/* Content */}
       <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto">
-        {showCommitments && (
-          isEditingCommitments && allCommitments && enabledCommitmentIds && mandatoryCommitmentIds && onToggleCommitmentEnabled && onSaveCommitments && onCancelEditCommitments ? (
-            <EditCommitmentsView
-              allCommitments={allCommitments}
-              enabledIds={enabledCommitmentIds}
-              mandatoryIds={mandatoryCommitmentIds}
-              onToggle={onToggleCommitmentEnabled}
-              onSave={onSaveCommitments}
-              onCancel={onCancelEditCommitments}
+        {showEssentials && (
+          isEditingEssentials && allEssentials && enabledEssentialIds && mandatoryEssentialIds && onToggleEssentialEnabled && onSaveEssentials && onCancelEditEssentials ? (
+            <EditEssentialsView
+              allEssentials={allEssentials}
+              enabledIds={enabledEssentialIds}
+              mandatoryIds={mandatoryEssentialIds}
+              onToggle={onToggleEssentialEnabled}
+              onSave={onSaveEssentials}
+              onCancel={onCancelEditEssentials}
             />
           ) : (
             <BacklogSection
-              title="Commitments"
-              description="Time for essentials"
-              items={commitments}
-              onAddItem={onAddCommitment}
+              title="Essentials"
+              description="Non-negotiables"
+              items={essentials}
+              onAddItem={onAddEssential}
               getTaskSchedule={getTaskSchedule}
               getTaskDeadline={getTaskDeadline}
               draggable={draggable}
-              dragType="commitment"
-              onEdit={onEditCommitments}
+              dragType="essential"
+              onEdit={onEditEssentials}
               className="py-2"
             />
           )

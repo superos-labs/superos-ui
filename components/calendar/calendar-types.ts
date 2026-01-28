@@ -144,14 +144,14 @@ export interface CalendarEvent {
   status?: BlockStatus; // "planned" | "completed"
   
   // Block identity and source tracking
-  /** Whether this block is for a goal work session, a specific task, or a commitment */
+  /** Whether this block is for a goal work session, a specific task, or an essential */
   blockType?: BlockType;
   /** The goal this block is associated with (for goal/task blocks) */
   sourceGoalId?: string;
   /** For task blocks, which specific task this represents */
   sourceTaskId?: string;
-  /** The commitment this block is associated with (for commitment blocks) */
-  sourceCommitmentId?: string;
+  /** The essential this block is associated with (for essential blocks) */
+  sourceEssentialId?: string;
   /** Optional notes for this block */
   notes?: string;
   /** For goal blocks: task IDs explicitly assigned to this block (empty by default) */

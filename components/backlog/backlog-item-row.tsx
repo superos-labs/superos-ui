@@ -40,8 +40,8 @@ export interface BacklogItemRowProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled (requires DragProvider) */
   draggable?: boolean;
-  /** Type of drag item to create ("goal" for goals, "commitment" for commitments) */
-  dragType?: "goal" | "commitment";
+  /** Type of drag item to create ("goal" for goals, "essential" for essentials) */
+  dragType?: "goal" | "essential";
   /** Compact display mode (for 2-column grid layout) */
   compact?: boolean;
   className?: string;
@@ -76,12 +76,12 @@ export function BacklogItemRow({
   const canDrag = draggable && dragContext;
   
   // Create the appropriate drag item based on dragType
-  const dragItem: DragItem = dragType === "commitment"
+  const dragItem: DragItem = dragType === "essential"
     ? {
-        type: "commitment",
-        commitmentId: item.id,
-        commitmentLabel: item.label,
-        commitmentColor: item.color,
+        type: "essential",
+        essentialId: item.id,
+        essentialLabel: item.label,
+        essentialColor: item.color,
       }
     : {
         type: "goal",
@@ -109,10 +109,10 @@ export function BacklogItemRow({
     onItemClick?.(item.id);
   }, [onItemClick, item.id]);
 
-  // Only show chevron for goals (not commitments)
+  // Only show chevron for goals (not essentials)
   const showChevron = dragType === "goal" && onItemClick;
 
-  // Compact mode: simplified layout for 2-column grid (commitments)
+  // Compact mode: simplified layout for 2-column grid (essentials)
   if (compact) {
     return (
       <div

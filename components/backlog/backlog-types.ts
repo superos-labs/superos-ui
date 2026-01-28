@@ -16,7 +16,7 @@ export type { LifeArea, GoalIconOption, Milestone };
 export type BacklogTask = ScheduleTask;
 
 /**
- * BacklogItem represents a goal or commitment in the backlog.
+ * BacklogItem represents a goal or essential in the backlog.
  * For goals with tasks, use ScheduleGoal from @/hooks/use-unified-schedule.
  */
 export interface BacklogItem {
@@ -34,12 +34,12 @@ export interface BacklogItem {
   milestonesEnabled?: boolean;
   /** Tasks associated with this item */
   tasks?: BacklogTask[];
-  /** If true, commitment cannot be disabled (only for commitments) */
+  /** If true, essential cannot be disabled (only for essentials) */
   mandatory?: boolean;
 }
 
 /** Mode for the backlog display */
-export type BacklogMode = "view" | "edit-commitments" | "goal-detail";
+export type BacklogMode = "view" | "edit-essentials" | "goal-detail";
 
 /**
  * A goal suggestion in the inspiration gallery.

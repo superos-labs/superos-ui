@@ -12,9 +12,9 @@ import type { GoalColor } from "./colors";
 
 /**
  * Block type determines whether a calendar block represents
- * a goal work session, a specific task, or a commitment.
+ * a goal work session, a specific task, or an essential.
  */
-export type BlockType = "goal" | "task" | "commitment";
+export type BlockType = "goal" | "task" | "essential";
 
 /**
  * Block status determines the visual state and behavior of a block.
