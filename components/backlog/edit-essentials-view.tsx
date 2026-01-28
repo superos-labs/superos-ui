@@ -11,6 +11,7 @@ import {
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
+import type { DayBoundariesDisplay } from "@/lib/preferences";
 import type { BacklogItem } from "./backlog-types";
 import { useActivitySchedule } from "./activity-schedule-editor";
 
@@ -179,6 +180,8 @@ export interface EditEssentialsViewProps {
   onDayBoundariesChange?: (startMinutes: number, endMinutes: number) => void;
   dayBoundariesEnabled?: boolean;
   onDayBoundariesEnabledChange?: (enabled: boolean) => void;
+  dayBoundariesDisplay?: DayBoundariesDisplay;
+  onDayBoundariesDisplayChange?: (display: DayBoundariesDisplay) => void;
   templates?: EssentialTemplate[];
   onSaveEssentialSchedule?: (
     essentialId: string,
