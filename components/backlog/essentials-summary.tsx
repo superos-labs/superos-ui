@@ -143,7 +143,7 @@ function EssentialCard({ essential, template }: EssentialCardProps) {
     : "Not scheduled";
 
   return (
-    <div className="flex items-start gap-3 rounded-lg px-3 py-2">
+    <div className="group flex items-start gap-3 rounded-xl px-3 py-2.5 transition-all hover:bg-muted/60">
       {/* Icon */}
       <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
         <IconComponent
@@ -152,11 +152,13 @@ function EssentialCard({ essential, template }: EssentialCardProps) {
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col gap-0.5">
-        <span className="text-sm font-medium text-foreground">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-sm font-medium text-foreground">
           {essential.label}
         </span>
-        <span className="text-xs text-muted-foreground">{schedule}</span>
+        <span className="truncate text-xs text-muted-foreground">
+          {schedule}
+        </span>
       </div>
     </div>
   );
@@ -181,33 +183,34 @@ export function EssentialsSummary({
   }
 
   return (
-    <div className={cn("flex flex-col gap-2 py-2", className)}>
-      {/* Header with Add to week button */}
-      <div className="flex items-center justify-between px-3">
-        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Essentials
-        </h4>
+    <div className={cn("flex flex-col px-3 py-2", className)}>
+      {/* Header - matching Goals section styling */}
+      <div className="group/section flex items-center justify-between px-3 py-2">
+        <div className="flex flex-col">
+          <h3 className="text-sm font-semibold text-foreground">Essentials</h3>
+          <p className="text-xs text-muted-foreground">Recurring activities</p>
+        </div>
         <div className="flex items-center gap-1">
           <button
             onClick={onAddToWeek}
-            className="flex h-6 items-center gap-1 rounded-md bg-foreground px-2 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
+            className="flex h-6 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
             title="Add all essentials to the current week"
           >
-            <RiAddLine className="size-3" />
-            Add to week
+            <RiAddLine className="size-3.5" />
+            <span>Add to week</span>
           </button>
           <button
             onClick={onEdit}
-            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex size-6 w-0 items-center justify-center overflow-hidden rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground group-hover/section:w-6"
             title="Edit essentials"
           >
-            <RiSettings4Line className="size-3.5" />
+            <RiSettings4Line className="size-3.5 shrink-0" />
           </button>
         </div>
       </div>
 
       {/* Essential cards */}
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-0.5">
         {essentials.map((essential) => (
           <EssentialCard
             key={essential.id}

@@ -9,7 +9,11 @@ import {
   getEventEndDayIndex,
   getEventEndMinutes,
 } from "@/components/calendar";
-import type { BlockSidebarData, BlockGoalTask, BlockSubtask } from "@/components/block";
+import type {
+  BlockSidebarData,
+  BlockGoalTask,
+  BlockSubtask,
+} from "@/components/block";
 import type { IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 import { getIconColorClass } from "@/lib/colors";
@@ -65,7 +69,7 @@ export function parseTimeToMinutes(time: string): number {
 
 /**
  * Convert a CalendarEvent to BlockSidebarData for display in the sidebar.
- * 
+ *
  * @param event - The calendar event to convert
  * @param goals - Array of goals to look up source goal/task data
  * @param essentials - Array of essentials to look up source essential data
@@ -76,7 +80,7 @@ export function eventToBlockSidebarData(
   event: CalendarEvent,
   goals: SidebarGoal[],
   essentials: SidebarEssential[],
-  weekDates: Date[]
+  weekDates: Date[],
 ): EventToSidebarResult {
   // Find source goal for goal/task blocks
   const sourceGoal = event.sourceGoalId
@@ -146,7 +150,7 @@ export function eventToBlockSidebarData(
             (t) =>
               !assignedTaskIds.includes(t.id) && // not already assigned to this block
               !t.completed && // not completed
-              !t.scheduledBlockId // not scheduled to another block
+              !t.scheduledBlockId, // not scheduled to another block
           )
           .map((t) => ({
             id: t.id,

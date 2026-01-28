@@ -1,15 +1,15 @@
 // Public API for adapters
 
 // Sidebar adapter
-export { 
+export {
   eventToBlockSidebarData,
   formatMinutesToTime,
   parseTimeToMinutes,
 } from "./sidebar-adapter";
-export type { 
-  EventToSidebarResult, 
-  SidebarGoal, 
-  SidebarEssential 
+export type {
+  EventToSidebarResult,
+  SidebarGoal,
+  SidebarEssential,
 } from "./sidebar-adapter";
 
 // Analytics adapter

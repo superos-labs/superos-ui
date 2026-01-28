@@ -30,6 +30,7 @@ import type {
 } from "@/lib/unified-schedule";
 import { useEssentialConfig, importEssentialsToEvents } from "@/lib/essentials";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
+import { DEFAULT_ESSENTIAL_SLOTS } from "@/lib/essentials";
 import { useFocusSession, useFocusNotifications } from "@/lib/focus";
 import {
   useBlueprint,
@@ -86,7 +87,26 @@ export function useShellState(
   // -------------------------------------------------------------------------
   // Essential Config (templates)
   // -------------------------------------------------------------------------
-  const essentialConfig = useEssentialConfig();
+  // Generate initial templates for enabled essentials with default slots
+  const initialTemplates = React.useMemo(() => {
+    const enabledIds =
+      initialEnabledEssentialIds ?? allEssentialsInput.map((e) => e.id);
+    return enabledIds.map(
+      (essentialId): EssentialTemplate => ({
+        essentialId,
+        slots: (DEFAULT_ESSENTIAL_SLOTS[essentialId] ?? []).map((slot) => ({
+          ...slot,
+          id: `slot-init-${essentialId}-${slot.id}`,
+        })),
+      }),
+    );
+  }, [initialEnabledEssentialIds, allEssentialsInput]);
+
+  const essentialConfig = useEssentialConfig({
+    initialEnabledIds:
+      initialEnabledEssentialIds ?? allEssentialsInput.map((e) => e.id),
+    initialTemplates,
+  });
 
   // -------------------------------------------------------------------------
   // Week Navigation
