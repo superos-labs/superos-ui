@@ -4,7 +4,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import {
   RiCheckLine,
-  RiCloseLine,
   RiMoonLine,
   RiSunLine,
   RiAddLine,
@@ -517,73 +516,59 @@ export function EditEssentialsView({
   return (
     <div className="flex flex-col gap-4 px-3 py-2">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2">
-        <div className="flex flex-col">
-          <h3 className="text-sm font-semibold text-foreground">
-            Edit Essentials
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Set your typical routine
-          </p>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onSave}
-            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-emerald-500/10 hover:text-emerald-600"
-            title="Save changes"
-          >
-            <RiCheckLine className="size-4" />
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
-            title="Cancel"
-          >
-            <RiCloseLine className="size-4" />
-          </button>
-        </div>
+      <div className="flex flex-col px-3 py-2">
+        <h3 className="text-sm font-semibold text-foreground">
+          Your baseline routine
+        </h3>
+        <p className="text-xs text-muted-foreground">
+          Define the time that's already spoken for so planning stays realistic.
+        </p>
       </div>
 
-      {/* Activities Section */}
-      <div className="flex flex-col gap-2 px-3">
-        <div className="flex flex-col gap-0.5">
-          <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Activities
-          </h4>
-          <p className="text-[11px] text-muted-foreground">
-            Make time for what matters. Visibility increases awareness and helps
-            protect your time.
-          </p>
-        </div>
+      {/* Activities List */}
+      <div className="flex flex-col gap-1 px-3">
+        {/* Sleep (special activity for day boundaries) */}
+        <SleepActivityRow
+          isEnabled={localSleepEnabled}
+          onToggle={handleSleepToggle}
+          startMinutes={localStartMinutes}
+          endMinutes={localEndMinutes}
+          onTimesChange={handleTimesChange}
+        />
 
-        <div className="flex flex-col gap-1">
-          {/* Sleep (special activity for day boundaries) */}
-          <SleepActivityRow
-            isEnabled={localSleepEnabled}
-            onToggle={handleSleepToggle}
-            startMinutes={localStartMinutes}
-            endMinutes={localEndMinutes}
-            onTimesChange={handleTimesChange}
-          />
+        {/* Regular activities */}
+        {allEssentials.map((essential) => {
+          const isEnabled = enabledIds.has(essential.id);
 
-          {/* Regular activities */}
-          {allEssentials.map((essential) => {
-            const isEnabled = enabledIds.has(essential.id);
+          return (
+            <ActivityRow
+              key={essential.id}
+              essential={essential}
+              isEnabled={isEnabled}
+              onToggle={() => onToggle(essential.id)}
+              template={getTemplate(essential.id)}
+              onSaveSchedule={(slots) =>
+                handleSaveSchedule(essential.id, slots)
+              }
+            />
+          );
+        })}
+      </div>
 
-            return (
-              <ActivityRow
-                key={essential.id}
-                essential={essential}
-                isEnabled={isEnabled}
-                onToggle={() => onToggle(essential.id)}
-                template={getTemplate(essential.id)}
-                onSaveSchedule={(slots) =>
-                  handleSaveSchedule(essential.id, slots)
-                }
-              />
-            );
-          })}
-        </div>
+      {/* Action Buttons */}
+      <div className="flex flex-col gap-2 px-3 pb-2">
+        <button
+          onClick={onSave}
+          className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+        >
+          Save changes
+        </button>
+        <button
+          onClick={onCancel}
+          className="w-full rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

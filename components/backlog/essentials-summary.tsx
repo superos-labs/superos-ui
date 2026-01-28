@@ -177,36 +177,7 @@ export function EssentialsSummary({
     templates.find((t) => t.essentialId === essentialId);
 
   if (essentials.length === 0) {
-    return (
-      <div className={cn("flex flex-col gap-2 py-2", className)}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-3">
-          <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Essentials
-          </h4>
-          <button
-            onClick={onEdit}
-            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            title="Edit essentials"
-          >
-            <RiSettings4Line className="size-3.5" />
-          </button>
-        </div>
-
-        {/* Empty state */}
-        <div className="flex flex-col items-center gap-2 px-3 py-4 text-center">
-          <p className="text-xs text-muted-foreground">
-            No essentials configured yet.
-          </p>
-          <button
-            onClick={onEdit}
-            className="text-xs font-medium text-foreground underline underline-offset-2 hover:no-underline"
-          >
-            Set up your routine
-          </button>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
