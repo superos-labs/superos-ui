@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiAddLine, RiSettings4Line } from "@remixicon/react";
+import { RiSettings4Line } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { EssentialTemplate, EssentialSlot } from "@/lib/essentials";
 import type { BacklogItem } from "./backlog-types";
@@ -120,8 +120,6 @@ export interface EssentialsSummaryProps {
   essentials: BacklogItem[];
   /** Templates with schedule data */
   templates: EssentialTemplate[];
-  /** Called when "Add to week" is clicked */
-  onAddToWeek: () => void;
   /** Called when edit button is clicked */
   onEdit: () => void;
   className?: string;
@@ -171,16 +169,13 @@ function EssentialCard({ essential, template }: EssentialCardProps) {
 export function EssentialsSummary({
   essentials,
   templates,
-  onAddToWeek,
   onEdit,
   className,
 }: EssentialsSummaryProps) {
   const getTemplate = (essentialId: string) =>
     templates.find((t) => t.essentialId === essentialId);
 
-  if (essentials.length === 0) {
-    return null;
-  }
+  const hasEssentials = essentials.length > 0;
 
   return (
     <div className={cn("flex flex-col px-3 py-2", className)}>
@@ -190,35 +185,39 @@ export function EssentialsSummary({
           <h3 className="text-sm font-semibold text-foreground">Essentials</h3>
           <p className="text-xs text-muted-foreground">Recurring activities</p>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onAddToWeek}
-            className="flex h-6 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
-            title="Add all essentials to the current week"
-          >
-            <RiAddLine className="size-3.5" />
-            <span>Add to week</span>
-          </button>
-          <button
-            onClick={onEdit}
-            className="flex size-6 w-0 items-center justify-center overflow-hidden rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground group-hover/section:w-6"
-            title="Edit essentials"
-          >
-            <RiSettings4Line className="size-3.5 shrink-0" />
-          </button>
-        </div>
+        <button
+          onClick={onEdit}
+          className={cn(
+            "flex size-6 items-center justify-center rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground",
+            // Always visible when no essentials, hover-reveal when essentials exist
+            hasEssentials && "w-0 overflow-hidden group-hover/section:w-6",
+          )}
+          title="Edit essentials"
+        >
+          <RiSettings4Line className="size-3.5 shrink-0" />
+        </button>
       </div>
 
-      {/* Essential cards */}
-      <div className="flex flex-col gap-0.5">
-        {essentials.map((essential) => (
-          <EssentialCard
-            key={essential.id}
-            essential={essential}
-            template={getTemplate(essential.id)}
-          />
-        ))}
-      </div>
+      {/* Essential cards or empty state */}
+      {hasEssentials ? (
+        <div className="flex flex-col gap-0.5">
+          {essentials.map((essential) => (
+            <EssentialCard
+              key={essential.id}
+              essential={essential}
+              template={getTemplate(essential.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <button
+          onClick={onEdit}
+          className="flex items-center gap-2 rounded-lg px-3 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+        >
+          <RiSettings4Line className="size-4" />
+          <span>Configure your essentials</span>
+        </button>
+      )}
     </div>
   );
 }

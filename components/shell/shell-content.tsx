@@ -72,7 +72,6 @@ import {
   RiArrowRightSLine,
   RiMoreFill,
   RiSideBarLine,
-  RiCalendarCheckLine,
   RiPieChartLine,
   RiAddLine,
   RiSubtractLine,
@@ -147,7 +146,8 @@ export function ShellContentComponent({
   // Essential templates
   essentialTemplates,
   onSaveEssentialSchedule,
-  onAddEssentialsToWeek,
+  onImportEssentialsToWeek,
+  weekNeedsEssentialImport,
   // Goal CRUD
   onAddGoal,
   onDeleteGoal,
@@ -343,8 +343,6 @@ export function ShellContentComponent({
     setShowRightSidebar,
     showTasks,
     setShowTasks,
-    showEssentialsPanel,
-    setShowEssentialsPanel,
     showInspirationGallery,
     backlogMode,
     setBacklogMode,
@@ -443,6 +441,16 @@ export function ShellContentComponent({
       onAddEvent(event);
     });
   }, [blueprint, weekDates, onAddEvent]);
+
+  // Handle continue to schedule step (auto-imports essentials)
+  const handleContinueToSchedule = React.useCallback(() => {
+    // Auto-import essentials if needed
+    if (weekNeedsEssentialImport) {
+      onImportEssentialsToWeek();
+    }
+    // Continue to schedule step
+    planningFlow.continueToSchedule();
+  }, [weekNeedsEssentialImport, onImportEssentialsToWeek, planningFlow]);
 
   // -------------------------------------------------------------------------
   // Derived Data
@@ -787,27 +795,6 @@ export function ShellContentComponent({
         >
           <RiSideBarLine className="size-4" />
         </button>
-        {showSidebar && (
-          <button
-            className={cn(
-              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-              showEssentialsPanel ? "text-foreground" : "text-muted-foreground",
-            )}
-            onClick={() => {
-              // If no essentials are enabled, go directly to edit mode
-              if (enabledEssentialIds.size === 0) {
-                onStartEditingEssentials();
-                setBacklogMode("edit-essentials");
-                setShowEssentialsPanel(true);
-              } else {
-                setShowEssentialsPanel(!showEssentialsPanel);
-              }
-            }}
-            title="Toggle essentials"
-          >
-            <RiCalendarCheckLine className="size-4" />
-          </button>
-        )}
       </div>
       <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
         <button
@@ -984,7 +971,7 @@ export function ShellContentComponent({
                   onAddTask={onAddTask}
                   // Step management props
                   step={planningFlow.step}
-                  onContinue={planningFlow.continueToSchedule}
+                  onContinue={handleContinueToSchedule}
                   onBack={planningFlow.backToIntentions}
                   highlightedTaskIds={planningFlow.highlightedTaskIds}
                   // Schedule step data accessors
@@ -998,7 +985,6 @@ export function ShellContentComponent({
                   goals={goals as BacklogItem[]}
                   className="h-full w-[360px] max-w-none"
                   showTasks={showTasks}
-                  showEssentials={showEssentialsPanel}
                   onToggleGoalTask={onToggleTaskComplete}
                   onAddTask={onAddTask}
                   onUpdateTask={onUpdateTask}
@@ -1026,7 +1012,6 @@ export function ShellContentComponent({
                   onDayBoundariesDisplayChange={onDayBoundariesDisplayChange}
                   essentialTemplates={essentialTemplates}
                   onSaveEssentialSchedule={onSaveEssentialSchedule}
-                  onAddEssentialsToWeek={onAddEssentialsToWeek}
                   onEditEssentials={() => {
                     onStartEditingEssentials();
                     setBacklogMode("edit-essentials");
@@ -1215,7 +1200,6 @@ export function ShellContentComponent({
             goals={goals as BacklogItem[]}
             className="h-full max-w-none border-0 rounded-none shadow-none"
             showTasks={true}
-            showEssentials={true}
             onToggleGoalTask={onToggleTaskComplete}
             onAddTask={onAddTask}
             onUpdateTask={onUpdateTask}

@@ -117,8 +117,10 @@ export interface ShellContentProps {
     essentialId: string,
     slots: EssentialSlot[],
   ) => void;
-  /** Add all essentials to the current week */
-  onAddEssentialsToWeek: () => void;
+  /** Import essentials to the current week (for weekly planning) */
+  onImportEssentialsToWeek: () => void;
+  /** Check if the week needs essential import */
+  weekNeedsEssentialImport: boolean;
 
   // -------------------------------------------------------------------------
   // Goal CRUD

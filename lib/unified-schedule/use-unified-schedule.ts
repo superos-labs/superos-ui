@@ -391,6 +391,10 @@ export function useUnifiedSchedule({
       ...baseCalendarHandlers,
       onEventDelete: deleteEvent,
       onEventStatusChange: (eventId: string, status: BlockStatus) => {
+        // Essential blocks cannot have their status changed
+        const event = allEvents.find((e) => e.id === eventId);
+        if (event?.blockType === "essential") return;
+
         if (status === "completed") {
           markEventComplete(eventId);
         } else if (status === "planned") {
@@ -404,6 +408,7 @@ export function useUnifiedSchedule({
     [
       baseCalendarHandlers,
       deleteEvent,
+      allEvents,
       markEventComplete,
       markEventIncomplete,
       updateEvent,

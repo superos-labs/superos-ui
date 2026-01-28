@@ -42,8 +42,6 @@ export interface UseShellLayoutReturn {
   setShowRightSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   showTasks: boolean;
   setShowTasks: React.Dispatch<React.SetStateAction<boolean>>;
-  showEssentialsPanel: boolean;
-  setShowEssentialsPanel: React.Dispatch<React.SetStateAction<boolean>>;
   showInspirationGallery: boolean;
   setShowInspirationGallery: React.Dispatch<React.SetStateAction<boolean>>;
 
@@ -98,7 +96,6 @@ export function useShellLayout(): UseShellLayoutReturn {
   const [showSidebar, setShowSidebar] = React.useState(true);
   const [showRightSidebar, setShowRightSidebar] = React.useState(false);
   const [showTasks, setShowTasks] = React.useState(true);
-  const [showEssentialsPanel, setShowEssentialsPanel] = React.useState(false);
   const [showInspirationGallery, setShowInspirationGallery] =
     React.useState(false);
 
@@ -262,8 +259,6 @@ export function useShellLayout(): UseShellLayoutReturn {
     setShowRightSidebar,
     showTasks,
     setShowTasks,
-    showEssentialsPanel,
-    setShowEssentialsPanel,
     showInspirationGallery,
     setShowInspirationGallery,
 

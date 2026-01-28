@@ -8,19 +8,33 @@ import type { GoalColor } from "@/lib/colors";
  */
 export type BlockColor = GoalColor;
 
-export const BLOCK_COLORS: Record<BlockColor, {
-  border: string;
-  bg: string;
-  bgHover: string;
-  text: string;
-  outlinedBorder: string;
-  outlinedBg: string;
-  outlinedBgHover: string;
-  completedBorder: string;
-  completedBg: string;
-  completedBgHover: string;
-  completedText: string;
-}> = {
+/**
+ * Muted styling for essential blocks.
+ * Uses neutral gray tones to visually recede compared to goal blocks.
+ */
+export const ESSENTIAL_BLOCK_STYLE = {
+  border: "border-l-slate-300",
+  bg: "bg-slate-100",
+  bgHover: "hover:bg-slate-150",
+  text: "text-slate-500",
+} as const;
+
+export const BLOCK_COLORS: Record<
+  BlockColor,
+  {
+    border: string;
+    bg: string;
+    bgHover: string;
+    text: string;
+    outlinedBorder: string;
+    outlinedBg: string;
+    outlinedBgHover: string;
+    completedBorder: string;
+    completedBg: string;
+    completedBgHover: string;
+    completedText: string;
+  }
+> = {
   violet: {
     border: "border-l-violet-500",
     bg: "bg-violet-200",

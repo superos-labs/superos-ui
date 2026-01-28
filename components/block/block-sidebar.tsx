@@ -25,7 +25,11 @@ import type { BlockColor } from "./block-colors";
 import type { BlockType, BlockStatus, IconComponent } from "@/lib/types";
 import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
-import { FocusTimer, StartFocusButton, FocusSidebarContent } from "@/components/focus";
+import {
+  FocusTimer,
+  StartFocusButton,
+  FocusSidebarContent,
+} from "@/components/focus";
 
 // Types
 
@@ -124,29 +128,30 @@ function formatFocusTime(minutes: number): string {
 function parseFocusTimeInput(input: string): number | null {
   const trimmed = input.trim();
   if (!trimmed) return 0;
-  
+
   // Try parsing as plain number (minutes) - use parseFloat to handle decimals
   const asNumber = parseFloat(trimmed);
   if (!isNaN(asNumber) && asNumber >= 0) {
     // Round to whole minutes
     return Math.round(asNumber);
   }
-  
+
   // Try parsing as "Xh Ym" or "Xh" or "Ym"
   const hourMatch = trimmed.match(/(\d+)\s*h/i);
   const minMatch = trimmed.match(/(\d+)\s*m/i);
-  
+
   if (hourMatch || minMatch) {
     const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
     const mins = minMatch ? parseInt(minMatch[1], 10) : 0;
     return hours * 60 + mins;
   }
-  
+
   return null; // Invalid input
 }
 
 // Auto-resizing textarea component
-type AutoResizeTextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+type AutoResizeTextareaProps =
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 function AutoResizeTextarea({
   className,
@@ -263,7 +268,9 @@ function ExpandedGoalTaskDetail({
   onUpdateSubtask,
   onDeleteSubtask,
 }: ExpandedGoalTaskDetailProps) {
-  const [descriptionValue, setDescriptionValue] = React.useState(task.description ?? "");
+  const [descriptionValue, setDescriptionValue] = React.useState(
+    task.description ?? "",
+  );
 
   // Sync description when task changes externally
   React.useEffect(() => {
@@ -300,9 +307,7 @@ function ExpandedGoalTaskDetail({
               size="default"
             />
           ))}
-          {onAddSubtask && (
-            <InlineGoalSubtaskCreator onSave={onAddSubtask} />
-          )}
+          {onAddSubtask && <InlineGoalSubtaskCreator onSave={onAddSubtask} />}
         </div>
       )}
     </div>
@@ -329,11 +334,11 @@ interface BlockGoalTaskRowProps {
   onDeleteSubtask?: (subtaskId: string) => void;
 }
 
-function BlockGoalTaskRow({ 
-  task, 
+function BlockGoalTaskRow({
+  task,
   isExpanded = false,
   onExpand,
-  onToggle, 
+  onToggle,
   onUnassign,
   onUpdateTask,
   onAddSubtask,
@@ -384,9 +389,9 @@ function BlockGoalTaskRow({
 
   // Click row to expand, click label when expanded to edit
   const handleRowClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('[data-checkbox]')) return;
-    if ((e.target as HTMLElement).closest('[data-label]')) return;
-    if ((e.target as HTMLElement).closest('[data-unassign]')) return;
+    if ((e.target as HTMLElement).closest("[data-checkbox]")) return;
+    if ((e.target as HTMLElement).closest("[data-label]")) return;
+    if ((e.target as HTMLElement).closest("[data-unassign]")) return;
     onExpand?.(task.id);
   };
 
@@ -434,12 +439,9 @@ function BlockGoalTaskRow({
   }, [isExpanded, isEditingTitle, onExpand, task.id]);
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className={cn(
-        "flex flex-col",
-        isExpanded && "rounded-lg bg-muted/30",
-      )}
+      className={cn("flex flex-col", isExpanded && "rounded-lg bg-muted/30")}
     >
       {/* Task header row */}
       <div
@@ -491,7 +493,9 @@ function BlockGoalTaskRow({
               task.completed
                 ? "text-muted-foreground line-through"
                 : "text-foreground",
-              isExpanded && onUpdateTask && "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",
+              isExpanded &&
+                onUpdateTask &&
+                "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",
             )}
           >
             {task.label}
@@ -652,7 +656,11 @@ function FocusTimeSection({
   const handleSave = () => {
     const parsed = parseFocusTimeInput(inputValue);
     // Only save if value changed and is valid
-    if (parsed !== null && onFocusedMinutesChange && parsed !== Math.round(focusedMinutes)) {
+    if (
+      parsed !== null &&
+      onFocusedMinutesChange &&
+      parsed !== Math.round(focusedMinutes)
+    ) {
       onFocusedMinutesChange(parsed);
     }
     setIsEditing(false);
@@ -941,7 +949,11 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Callback to toggle a goal task's subtask completion */
   onToggleGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
   /** Callback to update a goal task's subtask label */
-  onUpdateGoalTaskSubtask?: (taskId: string, subtaskId: string, label: string) => void;
+  onUpdateGoalTaskSubtask?: (
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
   /** Callback to delete a goal task's subtask */
   onDeleteGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
 
@@ -1023,15 +1035,17 @@ function BlockSidebar({
   const isGoalBlock = block.blockType === "goal";
   const isTaskBlock = block.blockType === "task";
   const isEssentialBlock = block.blockType === "essential";
-  
+
   // Get the source info (goal or essential)
   const sourceInfo = block.goal ?? block.essential;
 
   // Goal task expansion state (accordion - one at a time)
-  const [expandedGoalTaskId, setExpandedGoalTaskId] = React.useState<string | null>(null);
+  const [expandedGoalTaskId, setExpandedGoalTaskId] = React.useState<
+    string | null
+  >(null);
 
   const handleGoalTaskExpand = React.useCallback((taskId: string) => {
-    setExpandedGoalTaskId(prev => prev === taskId ? null : taskId);
+    setExpandedGoalTaskId((prev) => (prev === taskId ? null : taskId));
   }, []);
 
   // Inline subtask creation state
@@ -1067,7 +1081,7 @@ function BlockSidebar({
     setNewSubtaskLabel("");
     setIsCreatingSubtask(false);
   };
-  
+
   // Render focus mode layout when this block is being focused
   if (isFocused) {
     return (
@@ -1105,7 +1119,7 @@ function BlockSidebar({
       </div>
     );
   }
-  
+
   return (
     <div
       className={cn(
@@ -1117,19 +1131,23 @@ function BlockSidebar({
       {/* Header */}
       <div className="flex flex-col gap-3 px-4 pt-4 pb-2">
         {/* Header actions row */}
-        {(onClose || onDelete || (block.status === "completed" && onMarkIncomplete)) && (
+        {(onClose ||
+          onDelete ||
+          (block.status === "completed" && onMarkIncomplete)) && (
           <div className="flex justify-end gap-1">
-            {/* Mark incomplete button - only when completed */}
-            {block.status === "completed" && onMarkIncomplete && (
-              <button
-                onClick={onMarkIncomplete}
-                aria-label="Mark incomplete"
-                title="Mark incomplete"
-                className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <RiCheckboxCircleFill className="size-4" />
-              </button>
-            )}
+            {/* Mark incomplete button - only when completed (not for essentials) */}
+            {!isEssentialBlock &&
+              block.status === "completed" &&
+              onMarkIncomplete && (
+                <button
+                  onClick={onMarkIncomplete}
+                  aria-label="Mark incomplete"
+                  title="Mark incomplete"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <RiCheckboxCircleFill className="size-4" />
+                </button>
+              )}
             {/* Delete button */}
             {onDelete && (
               <button
@@ -1190,39 +1208,42 @@ function BlockSidebar({
             </span>
           </div>
         ) : (
-          isGoalBlock && availableGoals && availableGoals.length > 0 && onGoalSelect && (
+          isGoalBlock &&
+          availableGoals &&
+          availableGoals.length > 0 &&
+          onGoalSelect && (
             <GoalSelector goals={availableGoals} onSelect={onGoalSelect} />
           )
         )}
 
-        {/* Mark Complete action - only for planned blocks */}
-        {block.status !== "completed" && onMarkComplete && (
-          <button
-            onClick={onMarkComplete}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-          >
-            <RiCheckLine className="size-4" />
-            <span>Mark complete</span>
-          </button>
-        )}
+        {/* Mark Complete action - only for planned blocks (not for essentials) */}
+        {!isEssentialBlock &&
+          block.status !== "completed" &&
+          onMarkComplete && (
+            <button
+              onClick={onMarkComplete}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+            >
+              <RiCheckLine className="size-4" />
+              <span>Mark complete</span>
+            </button>
+          )}
 
         {/* Focus mode: show timer when focused, or start button when not */}
-        {/* Hide focus controls for completed blocks */}
-        {isFocused ? (
-          <FocusTimer
-            elapsedMs={focusElapsedMs ?? 0}
-            isRunning={focusIsRunning ?? false}
-            color={block.color}
-            onPause={onPauseFocus}
-            onResume={onResumeFocus}
-            onStop={onEndFocus}
-          />
-        ) : onStartFocus && block.status !== "completed" ? (
-          <StartFocusButton
-            onClick={onStartFocus}
-            disabled={focusDisabled}
-          />
-        ) : null}
+        {/* Hide focus controls for completed blocks and essentials */}
+        {!isEssentialBlock &&
+          (isFocused ? (
+            <FocusTimer
+              elapsedMs={focusElapsedMs ?? 0}
+              isRunning={focusIsRunning ?? false}
+              color={block.color}
+              onPause={onPauseFocus}
+              onResume={onResumeFocus}
+              onStop={onEndFocus}
+            />
+          ) : onStartFocus && block.status !== "completed" ? (
+            <StartFocusButton onClick={onStartFocus} disabled={focusDisabled} />
+          ) : null)}
       </div>
 
       {/* Content */}
@@ -1343,11 +1364,34 @@ function BlockSidebar({
                     onExpand={handleGoalTaskExpand}
                     onToggle={onToggleGoalTask}
                     onUnassign={onUnassignTask}
-                    onUpdateTask={onUpdateGoalTask ? (updates) => onUpdateGoalTask(task.id, updates) : undefined}
-                    onAddSubtask={onAddGoalTaskSubtask ? (label) => onAddGoalTaskSubtask(task.id, label) : undefined}
-                    onToggleSubtask={onToggleGoalTaskSubtask ? (subtaskId) => onToggleGoalTaskSubtask(task.id, subtaskId) : undefined}
-                    onUpdateSubtask={onUpdateGoalTaskSubtask ? (subtaskId, label) => onUpdateGoalTaskSubtask(task.id, subtaskId, label) : undefined}
-                    onDeleteSubtask={onDeleteGoalTaskSubtask ? (subtaskId) => onDeleteGoalTaskSubtask(task.id, subtaskId) : undefined}
+                    onUpdateTask={
+                      onUpdateGoalTask
+                        ? (updates) => onUpdateGoalTask(task.id, updates)
+                        : undefined
+                    }
+                    onAddSubtask={
+                      onAddGoalTaskSubtask
+                        ? (label) => onAddGoalTaskSubtask(task.id, label)
+                        : undefined
+                    }
+                    onToggleSubtask={
+                      onToggleGoalTaskSubtask
+                        ? (subtaskId) =>
+                            onToggleGoalTaskSubtask(task.id, subtaskId)
+                        : undefined
+                    }
+                    onUpdateSubtask={
+                      onUpdateGoalTaskSubtask
+                        ? (subtaskId, label) =>
+                            onUpdateGoalTaskSubtask(task.id, subtaskId, label)
+                        : undefined
+                    }
+                    onDeleteSubtask={
+                      onDeleteGoalTaskSubtask
+                        ? (subtaskId) =>
+                            onDeleteGoalTaskSubtask(task.id, subtaskId)
+                        : undefined
+                    }
                   />
                 ))
               ) : (
@@ -1426,8 +1470,8 @@ function BlockSidebar({
                 )}
 
                 {/* Add subtask - inline creator or button */}
-                {onAddSubtask && (
-                  isCreatingSubtask ? (
+                {onAddSubtask &&
+                  (isCreatingSubtask ? (
                     <div className="flex items-center gap-2 py-0.5">
                       <div className="flex size-4 shrink-0 items-center justify-center rounded border border-muted-foreground/40" />
                       <input
@@ -1449,8 +1493,7 @@ function BlockSidebar({
                       <RiAddLine className="size-3.5" />
                       <span>Add subtask</span>
                     </button>
-                  )
-                )}
+                  ))}
               </>
             )}
           </div>

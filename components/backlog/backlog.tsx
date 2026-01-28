@@ -23,7 +23,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of goal items to display */
   goals: BacklogItem[];
   showTasks?: boolean;
-  showEssentials?: boolean;
   onAddEssential?: () => void;
   onAddGoal?: () => void;
   onToggleGoalTask?: (goalId: string, taskId: string) => void;
@@ -95,8 +94,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
     essentialId: string,
     slots: EssentialSlot[],
   ) => void;
-  /** Callback when "Add to week" is clicked */
-  onAddEssentialsToWeek?: () => void;
 
   // Goal creation props (for goal-detail mode's BacklogGoalList)
   /** Callback for creating a new goal */
@@ -125,7 +122,6 @@ export function Backlog({
   essentials,
   goals,
   showTasks = true,
-  showEssentials = true,
   onAddEssential,
   onAddGoal,
   onToggleGoalTask,
@@ -157,7 +153,6 @@ export function Backlog({
   onDayBoundariesDisplayChange,
   essentialTemplates,
   onSaveEssentialSchedule,
-  onAddEssentialsToWeek,
   // Goal creation props
   onCreateGoal,
   lifeAreas,
@@ -202,37 +197,35 @@ export function Backlog({
     >
       {/* Content */}
       <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto">
-        {showEssentials &&
-          (isEditingEssentials &&
-          allEssentials &&
-          enabledEssentialIds &&
-          onToggleEssentialEnabled &&
-          onSaveEssentials &&
-          onCancelEditEssentials ? (
-            <EditEssentialsView
-              allEssentials={allEssentials}
-              enabledIds={enabledEssentialIds}
-              onToggle={onToggleEssentialEnabled}
-              onSave={onSaveEssentials}
-              onCancel={onCancelEditEssentials}
-              dayStartMinutes={dayStartMinutes}
-              dayEndMinutes={dayEndMinutes}
-              onDayBoundariesChange={onDayBoundariesChange}
-              dayBoundariesEnabled={dayBoundariesEnabled}
-              onDayBoundariesEnabledChange={onDayBoundariesEnabledChange}
-              dayBoundariesDisplay={dayBoundariesDisplay}
-              onDayBoundariesDisplayChange={onDayBoundariesDisplayChange}
-              templates={essentialTemplates}
-              onSaveEssentialSchedule={onSaveEssentialSchedule}
-            />
-          ) : (
-            <EssentialsSummary
-              essentials={essentials}
-              templates={essentialTemplates ?? []}
-              onAddToWeek={onAddEssentialsToWeek ?? (() => {})}
-              onEdit={onEditEssentials ?? (() => {})}
-            />
-          ))}
+        {isEditingEssentials &&
+        allEssentials &&
+        enabledEssentialIds &&
+        onToggleEssentialEnabled &&
+        onSaveEssentials &&
+        onCancelEditEssentials ? (
+          <EditEssentialsView
+            allEssentials={allEssentials}
+            enabledIds={enabledEssentialIds}
+            onToggle={onToggleEssentialEnabled}
+            onSave={onSaveEssentials}
+            onCancel={onCancelEditEssentials}
+            dayStartMinutes={dayStartMinutes}
+            dayEndMinutes={dayEndMinutes}
+            onDayBoundariesChange={onDayBoundariesChange}
+            dayBoundariesEnabled={dayBoundariesEnabled}
+            onDayBoundariesEnabledChange={onDayBoundariesEnabledChange}
+            dayBoundariesDisplay={dayBoundariesDisplay}
+            onDayBoundariesDisplayChange={onDayBoundariesDisplayChange}
+            templates={essentialTemplates}
+            onSaveEssentialSchedule={onSaveEssentialSchedule}
+          />
+        ) : (
+          <EssentialsSummary
+            essentials={essentials}
+            templates={essentialTemplates ?? []}
+            onEdit={onEditEssentials ?? (() => {})}
+          />
+        )}
 
         <BacklogSection
           title="Goals"

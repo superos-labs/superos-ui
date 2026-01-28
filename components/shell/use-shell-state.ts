@@ -18,17 +18,17 @@ import * as React from "react";
 import { getWeekDates } from "@/components/calendar";
 import type { CalendarEvent } from "@/components/calendar";
 import { useCalendarClipboard } from "@/components/calendar";
-import {
-  useUnifiedSchedule,
-  useWeekNavigation,
-  useEssentialAutoComplete,
-} from "@/lib/unified-schedule";
+import { useUnifiedSchedule, useWeekNavigation } from "@/lib/unified-schedule";
 import type {
   ScheduleGoal,
   ScheduleEssential,
   DeadlineTask,
 } from "@/lib/unified-schedule";
-import { useEssentialConfig, importEssentialsToEvents } from "@/lib/essentials";
+import {
+  useEssentialConfig,
+  importEssentialsToEvents,
+  weekNeedsEssentialImport,
+} from "@/lib/essentials";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import { DEFAULT_ESSENTIAL_SLOTS } from "@/lib/essentials";
 import { useFocusSession, useFocusNotifications } from "@/lib/focus";
@@ -215,15 +215,6 @@ export function useShellState(
   });
 
   // -------------------------------------------------------------------------
-  // Essential Auto-Complete
-  // -------------------------------------------------------------------------
-  useEssentialAutoComplete({
-    events: schedule.events,
-    enabled: autoCompleteEssentials,
-    markComplete: schedule.markEventComplete,
-  });
-
-  // -------------------------------------------------------------------------
   // Focus Notifications
   // -------------------------------------------------------------------------
   useFocusNotifications({
@@ -274,7 +265,18 @@ export function useShellState(
     [essentialConfig],
   );
 
-  const handleAddEssentialsToWeek = React.useCallback(() => {
+  // Check if the week needs essential import
+  const needsEssentialImport = React.useMemo(() => {
+    return weekNeedsEssentialImport(
+      schedule.events,
+      essentialConfig.config.enabledIds,
+    );
+  }, [schedule.events, essentialConfig.config.enabledIds]);
+
+  const handleImportEssentialsToWeek = React.useCallback(() => {
+    // Skip if week already has essentials
+    if (!needsEssentialImport) return;
+
     // Get enabled templates
     const enabledTemplates = essentialConfig.config.templates.filter((t) =>
       essentialConfig.config.enabledIds.includes(t.essentialId),
@@ -299,6 +301,7 @@ export function useShellState(
       schedule.addEvent(event);
     });
   }, [
+    needsEssentialImport,
     essentialConfig.config,
     schedule.allEssentials,
     weekDates,
@@ -345,7 +348,8 @@ export function useShellState(
     // Essential templates
     essentialTemplates: essentialConfig.config.templates,
     onSaveEssentialSchedule: handleSaveEssentialSchedule,
-    onAddEssentialsToWeek: handleAddEssentialsToWeek,
+    onImportEssentialsToWeek: handleImportEssentialsToWeek,
+    weekNeedsEssentialImport: needsEssentialImport,
 
     // Goal CRUD
     onAddGoal: schedule.addGoal,

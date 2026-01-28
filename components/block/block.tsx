@@ -3,7 +3,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiCheckLine, RiCircleLine } from "@remixicon/react";
-import { BLOCK_COLORS, type BlockColor } from "./block-colors";
+import {
+  BLOCK_COLORS,
+  ESSENTIAL_BLOCK_STYLE,
+  type BlockColor,
+} from "./block-colors";
 import type { BlockStatus, BlockType } from "@/lib/types";
 
 type BlockDuration = 30 | 60 | 240;
@@ -75,6 +79,7 @@ function Block({
 
   const colorStyles = BLOCK_COLORS[color];
   const isCompleted = status === "completed";
+  const isEssential = blockType === "essential";
 
   const height = fillContainer
     ? undefined
@@ -90,6 +95,38 @@ function Block({
     end: "rounded-t-none rounded-b-md", // Flat top for overnight end
   };
 
+  // Essential blocks use muted neutral styling to visually recede
+  const getBlockStyles = () => {
+    if (isEssential) {
+      return [
+        "border-l-[3px]",
+        ESSENTIAL_BLOCK_STYLE.border,
+        ESSENTIAL_BLOCK_STYLE.bg,
+        ESSENTIAL_BLOCK_STYLE.bgHover,
+        ESSENTIAL_BLOCK_STYLE.text,
+      ];
+    }
+
+    if (isCompleted) {
+      return [
+        "border-l-[3px]",
+        colorStyles.completedBorder,
+        colorStyles.completedBg,
+        colorStyles.completedBgHover,
+        colorStyles.completedText,
+        "opacity-60",
+      ];
+    }
+
+    return [
+      "border-l-[3px]",
+      colorStyles.border,
+      colorStyles.bg,
+      colorStyles.bgHover,
+      colorStyles.text,
+    ];
+  };
+
   return (
     <div
       className={cn(
@@ -98,22 +135,7 @@ function Block({
         isCompact ? "justify-center py-1" : "py-2",
         "cursor-pointer transition-all",
         fillContainer && "h-full",
-        isCompleted
-          ? [
-              "border-l-[3px]",
-              colorStyles.completedBorder,
-              colorStyles.completedBg,
-              colorStyles.completedBgHover,
-              colorStyles.completedText,
-              "opacity-60",
-            ]
-          : [
-              "border-l-[3px]",
-              colorStyles.border,
-              colorStyles.bg,
-              colorStyles.bgHover,
-              colorStyles.text,
-            ],
+        getBlockStyles(),
         // Drop target visual states
         isDropTarget && !isDragOver && "ring-2 ring-primary/30",
         isDragOver && "ring-2 ring-primary/60 scale-[1.02] shadow-lg",
@@ -157,8 +179,9 @@ function Block({
           {isCompleted && <RiCheckLine className="size-2.5" />}
         </button>
       )}
-      {/* Task count badge for goal blocks */}
+      {/* Task count badge for goal blocks (not for essentials or tasks) */}
       {blockType !== "task" &&
+        blockType !== "essential" &&
         (() => {
           const pending = pendingTaskCount ?? 0;
           const completed = completedTaskCount ?? 0;
