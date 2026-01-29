@@ -4,23 +4,19 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiAddLine, RiArrowLeftSLine, RiSparklingLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
-import type { BacklogItem } from "./backlog-types";
+import type { GoalItem } from "./goal-types";
 
 // =============================================================================
 // Goal List Item
 // =============================================================================
 
 interface GoalListItemProps {
-  goal: BacklogItem;
+  goal: GoalItem;
   isSelected?: boolean;
   onClick?: () => void;
 }
 
-function GoalListItem({
-  goal,
-  isSelected,
-  onClick,
-}: GoalListItemProps) {
+function GoalListItem({ goal, isSelected, onClick }: GoalListItemProps) {
   const Icon = goal.icon;
 
   return (
@@ -28,9 +24,7 @@ function GoalListItem({
       onClick={onClick}
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all",
-        isSelected
-          ? "bg-muted"
-          : "hover:bg-muted/60",
+        isSelected ? "bg-muted" : "hover:bg-muted/60",
       )}
     >
       {/* Icon - muted background with colored icon */}
@@ -40,12 +34,7 @@ function GoalListItem({
           isSelected ? "bg-muted" : "bg-muted/60",
         )}
       >
-        <Icon
-          className={cn(
-            "size-4",
-            getIconColorClass(goal.color),
-          )}
-        />
+        <Icon className={cn("size-4", getIconColorClass(goal.color))} />
       </div>
 
       {/* Label */}
@@ -65,9 +54,9 @@ function GoalListItem({
 // Main Component
 // =============================================================================
 
-export interface BacklogGoalListProps {
+export interface GoalListProps {
   /** Array of goal items to display */
-  goals: BacklogItem[];
+  goals: GoalItem[];
   /** Currently selected goal ID */
   selectedGoalId?: string | null;
   /** Callback when a goal is selected */
@@ -83,7 +72,7 @@ export interface BacklogGoalListProps {
   className?: string;
 }
 
-export function BacklogGoalList({
+export function GoalList({
   goals,
   selectedGoalId,
   onSelectGoal,
@@ -92,7 +81,7 @@ export function BacklogGoalList({
   onBrowseInspiration,
   isInspirationActive,
   className,
-}: BacklogGoalListProps) {
+}: GoalListProps) {
   return (
     <div
       className={cn(
@@ -158,7 +147,9 @@ export function BacklogGoalList({
             <span
               className={cn(
                 "text-sm",
-                isInspirationActive ? "font-medium text-foreground" : "text-muted-foreground",
+                isInspirationActive
+                  ? "font-medium text-foreground"
+                  : "text-muted-foreground",
               )}
             >
               Browse inspiration
@@ -169,3 +160,8 @@ export function BacklogGoalList({
     </div>
   );
 }
+
+/**
+ * @deprecated Use GoalList instead. Kept for backward compatibility.
+ */
+export const BacklogGoalList = GoalList;

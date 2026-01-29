@@ -1,65 +1,110 @@
-// Public API for the Backlog component family
+/**
+ * Public API for the Backlog component family.
+ *
+ * The backlog is organized into two subfolders:
+ * - goals/     - Goal-related components (tasks, milestones, inspiration)
+ * - essentials/ - Essential-related components (sleep, schedule templates)
+ */
 
-// Main component
+// =============================================================================
+// Main Component
+// =============================================================================
+
 export { Backlog } from "./backlog";
 export type { BacklogProps } from "./backlog";
 
-// Sub-components
-export { BacklogSection } from "./backlog-section";
-export type { BacklogSectionProps } from "./backlog-section";
+// =============================================================================
+// Shared Types
+// =============================================================================
 
-export { BacklogItemRow } from "./backlog-item-row";
-export type { BacklogItemRowProps } from "./backlog-item-row";
+export type {
+  BacklogItemBase,
+  BacklogMode,
+  BacklogGroup,
+} from "./backlog-types";
 
-export { TaskRow, SubtaskRow } from "./task-row";
-export type { TaskRowProps } from "./task-row";
+// =============================================================================
+// Goals (Re-exports from ./goals/)
+// =============================================================================
 
+// Components
 export {
+  GoalSection,
+  BacklogSection,
+  GoalItemRow,
+  BacklogItemRow,
+  GoalList,
+  BacklogGoalList,
+  GoalInspirationGallery,
+  TaskRow,
+  SubtaskRow,
   InlineTaskCreator,
   InlineGoalCreator,
-  InlineEssentialCreator,
-} from "./inline-creators";
+} from "./goals";
+
+// Types
 export type {
+  GoalItem,
+  BacklogItem,
+  GoalTask,
+  Milestone,
+  Subtask,
+  NewGoalData,
+  GoalIconOption,
+  InspirationGoal,
+  InspirationCategory,
+  LifeArea,
+  GoalSectionProps,
+  GoalItemRowProps,
+  GoalListProps,
+  GoalInspirationGalleryProps,
+  TaskRowProps,
   InlineTaskCreatorProps,
   InlineGoalCreatorProps,
+} from "./goals";
+
+// Utilities
+export { formatScheduledTime, formatDeadlineDate } from "./goals";
+
+// =============================================================================
+// Essentials (Re-exports from ./essentials/)
+// =============================================================================
+
+// Components
+export {
+  EssentialsSection,
+  EssentialRow,
+  SleepRow,
+  InlineEssentialCreator,
+} from "./essentials";
+
+// Types
+export type {
+  EssentialItem,
+  NewEssentialData,
+  EssentialSlot,
+  EssentialTemplate,
+  EssentialConfig,
+  EssentialsSectionProps,
+  EssentialRowProps,
+  SleepRowProps,
   InlineEssentialCreatorProps,
-} from "./inline-creators";
+} from "./essentials";
 
-export { EssentialsSection } from "./essentials-section";
-export type { EssentialsSectionProps } from "./essentials-section";
+// =============================================================================
+// Hooks (Re-exported from lib/essentials for convenience)
+// =============================================================================
 
-export { EssentialRow, SleepRow } from "./essential-row";
-export type { EssentialRowProps, SleepRowProps } from "./essential-row";
-
-// Hook for managing activity schedule state (re-exported from lib/essentials)
 export { useActivitySchedule } from "@/lib/essentials";
 export type {
   UseActivityScheduleOptions,
   UseActivityScheduleReturn,
 } from "@/lib/essentials";
 
-export { BacklogGoalList } from "./backlog-goal-list";
-export type { BacklogGoalListProps } from "./backlog-goal-list";
+// =============================================================================
+// Unified Schedule Types (Re-exported for convenience)
+// =============================================================================
 
-export { GoalInspirationGallery } from "./goal-inspiration-gallery";
-export type { GoalInspirationGalleryProps } from "./goal-inspiration-gallery";
-
-// Types
-export type {
-  BacklogItem,
-  BacklogTask,
-  BacklogGroup,
-  BacklogMode,
-  NewGoalData,
-  NewEssentialData,
-  LifeArea,
-  GoalIconOption,
-  Milestone,
-  InspirationGoal,
-  InspirationCategory,
-} from "./backlog-types";
-
-// Re-export types from unified-schedule for convenience
 export type {
   GoalStats,
   TaskScheduleInfo,

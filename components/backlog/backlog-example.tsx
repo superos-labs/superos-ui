@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Backlog, type BacklogItem } from "./index";
+import { Backlog } from "./backlog";
+import type { GoalItem, EssentialItem } from "./index";
 import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
 import {
   KnobsProvider,
@@ -22,58 +23,46 @@ import {
   RiPenNibLine,
 } from "@remixicon/react";
 
-const INITIAL_ESSENTIALS: BacklogItem[] = [
+const INITIAL_ESSENTIALS: EssentialItem[] = [
   {
     id: "sleep",
     label: "Sleep",
     icon: RiMoonLine,
     color: "indigo",
-    plannedHours: 56,
-    completedHours: 48,
   },
   {
     id: "eat",
     label: "Eat",
     icon: RiRestaurantLine,
     color: "amber",
-    plannedHours: 14,
-    completedHours: 12,
   },
   {
     id: "commute",
     label: "Commute",
     icon: RiCarLine,
     color: "slate",
-    plannedHours: 10,
-    completedHours: 8,
   },
   {
     id: "exercise",
     label: "Exercise",
     icon: RiRunLine,
     color: "green",
-    plannedHours: 5,
-    completedHours: 3,
   },
   {
     id: "downtime",
     label: "Downtime",
     icon: RiSofaLine,
     color: "cyan",
-    plannedHours: 7,
-    completedHours: 5,
   },
   {
     id: "chores",
     label: "Chores",
     icon: RiHome4Line,
     color: "orange",
-    plannedHours: 4,
-    completedHours: 2,
   },
 ];
 
-const INITIAL_GOALS: BacklogItem[] = [
+const INITIAL_GOALS: GoalItem[] = [
   {
     id: "superos",
     label: "Get SuperOS to $1M ARR",

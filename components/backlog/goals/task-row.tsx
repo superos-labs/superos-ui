@@ -17,8 +17,8 @@ import type {
   ScheduleTask,
   Subtask,
 } from "@/lib/unified-schedule";
-import type { BacklogItem, BacklogTask } from "./backlog-types";
-import { formatScheduledTime, formatDeadlineDate } from "./backlog-utils";
+import type { GoalItem } from "./goal-types";
+import { formatScheduledTime, formatDeadlineDate } from "./goal-utils";
 import { SubtaskRow } from "@/components/ui/subtask-row";
 
 // SubtaskRow is imported from @/components/ui/subtask-row
@@ -100,7 +100,7 @@ function InlineSubtaskCreator({ onSave }: InlineSubtaskCreatorProps) {
 // =============================================================================
 
 interface ExpandedTaskDetailProps {
-  task: BacklogTask;
+  task: ScheduleTask;
   onUpdateTask?: (updates: Partial<ScheduleTask>) => void;
   onAddSubtask?: (label: string) => void;
   onToggleSubtask?: (subtaskId: string) => void;
@@ -167,9 +167,9 @@ function ExpandedTaskDetail({
 // =============================================================================
 
 export interface TaskRowProps {
-  task: BacklogTask;
+  task: ScheduleTask;
   /** Parent goal (needed for drag context and color inheritance) */
-  parentGoal: BacklogItem;
+  parentGoal: GoalItem;
   /** Schedule info if this task is on the calendar */
   scheduleInfo?: TaskScheduleInfo | null;
   /** Deadline info if this task has a deadline */

@@ -41,9 +41,11 @@ export { Backlog } from "./backlog";
 export type {
   BacklogProps,
   BacklogItem,
-  BacklogTask,
+  GoalItem,
+  EssentialItem,
   BacklogMode,
   NewGoalData,
+  NewEssentialData,
   Milestone,
 } from "./backlog";
 

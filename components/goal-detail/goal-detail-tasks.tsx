@@ -3,9 +3,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiAddLine } from "@remixicon/react";
-import type { ScheduleTask, TaskScheduleInfo, TaskDeadlineInfo } from "@/lib/unified-schedule";
-import type { BacklogItem } from "@/components/backlog";
-import { TaskRow } from "@/components/backlog/task-row";
+import type {
+  ScheduleTask,
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+} from "@/lib/unified-schedule";
+import type { GoalItem } from "@/components/backlog";
+import { TaskRow } from "@/components/backlog";
 
 // =============================================================================
 // Inline Task Creator (simplified version for goal detail)
@@ -88,7 +92,7 @@ function InlineTaskCreator({ onSave }: InlineTaskCreatorProps) {
 
 interface GoalDetailTaskRowProps {
   task: ScheduleTask;
-  parentGoal: BacklogItem;
+  parentGoal: GoalItem;
   scheduleInfo?: TaskScheduleInfo | null;
   deadlineInfo?: TaskDeadlineInfo | null;
   isExpanded?: boolean;
@@ -126,11 +130,27 @@ function GoalDetailTaskRow({
       isExpanded={isExpanded}
       onToggle={onToggle}
       onExpand={onExpand}
-      onUpdateTask={onUpdateTask ? (updates) => onUpdateTask(task.id, updates) : undefined}
-      onAddSubtask={onAddSubtask ? (label) => onAddSubtask(task.id, label) : undefined}
-      onToggleSubtask={onToggleSubtask ? (subtaskId) => onToggleSubtask(task.id, subtaskId) : undefined}
-      onUpdateSubtask={onUpdateSubtask ? (subtaskId, label) => onUpdateSubtask(task.id, subtaskId, label) : undefined}
-      onDeleteSubtask={onDeleteSubtask ? (subtaskId) => onDeleteSubtask(task.id, subtaskId) : undefined}
+      onUpdateTask={
+        onUpdateTask ? (updates) => onUpdateTask(task.id, updates) : undefined
+      }
+      onAddSubtask={
+        onAddSubtask ? (label) => onAddSubtask(task.id, label) : undefined
+      }
+      onToggleSubtask={
+        onToggleSubtask
+          ? (subtaskId) => onToggleSubtask(task.id, subtaskId)
+          : undefined
+      }
+      onUpdateSubtask={
+        onUpdateSubtask
+          ? (subtaskId, label) => onUpdateSubtask(task.id, subtaskId, label)
+          : undefined
+      }
+      onDeleteSubtask={
+        onDeleteSubtask
+          ? (subtaskId) => onDeleteSubtask(task.id, subtaskId)
+          : undefined
+      }
       onDeleteTask={onDeleteTask ? () => onDeleteTask(task.id) : undefined}
       draggable={false}
     />
@@ -145,7 +165,7 @@ export interface GoalDetailTasksProps {
   /** Tasks for this goal */
   tasks: ScheduleTask[];
   /** Parent goal (for context) */
-  parentGoal: BacklogItem;
+  parentGoal: GoalItem;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -185,7 +205,9 @@ export function GoalDetailTasks({
   className,
 }: GoalDetailTasksProps) {
   // Task expansion state (accordion - one at a time)
-  const [expandedTaskId, setExpandedTaskId] = React.useState<string | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = React.useState<string | null>(
+    null,
+  );
 
   const handleExpand = React.useCallback((taskId: string) => {
     setExpandedTaskId((prev) => (prev === taskId ? null : taskId));
@@ -201,9 +223,7 @@ export function GoalDetailTasks({
   return (
     <div className={cn("flex flex-col gap-0.5", className)}>
       {sortedTasks.length === 0 && !onAddTask && (
-        <p className="py-2 text-sm text-muted-foreground/60">
-          No tasks yet
-        </p>
+        <p className="py-2 text-sm text-muted-foreground/60">No tasks yet</p>
       )}
 
       {sortedTasks.map((task) => (

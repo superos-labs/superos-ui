@@ -4,7 +4,11 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiAddLine, RiCloseLine, RiCheckLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
-import type { InspirationCategory, InspirationGoal, NewGoalData } from "./backlog-types";
+import type {
+  InspirationCategory,
+  InspirationGoal,
+  NewGoalData,
+} from "./goal-types";
 
 // =============================================================================
 // Inspiration Goal Row
@@ -130,7 +134,9 @@ export function GoalInspirationGallery({
   className,
 }: GoalInspirationGalleryProps) {
   // Track locally added goals during this session
-  const [locallyAdded, setLocallyAdded] = React.useState<Set<string>>(new Set());
+  const [locallyAdded, setLocallyAdded] = React.useState<Set<string>>(
+    new Set(),
+  );
 
   // Combine externally added and locally added goal IDs
   const allAddedIds = React.useMemo(() => {

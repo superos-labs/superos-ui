@@ -2,20 +2,21 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  RiArrowRightSLine,
-  RiShiningLine,
-} from "@remixicon/react";
+import { RiArrowRightSLine, RiShiningLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
-import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
-import type { BacklogItem } from "./backlog-types";
+import type {
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+  ScheduleTask,
+} from "@/lib/unified-schedule";
+import type { GoalItem } from "./goal-types";
 import { TaskRow } from "./task-row";
 import { InlineTaskCreator } from "./inline-creators";
 
-export interface BacklogItemRowProps {
-  item: BacklogItem;
+export interface GoalItemRowProps {
+  item: GoalItem;
   showTasks?: boolean;
   /** Callback when the item row is clicked (for entering goal-detail mode) */
   onItemClick?: (itemId: string) => void;
@@ -23,13 +24,22 @@ export interface BacklogItemRowProps {
   /** Callback to add a new task to this goal */
   onAddTask?: (goalId: string, label: string) => void;
   /** Callback to update a task's properties */
-  onUpdateTask?: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
+  onUpdateTask?: (
+    goalId: string,
+    taskId: string,
+    updates: Partial<ScheduleTask>,
+  ) => void;
   /** Callback to add a subtask to a task */
   onAddSubtask?: (goalId: string, taskId: string, label: string) => void;
   /** Callback to toggle a subtask's completion */
   onToggleSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to update a subtask's label */
-  onUpdateSubtask?: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
+  onUpdateSubtask?: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
   /** Callback to delete a subtask */
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
@@ -40,14 +50,10 @@ export interface BacklogItemRowProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled (requires DragProvider) */
   draggable?: boolean;
-  /** Type of drag item to create ("goal" for goals, "essential" for essentials) */
-  dragType?: "goal" | "essential";
-  /** Compact display mode (for 2-column grid layout) */
-  compact?: boolean;
   className?: string;
 }
 
-export function BacklogItemRow({
+export function GoalItemRow({
   item,
   showTasks = true,
   onItemClick,
@@ -62,34 +68,27 @@ export function BacklogItemRow({
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
-  dragType = "goal",
-  compact = false,
   className,
-}: BacklogItemRowProps) {
+}: GoalItemRowProps) {
   const IconComponent = item.icon;
 
   // Expansion state - accordion style (one task at a time)
-  const [expandedTaskId, setExpandedTaskId] = React.useState<string | null>(null);
+  const [expandedTaskId, setExpandedTaskId] = React.useState<string | null>(
+    null,
+  );
 
   // Drag context is optional - only use if within DragProvider
   const dragContext = useDragContextOptional();
   const canDrag = draggable && dragContext;
-  
-  // Create the appropriate drag item based on dragType
-  const dragItem: DragItem = dragType === "essential"
-    ? {
-        type: "essential",
-        essentialId: item.id,
-        essentialLabel: item.label,
-        essentialColor: item.color,
-      }
-    : {
-        type: "goal",
-        goalId: item.id,
-        goalLabel: item.label,
-        goalColor: item.color,
-      };
-  
+
+  // Create the drag item for goals
+  const dragItem: DragItem = {
+    type: "goal",
+    goalId: item.id,
+    goalLabel: item.label,
+    goalColor: item.color,
+  };
+
   const { draggableProps, isDragging } = useDraggable({
     item: dragItem,
     disabled: !canDrag,
@@ -97,42 +96,27 @@ export function BacklogItemRow({
 
   // Compute current milestone (first incomplete) and progress
   // Only show if milestones are enabled (default to true if milestones exist)
-  const milestonesEnabled = item.milestonesEnabled ?? (item.milestones && item.milestones.length > 0);
-  const currentMilestone = milestonesEnabled ? item.milestones?.find(m => !m.completed) : undefined;
-  const completedMilestones = item.milestones?.filter(m => m.completed).length ?? 0;
+  const milestonesEnabled =
+    item.milestonesEnabled ?? (item.milestones && item.milestones.length > 0);
+  const currentMilestone = milestonesEnabled
+    ? item.milestones?.find((m) => !m.completed)
+    : undefined;
+  const completedMilestones =
+    item.milestones?.filter((m) => m.completed).length ?? 0;
   const totalMilestones = item.milestones?.length ?? 0;
   const showMilestones = milestonesEnabled && totalMilestones > 0;
 
   // Handle chevron click to navigate to goal detail
-  const handleChevronClick = React.useCallback((e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent drag initiation
-    onItemClick?.(item.id);
-  }, [onItemClick, item.id]);
+  const handleChevronClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent drag initiation
+      onItemClick?.(item.id);
+    },
+    [onItemClick, item.id],
+  );
 
-  // Only show chevron for goals (not essentials)
-  const showChevron = dragType === "goal" && onItemClick;
-
-  // Compact mode: simplified layout for 2-column grid (essentials)
-  if (compact) {
-    return (
-      <div
-        className={cn(
-          "group flex items-center gap-2 rounded-lg px-2 py-2 transition-all",
-          "hover:bg-muted/60",
-          isDragging && "opacity-50",
-          className,
-        )}
-        {...(canDrag ? draggableProps : {})}
-      >
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted/60">
-          <IconComponent className={cn("size-3.5", getIconColorClass(item.color))} />
-        </div>
-        <span className="min-w-0 truncate text-sm text-foreground">
-          {item.label}
-        </span>
-      </div>
-    );
-  }
+  // Only show chevron for clickable items
+  const showChevron = onItemClick;
 
   return (
     <div className={cn("flex flex-col", className)}>
@@ -145,7 +129,9 @@ export function BacklogItemRow({
         {...(canDrag ? draggableProps : {})}
       >
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-          <IconComponent className={cn("size-4", getIconColorClass(item.color))} />
+          <IconComponent
+            className={cn("size-4", getIconColorClass(item.color))}
+          />
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -186,23 +172,50 @@ export function BacklogItemRow({
               onToggle={(taskId) => onToggleTask?.(item.id, taskId)}
               draggable={draggable}
               isExpanded={expandedTaskId === task.id}
-              onExpand={(taskId) => setExpandedTaskId(prev => prev === taskId ? null : taskId)}
-              onUpdateTask={onUpdateTask ? (updates) => onUpdateTask(item.id, task.id, updates) : undefined}
-              onAddSubtask={onAddSubtask ? (label) => onAddSubtask(item.id, task.id, label) : undefined}
-              onToggleSubtask={onToggleSubtask ? (subtaskId) => onToggleSubtask(item.id, task.id, subtaskId) : undefined}
-              onUpdateSubtask={onUpdateSubtask ? (subtaskId, label) => onUpdateSubtask(item.id, task.id, subtaskId, label) : undefined}
-              onDeleteSubtask={onDeleteSubtask ? (subtaskId) => onDeleteSubtask(item.id, task.id, subtaskId) : undefined}
-              onDeleteTask={onDeleteTask ? () => onDeleteTask(item.id, task.id) : undefined}
+              onExpand={(taskId) =>
+                setExpandedTaskId((prev) => (prev === taskId ? null : taskId))
+              }
+              onUpdateTask={
+                onUpdateTask
+                  ? (updates) => onUpdateTask(item.id, task.id, updates)
+                  : undefined
+              }
+              onAddSubtask={
+                onAddSubtask
+                  ? (label) => onAddSubtask(item.id, task.id, label)
+                  : undefined
+              }
+              onToggleSubtask={
+                onToggleSubtask
+                  ? (subtaskId) => onToggleSubtask(item.id, task.id, subtaskId)
+                  : undefined
+              }
+              onUpdateSubtask={
+                onUpdateSubtask
+                  ? (subtaskId, label) =>
+                      onUpdateSubtask(item.id, task.id, subtaskId, label)
+                  : undefined
+              }
+              onDeleteSubtask={
+                onDeleteSubtask
+                  ? (subtaskId) => onDeleteSubtask(item.id, task.id, subtaskId)
+                  : undefined
+              }
+              onDeleteTask={
+                onDeleteTask ? () => onDeleteTask(item.id, task.id) : undefined
+              }
             />
           ))}
           {onAddTask && (
-            <InlineTaskCreator
-              goalId={item.id}
-              onSave={onAddTask}
-            />
+            <InlineTaskCreator goalId={item.id} onSave={onAddTask} />
           )}
         </div>
       )}
     </div>
   );
 }
+
+/**
+ * @deprecated Use GoalItemRow instead. Kept for backward compatibility.
+ */
+export const BacklogItemRow = GoalItemRow;

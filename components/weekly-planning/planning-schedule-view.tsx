@@ -2,7 +2,7 @@
 
 /**
  * PlanningScheduleView - Backlog-like view for scheduling during weekly planning.
- * 
+ *
  * Shows essentials and goals with their tasks, allowing drag-to-calendar scheduling.
  * Tasks that were selected as "specific-tasks" intentions in Step 1 are highlighted.
  */
@@ -25,7 +25,7 @@ import type {
   TaskDeadlineInfo,
   ScheduleTask,
 } from "@/lib/unified-schedule";
-import { formatScheduledTime, formatDeadlineDate } from "@/components/backlog/backlog-utils";
+import { formatScheduledTime, formatDeadlineDate } from "@/components/backlog";
 
 // =============================================================================
 // Types
@@ -84,9 +84,13 @@ function EssentialRow({ essential, draggable = false }: EssentialRowProps) {
       {...(canDrag ? draggableProps : {})}
     >
       <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted/60">
-        <IconComponent className={cn("size-3.5", getIconColorClass(essential.color))} />
+        <IconComponent
+          className={cn("size-3.5", getIconColorClass(essential.color))}
+        />
       </div>
-      <span className="truncate text-sm text-foreground">{essential.label}</span>
+      <span className="truncate text-sm text-foreground">
+        {essential.label}
+      </span>
     </div>
   );
 }
@@ -137,7 +141,8 @@ function PlanningTaskRow({
         "hover:bg-muted/60",
         isDragging && "opacity-50",
         canDrag && "cursor-grab active:cursor-grabbing",
-        isHighlighted && "bg-amber-500/10 hover:bg-amber-500/15 ring-1 ring-inset ring-amber-500/30",
+        isHighlighted &&
+          "bg-amber-500/10 hover:bg-amber-500/15 ring-1 ring-inset ring-amber-500/30",
       )}
       {...(canDrag ? draggableProps : {})}
     >
@@ -145,7 +150,7 @@ function PlanningTaskRow({
       {isHighlighted && (
         <RiStarFill className="size-3 shrink-0 text-amber-500" />
       )}
-      
+
       {/* Checkbox */}
       <div
         className={cn(
@@ -232,7 +237,8 @@ function GoalRow({
   });
 
   // Check if any tasks are highlighted
-  const hasHighlightedTasks = goal.tasks?.some(t => highlightedTaskIds.includes(t.id)) ?? false;
+  const hasHighlightedTasks =
+    goal.tasks?.some((t) => highlightedTaskIds.includes(t.id)) ?? false;
 
   return (
     <div className="flex flex-col">
@@ -247,10 +253,14 @@ function GoalRow({
         {...(canDrag ? draggableProps : {})}
       >
         <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted/60">
-          <IconComponent className={cn("size-3.5", getIconColorClass(goal.color))} />
+          <IconComponent
+            className={cn("size-3.5", getIconColorClass(goal.color))}
+          />
         </div>
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="truncate text-sm font-medium text-foreground">{goal.label}</span>
+          <span className="truncate text-sm font-medium text-foreground">
+            {goal.label}
+          </span>
           {hasHighlightedTasks && (
             <span className="flex items-center gap-0.5 text-[10px] text-amber-600 dark:text-amber-500">
               <RiStarFill className="size-2.5" />
@@ -307,7 +317,9 @@ export function PlanningScheduleView({
         {hasHighlightedTasks && (
           <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500">
             <RiStarFill className="size-3" />
-            <span>Tasks marked with a star are from your intention settings</span>
+            <span>
+              Tasks marked with a star are from your intention settings
+            </span>
           </p>
         )}
       </div>
@@ -316,7 +328,9 @@ export function PlanningScheduleView({
       {essentials.length > 0 && (
         <div className="flex flex-col">
           <div className="px-4 pb-1">
-            <h4 className="text-xs font-medium text-muted-foreground">Essentials</h4>
+            <h4 className="text-xs font-medium text-muted-foreground">
+              Essentials
+            </h4>
           </div>
           <div className="flex flex-col gap-0.5 px-2">
             {essentials.map((essential) => (
@@ -354,9 +368,7 @@ export function PlanningScheduleView({
       {/* Empty state */}
       {essentials.length === 0 && goals.length === 0 && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            No items to schedule.
-          </p>
+          <p className="text-sm text-muted-foreground">No items to schedule.</p>
           <p className="mt-1 text-xs text-muted-foreground/70">
             Add goals and essentials to start planning.
           </p>

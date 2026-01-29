@@ -2,19 +2,19 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  RiAddLine,
-  RiPencilLine,
-  RiSparklingLine,
-} from "@remixicon/react";
-import type { TaskScheduleInfo, TaskDeadlineInfo, ScheduleTask } from "@/lib/unified-schedule";
-import type { BacklogItem } from "./backlog-types";
-import { BacklogItemRow } from "./backlog-item-row";
+import { RiAddLine, RiSparklingLine } from "@remixicon/react";
+import type {
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+  ScheduleTask,
+} from "@/lib/unified-schedule";
+import type { GoalItem } from "./goal-types";
+import { GoalItemRow } from "./goal-item-row";
 
-export interface BacklogSectionProps {
+export interface GoalSectionProps {
   title: string;
   description?: string;
-  items: BacklogItem[];
+  items: GoalItem[];
   showTasks?: boolean;
   onAddItem?: () => void;
   /** Callback when an item row is clicked (for entering goal-detail mode) */
@@ -23,13 +23,22 @@ export interface BacklogSectionProps {
   /** Callback to add a new task to a goal */
   onAddTask?: (goalId: string, label: string) => void;
   /** Callback to update a task's properties */
-  onUpdateTask?: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
+  onUpdateTask?: (
+    goalId: string,
+    taskId: string,
+    updates: Partial<ScheduleTask>,
+  ) => void;
   /** Callback to add a subtask to a task */
   onAddSubtask?: (goalId: string, taskId: string, label: string) => void;
   /** Callback to toggle a subtask's completion */
   onToggleSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to update a subtask's label */
-  onUpdateSubtask?: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
+  onUpdateSubtask?: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
   /** Callback to delete a subtask */
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
@@ -40,20 +49,16 @@ export interface BacklogSectionProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled */
   draggable?: boolean;
-  /** Type of drag item to create ("goal" for goals, "essential" for essentials) */
-  dragType?: "goal" | "essential";
-  /** Callback to enter edit mode (only for essentials section) */
-  onEdit?: () => void;
-  /** Callback to create a new goal and immediately select it (for goals section) */
+  /** Callback to create a new goal and immediately select it */
   onCreateAndSelectGoal?: () => void;
-  /** Callback to browse inspiration gallery (for goals section) */
+  /** Callback to browse inspiration gallery */
   onBrowseInspiration?: () => void;
   /** Whether the inspiration gallery is currently active */
   isInspirationActive?: boolean;
   className?: string;
 }
 
-export function BacklogSection({
+export function GoalSection({
   title,
   description,
   items,
@@ -71,13 +76,11 @@ export function BacklogSection({
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
-  dragType = "goal",
-  onEdit,
   onCreateAndSelectGoal,
   onBrowseInspiration,
   isInspirationActive,
   className,
-}: BacklogSectionProps) {
+}: GoalSectionProps) {
   return (
     <div className={cn("flex flex-col px-3", className)}>
       <div className="group/section flex items-center justify-between px-3 py-2">
@@ -87,28 +90,11 @@ export function BacklogSection({
             <p className="text-xs text-muted-foreground">{description}</p>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {onEdit && (
-            <button
-              onClick={onEdit}
-              className="flex h-6 w-0 items-center justify-center overflow-hidden rounded-md text-muted-foreground transition-all hover:bg-muted hover:text-foreground group-hover/section:w-6"
-              title="Edit essentials"
-            >
-              <RiPencilLine className="size-3.5 shrink-0" />
-            </button>
-          )}
-        </div>
       </div>
 
-      <div
-        className={cn(
-          dragType === "essential"
-            ? "grid grid-cols-2 gap-1"
-            : "flex flex-col gap-0.5"
-        )}
-      >
+      <div className="flex flex-col gap-0.5">
         {items.map((item) => (
-          <BacklogItemRow
+          <GoalItemRow
             key={item.id}
             item={item}
             showTasks={showTasks}
@@ -124,12 +110,10 @@ export function BacklogSection({
             getTaskSchedule={getTaskSchedule}
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
-            dragType={dragType}
-            compact={dragType === "essential"}
           />
         ))}
 
-        {/* New goal button - for goals section */}
+        {/* New goal button */}
         {onCreateAndSelectGoal && (
           <button
             onClick={onCreateAndSelectGoal}
@@ -142,7 +126,7 @@ export function BacklogSection({
           </button>
         )}
 
-        {/* Browse inspiration button - for goals section */}
+        {/* Browse inspiration button */}
         {onBrowseInspiration && (
           <button
             onClick={onBrowseInspiration}
@@ -162,7 +146,9 @@ export function BacklogSection({
             <span
               className={cn(
                 "text-sm",
-                isInspirationActive ? "font-medium text-foreground" : "text-muted-foreground",
+                isInspirationActive
+                  ? "font-medium text-foreground"
+                  : "text-muted-foreground",
               )}
             >
               Browse inspiration
@@ -185,3 +171,8 @@ export function BacklogSection({
     </div>
   );
 }
+
+/**
+ * @deprecated Use GoalSection instead. Kept for backward compatibility.
+ */
+export const BacklogSection = GoalSection;

@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 import { RiAddLine, RiMoonLine } from "@remixicon/react";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { GoalIconOption } from "@/lib/types";
-import type { BacklogItem, NewEssentialData } from "./backlog-types";
+import type { EssentialItem, NewEssentialData } from "./essential-types";
 import { EssentialRow, SleepRow } from "./essential-row";
-import { InlineEssentialCreator } from "./inline-creators";
+import { InlineEssentialCreator } from "./inline-essential-creator";
 
 // =============================================================================
 // Types
@@ -15,7 +15,7 @@ import { InlineEssentialCreator } from "./inline-creators";
 
 export interface EssentialsSectionProps {
   /** Enabled essentials to display (should include Sleep) */
-  essentials: BacklogItem[];
+  essentials: EssentialItem[];
   /** Templates with schedule data */
   templates: EssentialTemplate[];
   /** Called when an essential's schedule is saved */
@@ -92,7 +92,7 @@ export function EssentialsSection({
   const otherEssentials = essentials.filter((e) => e.id !== "sleep");
 
   // Create a default Sleep essential if not provided
-  const defaultSleep: BacklogItem = {
+  const defaultSleep: EssentialItem = {
     id: "sleep",
     label: "Sleep",
     icon: RiMoonLine,

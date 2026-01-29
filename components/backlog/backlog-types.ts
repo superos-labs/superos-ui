@@ -1,81 +1,41 @@
 /**
- * Type definitions for the Backlog component family.
+ * Shared type definitions for the Backlog component family.
+ * Goal-specific types are in ./goals/goal-types.ts
+ * Essential-specific types are in ./essentials/essential-types.ts
  */
 
 import type { GoalColor } from "@/lib/colors";
-import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
-import type { ScheduleTask, Milestone } from "@/lib/unified-schedule";
+import type { IconComponent } from "@/lib/types";
 
-// Re-export for convenience
-export type { LifeArea, GoalIconOption, Milestone };
-
-/**
- * BacklogTask is a re-export of ScheduleTask for backward compatibility.
- * Use ScheduleTask from @/hooks/use-unified-schedule for new code.
- */
-export type BacklogTask = ScheduleTask;
+// =============================================================================
+// Base Item Interface
+// =============================================================================
 
 /**
- * BacklogItem represents a goal or essential in the backlog.
- * For goals with tasks, use ScheduleGoal from @/hooks/use-unified-schedule.
+ * Base interface for items displayed in the backlog.
+ * Shared by both goals and essentials.
  */
-export interface BacklogItem {
+export interface BacklogItemBase {
   id: string;
   label: string;
   icon: IconComponent;
   color: GoalColor;
-  /** @deprecated Use getGoalStats instead - hours are now computed from calendar blocks */
-  plannedHours?: number;
-  /** @deprecated Use getGoalStats instead - hours are now computed from calendar blocks */
-  completedHours?: number;
-  /** Ordered milestones (sequential steps toward the goal) */
-  milestones?: Milestone[];
-  /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
-  milestonesEnabled?: boolean;
-  /** Tasks associated with this item */
-  tasks?: BacklogTask[];
 }
+
+// =============================================================================
+// Display Modes
+// =============================================================================
 
 /** Mode for the backlog display */
 export type BacklogMode = "view" | "goal-detail";
 
-/**
- * A goal suggestion in the inspiration gallery.
- */
-export interface InspirationGoal {
-  id: string;
-  label: string;
-  icon: IconComponent;
-  /** Optional description shown on hover */
-  description?: string;
-}
+// =============================================================================
+// Grouping
+// =============================================================================
 
-/**
- * A category of inspiration goals grouped by life area.
- */
-export interface InspirationCategory {
-  lifeArea: LifeArea;
-  goals: InspirationGoal[];
-}
-
-export interface BacklogGroup {
+export interface BacklogGroup<T extends BacklogItemBase = BacklogItemBase> {
   id: string;
   title: string;
   description: string;
-  items: BacklogItem[];
-}
-
-/** Data for creating a new goal */
-export interface NewGoalData {
-  label: string;
-  icon: IconComponent;
-  color: GoalColor;
-  lifeAreaId: string;
-}
-
-/** Data for creating a new essential */
-export interface NewEssentialData {
-  label: string;
-  icon: IconComponent;
-  color: GoalColor;
+  items: T[];
 }

@@ -10,21 +10,18 @@ import type {
 } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
-import type {
-  BacklogItem,
-  BacklogMode,
-  NewGoalData,
-  NewEssentialData,
-} from "./backlog-types";
-import { BacklogSection } from "./backlog-section";
-import { EssentialsSection } from "./essentials-section";
-import { BacklogGoalList } from "./backlog-goal-list";
+import type { BacklogMode } from "./backlog-types";
+import type { GoalItem, NewGoalData } from "./goals";
+import type { EssentialItem, NewEssentialData } from "./essentials";
+import { GoalSection } from "./goals";
+import { GoalList } from "./goals";
+import { EssentialsSection } from "./essentials";
 
 export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of essential items to display (should include Sleep) */
-  essentials: BacklogItem[];
+  essentials: EssentialItem[];
   /** Array of goal items to display */
-  goals: BacklogItem[];
+  goals: GoalItem[];
   showTasks?: boolean;
   onAddGoal?: () => void;
   onToggleGoalTask?: (goalId: string, taskId: string) => void;
@@ -83,7 +80,7 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Whether sleep visualization is configured/enabled */
   isSleepConfigured?: boolean;
 
-  // Goal creation props (for goal-detail mode's BacklogGoalList)
+  // Goal creation props (for goal-detail mode's GoalList)
   /** Callback for creating a new goal */
   onCreateGoal?: (goal: NewGoalData) => void;
   /** Life areas for goal creation */
@@ -152,7 +149,7 @@ export function Backlog({
   // Goal detail mode: render simplified goal list
   if (isGoalDetailMode) {
     return (
-      <BacklogGoalList
+      <GoalList
         goals={goals}
         selectedGoalId={selectedGoalId}
         onSelectGoal={onSelectGoal}
@@ -189,7 +186,7 @@ export function Backlog({
           essentialIcons={goalIcons ?? []}
         />
 
-        <BacklogSection
+        <GoalSection
           title="Goals"
           description="Things you intentionally want to do"
           items={goals}
@@ -207,7 +204,6 @@ export function Backlog({
           getTaskSchedule={getTaskSchedule}
           getTaskDeadline={getTaskDeadline}
           draggable={draggable}
-          dragType="goal"
           onCreateAndSelectGoal={onCreateAndSelectGoal}
           onBrowseInspiration={onBrowseInspiration}
           isInspirationActive={isInspirationActive}

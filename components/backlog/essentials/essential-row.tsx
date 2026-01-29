@@ -19,14 +19,14 @@ import {
 import { TimeInput, TimeRangeRow } from "@/components/ui/time-input";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import { useActivitySchedule } from "@/lib/essentials";
-import type { BacklogItem } from "./backlog-types";
+import type { EssentialItem } from "./essential-types";
 
 // =============================================================================
 // Essential Row Types
 // =============================================================================
 
 export interface EssentialRowProps {
-  essential: BacklogItem;
+  essential: EssentialItem;
   template?: EssentialTemplate;
   isExpanded: boolean;
   onToggleExpand: () => void;
@@ -228,7 +228,7 @@ export function EssentialRow({
 // =============================================================================
 
 export interface SleepRowProps {
-  essential: BacklogItem;
+  essential: EssentialItem;
   isExpanded: boolean;
   onToggleExpand: () => void;
   wakeUpMinutes: number;
