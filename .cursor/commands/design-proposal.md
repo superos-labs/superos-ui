@@ -1,0 +1,1 @@
+Please perform an assessment of the current state of the visual design to help determine a recommended implementation proposal. If anything is unclear or requires further context to refine the proposal, please include a list of questions I might be able to answer to add context or simplify scope.

@@ -10,231 +10,16 @@ import {
   RiCloseLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
+import {
+  DAY_LABELS,
+  DAY_FULL_LABELS,
+  formatTimeShort,
+  formatScheduleSummary,
+} from "@/lib/time-utils";
+import { TimeInput, TimeRangeRow } from "@/components/ui/time-input";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { BacklogItem } from "./backlog-types";
 import { useActivitySchedule } from "./activity-schedule-editor";
-
-// =============================================================================
-// Time Formatting Utilities
-// =============================================================================
-
-function formatTime(minutes: number): string {
-  const hours24 = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  const period = hours24 >= 12 ? "PM" : "AM";
-  const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
-  return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
-}
-
-function parseTime(input: string): number | null {
-  const trimmed = input.trim().toLowerCase();
-  if (!trimmed) return null;
-
-  const match = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?$/i);
-  if (!match) return null;
-
-  let hours = parseInt(match[1], 10);
-  const minutes = match[2] ? parseInt(match[2], 10) : 0;
-  const period = match[3]?.toLowerCase();
-
-  if (minutes < 0 || minutes > 59) return null;
-
-  if (!period && hours >= 0 && hours <= 23) {
-    return hours * 60 + minutes;
-  }
-
-  if (period) {
-    if (hours < 1 || hours > 12) return null;
-    if (period === "pm" || period === "p") {
-      if (hours !== 12) hours += 12;
-    } else if (period === "am" || period === "a") {
-      if (hours === 12) hours = 0;
-    }
-  }
-
-  return hours * 60 + minutes;
-}
-
-// =============================================================================
-// Schedule Summary Formatting
-// =============================================================================
-
-const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
-const DAY_FULL_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-function formatDays(days: number[]): string {
-  if (days.length === 0) return "";
-  const sortedDays = [...days].sort((a, b) => a - b);
-
-  if (sortedDays.length === 7) return "Every day";
-  if (sortedDays.length === 5 && sortedDays.every((d, i) => d === i)) {
-    return "Weekdays";
-  }
-  if (sortedDays.length === 2 && sortedDays[0] === 5 && sortedDays[1] === 6) {
-    return "Weekends";
-  }
-
-  return sortedDays.map((d) => DAY_FULL_LABELS[d]).join(", ");
-}
-
-function formatTimeShort(minutes: number): string {
-  const hours24 = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  const period = hours24 >= 12 ? "PM" : "AM";
-  const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
-
-  if (mins === 0) {
-    return `${hours12} ${period}`;
-  }
-  return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
-}
-
-function formatTimeRange(
-  startMinutes: number,
-  durationMinutes: number,
-): string {
-  const endMinutes = startMinutes + durationMinutes;
-  const startStr = formatTimeShort(startMinutes);
-  const endStr = formatTimeShort(endMinutes);
-
-  const startPeriod = startMinutes >= 720 ? "PM" : "AM";
-  const endPeriod = endMinutes >= 720 ? "PM" : "AM";
-
-  if (startPeriod === endPeriod) {
-    const startWithoutPeriod = startStr.replace(` ${startPeriod}`, "");
-    return `${startWithoutPeriod} – ${endStr}`;
-  }
-
-  return `${startStr} – ${endStr}`;
-}
-
-function formatScheduleSummary(slots: EssentialSlot[]): string {
-  if (slots.length === 0) return "Not scheduled";
-
-  const byDaysPattern = new Map<string, EssentialSlot[]>();
-  slots.forEach((slot) => {
-    const key = [...slot.days].sort((a, b) => a - b).join(",");
-    if (!byDaysPattern.has(key)) {
-      byDaysPattern.set(key, []);
-    }
-    byDaysPattern.get(key)!.push(slot);
-  });
-
-  const summaries: string[] = [];
-
-  byDaysPattern.forEach((groupSlots, daysKey) => {
-    const days = daysKey.split(",").map(Number);
-    const daysLabel = formatDays(days);
-    const timeRanges = groupSlots
-      .map((s) => formatTimeRange(s.startMinutes, s.durationMinutes))
-      .join(", ");
-    summaries.push(`${daysLabel}, ${timeRanges}`);
-  });
-
-  return summaries.join(" · ");
-}
-
-// =============================================================================
-// Time Input Component
-// =============================================================================
-
-interface TimeInputProps {
-  value: number;
-  onChange: (minutes: number) => void;
-  className?: string;
-}
-
-function TimeInput({ value, onChange, className }: TimeInputProps) {
-  const [inputValue, setInputValue] = React.useState(formatTime(value));
-  const [isFocused, setIsFocused] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!isFocused) {
-      setInputValue(formatTime(value));
-    }
-  }, [value, isFocused]);
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    const parsed = parseTime(inputValue);
-    if (parsed !== null) {
-      onChange(parsed);
-      setInputValue(formatTime(parsed));
-    } else {
-      setInputValue(formatTime(value));
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.currentTarget.blur();
-    }
-  };
-
-  return (
-    <input
-      type="text"
-      value={inputValue}
-      onChange={(e) => setInputValue(e.target.value)}
-      onFocus={() => setIsFocused(true)}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      className={cn(
-        "w-[80px] rounded-md bg-background/60 px-2 py-1.5 text-center text-sm text-foreground",
-        "focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50",
-        className,
-      )}
-    />
-  );
-}
-
-// =============================================================================
-// Time Range Row
-// =============================================================================
-
-interface TimeRangeRowProps {
-  startMinutes: number;
-  durationMinutes: number;
-  onStartChange: (minutes: number) => void;
-  onDurationChange: (minutes: number) => void;
-  onDelete: () => void;
-  canDelete: boolean;
-}
-
-function TimeRangeRow({
-  startMinutes,
-  durationMinutes,
-  onStartChange,
-  onDurationChange,
-  onDelete,
-  canDelete,
-}: TimeRangeRowProps) {
-  const endMinutes = startMinutes + durationMinutes;
-
-  const handleEndChange = (newEnd: number) => {
-    const newDuration = newEnd - startMinutes;
-    if (newDuration > 0) {
-      onDurationChange(newDuration);
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <TimeInput value={startMinutes} onChange={onStartChange} />
-      <span className="text-muted-foreground/70">–</span>
-      <TimeInput value={endMinutes} onChange={handleEndChange} />
-      {canDelete && (
-        <button
-          onClick={onDelete}
-          className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-          title="Remove time range"
-        >
-          <RiDeleteBinLine className="size-3.5" />
-        </button>
-      )}
-    </div>
-  );
-}
 
 // =============================================================================
 // Essential Row Types
@@ -571,7 +356,7 @@ export function SleepRow({
               "w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
               hasChanges
                 ? "bg-foreground text-background hover:bg-foreground/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed",
+                : "cursor-not-allowed bg-muted text-muted-foreground",
             )}
           >
             Confirm

@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { GoalColor } from "@/lib/colors";
 import { getIconColorClass, getIconBgClass } from "@/lib/colors";
+import { DAY_LABELS, DAY_FULL_LABELS } from "@/lib/time-utils";
+import { TimeInput } from "@/components/ui/time-input";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { EssentialSlot } from "@/lib/essentials";
 import type { NewGoalData, NewEssentialData } from "./backlog-types";
@@ -290,7 +292,7 @@ export function InlineGoalCreator({
               "flex size-7 items-center justify-center rounded-md transition-colors",
               label.trim()
                 ? "text-muted-foreground hover:bg-background hover:text-foreground"
-                : "text-muted-foreground/30 cursor-not-allowed",
+                : "cursor-not-allowed text-muted-foreground/30",
             )}
             title="Save goal"
           >
@@ -312,96 +314,6 @@ export function InlineGoalCreator({
 // =============================================================================
 // Inline Essential Creator
 // =============================================================================
-
-const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
-const DAY_FULL_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-function formatTime(minutes: number): string {
-  const hours24 = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  const period = hours24 >= 12 ? "PM" : "AM";
-  const hours12 = hours24 === 0 ? 12 : hours24 > 12 ? hours24 - 12 : hours24;
-  return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
-}
-
-function parseTime(input: string): number | null {
-  const trimmed = input.trim().toLowerCase();
-  if (!trimmed) return null;
-
-  const match = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?$/i);
-  if (!match) return null;
-
-  let hours = parseInt(match[1], 10);
-  const minutes = match[2] ? parseInt(match[2], 10) : 0;
-  const period = match[3]?.toLowerCase();
-
-  if (minutes < 0 || minutes > 59) return null;
-
-  if (!period && hours >= 0 && hours <= 23) {
-    return hours * 60 + minutes;
-  }
-
-  if (period) {
-    if (hours < 1 || hours > 12) return null;
-    if (period === "pm" || period === "p") {
-      if (hours !== 12) hours += 12;
-    } else if (period === "am" || period === "a") {
-      if (hours === 12) hours = 0;
-    }
-  }
-
-  return hours * 60 + minutes;
-}
-
-interface TimeInputProps {
-  value: number;
-  onChange: (minutes: number) => void;
-  className?: string;
-}
-
-function TimeInput({ value, onChange, className }: TimeInputProps) {
-  const [inputValue, setInputValue] = React.useState(formatTime(value));
-  const [isFocused, setIsFocused] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!isFocused) {
-      setInputValue(formatTime(value));
-    }
-  }, [value, isFocused]);
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    const parsed = parseTime(inputValue);
-    if (parsed !== null) {
-      onChange(parsed);
-      setInputValue(formatTime(parsed));
-    } else {
-      setInputValue(formatTime(value));
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.currentTarget.blur();
-    }
-  };
-
-  return (
-    <input
-      type="text"
-      value={inputValue}
-      onChange={(e) => setInputValue(e.target.value)}
-      onFocus={() => setIsFocused(true)}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      className={cn(
-        "w-[80px] rounded-md bg-background/60 px-2 py-1.5 text-center text-sm text-foreground",
-        "focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50",
-        className,
-      )}
-    />
-  );
-}
 
 export interface InlineEssentialCreatorProps {
   essentialIcons: GoalIconOption[];
@@ -577,7 +489,7 @@ export function InlineEssentialCreator({
               "flex size-7 items-center justify-center rounded-md transition-colors",
               label.trim()
                 ? "text-muted-foreground hover:bg-background hover:text-foreground"
-                : "text-muted-foreground/30 cursor-not-allowed",
+                : "cursor-not-allowed text-muted-foreground/30",
             )}
             title="Save essential"
           >

@@ -31,18 +31,12 @@ export type { EssentialsSectionProps } from "./essentials-section";
 export { EssentialRow, SleepRow } from "./essential-row";
 export type { EssentialRowProps, SleepRowProps } from "./essential-row";
 
-// Legacy components (kept for backward compatibility)
-export { EditEssentialsView } from "./edit-essentials-view";
-export type { EditEssentialsViewProps } from "./edit-essentials-view";
-
-export { EssentialsSummary } from "./essentials-summary";
-export type { EssentialsSummaryProps } from "./essentials-summary";
-
-export {
-  ActivityScheduleEditor,
-  useActivitySchedule,
+// Hook for managing activity schedule state
+export { useActivitySchedule } from "./activity-schedule-editor";
+export type {
+  UseActivityScheduleOptions,
+  UseActivityScheduleReturn,
 } from "./activity-schedule-editor";
-export type { ActivityScheduleEditorProps } from "./activity-schedule-editor";
 
 export { BacklogGoalList } from "./backlog-goal-list";
 export type { BacklogGoalListProps } from "./backlog-goal-list";
