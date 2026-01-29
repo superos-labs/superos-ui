@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent } from "@/components/calendar";
+import type { CalendarEvent } from "./types";
 
 // =============================================================================
 // Types
@@ -29,14 +29,14 @@ export interface UseEssentialAutoCompleteOptions {
 function getEventEndTimestamp(event: CalendarEvent): number {
   const [year, month, day] = event.date.split("-").map(Number);
   const startOfDay = new Date(year, month - 1, day).getTime();
-  
+
   const endMinutes = event.startMinutes + event.durationMinutes;
-  
+
   // If the event ends past midnight (overnight), add 24 hours
   if (endMinutes >= 1440) {
     return startOfDay + (endMinutes - 1440) * 60 * 1000 + 24 * 60 * 60 * 1000;
   }
-  
+
   return startOfDay + endMinutes * 60 * 1000;
 }
 
@@ -47,15 +47,18 @@ function getEventEndTimestamp(event: CalendarEvent): number {
  * - Currently planned (status === "planned" or undefined)
  * - End time is in the past
  */
-function findBlocksToAutoComplete(events: CalendarEvent[], now: number): string[] {
+function findBlocksToAutoComplete(
+  events: CalendarEvent[],
+  now: number,
+): string[] {
   return events
     .filter((event) => {
       // Must be an essential block
       if (event.blockType !== "essential") return false;
-      
+
       // Must be planned (not already completed)
       if (event.status === "completed") return false;
-      
+
       // End time must be in the past
       const endTimestamp = getEventEndTimestamp(event);
       return endTimestamp < now;
@@ -69,7 +72,7 @@ function findBlocksToAutoComplete(events: CalendarEvent[], now: number): string[
 
 /**
  * Hook to auto-complete essential blocks when their end time passes.
- * 
+ *
  * @example
  * ```tsx
  * useEssentialAutoComplete({
@@ -95,7 +98,7 @@ export function useEssentialAutoComplete({
   const checkAndComplete = React.useCallback(() => {
     const now = Date.now();
     const idsToComplete = findBlocksToAutoComplete(events, now);
-    
+
     for (const id of idsToComplete) {
       markCompleteRef.current(id);
     }

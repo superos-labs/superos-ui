@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { BlockColor } from "@/components/block";
+import type { GoalColor } from "@/lib/colors";
 import type {
   ActiveFocusSession,
   CompletedFocusSession,
@@ -10,16 +10,22 @@ import type {
   UseFocusSessionReturn,
 } from "./types";
 
+// Use GoalColor as BlockColor for semantic clarity in focus context
+type BlockColor = GoalColor;
+
 /**
  * Calculate total elapsed time from segments and current segment.
  */
-function calculateElapsedMs(session: ActiveFocusSession | null, now: number): number {
+function calculateElapsedMs(
+  session: ActiveFocusSession | null,
+  now: number,
+): number {
   if (!session) return 0;
 
   // Sum completed segments
   const completedMs = session.segments.reduce(
     (sum, seg) => sum + (seg.endedAt - seg.startedAt),
-    0
+    0,
   );
 
   // Add current segment if running
@@ -50,7 +56,7 @@ function calculateElapsedMs(session: ActiveFocusSession | null, now: number): nu
  * ```
  */
 export function useFocusSession(
-  options: UseFocusSessionOptions = {}
+  options: UseFocusSessionOptions = {},
 ): UseFocusSessionReturn {
   const { onSessionEnd } = options;
 
@@ -101,7 +107,7 @@ export function useFocusSession(
       });
       setElapsedMs(0);
     },
-    []
+    [],
   );
 
   const pause = React.useCallback(() => {
@@ -151,14 +157,12 @@ export function useFocusSession(
       // Calculate total time
       const totalMs = finalSegments.reduce(
         (sum, seg) => sum + (seg.endedAt - seg.startedAt),
-        0
+        0,
       );
 
       // Determine session start time
       const startedAt =
-        finalSegments.length > 0
-          ? finalSegments[0].startedAt
-          : now;
+        finalSegments.length > 0 ? finalSegments[0].startedAt : now;
 
       // Create completed session
       const completed: CompletedFocusSession = {

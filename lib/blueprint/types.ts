@@ -4,8 +4,11 @@
  * during weekly planning to speed up schedule creation.
  */
 
-import type { BlockColor } from "@/components/block";
+import type { GoalColor } from "@/lib/colors";
 import type { BlockType } from "@/lib/types";
+
+// Use GoalColor as BlockColor for semantic clarity in blueprint context
+type BlockColor = GoalColor;
 
 // ============================================================================
 // Blueprint Block

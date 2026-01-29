@@ -3,7 +3,7 @@
  * Used by shell/app components to display event details in the sidebar.
  */
 
-import type { CalendarEvent } from "@/components/calendar";
+import type { CalendarEvent } from "@/lib/unified-schedule";
 import {
   isOvernightEvent,
   getEventEndDayIndex,

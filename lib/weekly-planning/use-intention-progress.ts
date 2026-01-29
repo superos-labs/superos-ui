@@ -5,8 +5,11 @@
  */
 
 import * as React from "react";
-import type { CalendarEvent } from "@/components/calendar";
-import type { ScheduleGoal, ProgressIndicator } from "@/lib/unified-schedule";
+import type {
+  CalendarEvent,
+  ScheduleGoal,
+  ProgressIndicator,
+} from "@/lib/unified-schedule";
 import { PROGRESS_INDICATOR_UNITS } from "@/lib/unified-schedule";
 import type { WeeklyPlan, WeeklyIntention, IntentionProgress } from "./types";
 
@@ -46,7 +49,7 @@ function computeActual(
   indicator: ProgressIndicator,
   events: CalendarEvent[],
   goals: ScheduleGoal[],
-  intention: WeeklyIntention
+  intention: WeeklyIntention,
 ): { actual: number; completedTaskIds?: string[] } {
   const goalEvents = events.filter((e) => e.sourceGoalId === goalId);
   const completedEvents = goalEvents.filter((e) => e.status === "completed");
@@ -55,7 +58,7 @@ function computeActual(
     case "completed-time": {
       const minutes = completedEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
-        0
+        0,
       );
       return { actual: Math.round((minutes / 60) * 10) / 10 };
     }
@@ -63,7 +66,7 @@ function computeActual(
     case "focused-time": {
       const minutes = goalEvents.reduce(
         (sum, e) => sum + (e.focusedMinutes ?? 0),
-        0
+        0,
       );
       return { actual: Math.round((minutes / 60) * 10) / 10 };
     }
@@ -116,7 +119,7 @@ export function useIntentionProgress({
         if (!e.date) return false;
         return e.date >= weekStart && e.date <= weekEnd;
       }),
-    [events, weekStart, weekEnd]
+    [events, weekStart, weekEnd],
   );
 
   // Compute progress for all goals with intentions
@@ -124,7 +127,7 @@ export function useIntentionProgress({
     if (!weeklyPlan) return [];
 
     const results: IntentionProgress[] = [];
-    
+
     for (const intention of weeklyPlan.intentions) {
       const goal = goals.find((g) => g.id === intention.goalId);
       if (!goal) continue;
@@ -135,7 +138,7 @@ export function useIntentionProgress({
         indicator,
         weekEvents,
         goals,
-        intention
+        intention,
       );
 
       const progress =
@@ -154,7 +157,7 @@ export function useIntentionProgress({
         targetTaskIds: intention.targetTaskIds,
       });
     }
-    
+
     return results;
   }, [goals, weekEvents, weeklyPlan]);
 
@@ -163,7 +166,7 @@ export function useIntentionProgress({
     (goalId: string): IntentionProgress | null => {
       return allProgress.find((p) => p.goalId === goalId) ?? null;
     },
-    [allProgress]
+    [allProgress],
   );
 
   // Calculate overall progress

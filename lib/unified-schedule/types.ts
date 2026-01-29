@@ -1,16 +1,68 @@
 /**
  * Types for the unified schedule system.
  * Single source of truth for schedule-related type definitions.
+ *
+ * This file is the canonical location for domain types used across the app:
+ * - CalendarEvent: The core calendar block data structure
+ * - HoverPosition: Grid position for hover state
+ * - BlockStatus: Completion state of blocks (re-exported from lib/types)
+ *
+ * Components re-export these types for convenience but this is the source of truth.
  */
 
 import type { GoalColor } from "@/lib/colors";
-import type { IconComponent } from "@/lib/types";
+import type { BlockType, BlockStatus, IconComponent } from "@/lib/types";
+
+// Re-export BlockStatus for consumers who import from this module
+export type { BlockStatus };
+
 import type { DragItem, DropPosition } from "@/lib/drag-types";
-import type {
-  CalendarEvent,
-  BlockStatus,
-  HoverPosition,
-} from "@/components/calendar";
+
+// ============================================================================
+// Calendar Event Types (Domain Layer)
+// ============================================================================
+
+/** Position on the calendar grid */
+export interface HoverPosition {
+  dayIndex: number;
+  startMinutes: number;
+}
+
+/**
+ * CalendarEvent represents a scheduled block on the calendar.
+ * This is the core domain type for all calendar-related state management.
+ */
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  /** ISO date string, e.g., "2026-01-22" */
+  date: string;
+  dayIndex: number; // 0 = Monday, 6 = Sunday (derived from date, kept for positioning)
+  startMinutes: number; // Minutes from midnight (0-1440)
+  durationMinutes: number;
+  color: GoalColor;
+  /** Number of incomplete tasks assigned to this block */
+  pendingTaskCount?: number;
+  /** Number of completed tasks assigned to this block */
+  completedTaskCount?: number;
+  status?: BlockStatus; // "planned" | "completed"
+
+  // Block identity and source tracking
+  /** Whether this block is for a goal work session, a specific task, or an essential */
+  blockType?: BlockType;
+  /** The goal this block is associated with (for goal/task blocks) */
+  sourceGoalId?: string;
+  /** For task blocks, which specific task this represents */
+  sourceTaskId?: string;
+  /** The essential this block is associated with (for essential blocks) */
+  sourceEssentialId?: string;
+  /** Optional notes for this block */
+  notes?: string;
+  /** For goal blocks: task IDs explicitly assigned to this block (empty by default) */
+  assignedTaskIds?: string[];
+  /** Accumulated focus time in minutes (from focus sessions) */
+  focusedMinutes?: number;
+}
 
 // ============================================================================
 // Progress Indicator Types

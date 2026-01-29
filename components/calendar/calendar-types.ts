@@ -1,9 +1,11 @@
 import type { BlockColor } from "@/components/block";
 import type { BlockType, BlockStatus } from "@/lib/types";
 import type { WeekStartDay } from "@/lib/preferences";
+import type { CalendarEvent, HoverPosition } from "@/lib/unified-schedule";
 
 // Re-export shared types for convenience
-export type { BlockType, BlockStatus };
+// CalendarEvent and HoverPosition are now sourced from lib/unified-schedule
+export type { BlockType, BlockStatus, CalendarEvent, HoverPosition };
 
 // Constants
 /** Day labels for Monday-start weeks (legacy constant for backward compatibility) */
@@ -140,49 +142,12 @@ export function getPixelsPerMinuteFromZoom(zoomPercent: number = 100): number {
 export type CalendarView = "week" | "day";
 export type BlockStyle = "planned" | "completed";
 
-// Note: BlockType is imported from @/lib/types
-
-export interface CalendarEvent {
-  id: string;
-  title: string;
-  /** ISO date string, e.g., "2026-01-22" */
-  date: string;
-  dayIndex: number; // 0 = Monday, 6 = Sunday (derived from date, kept for positioning)
-  startMinutes: number; // Minutes from midnight (0-1440)
-  durationMinutes: number;
-  color: BlockColor;
-  /** Number of incomplete tasks assigned to this block */
-  pendingTaskCount?: number;
-  /** Number of completed tasks assigned to this block */
-  completedTaskCount?: number;
-  status?: BlockStatus; // "planned" | "completed"
-
-  // Block identity and source tracking
-  /** Whether this block is for a goal work session, a specific task, or an essential */
-  blockType?: BlockType;
-  /** The goal this block is associated with (for goal/task blocks) */
-  sourceGoalId?: string;
-  /** For task blocks, which specific task this represents */
-  sourceTaskId?: string;
-  /** The essential this block is associated with (for essential blocks) */
-  sourceEssentialId?: string;
-  /** Optional notes for this block */
-  notes?: string;
-  /** For goal blocks: task IDs explicitly assigned to this block (empty by default) */
-  assignedTaskIds?: string[];
-  /** Accumulated focus time in minutes (from focus sessions) */
-  focusedMinutes?: number;
-}
+// Note: CalendarEvent is now imported from @/lib/unified-schedule (source of truth)
+// Note: HoverPosition is now imported from @/lib/unified-schedule (source of truth)
 
 // =============================================================================
 // Shared Callback Interfaces
 // =============================================================================
-
-/** Position on the calendar grid */
-export interface HoverPosition {
-  dayIndex: number;
-  startMinutes: number;
-}
 
 /** Preview for external drag items (from backlog) */
 export interface ExternalDragPreview {

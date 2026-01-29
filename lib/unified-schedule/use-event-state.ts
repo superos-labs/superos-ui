@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent, BlockStatus, HoverPosition } from "@/components/calendar";
+import type { CalendarEvent, BlockStatus, HoverPosition } from "./types";
 import { statusOnPaste } from "@/components/calendar";
 
 // ============================================================================
@@ -38,24 +38,24 @@ export interface UseEventStateReturn {
     onEventResize: (
       eventId: string,
       newStartMinutes: number,
-      newDurationMinutes: number
+      newDurationMinutes: number,
     ) => void;
     onEventResizeEnd: () => void;
     onEventDragEnd: (
       eventId: string,
       newDayIndex: number,
-      newStartMinutes: number
+      newStartMinutes: number,
     ) => void;
     onEventDuplicate: (
       sourceEventId: string,
       newDayIndex: number,
-      newStartMinutes: number
+      newStartMinutes: number,
     ) => void;
     onGridDoubleClick: (dayIndex: number, startMinutes: number) => void;
     onGridDragCreate: (
       dayIndex: number,
       startMinutes: number,
-      durationMinutes: number
+      durationMinutes: number,
     ) => void;
     onEventCopy: (event: CalendarEvent) => void;
     onEventDelete: (eventId: string) => void;
@@ -82,9 +82,14 @@ export function useEventState({
   onEventCreated,
 }: UseEventStateOptions): UseEventStateReturn {
   const [events, setEvents] = React.useState<CalendarEvent[]>(initialEvents);
-  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
-  const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
-  const [hoveredDayIndex, setHoveredDayIndex] = React.useState<number | null>(null);
+  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(
+    null,
+  );
+  const [hoverPosition, setHoverPosition] =
+    React.useState<HoverPosition | null>(null);
+  const [hoveredDayIndex, setHoveredDayIndex] = React.useState<number | null>(
+    null,
+  );
 
   const addEvent = React.useCallback((event: CalendarEvent) => {
     setEvents((prev) => [...prev, event]);
@@ -93,10 +98,10 @@ export function useEventState({
   const updateEvent = React.useCallback(
     (eventId: string, updates: Partial<CalendarEvent>) => {
       setEvents((prev) =>
-        prev.map((e) => (e.id === eventId ? { ...e, ...updates } : e))
+        prev.map((e) => (e.id === eventId ? { ...e, ...updates } : e)),
       );
     },
-    []
+    [],
   );
 
   const deleteEvent = React.useCallback(
@@ -108,7 +113,7 @@ export function useEventState({
       });
       return deleted;
     },
-    []
+    [],
   );
 
   const markEventComplete = React.useCallback(
@@ -117,12 +122,12 @@ export function useEventState({
       setEvents((currentEvents) => {
         event = currentEvents.find((e) => e.id === eventId);
         return currentEvents.map((e) =>
-          e.id === eventId ? { ...e, status: "completed" as BlockStatus } : e
+          e.id === eventId ? { ...e, status: "completed" as BlockStatus } : e,
         );
       });
       return event;
     },
-    []
+    [],
   );
 
   const markEventIncomplete = React.useCallback(
@@ -131,12 +136,12 @@ export function useEventState({
       setEvents((currentEvents) => {
         event = currentEvents.find((e) => e.id === eventId);
         return currentEvents.map((e) =>
-          e.id === eventId ? { ...e, status: "planned" as BlockStatus } : e
+          e.id === eventId ? { ...e, status: "planned" as BlockStatus } : e,
         );
       });
       return event;
     },
-    []
+    [],
   );
 
   // Calendar handlers
@@ -150,11 +155,11 @@ export function useEventState({
                 startMinutes: newStartMinutes,
                 durationMinutes: newDurationMinutes,
               }
-            : event
-        )
+            : event,
+        ),
       );
     },
-    []
+    [],
   );
 
   const handleEventResizeEnd = React.useCallback(() => {
@@ -172,11 +177,11 @@ export function useEventState({
                 dayIndex: newDayIndex,
                 startMinutes: newStartMinutes,
               }
-            : event
-        )
+            : event,
+        ),
       );
     },
-    [weekDates]
+    [weekDates],
   );
 
   const handleEventDuplicate = React.useCallback(
@@ -192,8 +197,13 @@ export function useEventState({
           // Move instead of duplicate for tasks
           return prev.map((e) =>
             e.id === sourceEventId
-              ? { ...e, date: newDate, dayIndex: newDayIndex, startMinutes: newStartMinutes }
-              : e
+              ? {
+                  ...e,
+                  date: newDate,
+                  dayIndex: newDayIndex,
+                  startMinutes: newStartMinutes,
+                }
+              : e,
           );
         }
 
@@ -212,7 +222,7 @@ export function useEventState({
         return [...prev, duplicate];
       });
     },
-    [weekDates]
+    [weekDates],
   );
 
   const handleGridDoubleClick = React.useCallback(
@@ -230,7 +240,7 @@ export function useEventState({
       setEvents((prev) => [...prev, newEvent]);
       onEventCreated?.(newEvent);
     },
-    [onEventCreated, weekDates]
+    [onEventCreated, weekDates],
   );
 
   const handleGridDragCreate = React.useCallback(
@@ -247,14 +257,14 @@ export function useEventState({
       setEvents((prev) => [...prev, newEvent]);
       onEventCreated?.(newEvent);
     },
-    [onEventCreated, weekDates]
+    [onEventCreated, weekDates],
   );
 
   const handleEventCopy = React.useCallback(
     (event: CalendarEvent) => {
       onCopy?.(event);
     },
-    [onCopy]
+    [onCopy],
   );
 
   const handleEventPaste = React.useCallback(
@@ -269,7 +279,7 @@ export function useEventState({
         setEvents((prev) => [...prev, eventWithDate]);
       }
     },
-    [onPaste, weekDates]
+    [onPaste, weekDates],
   );
 
   const handleEventStatusChange = React.useCallback(
@@ -280,14 +290,14 @@ export function useEventState({
         markEventIncomplete(eventId);
       }
     },
-    [markEventComplete, markEventIncomplete]
+    [markEventComplete, markEventIncomplete],
   );
 
   const handleEventDelete = React.useCallback(
     (eventId: string) => {
       deleteEvent(eventId);
     },
-    [deleteEvent]
+    [deleteEvent],
   );
 
   // Handle marking all blocks on a day as complete
@@ -297,17 +307,19 @@ export function useEventState({
       setEvents((prev) => {
         // Check if there are any incomplete blocks on this day
         const hasIncomplete = prev.some(
-          (event) => event.date === targetDate && event.status !== "completed"
+          (event) => event.date === targetDate && event.status !== "completed",
         );
         if (!hasIncomplete) return prev;
-        
+
         // Mark all blocks on this day as complete
         return prev.map((event) =>
-          event.date === targetDate ? { ...event, status: "completed" as const } : event
+          event.date === targetDate
+            ? { ...event, status: "completed" as const }
+            : event,
         );
       });
     },
-    [weekDates]
+    [weekDates],
   );
 
   const calendarHandlers = React.useMemo(
@@ -341,7 +353,7 @@ export function useEventState({
       handleEventPaste,
       hasClipboardContent,
       handleMarkDayComplete,
-    ]
+    ],
   );
 
   return {

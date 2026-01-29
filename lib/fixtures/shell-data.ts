@@ -95,9 +95,12 @@ import {
   RiZoomInLine,
 } from "@remixicon/react";
 import type { GoalIconOption } from "@/lib/types";
-import type { CalendarEvent } from "@/components/calendar";
 import { getWeekDates } from "@/components/calendar";
-import type { ScheduleGoal, ScheduleEssential } from "@/lib/unified-schedule";
+import type {
+  CalendarEvent,
+  ScheduleGoal,
+  ScheduleEssential,
+} from "@/lib/unified-schedule";
 
 // Re-export life areas from canonical source
 export { LIFE_AREAS, LIFE_AREAS_BY_ID, getLifeArea } from "@/lib/life-areas";

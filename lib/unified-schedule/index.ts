@@ -73,6 +73,10 @@ export type {
   ScheduleTask,
   ScheduleGoal,
   ScheduleEssential,
+  // Calendar event types (domain layer - source of truth)
+  CalendarEvent,
+  HoverPosition,
+  BlockStatus,
   // Computed/derived types
   GoalStats,
   TaskScheduleInfo,

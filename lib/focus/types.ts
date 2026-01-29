@@ -2,7 +2,10 @@
  * Focus mode types for tracking deep work sessions.
  */
 
-import type { BlockColor } from "@/components/block";
+import type { GoalColor } from "@/lib/colors";
+
+// Use GoalColor as BlockColor for semantic clarity in focus context
+type BlockColor = GoalColor;
 
 // =============================================================================
 // Session Types

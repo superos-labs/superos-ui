@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent } from "@/components/calendar";
+import type { CalendarEvent } from "@/lib/unified-schedule";
 import type { ActiveFocusSession } from "./types";
 
 // =============================================================================
@@ -38,14 +38,14 @@ export interface UseFocusNotificationsReturn {
 function getEventEndTimestamp(event: CalendarEvent): number {
   const [year, month, day] = event.date.split("-").map(Number);
   const startOfDay = new Date(year, month - 1, day).getTime();
-  
+
   const endMinutes = event.startMinutes + event.durationMinutes;
-  
+
   // If the event ends past midnight (overnight), add 24 hours
   if (endMinutes >= 1440) {
     return startOfDay + (endMinutes - 1440) * 60 * 1000 + 24 * 60 * 60 * 1000;
   }
-  
+
   return startOfDay + endMinutes * 60 * 1000;
 }
 
@@ -63,7 +63,7 @@ function isNotificationSupported(): boolean {
 /**
  * Hook to manage focus session notifications.
  * Sends a browser notification when the focused block's end time is reached.
- * 
+ *
  * @example
  * ```tsx
  * const { requestPermission, permission } = useFocusNotifications({
@@ -72,7 +72,7 @@ function isNotificationSupported(): boolean {
  *   enabled: true,
  *   onNotify: () => playSound(),
  * });
- * 
+ *
  * // Request permission on first focus start
  * if (permission === "default") {
  *   requestPermission();
@@ -85,11 +85,11 @@ export function useFocusNotifications({
   enabled,
   onNotify,
 }: UseFocusNotificationsOptions): UseFocusNotificationsReturn {
-  const [permission, setPermission] = React.useState<NotificationPermission | "default">(
-    isNotificationSupported() ? Notification.permission : "default"
-  );
+  const [permission, setPermission] = React.useState<
+    NotificationPermission | "default"
+  >(isNotificationSupported() ? Notification.permission : "default");
   const [hasNotified, setHasNotified] = React.useState(false);
-  
+
   // Stable reference to onNotify
   const onNotifyRef = React.useRef(onNotify);
   React.useEffect(() => {
@@ -102,15 +102,16 @@ export function useFocusNotifications({
   }, [session?.blockId]);
 
   // Request permission
-  const requestPermission = React.useCallback(async (): Promise<NotificationPermission> => {
-    if (!isNotificationSupported()) {
-      return "denied";
-    }
-    
-    const result = await Notification.requestPermission();
-    setPermission(result);
-    return result;
-  }, []);
+  const requestPermission =
+    React.useCallback(async (): Promise<NotificationPermission> => {
+      if (!isNotificationSupported()) {
+        return "denied";
+      }
+
+      const result = await Notification.requestPermission();
+      setPermission(result);
+      return result;
+    }, []);
 
   // Find the focused block and schedule notification
   React.useEffect(() => {
@@ -154,7 +155,7 @@ export function useFocusNotifications({
 
       // Trigger sound callback
       onNotifyRef.current?.();
-      
+
       setHasNotified(true);
     }, delay);
 

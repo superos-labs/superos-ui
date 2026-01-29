@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent, BlockStatus } from "@/components/calendar";
 import type {
+  CalendarEvent,
+  BlockStatus,
   ScheduleTask,
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,

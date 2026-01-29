@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent } from "@/components/calendar";
 import { isOvernightEvent, getNextDayDate } from "@/components/calendar";
 import type {
+  CalendarEvent,
   ScheduleGoal,
   GoalStats,
   TaskScheduleInfo,
@@ -50,11 +50,11 @@ export function useScheduleStats({
   // Memoize week boundaries for filtering
   const weekStart = React.useMemo(
     () => weekDates[0].toISOString().split("T")[0],
-    [weekDates]
+    [weekDates],
   );
   const weekEnd = React.useMemo(
     () => weekDates[6].toISOString().split("T")[0],
-    [weekDates]
+    [weekDates],
   );
 
   // Helper to check if an event is visible in the current week
@@ -62,19 +62,19 @@ export function useScheduleStats({
   const isEventInWeek = React.useCallback(
     (event: CalendarEvent): boolean => {
       if (!event.date) return true; // No date = always visible
-      
+
       // Start date in week?
       if (event.date >= weekStart && event.date <= weekEnd) return true;
-      
+
       // For overnight events, also check if end date is in week
       if (isOvernightEvent(event)) {
         const endDate = getNextDayDate(event.date);
         if (endDate >= weekStart && endDate <= weekEnd) return true;
       }
-      
+
       return false;
     },
-    [weekStart, weekEnd]
+    [weekStart, weekEnd],
   );
 
   // Filtered events: exclude blocks from disabled essentials AND filter to current week
@@ -88,29 +88,32 @@ export function useScheduleStats({
         // Keep all non-essential blocks
         if (event.blockType !== "essential") return true;
         // For essential blocks, only keep if essential is enabled
-        return event.sourceEssentialId && enabledEssentialIds.has(event.sourceEssentialId);
+        return (
+          event.sourceEssentialId &&
+          enabledEssentialIds.has(event.sourceEssentialId)
+        );
       }),
-    [events, enabledEssentialIds, isEventInWeek]
+    [events, enabledEssentialIds, isEventInWeek],
   );
 
   const getGoalStats = React.useCallback(
     (goalId: string): GoalStats => {
       // Filter to goal AND current week (including overnight events spanning into this week)
       const goalEvents = events.filter(
-        (e) => e.sourceGoalId === goalId && isEventInWeek(e)
+        (e) => e.sourceGoalId === goalId && isEventInWeek(e),
       );
       const plannedMinutes = goalEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
-        0
+        0,
       );
       const completedMinutes = goalEvents
         .filter((e) => e.status === "completed")
         .reduce((sum, e) => sum + e.durationMinutes, 0);
-      
+
       // Sum actual focus time from sessions
       const focusedMinutes = goalEvents.reduce(
         (sum, e) => sum + (e.focusedMinutes ?? 0),
-        0
+        0,
       );
 
       return {
@@ -119,16 +122,18 @@ export function useScheduleStats({
         focusedHours: Math.round((focusedMinutes / 60) * 10) / 10,
       };
     },
-    [events, isEventInWeek]
+    [events, isEventInWeek],
   );
 
   const getEssentialStats = React.useCallback(
     (essentialId: string): GoalStats => {
       // filteredEvents already includes week filtering, just filter by essential
-      const essentialEvents = filteredEvents.filter((e) => e.sourceEssentialId === essentialId);
+      const essentialEvents = filteredEvents.filter(
+        (e) => e.sourceEssentialId === essentialId,
+      );
       const plannedMinutes = essentialEvents.reduce(
         (sum, e) => sum + e.durationMinutes,
-        0
+        0,
       );
       const completedMinutes = essentialEvents
         .filter((e) => e.status === "completed")
@@ -140,7 +145,7 @@ export function useScheduleStats({
         focusedHours: 0, // Essentials don't track focus time
       };
     },
-    [filteredEvents]
+    [filteredEvents],
   );
 
   const getTaskSchedule = React.useCallback(
@@ -169,7 +174,7 @@ export function useScheduleStats({
 
       return null;
     },
-    [events]
+    [events],
   );
 
   const getTaskDeadline = React.useCallback(
@@ -186,19 +191,19 @@ export function useScheduleStats({
       }
       return null;
     },
-    [goals]
+    [goals],
   );
 
   const getWeekDeadlines = React.useCallback(
     (weekDates: Date[]): Map<string, DeadlineTask[]> => {
       const result = new Map<string, DeadlineTask[]>();
-      
+
       // Get ISO dates for the week
       const weekISODates = weekDates.map((d) => d.toISOString().split("T")[0]);
-      
+
       for (const goal of goals) {
         if (!goal.tasks) continue;
-        
+
         for (const task of goal.tasks) {
           if (task.deadline && weekISODates.includes(task.deadline)) {
             const existing = result.get(task.deadline) ?? [];
@@ -214,10 +219,10 @@ export function useScheduleStats({
           }
         }
       }
-      
+
       return result;
     },
-    [goals]
+    [goals],
   );
 
   return {

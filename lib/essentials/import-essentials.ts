@@ -7,7 +7,7 @@ import type {
   EssentialSlot,
   ImportEssentialsOptions,
 } from "./types";
-import type { CalendarEvent } from "@/components/calendar";
+import type { CalendarEvent } from "@/lib/unified-schedule";
 import type { GoalColor } from "@/lib/colors";
 
 /**

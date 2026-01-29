@@ -2,7 +2,7 @@
  * Utility functions for blueprint operations.
  */
 
-import type { CalendarEvent } from "@/components/calendar";
+import type { CalendarEvent } from "@/lib/unified-schedule";
 import type { Blueprint, BlueprintBlock } from "./types";
 
 // ============================================================================
@@ -96,7 +96,7 @@ export function eventsToBlueprint(
 export function getBlueprintTotalHours(blueprint: Blueprint): number {
   const totalMinutes = blueprint.blocks.reduce(
     (sum, block) => sum + block.durationMinutes,
-    0
+    0,
   );
   return Math.round((totalMinutes / 60) * 10) / 10;
 }
@@ -106,7 +106,7 @@ export function getBlueprintTotalHours(blueprint: Blueprint): number {
  */
 export function getBlueprintBlocksForGoal(
   blueprint: Blueprint,
-  goalId: string
+  goalId: string,
 ): BlueprintBlock[] {
   return blueprint.blocks.filter((block) => block.sourceGoalId === goalId);
 }
@@ -116,9 +116,9 @@ export function getBlueprintBlocksForGoal(
  */
 export function getBlueprintBlocksForEssential(
   blueprint: Blueprint,
-  essentialId: string
+  essentialId: string,
 ): BlueprintBlock[] {
   return blueprint.blocks.filter(
-    (block) => block.sourceEssentialId === essentialId
+    (block) => block.sourceEssentialId === essentialId,
   );
 }

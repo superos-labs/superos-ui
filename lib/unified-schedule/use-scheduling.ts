@@ -1,9 +1,13 @@
 "use client";
 
 import * as React from "react";
-import type { CalendarEvent } from "@/components/calendar";
 import type { DragItem, DropPosition } from "@/lib/drag-types";
-import type { ScheduleGoal, ScheduleEssential, ScheduleTask } from "./types";
+import type {
+  CalendarEvent,
+  ScheduleGoal,
+  ScheduleEssential,
+  ScheduleTask,
+} from "./types";
 
 // ============================================================================
 // Types
@@ -20,21 +24,26 @@ export interface UseSchedulingOptions {
 
 export interface UseSchedulingReturn {
   /** Schedule a goal on the calendar */
-  scheduleGoal: (goalId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => void;
+  scheduleGoal: (
+    goalId: string,
+    dayIndex: number,
+    startMinutes: number,
+    durationMinutes?: number,
+  ) => void;
   /** Schedule a task on the calendar */
   scheduleTask: (
     goalId: string,
     taskId: string,
     dayIndex: number,
     startMinutes: number,
-    durationMinutes?: number
+    durationMinutes?: number,
   ) => void;
   /** Schedule an essential on the calendar */
   scheduleEssential: (
     essentialId: string,
     dayIndex: number,
     startMinutes: number,
-    durationMinutes?: number
+    durationMinutes?: number,
   ) => void;
   /** Set a deadline for a task */
   setTaskDeadline: (goalId: string, taskId: string, date: string) => void;
@@ -45,11 +54,19 @@ export interface UseSchedulingReturn {
   /** Unassign a task from a goal block */
   unassignTaskFromBlock: (blockId: string, taskId: string) => void;
   /** Assign a task to an existing goal block (removes from any previous block) */
-  assignTaskToGoalBlock: (blockId: string, goalId: string, taskId: string) => void;
+  assignTaskToGoalBlock: (
+    blockId: string,
+    goalId: string,
+    taskId: string,
+  ) => void;
   /** Convert a task block into a goal block containing both tasks */
   convertTaskBlockToGoalBlock: (blockId: string, droppedTaskId: string) => void;
   /** Process drops from drag context */
-  handleDrop: (item: DragItem, position: DropPosition, weekDates: Date[]) => void;
+  handleDrop: (
+    item: DragItem,
+    position: DropPosition,
+    weekDates: Date[],
+  ) => void;
 }
 
 // ============================================================================
@@ -65,7 +82,12 @@ export function useScheduling({
   setEvents,
 }: UseSchedulingOptions): UseSchedulingReturn {
   const scheduleGoal = React.useCallback(
-    (goalId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => {
+    (
+      goalId: string,
+      dayIndex: number,
+      startMinutes: number,
+      durationMinutes?: number,
+    ) => {
       const goal = goals.find((g) => g.id === goalId);
       if (!goal) return;
 
@@ -83,7 +105,7 @@ export function useScheduling({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [goals, weekDates, setEvents]
+    [goals, weekDates, setEvents],
   );
 
   const scheduleTask = React.useCallback(
@@ -92,7 +114,7 @@ export function useScheduling({
       taskId: string,
       dayIndex: number,
       startMinutes: number,
-      durationMinutes?: number
+      durationMinutes?: number,
     ) => {
       const newEventId = crypto.randomUUID();
       const eventDate = weekDates[dayIndex].toISOString().split("T")[0];
@@ -121,7 +143,9 @@ export function useScheduling({
 
         // Update events: remove old (if any), add new
         setEvents((currentEvents) => {
-          const filtered = currentEvents.filter((e) => e.sourceTaskId !== taskId);
+          const filtered = currentEvents.filter(
+            (e) => e.sourceTaskId !== taskId,
+          );
           return [...filtered, newEvent];
         });
 
@@ -132,19 +156,28 @@ export function useScheduling({
                 ...g,
                 tasks: g.tasks?.map((t) =>
                   t.id === taskId
-                    ? { ...t, scheduledBlockId: newEventId, deadline: undefined }
-                    : t
+                    ? {
+                        ...t,
+                        scheduledBlockId: newEventId,
+                        deadline: undefined,
+                      }
+                    : t,
                 ),
               }
-            : g
+            : g,
         );
       });
     },
-    [weekDates, setGoals, setEvents]
+    [weekDates, setGoals, setEvents],
   );
 
   const scheduleEssential = React.useCallback(
-    (essentialId: string, dayIndex: number, startMinutes: number, durationMinutes?: number) => {
+    (
+      essentialId: string,
+      dayIndex: number,
+      startMinutes: number,
+      durationMinutes?: number,
+    ) => {
       const essential = allEssentials.find((c) => c.id === essentialId);
       if (!essential) return;
 
@@ -162,7 +195,7 @@ export function useScheduling({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [allEssentials, weekDates, setEvents]
+    [allEssentials, weekDates, setEvents],
   );
 
   const setTaskDeadline = React.useCallback(
@@ -186,14 +219,14 @@ export function useScheduling({
                 tasks: g.tasks?.map((t) =>
                   t.id === taskId
                     ? { ...t, deadline: date, scheduledBlockId: undefined }
-                    : t
+                    : t,
                 ),
               }
-            : g
+            : g,
         );
       });
     },
-    [setGoals, setEvents]
+    [setGoals, setEvents],
   );
 
   const clearTaskDeadline = React.useCallback(
@@ -204,14 +237,14 @@ export function useScheduling({
             ? {
                 ...g,
                 tasks: g.tasks?.map((t) =>
-                  t.id === taskId ? { ...t, deadline: undefined } : t
+                  t.id === taskId ? { ...t, deadline: undefined } : t,
                 ),
               }
-            : g
-        )
+            : g,
+        ),
       );
     },
-    [setGoals]
+    [setGoals],
   );
 
   const assignTaskToBlock = React.useCallback(
@@ -220,11 +253,11 @@ export function useScheduling({
         prev.map((e) =>
           e.id === blockId
             ? { ...e, assignedTaskIds: [...(e.assignedTaskIds ?? []), taskId] }
-            : e
-        )
+            : e,
+        ),
       );
     },
-    [setEvents]
+    [setEvents],
   );
 
   const unassignTaskFromBlock = React.useCallback(
@@ -235,14 +268,14 @@ export function useScheduling({
             ? {
                 ...e,
                 assignedTaskIds: (e.assignedTaskIds ?? []).filter(
-                  (id) => id !== taskId
+                  (id) => id !== taskId,
                 ),
               }
-            : e
-        )
+            : e,
+        ),
       );
     },
-    [setEvents]
+    [setEvents],
   );
 
   const assignTaskToGoalBlock = React.useCallback(
@@ -261,14 +294,14 @@ export function useScheduling({
 
         // Delete any standalone task block for this task
         const withoutTaskBlock = updated.filter(
-          (e) => e.sourceTaskId !== taskId
+          (e) => e.sourceTaskId !== taskId,
         );
 
         // Add to target block's assignedTaskIds
         return withoutTaskBlock.map((e) =>
           e.id === blockId
             ? { ...e, assignedTaskIds: [...(e.assignedTaskIds ?? []), taskId] }
-            : e
+            : e,
         );
       });
 
@@ -281,21 +314,22 @@ export function useScheduling({
                 tasks: g.tasks?.map((t) =>
                   t.id === taskId
                     ? { ...t, scheduledBlockId: undefined, deadline: undefined }
-                    : t
+                    : t,
                 ),
               }
-            : g
-        )
+            : g,
+        ),
       );
     },
-    [setEvents, setGoals]
+    [setEvents, setGoals],
   );
 
   const convertTaskBlockToGoalBlock = React.useCallback(
     (blockId: string, droppedTaskId: string) => {
       setEvents((currentEvents) => {
         const targetBlock = currentEvents.find((e) => e.id === blockId);
-        if (!targetBlock || targetBlock.blockType !== "task") return currentEvents;
+        if (!targetBlock || targetBlock.blockType !== "task")
+          return currentEvents;
 
         const existingTaskId = targetBlock.sourceTaskId;
         const goalId = targetBlock.sourceGoalId;
@@ -314,7 +348,9 @@ export function useScheduling({
             if (e.assignedTaskIds?.includes(droppedTaskId)) {
               return {
                 ...e,
-                assignedTaskIds: e.assignedTaskIds.filter((id) => id !== droppedTaskId),
+                assignedTaskIds: e.assignedTaskIds.filter(
+                  (id) => id !== droppedTaskId,
+                ),
               };
             }
             return e;
@@ -343,12 +379,12 @@ export function useScheduling({
           tasks: g.tasks?.map((t) =>
             t.id === droppedTaskId || t.id === existingTaskId
               ? { ...t, scheduledBlockId: undefined, deadline: undefined }
-              : t
+              : t,
           ),
         }));
       });
     },
-    [goals, events, setEvents, setGoals]
+    [goals, events, setEvents, setGoals],
   );
 
   const handleDrop = React.useCallback(
@@ -366,7 +402,11 @@ export function useScheduling({
 
         if (targetBlock.blockType === "goal") {
           // Drop onto goal block → assign task to that block
-          assignTaskToGoalBlock(position.targetBlockId, item.goalId, item.taskId);
+          assignTaskToGoalBlock(
+            position.targetBlockId,
+            item.goalId,
+            item.taskId,
+          );
         } else if (targetBlock.blockType === "task") {
           // Drop onto task block → convert to goal block with both tasks
           convertTaskBlockToGoalBlock(position.targetBlockId, item.taskId);
@@ -378,7 +418,9 @@ export function useScheduling({
       if (position.dropTarget === "day-header") {
         // Deadline drop - only for tasks
         if (item.type === "task" && item.taskId && item.goalId) {
-          const isoDate = weekDates[position.dayIndex].toISOString().split("T")[0];
+          const isoDate = weekDates[position.dayIndex]
+            .toISOString()
+            .split("T")[0];
           setTaskDeadline(item.goalId, item.taskId, isoDate);
         }
         // Goals and commitments dropped on header are ignored (only tasks can have deadlines)
@@ -389,9 +431,20 @@ export function useScheduling({
         if (item.type === "goal" && item.goalId) {
           scheduleGoal(item.goalId, position.dayIndex, startMinutes, duration);
         } else if (item.type === "task" && item.taskId && item.goalId) {
-          scheduleTask(item.goalId, item.taskId, position.dayIndex, startMinutes, duration);
+          scheduleTask(
+            item.goalId,
+            item.taskId,
+            position.dayIndex,
+            startMinutes,
+            duration,
+          );
         } else if (item.type === "essential" && item.essentialId) {
-          scheduleEssential(item.essentialId, position.dayIndex, startMinutes, duration);
+          scheduleEssential(
+            item.essentialId,
+            position.dayIndex,
+            startMinutes,
+            duration,
+          );
         }
       }
     },
@@ -403,7 +456,7 @@ export function useScheduling({
       setTaskDeadline,
       assignTaskToGoalBlock,
       convertTaskBlockToGoalBlock,
-    ]
+    ],
   );
 
   return {
