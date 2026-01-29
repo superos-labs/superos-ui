@@ -14,9 +14,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { GoalColor } from "@/lib/colors";
 import { getIconColorClass } from "@/lib/colors";
 import type { GoalIconOption, IconComponent } from "@/lib/types";
-import type { EssentialSlot } from "@/lib/essentials";
+import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { EssentialItem, NewEssentialData } from "./essential-types";
-import { SleepRow } from "./essential-row";
+import { SleepRow, EssentialRow } from "./essential-row";
 import { InlineEssentialCreator } from "./inline-essential-creator";
 import { DAY_LABELS, DAY_FULL_LABELS } from "@/lib/time-utils";
 import { TimeInput } from "@/components/ui/time-input";
@@ -57,6 +57,14 @@ export interface EssentialsCTAProps {
   onAddEssential: (data: NewEssentialData, slots: EssentialSlot[]) => void;
   /** IDs of essentials that have already been added (to hide from suggestions) */
   addedEssentialIds: string[];
+  /** Essentials that have been added during CTA flow (to display) */
+  addedEssentials: EssentialItem[];
+  /** Templates for added essentials (for schedule display) */
+  addedEssentialTemplates: EssentialTemplate[];
+  /** Handler to save schedule for an added essential */
+  onSaveSchedule: (essentialId: string, slots: EssentialSlot[]) => void;
+  /** Handler to delete an added essential */
+  onDeleteEssential: (essentialId: string) => void;
   /** Called when user clicks "Skip" - hides essentials section */
   onSkip: () => void;
   /** Called when user clicks "Done" - transitions to standard list */
@@ -356,6 +364,10 @@ export function EssentialsCTA({
   isSleepConfigured,
   onAddEssential,
   addedEssentialIds,
+  addedEssentials,
+  addedEssentialTemplates,
+  onSaveSchedule,
+  onDeleteEssential,
   onSkip,
   onDone,
   essentialIcons,
@@ -367,6 +379,23 @@ export function EssentialsCTA({
   >(null);
   // State for showing the inline creator
   const [isCreating, setIsCreating] = React.useState(false);
+  // Track which added essential is expanded
+  const [expandedEssentialId, setExpandedEssentialId] = React.useState<
+    string | null
+  >(null);
+
+  // Helper to get template for an added essential
+  const getTemplate = (essentialId: string) =>
+    addedEssentialTemplates.find((t) => t.essentialId === essentialId);
+
+  // Sort added essentials by earliest start time
+  const sortedAddedEssentials = [...addedEssentials].sort((a, b) => {
+    const aTemplate = getTemplate(a.id);
+    const bTemplate = getTemplate(b.id);
+    const aStart = aTemplate?.slots[0]?.startMinutes ?? Infinity;
+    const bStart = bTemplate?.slots[0]?.startMinutes ?? Infinity;
+    return aStart - bStart;
+  });
 
   // Filter out already-added suggestions and sort by time (earliest first)
   const availableSuggestions = SUGGESTED_ESSENTIALS.filter(
@@ -375,6 +404,13 @@ export function EssentialsCTA({
 
   // Determine if user has made progress (sleep configured OR essentials added)
   const hasProgress = isSleepConfigured || addedEssentialIds.length > 0;
+
+  const handleToggleEssentialExpand = (id: string) => {
+    setExpandedEssentialId((prev) => (prev === id ? null : id));
+    // Close any editing suggestion or creator
+    setEditingSuggestionId(null);
+    setIsCreating(false);
+  };
 
   const handleStartEdit = (suggestionId: string) => {
     setEditingSuggestionId(suggestionId);
@@ -450,6 +486,19 @@ export function EssentialsCTA({
             isConfigured={isSleepConfigured}
           />
         </div>
+
+        {/* Added essentials - shown as confirmed rows */}
+        {sortedAddedEssentials.map((essential) => (
+          <EssentialRow
+            key={essential.id}
+            essential={essential}
+            template={getTemplate(essential.id)}
+            isExpanded={expandedEssentialId === essential.id}
+            onToggleExpand={() => handleToggleEssentialExpand(essential.id)}
+            onSaveSchedule={(slots) => onSaveSchedule(essential.id, slots)}
+            onDelete={() => onDeleteEssential(essential.id)}
+          />
+        ))}
 
         {/* Suggested essentials - placeholder style with inline editing */}
         {/* Sorted by earliest time, filtered to exclude already-added */}

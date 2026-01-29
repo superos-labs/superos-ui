@@ -81,6 +81,17 @@ export function EssentialsSection({
   // Manual control: show CTA until user clicks Done (or Skip)
   const [ctaDismissed, setCtaDismissed] = React.useState(false);
 
+  // Capture whether CTA should be shown on initial mount (lazy initializer)
+  // This ensures CTA stays visible until explicitly dismissed, even after
+  // sleep is configured or essentials are added during the CTA flow
+  const [ctaModeEntered] = React.useState(() => {
+    // Enter CTA mode if no config exists yet
+    return (
+      !isSleepConfigured &&
+      essentials.filter((e) => e.id !== "sleep").length === 0
+    );
+  });
+
   const getTemplate = (essentialId: string) =>
     templates.find((t) => t.essentialId === essentialId);
 
@@ -155,9 +166,8 @@ export function EssentialsSection({
   const sleep = sleepEssential ?? defaultSleep;
 
   // Show CTA until user explicitly dismisses it (via Skip or Done)
-  // Initial condition: show CTA when no config exists yet
-  const shouldShowCTA =
-    !ctaDismissed && !isSleepConfigured && otherEssentials.length === 0;
+  // ctaModeEntered captures the initial condition; once in CTA mode, only ctaDismissed exits it
+  const shouldShowCTA = ctaModeEntered && !ctaDismissed;
 
   // If hidden, render nothing
   if (isHidden) {
@@ -178,6 +188,22 @@ export function EssentialsSection({
           isSleepConfigured={isSleepConfigured}
           onAddEssential={handleCTAAddEssential}
           addedEssentialIds={ctaAddedIds}
+          addedEssentials={otherEssentials.filter((e) =>
+            ctaAddedIds.includes(e.label.toLowerCase().replace(/\s+/g, "-")),
+          )}
+          addedEssentialTemplates={templates.filter((t) => {
+            const essential = otherEssentials.find(
+              (e) => e.id === t.essentialId,
+            );
+            return (
+              essential &&
+              ctaAddedIds.includes(
+                essential.label.toLowerCase().replace(/\s+/g, "-"),
+              )
+            );
+          })}
+          onSaveSchedule={onSaveSchedule}
+          onDeleteEssential={onDeleteEssential}
           onSkip={handleSkip}
           onDone={handleDone}
           essentialIcons={essentialIcons}
