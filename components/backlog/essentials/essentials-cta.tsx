@@ -467,8 +467,8 @@ export function EssentialsCTA({
           Define your essentials
         </h3>
         <p className="text-sm text-muted-foreground">
-          Visualize your sleep and capture non-negotiables that aren&apos;t part
-          of your goals but still take time.
+          Think of these as background time your week needs. You&apos;ll use
+          these when planning each week.
         </p>
       </div>
 
