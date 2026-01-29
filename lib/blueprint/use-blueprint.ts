@@ -43,15 +43,6 @@ export function useBlueprint(): UseBlueprintReturn {
     setBlueprint(null);
   }, []);
 
-  const getDefaultIntention = React.useCallback(
-    (goalId: string): number | null => {
-      if (!blueprint) return null;
-      const intention = blueprint.intentions.find((i) => i.goalId === goalId);
-      return intention?.target ?? null;
-    },
-    [blueprint]
-  );
-
   // -------------------------------------------------------------------------
   // Return
   // -------------------------------------------------------------------------
@@ -61,6 +52,5 @@ export function useBlueprint(): UseBlueprintReturn {
     saveBlueprint,
     updateBlueprint,
     clearBlueprint,
-    getDefaultIntention,
   };
 }

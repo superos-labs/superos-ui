@@ -12,7 +12,6 @@ import type {
   ScheduleTask,
   TaskScheduleInfo,
   TaskDeadlineInfo,
-  ProgressIndicator,
 } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
@@ -132,8 +131,6 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
-  /** Callback when progress indicator is changed */
-  onProgressIndicatorChange?: (indicator: ProgressIndicator) => void;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -174,7 +171,6 @@ export function GoalDetail({
   onIconChange,
   onColorChange,
   onLifeAreaChange,
-  onProgressIndicatorChange,
   getTaskSchedule,
   getTaskDeadline,
   onToggleTask,
@@ -286,12 +282,10 @@ export function GoalDetail({
               lifeArea={lifeArea}
               lifeAreas={lifeAreas}
               goalIcons={goalIcons}
-              progressIndicator={goal.progressIndicator ?? "completed-time"}
               onTitleChange={onTitleChange}
               onIconChange={onIconChange}
               onColorChange={onColorChange}
               onLifeAreaChange={onLifeAreaChange}
-              onProgressIndicatorChange={onProgressIndicatorChange}
             />
 
             {/* Notes (inline, borderless) */}

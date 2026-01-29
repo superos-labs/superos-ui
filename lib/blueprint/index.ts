@@ -13,9 +13,4 @@ export {
 } from "./blueprint-utils";
 
 // Types
-export type {
-  Blueprint,
-  BlueprintBlock,
-  BlueprintIntention,
-  UseBlueprintReturn,
-} from "./types";
+export type { Blueprint, BlueprintBlock, UseBlueprintReturn } from "./types";

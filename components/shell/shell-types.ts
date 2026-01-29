@@ -26,7 +26,7 @@ import type {
   UseUnifiedScheduleReturn,
 } from "@/lib/unified-schedule";
 import type { Blueprint } from "@/lib/blueprint";
-import type { WeeklyPlan, IntentionProgress } from "@/lib/weekly-planning";
+import type { WeeklyPlan } from "@/lib/weekly-planning";
 import type { ActiveFocusSession } from "@/lib/focus";
 import type { GoalColor } from "@/lib/colors";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
@@ -270,8 +270,6 @@ export interface ShellContentProps {
   currentWeekPlan: WeeklyPlan | null;
   /** Save weekly plan */
   onSaveWeeklyPlan: (plan: WeeklyPlan) => void;
-  /** Get progress for an intention */
-  getIntentionProgress: (goalId: string) => IntentionProgress | null;
 
   // -------------------------------------------------------------------------
   // Preferences

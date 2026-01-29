@@ -3,15 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { getIconColorClass, getIconBgClass } from "@/lib/colors";
-import {
-  RiArrowDownSLine,
-  RiCheckLine,
-  RiTimeLine,
-  RiTimerLine,
-  RiCheckboxMultipleLine,
-  RiCalendarCheckLine,
-  RiTaskLine,
-} from "@remixicon/react";
+import { RiArrowDownSLine, RiCheckLine } from "@remixicon/react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -22,28 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
-import type { ProgressIndicator } from "@/lib/unified-schedule";
-import { PROGRESS_INDICATOR_LABELS } from "@/lib/unified-schedule";
-
-// =============================================================================
-// Progress Indicator Icons
-// =============================================================================
-
-const PROGRESS_INDICATOR_ICONS: Record<ProgressIndicator, IconComponent> = {
-  "completed-time": RiTimeLine,
-  "focused-time": RiTimerLine,
-  "blocks-completed": RiCheckboxMultipleLine,
-  "days-with-blocks": RiCalendarCheckLine,
-  "specific-tasks": RiTaskLine,
-};
-
-const PROGRESS_INDICATORS: ProgressIndicator[] = [
-  "completed-time",
-  "focused-time",
-  "blocks-completed",
-  "days-with-blocks",
-  "specific-tasks",
-];
 
 export interface GoalDetailHeaderProps {
   /** Goal icon component */
@@ -58,8 +28,6 @@ export interface GoalDetailHeaderProps {
   lifeAreas?: LifeArea[];
   /** Available icons for editing */
   goalIcons?: GoalIconOption[];
-  /** How progress is measured for this goal */
-  progressIndicator: ProgressIndicator;
   /** Callback when title is edited */
   onTitleChange?: (title: string) => void;
   /** Callback when icon is changed */
@@ -68,15 +36,24 @@ export interface GoalDetailHeaderProps {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
-  /** Callback when progress indicator is changed */
-  onProgressIndicatorChange?: (indicator: ProgressIndicator) => void;
   className?: string;
 }
 
 // Subset of colors for the picker (most distinct/common)
 const PICKER_COLORS: GoalColor[] = [
-  "slate", "red", "orange", "amber", "green", "teal", 
-  "cyan", "blue", "indigo", "violet", "purple", "pink", "rose"
+  "slate",
+  "red",
+  "orange",
+  "amber",
+  "green",
+  "teal",
+  "cyan",
+  "blue",
+  "indigo",
+  "violet",
+  "purple",
+  "pink",
+  "rose",
 ];
 
 export function GoalDetailHeader({
@@ -86,12 +63,10 @@ export function GoalDetailHeader({
   lifeArea,
   lifeAreas,
   goalIcons,
-  progressIndicator,
   onTitleChange,
   onIconChange,
   onColorChange,
   onLifeAreaChange,
-  onProgressIndicatorChange,
   className,
 }: GoalDetailHeaderProps) {
   const [editValue, setEditValue] = React.useState(title);
@@ -126,9 +101,6 @@ export function GoalDetailHeader({
   // Whether life area editing is enabled
   const canEditLifeArea = lifeAreas && lifeAreas.length > 0 && onLifeAreaChange;
 
-  // Get progress indicator icon
-  const ProgressIcon = PROGRESS_INDICATOR_ICONS[progressIndicator];
-
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       {/* Icon - editable if callbacks provided */}
@@ -156,7 +128,7 @@ export function GoalDetailHeader({
                       "flex size-7 items-center justify-center rounded-md transition-colors",
                       isSelected
                         ? "bg-foreground text-background"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                     title={iconOption.label}
                   >
@@ -174,11 +146,14 @@ export function GoalDetailHeader({
                   onClick={() => onColorChange?.(c)}
                   className={cn(
                     "flex size-6 items-center justify-center rounded-md transition-all",
-                    color === c && "ring-2 ring-foreground ring-offset-1 ring-offset-background"
+                    color === c &&
+                      "ring-2 ring-foreground ring-offset-1 ring-offset-background",
                   )}
                   title={c}
                 >
-                  <div className={cn("size-4 rounded-full", getIconBgClass(c))} />
+                  <div
+                    className={cn("size-4 rounded-full", getIconBgClass(c))}
+                  />
                 </button>
               ))}
             </div>
@@ -203,7 +178,7 @@ export function GoalDetailHeader({
           className={cn(
             "w-full bg-transparent text-xl font-semibold text-foreground leading-tight",
             "placeholder:text-muted-foreground/50",
-            "focus:outline-none"
+            "focus:outline-none",
           )}
         />
       ) : (
@@ -221,14 +196,23 @@ export function GoalDetailHeader({
               <button className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs transition-colors hover:bg-muted/80">
                 {(() => {
                   const AreaIcon = lifeArea.icon;
-                  return <AreaIcon className={cn("size-3.5", getIconColorClass(lifeArea.color))} />;
+                  return (
+                    <AreaIcon
+                      className={cn(
+                        "size-3.5",
+                        getIconColorClass(lifeArea.color),
+                      )}
+                    />
+                  );
                 })()}
                 <span>{lifeArea.label}</span>
                 <RiArrowDownSLine className="size-3 text-muted-foreground/50" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-40">
-              <DropdownMenuLabel className="text-xs text-muted-foreground/70 font-normal">Life area</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-xs text-muted-foreground/70 font-normal">
+                Life area
+              </DropdownMenuLabel>
               {lifeAreas.map((area) => {
                 const AreaIcon = area.icon;
                 const isSelected = lifeArea.id === area.id;
@@ -236,16 +220,13 @@ export function GoalDetailHeader({
                   <DropdownMenuItem
                     key={area.id}
                     onClick={() => onLifeAreaChange(area.id)}
-                    className={cn(
-                      "gap-2",
-                      isSelected && "bg-accent"
-                    )}
+                    className={cn("gap-2", isSelected && "bg-accent")}
                   >
-                    <AreaIcon className={cn("size-3.5", getIconColorClass(area.color))} />
+                    <AreaIcon
+                      className={cn("size-3.5", getIconColorClass(area.color))}
+                    />
                     {area.label}
-                    {isSelected && (
-                      <RiCheckLine className="ml-auto size-3.5" />
-                    )}
+                    {isSelected && <RiCheckLine className="ml-auto size-3.5" />}
                   </DropdownMenuItem>
                 );
               })}
@@ -255,52 +236,15 @@ export function GoalDetailHeader({
           <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs">
             {(() => {
               const AreaIcon = lifeArea.icon;
-              return <AreaIcon className={cn("size-3.5", getIconColorClass(lifeArea.color))} />;
+              return (
+                <AreaIcon
+                  className={cn("size-3.5", getIconColorClass(lifeArea.color))}
+                />
+              );
             })()}
             <span>{lifeArea.label}</span>
           </div>
         ) : null}
-
-        {/* Progress indicator pill */}
-        {onProgressIndicatorChange ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs transition-colors hover:bg-muted/80">
-                <ProgressIcon className="size-3.5 text-muted-foreground" />
-                <span>{PROGRESS_INDICATOR_LABELS[progressIndicator]}</span>
-                <RiArrowDownSLine className="size-3 text-muted-foreground/50" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuLabel className="text-xs text-muted-foreground/70 font-normal">Progress metric</DropdownMenuLabel>
-              {PROGRESS_INDICATORS.map((indicator) => {
-                const IndicatorIcon = PROGRESS_INDICATOR_ICONS[indicator];
-                const isSelected = progressIndicator === indicator;
-                return (
-                  <DropdownMenuItem
-                    key={indicator}
-                    onClick={() => onProgressIndicatorChange(indicator)}
-                    className={cn(
-                      "gap-2",
-                      isSelected && "bg-accent"
-                    )}
-                  >
-                    <IndicatorIcon className="size-3.5 text-muted-foreground" />
-                    {PROGRESS_INDICATOR_LABELS[indicator]}
-                    {isSelected && (
-                      <RiCheckLine className="ml-auto size-3.5" />
-                    )}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <div className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs">
-            <ProgressIcon className="size-3.5 text-muted-foreground" />
-            <span>{PROGRESS_INDICATOR_LABELS[progressIndicator]}</span>
-          </div>
-        )}
       </div>
     </div>
   );

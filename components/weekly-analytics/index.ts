@@ -1,15 +1,14 @@
 // Public API for the Weekly Analytics component
 
-export { 
-  WeeklyAnalytics, 
-  WeeklyAnalyticsSection, 
-  WeeklyAnalyticsItemRow, 
-  WeeklyAnalyticsHeader 
+export {
+  WeeklyAnalytics,
+  WeeklyAnalyticsSection,
+  WeeklyAnalyticsItemRow,
+  WeeklyAnalyticsHeader,
 } from "./weekly-analytics";
 
-export type { 
-  WeeklyAnalyticsProps, 
-  WeeklyAnalyticsItem, 
+export type {
+  WeeklyAnalyticsProps,
+  WeeklyAnalyticsItem,
   WeeklyAnalyticsSectionData,
-  IntentionInfo,
 } from "./weekly-analytics";

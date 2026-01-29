@@ -65,43 +65,6 @@ export interface CalendarEvent {
 }
 
 // ============================================================================
-// Progress Indicator Types
-// ============================================================================
-
-/**
- * How progress is measured for a goal.
- * Determines what "100%" means in weekly analytics.
- */
-export type ProgressIndicator =
-  | "completed-time" // Hours from completed blocks (default)
-  | "focused-time" // Actual focus session time
-  | "blocks-completed" // Count of completed blocks
-  | "days-with-blocks" // Days with ≥1 completed block
-  | "specific-tasks"; // Named tasks to complete
-
-/**
- * Human-readable labels for progress indicators.
- */
-export const PROGRESS_INDICATOR_LABELS: Record<ProgressIndicator, string> = {
-  "completed-time": "Completed time",
-  "focused-time": "Focused time",
-  "blocks-completed": "Blocks completed",
-  "days-with-blocks": "Days practiced",
-  "specific-tasks": "Specific tasks",
-};
-
-/**
- * Unit labels for progress indicators.
- */
-export const PROGRESS_INDICATOR_UNITS: Record<ProgressIndicator, string> = {
-  "completed-time": "hours",
-  "focused-time": "hours",
-  "blocks-completed": "blocks",
-  "days-with-blocks": "days",
-  "specific-tasks": "tasks",
-};
-
-// ============================================================================
 // Core Data Types
 // ============================================================================
 
@@ -147,8 +110,6 @@ export interface ScheduleGoal {
   /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
   milestonesEnabled?: boolean;
   tasks?: ScheduleTask[];
-  /** How progress is measured for this goal (default: 'completed-time') */
-  progressIndicator?: ProgressIndicator;
 }
 
 /** Essential in the backlog (simpler than goals, no tasks) */

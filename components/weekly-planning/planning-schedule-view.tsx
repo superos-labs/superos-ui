@@ -4,7 +4,6 @@
  * PlanningScheduleView - Backlog-like view for scheduling during weekly planning.
  *
  * Shows essentials and goals with their tasks, allowing drag-to-calendar scheduling.
- * Tasks that were selected as "specific-tasks" intentions in Step 1 are highlighted.
  */
 
 import * as React from "react";
@@ -36,7 +35,7 @@ export interface PlanningScheduleViewProps {
   essentials: ScheduleEssential[];
   /** Goals to display (with their tasks) */
   goals: ScheduleGoal[];
-  /** Task IDs to highlight (from specific-tasks intentions) */
+  /** Task IDs to highlight */
   highlightedTaskIds?: string[];
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;

@@ -39,33 +39,16 @@ export interface BlueprintBlock {
 }
 
 // ============================================================================
-// Blueprint Intention
-// ============================================================================
-
-/**
- * Default intention for a goal in the blueprint.
- * Users can override during weekly planning.
- */
-export interface BlueprintIntention {
-  /** The goal this intention is for */
-  goalId: string;
-  /** Target value (interpreted based on goal's progressIndicator) */
-  target: number;
-}
-
-// ============================================================================
 // Blueprint
 // ============================================================================
 
 /**
  * The user's blueprint - a template for their typical week.
- * Contains both time blocks and default intention targets.
+ * Contains time blocks that can be imported to speed up weekly planning.
  */
 export interface Blueprint {
   /** Template blocks representing a typical week */
   blocks: BlueprintBlock[];
-  /** Default intention targets per goal */
-  intentions: BlueprintIntention[];
   /** When this blueprint was last updated (ISO string) */
   updatedAt: string;
 }
@@ -85,6 +68,4 @@ export interface UseBlueprintReturn {
   updateBlueprint: (updates: Partial<Blueprint>) => void;
   /** Clear the blueprint */
   clearBlueprint: () => void;
-  /** Get default intention for a goal from blueprint */
-  getDefaultIntention: (goalId: string) => number | null;
 }

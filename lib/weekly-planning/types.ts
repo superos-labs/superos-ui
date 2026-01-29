@@ -1,29 +1,7 @@
 /**
  * Types for the weekly planning system.
- * Manages weekly plans and tracks progress.
+ * Manages weekly planning flow.
  */
-
-import type { ProgressIndicator } from "@/lib/unified-schedule";
-
-// ============================================================================
-// Weekly Intention (kept for data structure compatibility)
-// ============================================================================
-
-/**
- * A single goal's intention for a specific week.
- * Note: The intentions UI has been removed, but this type is kept for
- * data structure compatibility with WeeklyPlan and IntentionProgress.
- */
-export interface WeeklyIntention {
-  /** The goal this intention is for */
-  goalId: string;
-  /** Target value (interpreted based on goal's progressIndicator) */
-  target: number;
-  /** For 'specific-tasks' indicator: which tasks must be completed */
-  targetTaskIds?: string[];
-  /** Override the goal's default progress indicator for this week only */
-  progressIndicatorOverride?: ProgressIndicator;
-}
 
 // ============================================================================
 // Weekly Plan
@@ -31,41 +9,13 @@ export interface WeeklyIntention {
 
 /**
  * A week's planning record.
- * Persisted independently so blueprint changes don't affect history.
+ * Tracks when planning was completed for a given week.
  */
 export interface WeeklyPlan {
   /** ISO date string of week start (e.g., "2026-01-26") */
   weekStartDate: string;
-  /** Intentions set during planning (empty array when no intentions are set) */
-  intentions: WeeklyIntention[];
   /** When planning was completed (ISO string) */
   plannedAt: string;
-}
-
-// ============================================================================
-// Intention Progress
-// ============================================================================
-
-/**
- * Progress towards a goal's weekly intention.
- */
-export interface IntentionProgress {
-  /** The goal ID */
-  goalId: string;
-  /** The progress indicator type */
-  indicator: ProgressIndicator;
-  /** The intended target value */
-  intended: number;
-  /** The actual achieved value */
-  actual: number;
-  /** Progress as a percentage (0-100+, can exceed 100%) */
-  progress: number;
-  /** Unit label for display (e.g., "hours", "blocks", "days", "tasks") */
-  unit: string;
-  /** For specific-tasks: list of completed task IDs */
-  completedTaskIds?: string[];
-  /** For specific-tasks: list of target task IDs */
-  targetTaskIds?: string[];
 }
 
 // ============================================================================

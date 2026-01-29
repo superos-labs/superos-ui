@@ -197,7 +197,6 @@ export function ShellContentComponent({
   onSaveBlueprint,
   currentWeekPlan,
   onSaveWeeklyPlan,
-  getIntentionProgress,
   // Preferences
   weekStartsOn,
   onWeekStartsOnChange,
@@ -399,10 +398,9 @@ export function ShellContentComponent({
     isActive: isPlanningMode,
     weekDates,
     onConfirm: () => {
-      // Save the weekly plan (with empty intentions since we removed that step)
+      // Save the weekly plan
       onSaveWeeklyPlan({
         weekStartDate,
-        intentions: [],
         plannedAt: new Date().toISOString(),
       });
 
@@ -411,7 +409,6 @@ export function ShellContentComponent({
         const blueprintBlocks = eventsToBlueprint(events, weekDates);
         onSaveBlueprint({
           blocks: blueprintBlocks,
-          intentions: [],
           updatedAt: new Date().toISOString(),
         });
       }
@@ -567,9 +564,8 @@ export function ShellContentComponent({
     () =>
       toAnalyticsItems(goals, getGoalStats, {
         useFocusedHours,
-        getIntentionProgress,
       }),
-    [goals, getGoalStats, useFocusedHours, getIntentionProgress],
+    [goals, getGoalStats, useFocusedHours],
   );
 
   // -------------------------------------------------------------------------
@@ -1126,9 +1122,6 @@ export function ShellContentComponent({
                   }
                   onLifeAreaChange={(lifeAreaId) =>
                     onUpdateGoal(selectedGoal.id, { lifeAreaId })
-                  }
-                  onProgressIndicatorChange={(progressIndicator) =>
-                    onUpdateGoal(selectedGoal.id, { progressIndicator })
                   }
                   className="h-full"
                 />

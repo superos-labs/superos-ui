@@ -65,8 +65,6 @@ export {
 
 // Types
 export type {
-  // Progress indicator types
-  ProgressIndicator,
   // Core data types
   Subtask,
   Milestone,
@@ -86,6 +84,3 @@ export type {
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
 } from "./types";
-
-// Constants
-export { PROGRESS_INDICATOR_LABELS, PROGRESS_INDICATOR_UNITS } from "./types";

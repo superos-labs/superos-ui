@@ -37,13 +37,7 @@ import {
   blueprintToEvents,
   eventsToBlueprint,
 } from "@/lib/blueprint";
-import type { BlueprintIntention } from "@/lib/blueprint";
-import {
-  useWeeklyPlan,
-  usePlanningFlow,
-  useIntentionProgress,
-} from "@/lib/weekly-planning";
-import type { WeeklyIntention } from "@/lib/weekly-planning";
+import { useWeeklyPlan, usePlanningFlow } from "@/lib/weekly-planning";
 import { usePreferences } from "@/lib/preferences";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { NewEssentialData } from "@/components/backlog";
@@ -244,16 +238,6 @@ export function useShellState(
   const weekStartDate = weekDates[0]?.toISOString().split("T")[0] ?? "";
   const { getWeeklyPlan, saveWeeklyPlan } = useWeeklyPlan();
   const currentWeekPlan = getWeeklyPlan(weekStartDate);
-
-  // -------------------------------------------------------------------------
-  // Intention Progress
-  // -------------------------------------------------------------------------
-  const { getProgress: getIntentionProgress } = useIntentionProgress({
-    goals: schedule.goals,
-    events: schedule.events,
-    weeklyPlan: currentWeekPlan,
-    weekDates,
-  });
 
   // -------------------------------------------------------------------------
   // Week Deadlines
@@ -470,7 +454,6 @@ export function useShellState(
     onSaveBlueprint: saveBlueprint,
     currentWeekPlan,
     onSaveWeeklyPlan: saveWeeklyPlan,
-    getIntentionProgress,
 
     // Preferences
     weekStartsOn,
