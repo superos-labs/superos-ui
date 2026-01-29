@@ -38,10 +38,17 @@ export type {
 } from "./use-block-resize";
 
 export { DraggableBlockWrapper } from "./draggable-block-wrapper";
-export type { DraggableBlockWrapperProps, DragRenderProps } from "./draggable-block-wrapper";
+export type {
+  DraggableBlockWrapperProps,
+  DragRenderProps,
+} from "./draggable-block-wrapper";
 
 export { useBlockDrag } from "./use-block-drag";
-export type { UseBlockDragOptions, UseBlockDragReturn, DragPreviewPosition } from "./use-block-drag";
+export type {
+  UseBlockDragOptions,
+  UseBlockDragReturn,
+  DragPreviewPosition,
+} from "./use-block-drag";
 
 export { useGridDragCreate } from "./use-grid-drag-create";
 export type {

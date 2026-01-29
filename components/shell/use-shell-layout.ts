@@ -1,28 +1,19 @@
 "use client";
 
 /**
- * Composable hooks for the Shell example component.
- * These hooks extract focused concerns from ShellDemoContent to improve
- * maintainability and testability.
+ * useShellLayout - UI visibility and panel state management for the Shell.
  *
- * These are internal demo utilities and are NOT part of the public API.
+ * This hook manages the visibility of various panels (calendar, sidebar, etc.),
+ * mode state (backlog mode, planning mode), selection state, and sidebar content.
  */
 
 import * as React from "react";
-import type { CalendarEvent, ExternalDragPreview } from "@/components/calendar";
+import type { CalendarEvent } from "@/components/calendar";
 import type { BacklogMode } from "@/components/backlog";
 import type { UseBlockSidebarHandlersReturn } from "@/components/block";
-import type { DragContextValue } from "@/components/drag";
-import type { DragItem, DropPosition } from "@/lib/drag-types";
-import type { GoalColor } from "@/lib/colors";
-import {
-  getDefaultDuration,
-  getDragItemTitle,
-  getDragItemColor,
-} from "@/lib/drag-types";
 
 // =============================================================================
-// useShellLayout - UI visibility and panel state management
+// Types
 // =============================================================================
 
 export interface UseShellLayoutOptions {
@@ -86,6 +77,10 @@ export interface UseShellLayoutReturn {
   handleGoalNotesChange: (notes: string) => void;
   handleAnalyticsToggle: () => void;
 }
+
+// =============================================================================
+// Hook Implementation
+// =============================================================================
 
 export function useShellLayout(): UseShellLayoutReturn {
   // -------------------------------------------------------------------------
@@ -298,214 +293,5 @@ export function useShellLayout(): UseShellLayoutReturn {
     handlePlanWeekClick,
     handleGoalNotesChange,
     handleAnalyticsToggle,
-  };
-}
-
-// =============================================================================
-// useShellFocus - Focus mode coordination (computed values and handlers)
-// =============================================================================
-
-export interface FocusSessionState {
-  blockId: string;
-  blockTitle: string;
-  blockColor: GoalColor;
-}
-
-export interface UseShellFocusOptions {
-  /** Current focus session from useFocusSession */
-  focusSession: FocusSessionState | null;
-  /** Currently selected event ID (to determine if focused block is selected) */
-  selectedEventId: string | null;
-  /** Selected event (for starting focus) */
-  selectedEvent: CalendarEvent | null;
-  /** Start focus callback from useFocusSession */
-  startFocus: (blockId: string, title: string, color: GoalColor) => void;
-  /** Callback to navigate to focused block */
-  onNavigateToBlock: (blockId: string) => void;
-}
-
-export interface UseShellFocusReturn {
-  /** Whether the currently selected sidebar block is the focused block */
-  isSidebarBlockFocused: boolean;
-  /** Whether to show the focus indicator in the toolbar */
-  showFocusIndicator: boolean;
-  /** Handler to start focus on the selected event */
-  handleStartFocus: () => void;
-  /** Handler to navigate to the focused block */
-  handleNavigateToFocusedBlock: () => void;
-}
-
-export function useShellFocus({
-  focusSession,
-  selectedEventId,
-  selectedEvent,
-  startFocus,
-  onNavigateToBlock,
-}: UseShellFocusOptions): UseShellFocusReturn {
-  // Computed values
-  const isSidebarBlockFocused = focusSession?.blockId === selectedEventId;
-  const showFocusIndicator =
-    focusSession !== null && selectedEventId !== focusSession?.blockId;
-
-  // Handlers
-  const handleStartFocus = React.useCallback(() => {
-    if (!selectedEvent) return;
-    startFocus(selectedEvent.id, selectedEvent.title, selectedEvent.color);
-  }, [selectedEvent, startFocus]);
-
-  const handleNavigateToFocusedBlock = React.useCallback(() => {
-    if (focusSession) {
-      onNavigateToBlock(focusSession.blockId);
-    }
-  }, [focusSession, onNavigateToBlock]);
-
-  return {
-    isSidebarBlockFocused,
-    showFocusIndicator,
-    handleStartFocus,
-    handleNavigateToFocusedBlock,
-  };
-}
-
-// =============================================================================
-// useExternalDragPreview - Drag preview generation for calendar
-// =============================================================================
-
-export interface UseExternalDragPreviewOptions {
-  /** Drag context from DragProvider (optional - may be outside provider) */
-  dragContext: DragContextValue | null;
-  /** Current week dates for drop handling */
-  weekDates: Date[];
-  /** Handler to process drops */
-  onDrop: (item: DragItem, position: DropPosition, weekDates: Date[]) => void;
-}
-
-export interface UseExternalDragPreviewReturn {
-  /** Preview data to pass to Calendar's externalDragPreview prop */
-  externalDragPreview: ExternalDragPreview | null;
-  /** Handler for drops on the calendar time grid */
-  handleExternalDrop: (dayIndex: number, startMinutes: number) => void;
-  /** Handler for drops on day headers (deadlines) */
-  handleDeadlineDrop: (dayIndex: number) => void;
-  /** Whether an external drag is currently in progress */
-  isDragging: boolean;
-}
-
-export function useExternalDragPreview({
-  dragContext,
-  weekDates,
-  onDrop,
-}: UseExternalDragPreviewOptions): UseExternalDragPreviewReturn {
-  const dragState = dragContext?.state ?? null;
-  const isDragging = dragState?.isDragging ?? false;
-  const dragItem = dragState?.item ?? null;
-  const previewPosition = dragState?.previewPosition ?? null;
-
-  const externalDragPreview = React.useMemo(() => {
-    if (!isDragging || !dragItem || !previewPosition) return null;
-    if (previewPosition.dropTarget !== "time-grid") return null;
-
-    const color = getDragItemColor(dragItem);
-    if (!color) return null;
-
-    // Use adaptive duration when available (shift+drag mode), otherwise default
-    const duration =
-      previewPosition.adaptiveDuration ?? getDefaultDuration(dragItem.type);
-
-    return {
-      dayIndex: previewPosition.dayIndex,
-      startMinutes: previewPosition.startMinutes ?? 0,
-      durationMinutes: duration,
-      color,
-      title: getDragItemTitle(dragItem),
-    };
-  }, [isDragging, dragItem, previewPosition]);
-
-  const handleExternalDrop = React.useCallback(
-    (dayIndex: number, startMinutes: number) => {
-      if (!dragItem) return;
-
-      let position: DropPosition;
-      if (previewPosition && previewPosition.dropTarget === "existing-block") {
-        position = previewPosition;
-      } else {
-        // Preserve adaptiveDuration from preview position if available
-        position = {
-          dayIndex,
-          startMinutes,
-          dropTarget: "time-grid" as const,
-          adaptiveDuration: previewPosition?.adaptiveDuration,
-        };
-      }
-      onDrop(dragItem, position, weekDates);
-    },
-    [dragItem, previewPosition, onDrop, weekDates],
-  );
-
-  const handleDeadlineDrop = React.useCallback(
-    (dayIndex: number) => {
-      if (!dragItem || !dragContext) return;
-      onDrop(dragItem, { dayIndex, dropTarget: "day-header" }, weekDates);
-      dragContext.endDrag();
-    },
-    [dragItem, dragContext, onDrop, weekDates],
-  );
-
-  return {
-    externalDragPreview,
-    handleExternalDrop,
-    handleDeadlineDrop,
-    isDragging,
-  };
-}
-
-// =============================================================================
-// useToastAggregator - Aggregate multiple toast sources
-// =============================================================================
-
-export interface UseToastAggregatorReturn {
-  /** The current toast message to display (first non-null source wins) */
-  toastMessage: string | null;
-  /** Setter for sidebar toast messages */
-  setSidebarToast: React.Dispatch<React.SetStateAction<string | null>>;
-  /** Setter for deadline toast messages */
-  setDeadlineToast: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
-export function useToastAggregator(
-  /** Toast message from calendar keyboard shortcuts */
-  calendarToastMessage: string | null,
-): UseToastAggregatorReturn {
-  const [sidebarToastMessage, setSidebarToastMessage] = React.useState<
-    string | null
-  >(null);
-  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<
-    string | null
-  >(null);
-
-  // Auto-clear sidebar toast
-  React.useEffect(() => {
-    if (sidebarToastMessage) {
-      const timer = setTimeout(() => setSidebarToastMessage(null), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [sidebarToastMessage]);
-
-  // Auto-clear deadline toast
-  React.useEffect(() => {
-    if (deadlineToastMessage) {
-      const timer = setTimeout(() => setDeadlineToastMessage(null), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [deadlineToastMessage]);
-
-  // Priority: calendar > sidebar > deadline
-  const toastMessage =
-    calendarToastMessage ?? sidebarToastMessage ?? deadlineToastMessage;
-
-  return {
-    toastMessage,
-    setSidebarToast: setSidebarToastMessage,
-    setDeadlineToast: setDeadlineToastMessage,
   };
 }

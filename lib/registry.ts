@@ -16,7 +16,7 @@ export const registry: ComponentEntry[] = [
     component: lazy(() =>
       import("@/components/calendar/calendar-example").then((m) => ({
         default: m.CalendarExample,
-      }))
+      })),
     ),
   },
   {
@@ -25,16 +25,18 @@ export const registry: ComponentEntry[] = [
     component: lazy(() =>
       import("@/components/backlog/backlog-example").then((m) => ({
         default: m.BacklogExample,
-      }))
+      })),
     ),
   },
   {
     slug: "weekly-analytics",
     name: "Weekly Analytics",
     component: lazy(() =>
-      import("@/components/weekly-analytics/weekly-analytics-example").then((m) => ({
-        default: m.WeeklyAnalyticsExample,
-      }))
+      import("@/components/weekly-analytics/weekly-analytics-example").then(
+        (m) => ({
+          default: m.WeeklyAnalyticsExample,
+        }),
+      ),
     ),
   },
   {
@@ -43,7 +45,7 @@ export const registry: ComponentEntry[] = [
     component: lazy(() =>
       import("@/components/block/block-sidebar-example").then((m) => ({
         default: m.BlockSidebarExample,
-      }))
+      })),
     ),
   },
   {
@@ -52,7 +54,17 @@ export const registry: ComponentEntry[] = [
     component: lazy(() =>
       import("@/components/goal-detail/goal-detail-example").then((m) => ({
         default: m.GoalDetailExample,
-      }))
+      })),
+    ),
+  },
+  {
+    slug: "shell",
+    name: "Shell (Full App)",
+    layout: "full",
+    component: lazy(() =>
+      import("@/components/shell/shell-example").then((m) => ({
+        default: m.ShellExample,
+      })),
     ),
   },
 ];

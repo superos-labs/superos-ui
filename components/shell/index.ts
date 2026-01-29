@@ -14,21 +14,24 @@ export type { MobileToolbarProps } from "./mobile-toolbar";
 export { useShellState } from "./use-shell-state";
 
 // Internal hooks (for advanced customization)
-export {
-  useShellLayout,
-  useShellFocus,
-  useExternalDragPreview,
-  useToastAggregator,
-} from "./use-shell-hooks";
+export { useShellLayout } from "./use-shell-layout";
+export type { UseShellLayoutReturn } from "./use-shell-layout";
+
+export { useShellFocus } from "./use-shell-focus";
 export type {
-  UseShellLayoutReturn,
   UseShellFocusOptions,
   UseShellFocusReturn,
+  FocusSessionState,
+} from "./use-shell-focus";
+
+export { useExternalDragPreview } from "./use-external-drag-preview";
+export type {
   UseExternalDragPreviewOptions,
   UseExternalDragPreviewReturn,
-  UseToastAggregatorReturn,
-  FocusSessionState,
-} from "./use-shell-hooks";
+} from "./use-external-drag-preview";
+
+export { useToastAggregator } from "./use-toast-aggregator";
+export type { UseToastAggregatorReturn } from "./use-toast-aggregator";
 
 // Types
 export type {

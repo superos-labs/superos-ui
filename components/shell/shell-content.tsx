@@ -86,12 +86,10 @@ import {
   CALENDAR_ZOOM_STEP,
 } from "@/lib/preferences";
 import type { ShellContentProps } from "./shell-types";
-import {
-  useShellLayout,
-  useShellFocus,
-  useExternalDragPreview,
-  useToastAggregator,
-} from "./use-shell-hooks";
+import { useShellLayout } from "./use-shell-layout";
+import { useShellFocus } from "./use-shell-focus";
+import { useExternalDragPreview } from "./use-external-drag-preview";
+import { useToastAggregator } from "./use-toast-aggregator";
 
 // Re-export for consumers
 export type { ShellContentProps };
