@@ -2,18 +2,77 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   RiAddLine,
   RiArrowDownSLine,
   RiArrowUpSLine,
   RiMoonLine,
 } from "@remixicon/react";
+import { getIconColorClass } from "@/lib/colors";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { GoalIconOption } from "@/lib/types";
 import type { EssentialItem, NewEssentialData } from "./essential-types";
 import { EssentialRow, SleepRow } from "./essential-row";
 import { InlineEssentialCreator } from "./inline-essential-creator";
 import { EssentialsCTA } from "./essentials-cta";
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+/** Maximum number of icons to show in collapsed state before showing overflow */
+const MAX_COLLAPSED_ICONS = 6;
+
+// =============================================================================
+// CollapsedIconStrip Component
+// =============================================================================
+
+interface CollapsedIconStripProps {
+  essentials: EssentialItem[];
+  onClick?: () => void;
+}
+
+/**
+ * Horizontal strip of essential icons shown when the section is collapsed.
+ * Displays up to MAX_COLLAPSED_ICONS icons with a "+N" overflow indicator.
+ */
+function CollapsedIconStrip({ essentials, onClick }: CollapsedIconStripProps) {
+  const visibleEssentials = essentials.slice(0, MAX_COLLAPSED_ICONS);
+  const overflowCount = essentials.length - MAX_COLLAPSED_ICONS;
+
+  return (
+    <button
+      onClick={onClick}
+      className="flex w-full items-center gap-1.5 px-3 py-2.5 text-left transition-colors hover:bg-muted/30"
+    >
+      {visibleEssentials.map((essential) => {
+        const IconComponent = essential.icon;
+        return (
+          <div
+            key={essential.id}
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60"
+            title={essential.label}
+          >
+            <IconComponent
+              className={cn("size-4", getIconColorClass(essential.color))}
+            />
+          </div>
+        );
+      })}
+      {overflowCount > 0 && (
+        <div
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60"
+          title={`${overflowCount} more essential${overflowCount > 1 ? "s" : ""}`}
+        >
+          <span className="text-xs font-medium text-muted-foreground">
+            +{overflowCount}
+          </span>
+        </div>
+      )}
+    </button>
+  );
+}
 
 // =============================================================================
 // Types
@@ -209,91 +268,117 @@ export function EssentialsSection({
           essentialIcons={essentialIcons}
         />
       ) : (
-        // Configured state - standard list view (no animation)
+        // Configured state - standard list view with collapse animation
         <div className="px-3 py-2">
-          {/* Header */}
-          <div className="flex items-center justify-between px-3 py-2">
-            <div className="flex flex-col">
-              <h3 className="text-sm font-semibold text-foreground">
-                Essentials
-              </h3>
-              {!isCollapsed && (
-                <p className="text-xs text-muted-foreground">
-                  Non-negotiables that shape your time
-                </p>
-              )}
-            </div>
-            {onToggleCollapse && (
-              <button
-                onClick={onToggleCollapse}
-                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover/essentials:opacity-100"
-                aria-label={
-                  isCollapsed ? "Expand essentials" : "Collapse essentials"
-                }
+          {/* Header - hidden when collapsed */}
+          <AnimatePresence initial={false}>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="flex items-center justify-between px-3 py-2"
               >
-                {isCollapsed ? (
-                  <RiArrowDownSLine className="size-4" />
-                ) : (
-                  <RiArrowUpSLine className="size-4" />
+                <div className="flex flex-col">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Essentials
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Non-negotiables that shape your time
+                  </p>
+                </div>
+                {onToggleCollapse && (
+                  <button
+                    onClick={onToggleCollapse}
+                    className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover/essentials:opacity-100"
+                    aria-label="Collapse essentials"
+                  >
+                    <RiArrowUpSLine className="size-4" />
+                  </button>
                 )}
-              </button>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
 
-          {/* Essential list - hidden when collapsed */}
-          {!isCollapsed && (
-            <div className="flex flex-col gap-0.5">
-              {/* Sleep - always first, special UI, non-deletable */}
-              <SleepRow
-                essential={sleep}
-                isExpanded={expandedId === "sleep"}
-                onToggleExpand={() => handleToggleExpand("sleep")}
-                wakeUpMinutes={wakeUpMinutes}
-                windDownMinutes={windDownMinutes}
-                onTimesChange={onSleepTimesChange}
-                isConfigured={isSleepConfigured}
-              />
-
-              {/* Other essentials - sorted by earliest time */}
-              {sortedEssentials.map((essential) => (
-                <EssentialRow
-                  key={essential.id}
-                  essential={essential}
-                  template={getTemplate(essential.id)}
-                  isExpanded={expandedId === essential.id}
-                  onToggleExpand={() => handleToggleExpand(essential.id)}
-                  onSaveSchedule={(slots) =>
-                    onSaveSchedule(essential.id, slots)
-                  }
-                  onDelete={() => onDeleteEssential(essential.id)}
+          {/* Animated content area */}
+          <AnimatePresence mode="wait" initial={false}>
+            {isCollapsed ? (
+              // Collapsed state - horizontal icon strip
+              <motion.div
+                key="collapsed"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <CollapsedIconStrip
+                  essentials={[sleep, ...sortedEssentials]}
+                  onClick={onToggleCollapse}
                 />
-              ))}
-
-              {/* Inline essential creator */}
-              {isCreating && (
-                <InlineEssentialCreator
-                  essentialIcons={essentialIcons}
-                  onSave={handleSaveNewEssential}
-                  onCancel={handleCancelCreate}
+              </motion.div>
+            ) : (
+              // Expanded state - full list
+              <motion.div
+                key="expanded"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="flex flex-col gap-0.5"
+              >
+                {/* Sleep - always first, special UI, non-deletable */}
+                <SleepRow
+                  essential={sleep}
+                  isExpanded={expandedId === "sleep"}
+                  onToggleExpand={() => handleToggleExpand("sleep")}
+                  wakeUpMinutes={wakeUpMinutes}
+                  windDownMinutes={windDownMinutes}
+                  onTimesChange={onSleepTimesChange}
+                  isConfigured={isSleepConfigured}
                 />
-              )}
 
-              {/* New essential button */}
-              {!isCreating && (
-                <button
-                  onClick={handleStartCreating}
-                  className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
-                >
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-                    <RiAddLine className="size-4 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    Add essential
-                  </span>
-                </button>
-              )}
-            </div>
-          )}
+                {/* Other essentials - sorted by earliest time */}
+                {sortedEssentials.map((essential) => (
+                  <EssentialRow
+                    key={essential.id}
+                    essential={essential}
+                    template={getTemplate(essential.id)}
+                    isExpanded={expandedId === essential.id}
+                    onToggleExpand={() => handleToggleExpand(essential.id)}
+                    onSaveSchedule={(slots) =>
+                      onSaveSchedule(essential.id, slots)
+                    }
+                    onDelete={() => onDeleteEssential(essential.id)}
+                  />
+                ))}
+
+                {/* Inline essential creator */}
+                {isCreating && (
+                  <InlineEssentialCreator
+                    essentialIcons={essentialIcons}
+                    onSave={handleSaveNewEssential}
+                    onCancel={handleCancelCreate}
+                  />
+                )}
+
+                {/* New essential button */}
+                {!isCreating && (
+                  <button
+                    onClick={handleStartCreating}
+                    className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
+                  >
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+                      <RiAddLine className="size-4 text-muted-foreground" />
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Add essential
+                    </span>
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>
