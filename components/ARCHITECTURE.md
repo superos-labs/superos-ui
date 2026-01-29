@@ -11,10 +11,10 @@ This document defines the structure and guidelines for building scalable, mainta
 │   ├── calendar/           # Feature folder
 │   ├── backlog/            # Feature folder
 │   ├── block/              # Feature folder
+│   ├── shell/              # Shell feature folder
 │   ├── drag/               # Drag-and-drop system
 │   ├── weekly-analytics/   # Feature folder
-│   ├── _playground/        # Internal demo utilities (not exported)
-│   └── shell-example.tsx   # Full integration demo
+│   └── _playground/        # Internal demo utilities (not exported)
 │
 ├── lib/                    # Shared utilities and orchestration
 │   ├── unified-schedule/   # App-level state orchestration
@@ -46,6 +46,7 @@ const { goals, events, calendarHandlers, getGoalStats } = useUnifiedSchedule({
 ```
 
 **Exports:**
+
 - `useUnifiedSchedule` — Main orchestration hook
 - Types: `ScheduleGoal`, `ScheduleTask`, `ScheduleEssential`, `GoalStats`, etc.
 
@@ -57,7 +58,12 @@ Adapters convert between component-specific data formats:
 import { eventToBlockSidebarData, toAnalyticsItems } from "@/lib/adapters";
 
 // Convert CalendarEvent → BlockSidebarData
-const { block, availableGoalTasks } = eventToBlockSidebarData(event, goals, essentials, weekDates);
+const { block, availableGoalTasks } = eventToBlockSidebarData(
+  event,
+  goals,
+  essentials,
+  weekDates,
+);
 
 // Convert goals/essentials → WeeklyAnalyticsItem[]
 const analyticsItems = toAnalyticsItems(goals, getGoalStats);
@@ -100,33 +106,36 @@ components/
 │   ├── index.ts
 │   ├── weekly-analytics.tsx
 │   └── weekly-analytics-example.tsx
-└── shell-example.tsx       # Full integration demo
+└── shell/                  # Shell feature folder
+    ├── index.ts
+    ├── shell-content.tsx
+    └── use-shell-state.ts
 ```
 
 ## Library Layers
 
 The codebase is organized into distinct layers:
 
-| Layer | Location | Purpose |
-| --- | --- | --- |
-| **UI Primitives** | `components/ui/` | Low-level building blocks (Button, Input, Card) |
-| **Feature Components** | `components/{feature}/` | Business-focused components (Calendar, Backlog) |
-| **Drag System** | `components/drag/` | Cross-cutting drag-and-drop infrastructure |
-| **Orchestration** | `lib/unified-schedule/` | App-level state management |
-| **Adapters** | `lib/adapters/` | Data conversion between component formats |
-| **Shared Utilities** | `lib/` | Colors, types, helpers |
-| **Playground** | `components/_playground/` | Demo-only utilities (not exported) |
+| Layer                  | Location                  | Purpose                                         |
+| ---------------------- | ------------------------- | ----------------------------------------------- |
+| **UI Primitives**      | `components/ui/`          | Low-level building blocks (Button, Input, Card) |
+| **Feature Components** | `components/{feature}/`   | Business-focused components (Calendar, Backlog) |
+| **Drag System**        | `components/drag/`        | Cross-cutting drag-and-drop infrastructure      |
+| **Orchestration**      | `lib/unified-schedule/`   | App-level state management                      |
+| **Adapters**           | `lib/adapters/`           | Data conversion between component formats       |
+| **Shared Utilities**   | `lib/`                    | Colors, types, helpers                          |
+| **Playground**         | `components/_playground/` | Demo-only utilities (not exported)              |
 
 ### What Goes Where
 
-| You need... | Put it in... |
-| --- | --- |
-| A reusable UI component | `components/ui/` or a feature folder |
-| Cross-component types | `lib/types.ts` |
-| App-level state orchestration | `lib/unified-schedule/` |
-| Format conversion between components | `lib/adapters/` |
-| Demo/playground utilities | `components/_playground/` |
-| Shared fixtures/sample data | `lib/fixtures/` |
+| You need...                          | Put it in...                         |
+| ------------------------------------ | ------------------------------------ |
+| A reusable UI component              | `components/ui/` or a feature folder |
+| Cross-component types                | `lib/types.ts`                       |
+| App-level state orchestration        | `lib/unified-schedule/`              |
+| Format conversion between components | `lib/adapters/`                      |
+| Demo/playground utilities            | `components/_playground/`            |
+| Shared fixtures/sample data          | `lib/fixtures/`                      |
 
 ## Component Types
 
@@ -351,12 +360,12 @@ export function useCalendarInteractions({
   initialEvents = [],
 }: UseCalendarInteractionsOptions): UseCalendarInteractionsReturn {
   const [events, setEvents] = useState(initialEvents);
-  
+
   // All handlers defined here...
   const handleEventResize = useCallback(...);
   const handleEventDragEnd = useCallback(...);
   // etc.
-  
+
   return {
     events,
     setEvents,
@@ -396,11 +405,11 @@ return (
 
 ### When to Create an Interactions Hook
 
-| Scenario | Approach |
-| --- | --- |
-| 1-3 callback props | Keep handlers in example file |
-| 4+ callback props with related state | Create interactions hook |
-| Multiple examples need same behavior | Create interactions hook |
+| Scenario                             | Approach                      |
+| ------------------------------------ | ----------------------------- |
+| 1-3 callback props                   | Keep handlers in example file |
+| 4+ callback props with related state | Create interactions hook      |
+| Multiple examples need same behavior | Create interactions hook      |
 
 ## Naming Conventions
 
@@ -492,10 +501,10 @@ function Calendar() {
 // calendar-example.tsx
 const EVENTS = [...]
 
-// shell-example.tsx
+// backlog-example.tsx
 const EVENTS = [...] // duplicated
 
-// Consider: shared fixtures file if data is reused extensively
+// Good: Use shared fixtures file (lib/fixtures/) for reused data
 ```
 
 ## Import Conventions
@@ -509,7 +518,11 @@ For external consumers, import from the root barrel:
 ```tsx
 // ✅ Preferred for library consumers
 import { Calendar, Backlog, BlockSidebar, DragProvider } from "@/components";
-import type { CalendarEvent, BacklogItem, BlockSidebarData } from "@/components";
+import type {
+  CalendarEvent,
+  BacklogItem,
+  BlockSidebarData,
+} from "@/components";
 ```
 
 ### Feature Folders
@@ -545,11 +558,11 @@ import { Shell, ShellToolbar, ShellContent } from "@/components/ui/shell";
 ```tsx
 // Main orchestration hook
 import { useUnifiedSchedule } from "@/lib/unified-schedule";
-import type { 
-  ScheduleGoal, 
-  ScheduleTask, 
+import type {
+  ScheduleGoal,
+  ScheduleTask,
   GoalStats,
-  UseUnifiedScheduleReturn 
+  UseUnifiedScheduleReturn,
 } from "@/lib/unified-schedule";
 
 // Or via hooks/ re-export (backward compatible)
@@ -559,10 +572,10 @@ import { useUnifiedSchedule } from "@/hooks";
 ### Adapters
 
 ```tsx
-import { 
-  eventToBlockSidebarData, 
+import {
+  eventToBlockSidebarData,
   toAnalyticsItems,
-  formatMinutesToTime 
+  formatMinutesToTime,
 } from "@/lib/adapters";
 ```
 

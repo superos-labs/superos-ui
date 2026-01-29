@@ -57,16 +57,6 @@ export const registry: ComponentEntry[] = [
       })),
     ),
   },
-  {
-    slug: "shell",
-    name: "Shell (Full App)",
-    layout: "full",
-    component: lazy(() =>
-      import("@/components/shell/shell-example").then((m) => ({
-        default: m.ShellExample,
-      })),
-    ),
-  },
 ];
 
 export function getComponent(slug: string): ComponentEntry | undefined {

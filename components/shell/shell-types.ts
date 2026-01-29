@@ -308,6 +308,12 @@ export interface ShellContentProps {
   lifeAreas: LifeArea[];
   /** Available goal icons */
   goalIcons: GoalIconOption[];
+
+  // -------------------------------------------------------------------------
+  // Demo/Development (optional)
+  // -------------------------------------------------------------------------
+  /** Clear all sample data (for demo purposes) */
+  onClearSampleData?: () => void;
 }
 
 // =============================================================================
