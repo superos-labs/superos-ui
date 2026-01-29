@@ -122,7 +122,7 @@ export function InlineEssentialCreator({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background/60 transition-colors hover:bg-background"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background transition-colors hover:bg-background/80"
               title="Choose icon and color"
             >
               {React.createElement(selectedIcon, {
@@ -183,8 +183,8 @@ export function InlineEssentialCreator({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Essential name..."
-          className="h-9 min-w-0 flex-1 rounded-md bg-background/60 px-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50"
+          placeholder="Name"
+          className="h-9 min-w-0 flex-1 rounded-md bg-background px-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring/50"
         />
 
         {/* Actions */}
@@ -227,8 +227,8 @@ export function InlineEssentialCreator({
                 className={cn(
                   "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
                   isSelected
-                    ? "bg-foreground/80 text-background"
-                    : "bg-background/60 text-muted-foreground hover:bg-background hover:text-foreground",
+                    ? "bg-foreground/20 text-foreground"
+                    : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground",
                 )}
                 title={DAY_FULL_LABELS[index]}
               >
@@ -245,11 +245,16 @@ export function InlineEssentialCreator({
           Time
         </span>
         <div className="flex items-center gap-2">
-          <TimeInput value={startMinutes} onChange={setStartMinutes} />
+          <TimeInput
+            value={startMinutes}
+            onChange={setStartMinutes}
+            className="bg-background"
+          />
           <span className="text-muted-foreground/70">–</span>
           <TimeInput
             value={startMinutes + durationMinutes}
             onChange={handleEndChange}
+            className="bg-background"
           />
         </div>
       </div>

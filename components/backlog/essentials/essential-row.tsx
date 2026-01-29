@@ -4,7 +4,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import {
   RiDeleteBinLine,
-  RiAddLine,
   RiMoonLine,
   RiSunLine,
   RiCloseLine,
@@ -16,7 +15,7 @@ import {
   formatTimeShort,
   formatScheduleSummary,
 } from "@/lib/time-utils";
-import { TimeInput, TimeRangeRow } from "@/components/ui/time-input";
+import { TimeInput } from "@/components/ui/time-input";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import { useActivitySchedule } from "@/lib/essentials";
 import type { EssentialItem } from "./essential-types";
@@ -160,8 +159,8 @@ export function EssentialRow({
                     className={cn(
                       "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
                       isSelected
-                        ? "bg-foreground/80 text-background"
-                        : "bg-background/60 text-muted-foreground hover:bg-background hover:text-foreground",
+                        ? "bg-foreground/20 text-foreground"
+                        : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground",
                     )}
                     title={DAY_FULL_LABELS[index]}
                   >
@@ -172,39 +171,47 @@ export function EssentialRow({
             </div>
           </div>
 
-          {/* Time ranges */}
+          {/* Time range - single range only */}
           <div className="flex flex-col gap-1.5">
             <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              Time ranges
+              Time
             </span>
-            <div className="flex flex-col gap-2">
-              {scheduleState.timeRanges.map((range) => (
-                <TimeRangeRow
-                  key={range.id}
-                  startMinutes={range.startMinutes}
-                  durationMinutes={range.durationMinutes}
-                  onStartChange={(minutes) =>
-                    scheduleState.updateTimeRange(range.id, {
-                      startMinutes: minutes,
-                    })
+            {scheduleState.timeRanges[0] && (
+              <div className="flex items-center gap-2">
+                <TimeInput
+                  value={scheduleState.timeRanges[0].startMinutes}
+                  onChange={(minutes) =>
+                    scheduleState.updateTimeRange(
+                      scheduleState.timeRanges[0].id,
+                      {
+                        startMinutes: minutes,
+                      },
+                    )
                   }
-                  onDurationChange={(minutes) =>
-                    scheduleState.updateTimeRange(range.id, {
-                      durationMinutes: minutes,
-                    })
-                  }
-                  onDelete={() => scheduleState.deleteTimeRange(range.id)}
-                  canDelete={scheduleState.timeRanges.length > 1}
+                  className="bg-background"
                 />
-              ))}
-            </div>
-            <button
-              onClick={scheduleState.addTimeRange}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <RiAddLine className="size-3.5" />
-              Add another time
-            </button>
+                <span className="text-muted-foreground/70">–</span>
+                <TimeInput
+                  value={
+                    scheduleState.timeRanges[0].startMinutes +
+                    scheduleState.timeRanges[0].durationMinutes
+                  }
+                  onChange={(newEnd) => {
+                    const newDuration =
+                      newEnd - scheduleState.timeRanges[0].startMinutes;
+                    if (newDuration > 0) {
+                      scheduleState.updateTimeRange(
+                        scheduleState.timeRanges[0].id,
+                        {
+                          durationMinutes: newDuration,
+                        },
+                      );
+                    }
+                  }}
+                  className="bg-background"
+                />
+              </div>
+            )}
           </div>
 
           {/* Delete button when expanded */}
@@ -270,6 +277,8 @@ export function SleepRow({
   // Handle confirm button click
   const handleConfirm = () => {
     onTimesChange(localWakeUp, localWindDown);
+    // Collapse the row after confirming
+    onToggleExpand();
   };
 
   // Format sleep schedule summary

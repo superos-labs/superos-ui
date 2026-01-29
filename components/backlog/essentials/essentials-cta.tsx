@@ -192,7 +192,7 @@ function SuggestionEditor({
       <div className="flex flex-col gap-3 rounded-xl bg-muted/30 p-3">
         {/* Header with icon, label, and actions */}
         <div className="flex items-center gap-2">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background/60">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background">
             <IconComponent
               className={cn("size-4", getIconColorClass(suggestion.color))}
             />
@@ -239,8 +239,8 @@ function SuggestionEditor({
                   className={cn(
                     "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
                     isSelected
-                      ? "bg-foreground/80 text-background"
-                      : "bg-background/60 text-muted-foreground hover:bg-background hover:text-foreground",
+                      ? "bg-foreground/20 text-foreground"
+                      : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground",
                   )}
                   title={DAY_FULL_LABELS[index]}
                 >
@@ -257,11 +257,16 @@ function SuggestionEditor({
             Time
           </span>
           <div className="flex items-center gap-2">
-            <TimeInput value={startMinutes} onChange={setStartMinutes} />
+            <TimeInput
+              value={startMinutes}
+              onChange={setStartMinutes}
+              className="bg-background"
+            />
             <span className="text-muted-foreground/70">–</span>
             <TimeInput
               value={startMinutes + durationMinutes}
               onChange={handleEndChange}
+              className="bg-background"
             />
           </div>
         </div>
@@ -455,7 +460,7 @@ export function EssentialsCTA({
   };
 
   return (
-    <div className={cn("flex flex-col px-3 py-2", className)}>
+    <div className={cn("flex flex-col px-3 pt-2 pb-4", className)}>
       {/* Header */}
       <div className="flex flex-col px-3 py-2">
         <h3 className="text-sm font-semibold text-foreground">
@@ -538,23 +543,21 @@ export function EssentialsCTA({
         )}
       </div>
 
-      {/* Footer with Skip/Done button */}
-      <div className="flex justify-end px-3 pt-3">
-        {hasProgress ? (
-          <button
-            onClick={onDone}
-            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-          >
-            Done
-          </button>
-        ) : (
-          <button
-            onClick={onSkip}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            Skip
-          </button>
-        )}
+      {/* Footer with Skip/Done button - full width with subtle animation */}
+      <div className="px-3 pt-2">
+        <button
+          onClick={hasProgress ? onDone : onSkip}
+          className={cn(
+            "w-full rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
+            hasProgress
+              ? "bg-foreground text-background hover:bg-foreground/90"
+              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
+          )}
+        >
+          <span className="inline-block transition-opacity duration-150">
+            {hasProgress ? "Done" : "Skip"}
+          </span>
+        </button>
       </div>
     </div>
   );
