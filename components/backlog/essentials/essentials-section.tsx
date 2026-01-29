@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiAddLine, RiMoonLine } from "@remixicon/react";
+import {
+  RiAddLine,
+  RiArrowDownSLine,
+  RiArrowUpSLine,
+  RiMoonLine,
+} from "@remixicon/react";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { GoalIconOption } from "@/lib/types";
 import type { EssentialItem, NewEssentialData } from "./essential-types";
@@ -34,6 +39,10 @@ export interface EssentialsSectionProps {
   isSleepConfigured?: boolean;
   /** Available icons for essential creation */
   essentialIcons: GoalIconOption[];
+  /** Whether the section is collapsed */
+  isCollapsed?: boolean;
+  /** Callback to toggle the collapsed state */
+  onToggleCollapse?: () => void;
   className?: string;
 }
 
@@ -52,6 +61,8 @@ export function EssentialsSection({
   onSleepTimesChange,
   isSleepConfigured = false,
   essentialIcons,
+  isCollapsed = false,
+  onToggleCollapse,
   className,
 }: EssentialsSectionProps) {
   // Internal state for accordion expansion
@@ -102,65 +113,86 @@ export function EssentialsSection({
   const sleep = sleepEssential ?? defaultSleep;
 
   return (
-    <div className={cn("flex flex-col px-3 py-2", className)}>
+    <div className={cn("group/essentials flex flex-col px-3 py-2", className)}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex flex-col">
           <h3 className="text-sm font-semibold text-foreground">Essentials</h3>
-          <p className="text-xs text-muted-foreground">
-            Non-negotiables that shape your time
-          </p>
+          {!isCollapsed && (
+            <p className="text-xs text-muted-foreground">
+              Non-negotiables that shape your time
+            </p>
+          )}
         </div>
-      </div>
-
-      {/* Essential list */}
-      <div className="flex flex-col gap-0.5">
-        {/* Sleep - always first, special UI, non-deletable */}
-        <SleepRow
-          essential={sleep}
-          isExpanded={expandedId === "sleep"}
-          onToggleExpand={() => handleToggleExpand("sleep")}
-          wakeUpMinutes={wakeUpMinutes}
-          windDownMinutes={windDownMinutes}
-          onTimesChange={onSleepTimesChange}
-          isConfigured={isSleepConfigured}
-        />
-
-        {/* Other essentials */}
-        {otherEssentials.map((essential) => (
-          <EssentialRow
-            key={essential.id}
-            essential={essential}
-            template={getTemplate(essential.id)}
-            isExpanded={expandedId === essential.id}
-            onToggleExpand={() => handleToggleExpand(essential.id)}
-            onSaveSchedule={(slots) => onSaveSchedule(essential.id, slots)}
-            onDelete={() => onDeleteEssential(essential.id)}
-          />
-        ))}
-
-        {/* Inline essential creator */}
-        {isCreating && (
-          <InlineEssentialCreator
-            essentialIcons={essentialIcons}
-            onSave={handleSaveNewEssential}
-            onCancel={handleCancelCreate}
-          />
-        )}
-
-        {/* New essential button */}
-        {!isCreating && (
+        {onToggleCollapse && (
           <button
-            onClick={handleStartCreating}
-            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
+            onClick={onToggleCollapse}
+            className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover/essentials:opacity-100"
+            aria-label={
+              isCollapsed ? "Expand essentials" : "Collapse essentials"
+            }
           >
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-              <RiAddLine className="size-4 text-muted-foreground" />
-            </div>
-            <span className="text-sm text-muted-foreground">Add essential</span>
+            {isCollapsed ? (
+              <RiArrowDownSLine className="size-4" />
+            ) : (
+              <RiArrowUpSLine className="size-4" />
+            )}
           </button>
         )}
       </div>
+
+      {/* Essential list - hidden when collapsed */}
+      {!isCollapsed && (
+        <div className="flex flex-col gap-0.5">
+          {/* Sleep - always first, special UI, non-deletable */}
+          <SleepRow
+            essential={sleep}
+            isExpanded={expandedId === "sleep"}
+            onToggleExpand={() => handleToggleExpand("sleep")}
+            wakeUpMinutes={wakeUpMinutes}
+            windDownMinutes={windDownMinutes}
+            onTimesChange={onSleepTimesChange}
+            isConfigured={isSleepConfigured}
+          />
+
+          {/* Other essentials */}
+          {otherEssentials.map((essential) => (
+            <EssentialRow
+              key={essential.id}
+              essential={essential}
+              template={getTemplate(essential.id)}
+              isExpanded={expandedId === essential.id}
+              onToggleExpand={() => handleToggleExpand(essential.id)}
+              onSaveSchedule={(slots) => onSaveSchedule(essential.id, slots)}
+              onDelete={() => onDeleteEssential(essential.id)}
+            />
+          ))}
+
+          {/* Inline essential creator */}
+          {isCreating && (
+            <InlineEssentialCreator
+              essentialIcons={essentialIcons}
+              onSave={handleSaveNewEssential}
+              onCancel={handleCancelCreate}
+            />
+          )}
+
+          {/* New essential button */}
+          {!isCreating && (
+            <button
+              onClick={handleStartCreating}
+              className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
+            >
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+                <RiAddLine className="size-4 text-muted-foreground" />
+              </div>
+              <span className="text-sm text-muted-foreground">
+                Add essential
+              </span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

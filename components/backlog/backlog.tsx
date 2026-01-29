@@ -163,16 +163,17 @@ export function Backlog({
     );
   }
 
+  // State for collapsing essentials card
+  const [isEssentialsCollapsed, setIsEssentialsCollapsed] =
+    React.useState(false);
+
   return (
     <div
-      className={cn(
-        "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className,
-      )}
+      className={cn("flex w-full max-w-sm flex-col gap-3", className)}
       {...props}
     >
-      {/* Content */}
-      <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto">
+      {/* Essentials Card */}
+      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
         <EssentialsSection
           essentials={essentials}
           templates={essentialTemplates ?? []}
@@ -184,37 +185,44 @@ export function Backlog({
           onSleepTimesChange={onSleepTimesChange ?? (() => {})}
           isSleepConfigured={isSleepConfigured}
           essentialIcons={goalIcons ?? []}
-        />
-
-        <GoalSection
-          title="Goals"
-          description="Things you intentionally want to do"
-          items={goals}
-          showTasks={showTasks}
-          onAddItem={onAddGoal}
-          onItemClick={onSelectGoal}
-          onToggleTask={onToggleGoalTask}
-          onAddTask={onAddTask}
-          onUpdateTask={onUpdateTask}
-          onAddSubtask={onAddSubtask}
-          onToggleSubtask={onToggleSubtask}
-          onUpdateSubtask={onUpdateSubtask}
-          onDeleteSubtask={onDeleteSubtask}
-          onDeleteTask={onDeleteTask}
-          getTaskSchedule={getTaskSchedule}
-          getTaskDeadline={getTaskDeadline}
-          draggable={draggable}
-          onCreateAndSelectGoal={onCreateAndSelectGoal}
-          onBrowseInspiration={onBrowseInspiration}
-          isInspirationActive={isInspirationActive}
-          className="py-2"
+          isCollapsed={isEssentialsCollapsed}
+          onToggleCollapse={() => setIsEssentialsCollapsed((prev) => !prev)}
         />
       </div>
 
-      {/* Footer */}
-      <div className="shrink-0 border-t border-border bg-background px-4 py-3">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">168 hours in a week</span>
+      {/* Goals Card */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+        <div className="scrollbar-hidden flex-1 overflow-y-auto">
+          <GoalSection
+            title="Goals"
+            description="Things you intentionally want to do"
+            items={goals}
+            showTasks={showTasks}
+            onAddItem={onAddGoal}
+            onItemClick={onSelectGoal}
+            onToggleTask={onToggleGoalTask}
+            onAddTask={onAddTask}
+            onUpdateTask={onUpdateTask}
+            onAddSubtask={onAddSubtask}
+            onToggleSubtask={onToggleSubtask}
+            onUpdateSubtask={onUpdateSubtask}
+            onDeleteSubtask={onDeleteSubtask}
+            onDeleteTask={onDeleteTask}
+            getTaskSchedule={getTaskSchedule}
+            getTaskDeadline={getTaskDeadline}
+            draggable={draggable}
+            onCreateAndSelectGoal={onCreateAndSelectGoal}
+            onBrowseInspiration={onBrowseInspiration}
+            isInspirationActive={isInspirationActive}
+            className="py-2"
+          />
+        </div>
+
+        {/* Footer */}
+        <div className="shrink-0 border-t border-border bg-background px-4 py-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">168 hours in a week</span>
+          </div>
         </div>
       </div>
     </div>
