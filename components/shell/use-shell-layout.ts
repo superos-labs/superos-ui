@@ -56,6 +56,11 @@ export interface UseShellLayoutReturn {
   onContinueFromGoals: () => void;
   onCompleteOnboarding: () => void;
 
+  // Plan week prompt (shown after onboarding completes)
+  showPlanWeekPrompt: boolean;
+  onDismissPlanWeekPrompt: () => void;
+  onStartPlanningFromPrompt: () => void;
+
   // Selection state
   selectedEventId: string | null;
   setSelectedEventId: React.Dispatch<React.SetStateAction<string | null>>;
@@ -120,6 +125,9 @@ export function useShellLayout(
 
   const isOnboarding = onboardingStep !== null;
 
+  // Plan week prompt - shown after onboarding completes
+  const [showPlanWeekPrompt, setShowPlanWeekPrompt] = React.useState(false);
+
   // -------------------------------------------------------------------------
   // Mode State
   // -------------------------------------------------------------------------
@@ -152,6 +160,19 @@ export function useShellLayout(
   // Handler to complete onboarding (called when essentials Done/Skip is clicked)
   const onCompleteOnboarding = React.useCallback(() => {
     setOnboardingStep(null);
+    // Show plan week prompt after onboarding completes
+    setShowPlanWeekPrompt(true);
+  }, []);
+
+  // Dismiss the plan week prompt without starting planning
+  const onDismissPlanWeekPrompt = React.useCallback(() => {
+    setShowPlanWeekPrompt(false);
+  }, []);
+
+  // Start planning from the prompt (dismisses prompt and enters planning mode)
+  const onStartPlanningFromPrompt = React.useCallback(() => {
+    setShowPlanWeekPrompt(false);
+    setIsPlanningMode(true);
   }, []);
 
   // -------------------------------------------------------------------------
@@ -312,6 +333,11 @@ export function useShellLayout(
     isOnboarding,
     onContinueFromGoals,
     onCompleteOnboarding,
+
+    // Plan week prompt
+    showPlanWeekPrompt,
+    onDismissPlanWeekPrompt,
+    onStartPlanningFromPrompt,
 
     // Selection state
     selectedEventId,

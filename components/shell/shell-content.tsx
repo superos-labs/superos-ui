@@ -48,7 +48,10 @@ import { BlockSidebar, useBlockSidebarHandlers } from "@/components/block";
 import { GoalDetail } from "@/components/goal-detail";
 import { FocusIndicator } from "@/components/focus";
 import { DragGhost, useDragContextOptional } from "@/components/drag";
-import { PlanningPanel } from "@/components/weekly-planning";
+import {
+  PlanningPanel,
+  PlanWeekPromptCard,
+} from "@/components/weekly-planning";
 import { toAnalyticsItems } from "@/lib/adapters";
 import { blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
 import { usePlanningFlow } from "@/lib/weekly-planning";
@@ -382,6 +385,10 @@ export function ShellContentComponent({
     isOnboarding,
     onContinueFromGoals,
     onCompleteOnboarding,
+    // Plan week prompt
+    showPlanWeekPrompt,
+    onDismissPlanWeekPrompt,
+    onStartPlanningFromPrompt,
   } = layout;
 
   // -------------------------------------------------------------------------
@@ -1179,10 +1186,21 @@ export function ShellContentComponent({
                     dayBoundariesEnabled={dayBoundariesEnabled}
                     dayBoundariesDisplay={dayBoundariesDisplay}
                   />
-                  {/* Dimming overlay - shown during onboarding and planning prioritize step */}
+                  {/* Dimming overlay - shown during onboarding, planning prioritize step, and plan week prompt */}
                   {(isOnboarding ||
+                    showPlanWeekPrompt ||
                     (isPlanning && planningFlow.step === "prioritize")) && (
                     <div className="absolute inset-0 bg-background/60 pointer-events-none z-10" />
+                  )}
+
+                  {/* Plan week prompt card - shown after onboarding completes */}
+                  {showPlanWeekPrompt && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center">
+                      <PlanWeekPromptCard
+                        onStartPlanning={onStartPlanningFromPrompt}
+                        onDismiss={onDismissPlanWeekPrompt}
+                      />
+                    </div>
                   )}
                 </div>
               ) : null}
