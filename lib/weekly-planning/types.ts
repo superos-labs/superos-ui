@@ -53,8 +53,8 @@ export interface UsePlanningFlowOptions {
   isActive: boolean;
   /** Current week dates */
   weekDates: Date[];
-  /** Callback when planning is confirmed */
-  onConfirm?: () => void;
+  /** Callback when planning is confirmed (saveAsBlueprint indicates user preference) */
+  onConfirm?: (saveAsBlueprint: boolean) => void;
   /** Callback when planning is cancelled */
   onCancel?: () => void;
 }
@@ -65,7 +65,7 @@ export interface UsePlanningFlowReturn {
   /** Advance to the next step (prioritize → schedule) */
   nextStep: () => void;
   /** Confirm the planning session (only valid in schedule step) */
-  confirm: () => void;
+  confirm: (saveAsBlueprint: boolean) => void;
   /** Cancel and exit planning mode */
   cancel: () => void;
 

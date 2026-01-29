@@ -67,11 +67,12 @@ export function eventsToBlueprint(
   });
 
   // Filter to events in the current week and convert
+  // Exclude essentials - they have their own template system
   return events
     .filter((event) => {
-      // Only include planned events (not completed ones in the blueprint)
-      // and events that are in the current week
-      return dateToIndex.has(event.date);
+      // Only include events that are in the current week
+      // Exclude essentials - they're managed via EssentialTemplate
+      return dateToIndex.has(event.date) && event.blockType !== "essential";
     })
     .map((event) => ({
       id: crypto.randomUUID(),

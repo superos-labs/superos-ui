@@ -409,7 +409,7 @@ export function ShellContentComponent({
   const planningFlow = usePlanningFlow({
     isActive: isPlanningMode,
     weekDates,
-    onConfirm: () => {
+    onConfirm: (saveAsBlueprint: boolean) => {
       // Persist weekly focus to tasks before exiting
       if (planningFlowRef.current.weeklyFocusTaskIds.size > 0) {
         onSetWeeklyFocus(
@@ -424,8 +424,8 @@ export function ShellContentComponent({
         plannedAt: new Date().toISOString(),
       });
 
-      // On first planning, save the blueprint
-      if (!hasBlueprint) {
+      // On first planning, save the blueprint if user opted in
+      if (!hasBlueprint && saveAsBlueprint) {
         const blueprintBlocks = eventsToBlueprint(events, weekDates);
         onSaveBlueprint({
           blocks: blueprintBlocks,

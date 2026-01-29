@@ -79,12 +79,15 @@ export function usePlanningFlow({
   // -------------------------------------------------------------------------
   // Actions
   // -------------------------------------------------------------------------
-  const confirm = React.useCallback(() => {
-    // Only confirm from schedule step
-    if (step === "schedule") {
-      onConfirm?.();
-    }
-  }, [step, onConfirm]);
+  const confirm = React.useCallback(
+    (saveAsBlueprint: boolean) => {
+      // Only confirm from schedule step
+      if (step === "schedule") {
+        onConfirm?.(saveAsBlueprint);
+      }
+    },
+    [step, onConfirm],
+  );
 
   const cancel = React.useCallback(() => {
     // Clear weekly focus on cancel

@@ -39,8 +39,8 @@ export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement>
   step: PlanningStep;
   /** Callback to advance to next step (prioritize → schedule) */
   onNextStep: () => void;
-  /** Callback when planning is confirmed (in schedule step) */
-  onConfirm: () => void;
+  /** Callback when planning is confirmed (saveAsBlueprint indicates user preference) */
+  onConfirm: (saveAsBlueprint: boolean) => void;
   /** Set of task IDs marked as weekly focus */
   weeklyFocusTaskIds: Set<string>;
   /** Add a task to weekly focus */
@@ -89,6 +89,9 @@ export function PlanningPanel({
   const hasBlueprint = blueprint !== null;
   const isPrioritizeStep = step === "prioritize";
   const isScheduleStep = step === "schedule";
+
+  // Blueprint save preference (default on, only shown when no blueprint exists)
+  const [saveAsBlueprint, setSaveAsBlueprint] = React.useState(true);
 
   // Header content based on step
   const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Plan your week";
@@ -167,7 +170,37 @@ export function PlanningPanel({
         )}
 
         {/* Action Button - Full width, inside the scrollable content area */}
-        <div className="sticky bottom-0 bg-background px-4 py-4">
+        <div className="sticky bottom-0 flex flex-col gap-3 bg-background px-4 py-4">
+          {/* Blueprint save callout - shown in schedule step when no blueprint exists */}
+          {isScheduleStep && !hasBlueprint && (
+            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium text-foreground">
+                  Reuse this week?
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Save this plan as a starting point for future weeks.
+                </span>
+              </div>
+              <button
+                role="switch"
+                aria-checked={saveAsBlueprint}
+                onClick={() => setSaveAsBlueprint(!saveAsBlueprint)}
+                className={cn(
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors",
+                  saveAsBlueprint ? "bg-foreground" : "bg-muted-foreground/30",
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none block size-5 rounded-full bg-background shadow-sm ring-0 transition-transform",
+                    saveAsBlueprint ? "translate-x-[22px]" : "translate-x-0.5",
+                  )}
+                />
+              </button>
+            </div>
+          )}
+
           {isPrioritizeStep ? (
             <button
               onClick={onNextStep}
@@ -177,7 +210,7 @@ export function PlanningPanel({
             </button>
           ) : (
             <button
-              onClick={onConfirm}
+              onClick={() => onConfirm(saveAsBlueprint)}
               className="w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
             >
               Finish planning
