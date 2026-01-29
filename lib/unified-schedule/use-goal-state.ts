@@ -18,6 +18,7 @@ import {
   updateSubtaskInGoals,
   updateMilestoneInGoals,
   findTaskAcrossGoals,
+  setWeeklyFocusOnTasks,
 } from "./goal-state-utils";
 
 // ============================================================================
@@ -66,6 +67,8 @@ export interface UseGoalStateReturn {
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */
   toggleMilestonesEnabled: (goalId: string) => void;
+  /** Set weekly focus on multiple tasks at once (persists weeklyFocusWeek) */
+  setWeeklyFocus: (taskIds: Set<string>, weekStartDate: string) => void;
 }
 
 // ============================================================================
@@ -296,6 +299,17 @@ export function useGoalState({
   }, []);
 
   // -------------------------------------------------------------------------
+  // Weekly Focus
+  // -------------------------------------------------------------------------
+
+  const setWeeklyFocus = React.useCallback(
+    (taskIds: Set<string>, weekStartDate: string) => {
+      setGoals((prev) => setWeeklyFocusOnTasks(prev, taskIds, weekStartDate));
+    },
+    [],
+  );
+
+  // -------------------------------------------------------------------------
   // Utility Functions
   // -------------------------------------------------------------------------
 
@@ -331,5 +345,7 @@ export function useGoalState({
     toggleMilestoneComplete,
     deleteMilestone,
     toggleMilestonesEnabled,
+    // Weekly focus
+    setWeeklyFocus,
   };
 }

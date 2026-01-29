@@ -197,6 +197,7 @@ export function ShellContentComponent({
   onSaveBlueprint,
   currentWeekPlan,
   onSaveWeeklyPlan,
+  onSetWeeklyFocus,
   // Preferences
   weekStartsOn,
   onWeekStartsOnChange,
@@ -394,10 +395,22 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   const weekStartDate = weekDates[0]?.toISOString().split("T")[0] ?? "";
 
+  const planningFlowRef = React.useRef<{
+    weeklyFocusTaskIds: Set<string>;
+  }>({ weeklyFocusTaskIds: new Set() });
+
   const planningFlow = usePlanningFlow({
     isActive: isPlanningMode,
     weekDates,
     onConfirm: () => {
+      // Persist weekly focus to tasks before exiting
+      if (planningFlowRef.current.weeklyFocusTaskIds.size > 0) {
+        onSetWeeklyFocus(
+          planningFlowRef.current.weeklyFocusTaskIds,
+          weekStartDate,
+        );
+      }
+
       // Save the weekly plan
       onSaveWeeklyPlan({
         weekStartDate,
@@ -420,6 +433,12 @@ export function ShellContentComponent({
       setIsPlanningMode(false);
     },
   });
+
+  // Keep ref in sync with planning flow state
+  React.useEffect(() => {
+    planningFlowRef.current.weeklyFocusTaskIds =
+      planningFlow.weeklyFocusTaskIds;
+  }, [planningFlow.weeklyFocusTaskIds]);
 
   // Auto-import essentials when entering planning mode
   React.useEffect(() => {
@@ -1059,6 +1078,8 @@ export function ShellContentComponent({
                   onboardingStep={onboardingStep}
                   onOnboardingContinue={onContinueFromGoals}
                   onOnboardingComplete={onCompleteOnboarding}
+                  // Weekly focus
+                  currentWeekStart={weekStartDate}
                 />
               )}
             </div>
@@ -1254,6 +1275,7 @@ export function ShellContentComponent({
             isEssentialsHidden={isEssentialsHidden}
             onEssentialsHide={() => setIsEssentialsHidden(true)}
             goalIcons={goalIcons}
+            currentWeekStart={weekStartDate}
           />
         </FullScreenOverlay>
       )}

@@ -108,6 +108,10 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onOnboardingContinue?: () => void;
   /** Callback when onboarding is completed (essentials Continue/Skip clicked) */
   onOnboardingComplete?: () => void;
+
+  // Weekly focus props
+  /** Current week start date for sectioning tasks by "This Week" (ISO string, e.g. "2026-01-26") */
+  currentWeekStart?: string;
 }
 
 export function Backlog({
@@ -152,6 +156,8 @@ export function Backlog({
   onboardingStep,
   onOnboardingContinue,
   onOnboardingComplete,
+  // Weekly focus props
+  currentWeekStart,
   className,
   ...props
 }: BacklogProps) {
@@ -237,6 +243,7 @@ export function Backlog({
             isInspirationActive={isInspirationActive}
             isOnboardingGoalsStep={isOnboardingGoalsStep}
             onOnboardingContinue={onOnboardingContinue}
+            currentWeekStart={currentWeekStart}
             className="py-2"
           />
         </div>

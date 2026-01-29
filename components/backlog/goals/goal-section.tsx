@@ -61,6 +61,8 @@ export interface GoalSectionProps {
   isOnboardingGoalsStep?: boolean;
   /** Callback when user clicks Continue during onboarding */
   onOnboardingContinue?: () => void;
+  /** Current week start date for sectioning tasks by "This Week" (ISO string) */
+  currentWeekStart?: string;
   className?: string;
 }
 
@@ -88,6 +90,7 @@ export function GoalSection({
   isInspirationActive,
   isOnboardingGoalsStep = false,
   onOnboardingContinue,
+  currentWeekStart,
   className,
 }: GoalSectionProps) {
   // Show Continue button only during onboarding goals step when at least 1 goal exists
@@ -149,6 +152,7 @@ export function GoalSection({
             getTaskSchedule={getTaskSchedule}
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
+            currentWeekStart={currentWeekStart}
           />
         ))}
 

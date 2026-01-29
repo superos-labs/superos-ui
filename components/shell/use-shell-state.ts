@@ -454,6 +454,7 @@ export function useShellState(
     onSaveBlueprint: saveBlueprint,
     currentWeekPlan,
     onSaveWeeklyPlan: saveWeeklyPlan,
+    onSetWeeklyFocus: schedule.setWeeklyFocus,
 
     // Preferences
     weekStartsOn,

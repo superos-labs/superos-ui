@@ -52,6 +52,8 @@ export interface GoalItemRowProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Whether drag is enabled (requires DragProvider) */
   draggable?: boolean;
+  /** Current week start date for sectioning tasks by "This Week" (ISO string) */
+  currentWeekStart?: string;
   className?: string;
 }
 
@@ -71,6 +73,7 @@ export function GoalItemRow({
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
+  currentWeekStart,
   className,
 }: GoalItemRowProps) {
   const IconComponent = item.icon;
@@ -165,50 +168,93 @@ export function GoalItemRow({
 
       {showTasks && (
         <div className="flex flex-col gap-0.5">
-          {item.tasks?.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              parentGoal={item}
-              scheduleInfo={getTaskSchedule?.(task.id)}
-              deadlineInfo={getTaskDeadline?.(task.id)}
-              onToggle={(taskId) => onToggleTask?.(item.id, taskId)}
-              draggable={draggable}
-              isExpanded={expandedTaskId === task.id}
-              onExpand={(taskId) =>
-                setExpandedTaskId((prev) => (prev === taskId ? null : taskId))
-              }
-              onUpdateTask={
-                onUpdateTask
-                  ? (updates) => onUpdateTask(item.id, task.id, updates)
-                  : undefined
-              }
-              onAddSubtask={
-                onAddSubtask
-                  ? (label) => onAddSubtask(item.id, task.id, label)
-                  : undefined
-              }
-              onToggleSubtask={
-                onToggleSubtask
-                  ? (subtaskId) => onToggleSubtask(item.id, task.id, subtaskId)
-                  : undefined
-              }
-              onUpdateSubtask={
-                onUpdateSubtask
-                  ? (subtaskId, label) =>
-                      onUpdateSubtask(item.id, task.id, subtaskId, label)
-                  : undefined
-              }
-              onDeleteSubtask={
-                onDeleteSubtask
-                  ? (subtaskId) => onDeleteSubtask(item.id, task.id, subtaskId)
-                  : undefined
-              }
-              onDeleteTask={
-                onDeleteTask ? () => onDeleteTask(item.id, task.id) : undefined
-              }
-            />
-          ))}
+          {(() => {
+            const tasks = item.tasks ?? [];
+
+            // Partition tasks into "This Week" and "Other"
+            const thisWeekTasks = currentWeekStart
+              ? tasks.filter((t) => t.weeklyFocusWeek === currentWeekStart)
+              : [];
+            const otherTasks = currentWeekStart
+              ? tasks.filter((t) => t.weeklyFocusWeek !== currentWeekStart)
+              : tasks;
+
+            // Render helper for task rows
+            const renderTaskRow = (task: ScheduleTask) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                parentGoal={item}
+                scheduleInfo={getTaskSchedule?.(task.id)}
+                deadlineInfo={getTaskDeadline?.(task.id)}
+                onToggle={(taskId) => onToggleTask?.(item.id, taskId)}
+                draggable={draggable}
+                isExpanded={expandedTaskId === task.id}
+                onExpand={(taskId) =>
+                  setExpandedTaskId((prev) => (prev === taskId ? null : taskId))
+                }
+                onUpdateTask={
+                  onUpdateTask
+                    ? (updates) => onUpdateTask(item.id, task.id, updates)
+                    : undefined
+                }
+                onAddSubtask={
+                  onAddSubtask
+                    ? (label) => onAddSubtask(item.id, task.id, label)
+                    : undefined
+                }
+                onToggleSubtask={
+                  onToggleSubtask
+                    ? (subtaskId) =>
+                        onToggleSubtask(item.id, task.id, subtaskId)
+                    : undefined
+                }
+                onUpdateSubtask={
+                  onUpdateSubtask
+                    ? (subtaskId, label) =>
+                        onUpdateSubtask(item.id, task.id, subtaskId, label)
+                    : undefined
+                }
+                onDeleteSubtask={
+                  onDeleteSubtask
+                    ? (subtaskId) =>
+                        onDeleteSubtask(item.id, task.id, subtaskId)
+                    : undefined
+                }
+                onDeleteTask={
+                  onDeleteTask
+                    ? () => onDeleteTask(item.id, task.id)
+                    : undefined
+                }
+              />
+            );
+
+            return (
+              <>
+                {/* This Week section - only show if there are focus tasks */}
+                {thisWeekTasks.length > 0 && (
+                  <>
+                    <div className="px-3 py-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        This week
+                      </span>
+                    </div>
+                    {thisWeekTasks.map(renderTaskRow)}
+                  </>
+                )}
+
+                {/* Other tasks - show header only when there are also "This week" tasks */}
+                {thisWeekTasks.length > 0 && otherTasks.length > 0 && (
+                  <div className="px-3 py-1.5 pt-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Other tasks
+                    </span>
+                  </div>
+                )}
+                {otherTasks.map(renderTaskRow)}
+              </>
+            );
+          })()}
           {onAddTask && (
             <InlineTaskCreator goalId={item.id} onSave={onAddTask} />
           )}

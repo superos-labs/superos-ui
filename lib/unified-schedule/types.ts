@@ -95,6 +95,8 @@ export interface ScheduleTask {
   description?: string;
   /** Optional subtasks (simple checkboxes, not schedulable) */
   subtasks?: Subtask[];
+  /** ISO week start date when this task was marked as weekly focus (e.g., "2026-01-26") */
+  weeklyFocusWeek?: string;
 }
 
 /** Goal in the backlog */
@@ -253,6 +255,10 @@ export interface UseUnifiedScheduleReturn {
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */
   toggleMilestonesEnabled: (goalId: string) => void;
+
+  // Weekly focus
+  /** Set weekly focus on multiple tasks at once (persists weeklyFocusWeek) */
+  setWeeklyFocus: (taskIds: Set<string>, weekStartDate: string) => void;
 
   // Scheduling actions (from drag-drop)
   scheduleGoal: (

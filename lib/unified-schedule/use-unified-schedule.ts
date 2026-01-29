@@ -63,6 +63,8 @@ export function useUnifiedSchedule({
     toggleMilestoneComplete,
     deleteMilestone,
     toggleMilestonesEnabled,
+    // Weekly focus
+    setWeeklyFocus,
   } = useGoalState({ initialGoals });
 
   // -------------------------------------------------------------------------
@@ -458,6 +460,8 @@ export function useUnifiedSchedule({
     toggleMilestoneComplete,
     deleteMilestone,
     toggleMilestonesEnabled,
+    // Weekly focus
+    setWeeklyFocus,
     scheduleGoal,
     scheduleTask,
     scheduleEssential,

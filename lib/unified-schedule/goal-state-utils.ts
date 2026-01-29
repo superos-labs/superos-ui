@@ -254,3 +254,23 @@ export function findTaskAcrossGoals(
   }
   return null;
 }
+
+/**
+ * Set weekly focus week on multiple tasks at once.
+ * Tasks in the set get the weekStartDate, all other tasks have their weeklyFocusWeek cleared.
+ */
+export function setWeeklyFocusOnTasks(
+  goals: ScheduleGoal[],
+  taskIds: Set<string>,
+  weekStartDate: string,
+): ScheduleGoal[] {
+  return goals.map((goal) => ({
+    ...goal,
+    tasks: goal.tasks?.map((task) => ({
+      ...task,
+      weeklyFocusWeek: taskIds.has(task.id)
+        ? weekStartDate
+        : task.weeklyFocusWeek,
+    })),
+  }));
+}
