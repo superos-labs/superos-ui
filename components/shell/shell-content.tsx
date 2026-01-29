@@ -77,6 +77,7 @@ import {
   RiSubtractLine,
   RiMenuLine,
   RiKeyboardLine,
+  RiCalendarCheckLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -240,6 +241,11 @@ export function ShellContentComponent({
   // Mobile Overlay State
   // -------------------------------------------------------------------------
   const [showBacklogOverlay, setShowBacklogOverlay] = React.useState(false);
+
+  // -------------------------------------------------------------------------
+  // Essentials Hidden State (user clicked Skip in CTA)
+  // -------------------------------------------------------------------------
+  const [isEssentialsHidden, setIsEssentialsHidden] = React.useState(false);
 
   // -------------------------------------------------------------------------
   // Keyboard Shortcuts Modal State
@@ -786,6 +792,16 @@ export function ShellContentComponent({
               <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+            {/* Show "Set essentials" when hidden */}
+            {isEssentialsHidden && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsEssentialsHidden(false)}>
+                  <RiCalendarCheckLine className="size-4" />
+                  Set essentials
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setShowKeyboardShortcuts(true)}>
               <RiKeyboardLine className="size-4" />
@@ -908,6 +924,16 @@ export function ShellContentComponent({
                 <RiAddLine className="size-3.5" />
               </button>
             </div>
+            {/* Show "Set essentials" when hidden */}
+            {isEssentialsHidden && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsEssentialsHidden(false)}>
+                  <RiCalendarCheckLine className="size-4" />
+                  Set essentials
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setShowKeyboardShortcuts(true)}>
               <RiKeyboardLine className="size-4" />
@@ -1021,6 +1047,8 @@ export function ShellContentComponent({
                   windDownMinutes={dayEndMinutes}
                   onSleepTimesChange={handleSleepTimesChange}
                   isSleepConfigured={dayBoundariesEnabled}
+                  isEssentialsHidden={isEssentialsHidden}
+                  onEssentialsHide={() => setIsEssentialsHidden(true)}
                   onCreateGoal={handleCreateGoal}
                   lifeAreas={lifeAreas}
                   goalIcons={goalIcons}
@@ -1210,6 +1238,17 @@ export function ShellContentComponent({
             getTaskDeadline={getTaskDeadline}
             draggable={false}
             mode="view"
+            essentialTemplates={essentialTemplates}
+            onSaveEssentialSchedule={onSaveEssentialSchedule}
+            onCreateEssential={onCreateEssential}
+            onDeleteEssential={onDeleteEssential}
+            wakeUpMinutes={dayStartMinutes}
+            windDownMinutes={dayEndMinutes}
+            onSleepTimesChange={handleSleepTimesChange}
+            isSleepConfigured={dayBoundariesEnabled}
+            isEssentialsHidden={isEssentialsHidden}
+            onEssentialsHide={() => setIsEssentialsHidden(true)}
+            goalIcons={goalIcons}
           />
         </FullScreenOverlay>
       )}

@@ -79,6 +79,10 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onSleepTimesChange?: (wakeUp: number, windDown: number) => void;
   /** Whether sleep visualization is configured/enabled */
   isSleepConfigured?: boolean;
+  /** Whether the essentials section is hidden (user clicked Skip) */
+  isEssentialsHidden?: boolean;
+  /** Callback when user clicks Skip to hide essentials */
+  onEssentialsHide?: () => void;
 
   // Goal creation props (for goal-detail mode's GoalList)
   /** Callback for creating a new goal */
@@ -130,6 +134,8 @@ export function Backlog({
   windDownMinutes = 1380, // 11:00 PM default
   onSleepTimesChange,
   isSleepConfigured = false,
+  isEssentialsHidden = false,
+  onEssentialsHide,
   // Goal creation props
   onCreateGoal,
   lifeAreas,
@@ -172,23 +178,27 @@ export function Backlog({
       className={cn("flex w-full max-w-sm flex-col gap-3", className)}
       {...props}
     >
-      {/* Essentials Card */}
-      <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-        <EssentialsSection
-          essentials={essentials}
-          templates={essentialTemplates ?? []}
-          onSaveSchedule={onSaveEssentialSchedule ?? (() => {})}
-          onCreateEssential={onCreateEssential ?? (() => {})}
-          onDeleteEssential={onDeleteEssential ?? (() => {})}
-          wakeUpMinutes={wakeUpMinutes}
-          windDownMinutes={windDownMinutes}
-          onSleepTimesChange={onSleepTimesChange ?? (() => {})}
-          isSleepConfigured={isSleepConfigured}
-          essentialIcons={goalIcons ?? []}
-          isCollapsed={isEssentialsCollapsed}
-          onToggleCollapse={() => setIsEssentialsCollapsed((prev) => !prev)}
-        />
-      </div>
+      {/* Essentials Card - hidden when user clicks Skip */}
+      {!isEssentialsHidden && (
+        <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+          <EssentialsSection
+            essentials={essentials}
+            templates={essentialTemplates ?? []}
+            onSaveSchedule={onSaveEssentialSchedule ?? (() => {})}
+            onCreateEssential={onCreateEssential ?? (() => {})}
+            onDeleteEssential={onDeleteEssential ?? (() => {})}
+            wakeUpMinutes={wakeUpMinutes}
+            windDownMinutes={windDownMinutes}
+            onSleepTimesChange={onSleepTimesChange ?? (() => {})}
+            isSleepConfigured={isSleepConfigured}
+            essentialIcons={goalIcons ?? []}
+            isCollapsed={isEssentialsCollapsed}
+            onToggleCollapse={() => setIsEssentialsCollapsed((prev) => !prev)}
+            isHidden={isEssentialsHidden}
+            onHide={onEssentialsHide}
+          />
+        </div>
+      )}
 
       {/* Goals Card */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">

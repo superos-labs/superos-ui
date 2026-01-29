@@ -15,6 +15,9 @@ export type { EssentialRowProps, SleepRowProps } from "./essential-row";
 export { InlineEssentialCreator } from "./inline-essential-creator";
 export type { InlineEssentialCreatorProps } from "./inline-essential-creator";
 
+export { EssentialsCTA } from "./essentials-cta";
+export type { EssentialsCTAProps } from "./essentials-cta";
+
 // =============================================================================
 // Types
 // =============================================================================
