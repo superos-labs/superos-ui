@@ -43,7 +43,8 @@ import {
   type NewGoalData,
   type InspirationCategory,
 } from "@/components/backlog";
-import { WeeklyAnalytics } from "@/components/weekly-analytics";
+import { WeeklyAnalytics, PlanningBudget } from "@/components/weekly-analytics";
+import { buildPlanningBudgetData } from "@/lib/adapters";
 import { BlockSidebar, useBlockSidebarHandlers } from "@/components/block";
 import { GoalDetail } from "@/components/goal-detail";
 import { FocusIndicator } from "@/components/focus";
@@ -460,6 +461,13 @@ export function ShellContentComponent({
     }
   }, [isPlanningMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-open planning budget sidebar when entering schedule step
+  React.useEffect(() => {
+    if (isPlanning && planningFlow.step === "schedule") {
+      setShowRightSidebar(true);
+    }
+  }, [isPlanning, planningFlow.step, setShowRightSidebar]);
+
   // Duplicate last week's schedule from blueprint
   const handleDuplicateLastWeek = React.useCallback(() => {
     if (!blueprint) return;
@@ -647,6 +655,18 @@ export function ShellContentComponent({
         useFocusedHours,
       }),
     [goals, getGoalStats, useFocusedHours],
+  );
+
+  // Planning budget data (for time budget mode during weekly planning)
+  const planningBudgetData = React.useMemo(
+    () =>
+      buildPlanningBudgetData({
+        goals,
+        essentials,
+        getGoalStats,
+        getEssentialStats,
+      }),
+    [goals, essentials, getGoalStats, getEssentialStats],
   );
 
   // -------------------------------------------------------------------------
@@ -1353,13 +1373,25 @@ export function ShellContentComponent({
                   className="h-full w-[380px] max-w-none overflow-y-auto"
                 />
               ) : renderedContent === "analytics" ? (
-                <WeeklyAnalytics
-                  goals={analyticsGoals}
-                  weekLabel={formatWeekRange(weekDates)}
-                  progressMetric={progressMetric}
-                  onProgressMetricChange={onProgressMetricChange}
-                  className="h-full w-[380px] max-w-none overflow-y-auto"
-                />
+                isPlanning ? (
+                  <PlanningBudget
+                    goals={planningBudgetData.goals}
+                    essentials={planningBudgetData.essentials}
+                    wakeUpMinutes={dayStartMinutes}
+                    windDownMinutes={dayEndMinutes}
+                    isSleepConfigured={dayBoundariesEnabled}
+                    weekLabel={formatWeekRange(weekDates)}
+                    className="h-full w-[380px] max-w-none overflow-y-auto"
+                  />
+                ) : (
+                  <WeeklyAnalytics
+                    goals={analyticsGoals}
+                    weekLabel={formatWeekRange(weekDates)}
+                    progressMetric={progressMetric}
+                    onProgressMetricChange={onProgressMetricChange}
+                    className="h-full w-[380px] max-w-none overflow-y-auto"
+                  />
+                )
               ) : null}
             </div>
           </div>

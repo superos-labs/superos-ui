@@ -12,3 +12,11 @@ export type {
   WeeklyAnalyticsItem,
   WeeklyAnalyticsSectionData,
 } from "./weekly-analytics";
+
+// Planning Budget (for weekly planning mode)
+export { PlanningBudget } from "./planning-budget";
+export type {
+  PlanningBudgetProps,
+  PlanningBudgetGoal,
+  PlanningBudgetEssential,
+} from "./planning-budget";
