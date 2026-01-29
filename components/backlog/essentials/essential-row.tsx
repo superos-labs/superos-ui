@@ -7,6 +7,7 @@ import {
   RiMoonLine,
   RiSunLine,
   RiCloseLine,
+  RiArrowDownSLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import {
@@ -129,103 +130,119 @@ export function EssentialRow({
           </div>
         </button>
 
-        {/* Delete button (only for non-required essentials) */}
-        {onDelete && !isExpanded && (
+        {/* Close button when expanded */}
+        {isExpanded && (
           <button
-            onClick={onDelete}
-            className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-            title="Remove essential"
+            onClick={handleToggle}
+            className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title="Collapse"
           >
-            <RiDeleteBinLine className="size-3.5" />
+            <RiCloseLine className="size-4" />
           </button>
+        )}
+
+        {/* Accordion indicator when collapsed */}
+        {!isExpanded && (
+          <div className="flex size-6 shrink-0 items-center justify-center text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100">
+            <RiArrowDownSLine className="size-4" />
+          </div>
         )}
       </div>
 
       {/* Expanded schedule editor */}
-      {isExpanded && (
-        <div className="flex flex-col gap-3 px-3 pb-3">
-          {/* Day selector */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              Days
-            </span>
-            <div className="flex gap-1">
-              {DAY_LABELS.map((label, index) => {
-                const isSelected = scheduleState.selectedDays.includes(index);
-                return (
-                  <button
-                    key={index}
-                    onClick={() => toggleDay(index)}
-                    className={cn(
-                      "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
-                      isSelected
-                        ? "bg-foreground/20 text-foreground"
-                        : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground",
-                    )}
-                    title={DAY_FULL_LABELS[index]}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+      <div
+        className={cn(
+          "grid transition-all duration-200 ease-out",
+          isExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-3 px-3 pb-3">
+            {/* Day selector */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                Days
+              </span>
+              <div className="flex gap-1">
+                {DAY_LABELS.map((label, index) => {
+                  const isSelected = scheduleState.selectedDays.includes(index);
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => toggleDay(index)}
+                      className={cn(
+                        "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
+                        isSelected
+                          ? "bg-foreground/20 text-foreground"
+                          : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground",
+                      )}
+                      title={DAY_FULL_LABELS[index]}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Time range - single range only */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-              Time
-            </span>
-            {scheduleState.timeRanges[0] && (
-              <div className="flex items-center gap-2">
-                <TimeInput
-                  value={scheduleState.timeRanges[0].startMinutes}
-                  onChange={(minutes) =>
-                    scheduleState.updateTimeRange(
-                      scheduleState.timeRanges[0].id,
-                      {
-                        startMinutes: minutes,
-                      },
-                    )
-                  }
-                  className="bg-background"
-                />
-                <span className="text-muted-foreground/70">–</span>
-                <TimeInput
-                  value={
-                    scheduleState.timeRanges[0].startMinutes +
-                    scheduleState.timeRanges[0].durationMinutes
-                  }
-                  onChange={(newEnd) => {
-                    const newDuration =
-                      newEnd - scheduleState.timeRanges[0].startMinutes;
-                    if (newDuration > 0) {
+            {/* Time range - single range only */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+                Time
+              </span>
+              {scheduleState.timeRanges[0] && (
+                <div className="flex items-center gap-2">
+                  <TimeInput
+                    value={scheduleState.timeRanges[0].startMinutes}
+                    onChange={(minutes) =>
                       scheduleState.updateTimeRange(
                         scheduleState.timeRanges[0].id,
                         {
-                          durationMinutes: newDuration,
+                          startMinutes: minutes,
                         },
-                      );
+                      )
                     }
-                  }}
-                  className="bg-background"
-                />
-              </div>
+                    className="bg-background"
+                  />
+                  <span className="text-muted-foreground/70">–</span>
+                  <TimeInput
+                    value={
+                      scheduleState.timeRanges[0].startMinutes +
+                      scheduleState.timeRanges[0].durationMinutes
+                    }
+                    onChange={(newEnd) => {
+                      const newDuration =
+                        newEnd - scheduleState.timeRanges[0].startMinutes;
+                      if (newDuration > 0) {
+                        scheduleState.updateTimeRange(
+                          scheduleState.timeRanges[0].id,
+                          {
+                            durationMinutes: newDuration,
+                          },
+                        );
+                      }
+                    }}
+                    className="bg-background"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Delete button when expanded */}
+            {onDelete && (
+              <button
+                onClick={onDelete}
+                className="flex items-center gap-1.5 text-xs text-destructive/70 transition-colors hover:text-destructive"
+              >
+                <RiDeleteBinLine className="size-3.5" />
+                Remove essential
+              </button>
             )}
           </div>
-
-          {/* Delete button when expanded */}
-          {onDelete && (
-            <button
-              onClick={onDelete}
-              className="flex items-center gap-1.5 text-xs text-destructive/70 transition-colors hover:text-destructive"
-            >
-              <RiDeleteBinLine className="size-3.5" />
-              Remove essential
-            </button>
-          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -295,7 +312,7 @@ export function SleepRow({
       )}
     >
       {/* Main row */}
-      <div className="flex w-full items-center gap-3 px-3 py-2.5">
+      <div className="group flex w-full items-center gap-3 px-3 py-2.5">
         {/* Clickable area for expand/collapse */}
         <button
           onClick={onToggleExpand}
@@ -334,44 +351,60 @@ export function SleepRow({
             <RiCloseLine className="size-4" />
           </button>
         )}
+
+        {/* Accordion indicator when collapsed */}
+        {!isExpanded && (
+          <div className="flex size-6 shrink-0 items-center justify-center text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100">
+            <RiArrowDownSLine className="size-4" />
+          </div>
+        )}
       </div>
 
       {/* Expanded content */}
-      {isExpanded && (
-        <div className="flex flex-col gap-3 px-3 pb-3">
-          {/* Wake up time */}
-          <div className="flex items-center gap-3">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
-              <RiSunLine className="size-4 text-amber-500" />
+      <div
+        className={cn(
+          "grid transition-all duration-200 ease-out",
+          isExpanded
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-3 px-3 pb-3">
+            {/* Wake up time */}
+            <div className="flex items-center gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
+                <RiSunLine className="size-4 text-amber-500" />
+              </div>
+              <span className="flex-1 text-sm text-foreground">Wake up</span>
+              <TimeInput value={localWakeUp} onChange={setLocalWakeUp} />
             </div>
-            <span className="flex-1 text-sm text-foreground">Wake up</span>
-            <TimeInput value={localWakeUp} onChange={setLocalWakeUp} />
-          </div>
 
-          {/* Wind down time */}
-          <div className="flex items-center gap-3">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
-              <RiMoonLine className="size-4 text-indigo-400" />
+            {/* Wind down time */}
+            <div className="flex items-center gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
+                <RiMoonLine className="size-4 text-indigo-400" />
+              </div>
+              <span className="flex-1 text-sm text-foreground">Wind down</span>
+              <TimeInput value={localWindDown} onChange={setLocalWindDown} />
             </div>
-            <span className="flex-1 text-sm text-foreground">Wind down</span>
-            <TimeInput value={localWindDown} onChange={setLocalWindDown} />
-          </div>
 
-          {/* Confirm button */}
-          <button
-            onClick={handleConfirm}
-            disabled={!hasChanges}
-            className={cn(
-              "w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-              hasChanges
-                ? "bg-foreground text-background hover:bg-foreground/90"
-                : "cursor-not-allowed bg-muted text-muted-foreground",
-            )}
-          >
-            Confirm
-          </button>
+            {/* Confirm button */}
+            <button
+              onClick={handleConfirm}
+              disabled={!hasChanges}
+              className={cn(
+                "w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                hasChanges
+                  ? "bg-foreground text-background hover:bg-foreground/90"
+                  : "cursor-not-allowed bg-muted text-muted-foreground",
+              )}
+            >
+              Confirm
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
