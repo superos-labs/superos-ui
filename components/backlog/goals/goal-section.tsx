@@ -91,13 +91,38 @@ export function GoalSection({
   const showOnboardingContinue =
     isOnboardingGoalsStep && items.length > 0 && onOnboardingContinue;
 
+  // Use different copy during onboarding goals step
+  const displayTitle = isOnboardingGoalsStep ? "Set your goals" : title;
+  const displayDescription = isOnboardingGoalsStep
+    ? "Create a goal to start planning time around what matters. You can start small and change it anytime."
+    : description;
+
   return (
     <div className={cn("flex flex-col px-3", className)}>
-      <div className="group/section flex items-center justify-between px-3 py-2">
-        <div className="flex flex-col">
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-          {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
+      <div
+        className={cn(
+          "group/section flex items-center justify-between px-3",
+          isOnboardingGoalsStep ? "py-4" : "py-2",
+        )}
+      >
+        <div className="flex flex-col gap-1">
+          <h3
+            className={cn(
+              "font-semibold text-foreground",
+              isOnboardingGoalsStep ? "text-base" : "text-sm",
+            )}
+          >
+            {displayTitle}
+          </h3>
+          {displayDescription && (
+            <p
+              className={cn(
+                "text-muted-foreground",
+                isOnboardingGoalsStep ? "text-sm" : "text-xs",
+              )}
+            >
+              {displayDescription}
+            </p>
           )}
         </div>
       </div>

@@ -462,11 +462,11 @@ export function EssentialsCTA({
   return (
     <div className={cn("flex flex-col px-3 pt-2 pb-4", className)}>
       {/* Header */}
-      <div className="flex flex-col px-3 py-2">
-        <h3 className="text-sm font-semibold text-foreground">
+      <div className="flex flex-col gap-1 px-3 py-4">
+        <h3 className="text-base font-semibold text-foreground">
           Define your essentials
         </h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Visualize your sleep and capture non-negotiables that aren&apos;t part
           of your goals but still take time.
         </p>
