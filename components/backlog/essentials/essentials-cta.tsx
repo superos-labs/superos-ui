@@ -543,7 +543,7 @@ export function EssentialsCTA({
         )}
       </div>
 
-      {/* Footer with Skip/Done button - full width with subtle animation */}
+      {/* Footer with Skip/Continue button - full width with subtle animation */}
       <div className="px-3 pt-2">
         <button
           onClick={hasProgress ? onDone : onSkip}
@@ -555,7 +555,7 @@ export function EssentialsCTA({
           )}
         >
           <span className="inline-block transition-opacity duration-150">
-            {hasProgress ? "Done" : "Skip"}
+            {hasProgress ? "Continue" : "Skip"}
           </span>
         </button>
       </div>

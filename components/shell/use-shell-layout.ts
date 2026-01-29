@@ -5,6 +5,7 @@
  *
  * This hook manages the visibility of various panels (calendar, sidebar, etc.),
  * mode state (backlog mode, planning mode), selection state, and sidebar content.
+ * Also manages the onboarding flow for first-time users.
  */
 
 import * as React from "react";
@@ -16,9 +17,14 @@ import type { UseBlockSidebarHandlersReturn } from "@/components/block";
 // Types
 // =============================================================================
 
+/** Onboarding step for first-time user experience */
+export type OnboardingStep = "goals" | "essentials" | null;
+
 export interface UseShellLayoutOptions {
   /** Callback when an event is created (to auto-select it) */
   onEventCreated?: (event: CalendarEvent) => void;
+  /** Initial goals count - used to determine if onboarding should start */
+  initialGoalsCount?: number;
 }
 
 export interface UseShellLayoutReturn {
@@ -43,6 +49,12 @@ export interface UseShellLayoutReturn {
   // Planning mode
   isPlanningMode: boolean;
   setIsPlanningMode: React.Dispatch<React.SetStateAction<boolean>>;
+
+  // Onboarding state
+  onboardingStep: OnboardingStep;
+  isOnboarding: boolean;
+  onContinueFromGoals: () => void;
+  onCompleteOnboarding: () => void;
 
   // Selection state
   selectedEventId: string | null;
@@ -82,7 +94,11 @@ export interface UseShellLayoutReturn {
 // Hook Implementation
 // =============================================================================
 
-export function useShellLayout(): UseShellLayoutReturn {
+export function useShellLayout(
+  options: UseShellLayoutOptions = {},
+): UseShellLayoutReturn {
+  const { initialGoalsCount = 0 } = options;
+
   // -------------------------------------------------------------------------
   // UI Visibility State
   // -------------------------------------------------------------------------
@@ -93,6 +109,26 @@ export function useShellLayout(): UseShellLayoutReturn {
   const [showTasks, setShowTasks] = React.useState(true);
   const [showInspirationGallery, setShowInspirationGallery] =
     React.useState(false);
+
+  // -------------------------------------------------------------------------
+  // Onboarding State
+  // -------------------------------------------------------------------------
+  // Start onboarding if user has no goals (first-time experience)
+  const [onboardingStep, setOnboardingStep] = React.useState<OnboardingStep>(
+    () => (initialGoalsCount === 0 ? "goals" : null),
+  );
+
+  const isOnboarding = onboardingStep !== null;
+
+  // Handler to advance from goals step to essentials step
+  const onContinueFromGoals = React.useCallback(() => {
+    setOnboardingStep("essentials");
+  }, []);
+
+  // Handler to complete onboarding (called when essentials Done/Skip is clicked)
+  const onCompleteOnboarding = React.useCallback(() => {
+    setOnboardingStep(null);
+  }, []);
 
   // -------------------------------------------------------------------------
   // Mode State
@@ -262,6 +298,12 @@ export function useShellLayout(): UseShellLayoutReturn {
     setBacklogMode,
     isPlanningMode,
     setIsPlanningMode,
+
+    // Onboarding state
+    onboardingStep,
+    isOnboarding,
+    onContinueFromGoals,
+    onCompleteOnboarding,
 
     // Selection state
     selectedEventId,

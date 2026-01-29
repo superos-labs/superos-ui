@@ -283,7 +283,9 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // UI Layout State
   // -------------------------------------------------------------------------
-  const layout = useShellLayout();
+  const layout = useShellLayout({
+    initialGoalsCount: goals.length,
+  });
 
   // Scroll-to-current-time key (changes on mount and "Today" click)
   const [scrollToCurrentTimeKey, setScrollToCurrentTimeKey] = React.useState(
@@ -377,6 +379,11 @@ export function ShellContentComponent({
     handleAnalyticsToggle,
     isPlanningMode,
     setIsPlanningMode,
+    // Onboarding state
+    onboardingStep,
+    isOnboarding,
+    onContinueFromGoals,
+    onCompleteOnboarding,
   } = layout;
 
   // -------------------------------------------------------------------------
@@ -874,27 +881,33 @@ export function ShellContentComponent({
             onClick={handleNavigateToFocusedBlock}
           />
         )}
-        {/* Show Plan week button only if week is not already planned */}
-        {showPlanWeek && currentWeekPlan === null && !isPlanning && (
+        {/* Show Plan week button only if week is not already planned and not in onboarding */}
+        {showPlanWeek &&
+          currentWeekPlan === null &&
+          !isPlanning &&
+          !isOnboarding && (
+            <button
+              className="flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
+              onClick={handlePlanWeekClick}
+            >
+              Plan week
+            </button>
+          )}
+        {/* Hide analytics button during onboarding */}
+        {!isOnboarding && (
           <button
-            className="flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
-            onClick={handlePlanWeekClick}
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+              showRightSidebar || selectedEvent
+                ? "text-foreground"
+                : "text-muted-foreground",
+            )}
+            onClick={handleAnalyticsToggle}
+            title="Toggle analytics"
           >
-            Plan week
+            <RiPieChartLine className="size-4" />
           </button>
         )}
-        <button
-          className={cn(
-            "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-            showRightSidebar || selectedEvent
-              ? "text-foreground"
-              : "text-muted-foreground",
-          )}
-          onClick={handleAnalyticsToggle}
-          title="Toggle analytics"
-        >
-          <RiPieChartLine className="size-4" />
-        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground">
@@ -1058,7 +1071,7 @@ export function ShellContentComponent({
                   getGoalStats={getGoalStats}
                   getTaskSchedule={getTaskSchedule}
                   getTaskDeadline={getTaskDeadline}
-                  draggable={true}
+                  draggable={!isOnboarding}
                   mode={backlogMode}
                   essentialTemplates={essentialTemplates}
                   onSaveEssentialSchedule={onSaveEssentialSchedule}
@@ -1079,6 +1092,10 @@ export function ShellContentComponent({
                   onBack={handleCloseGoalDetail}
                   onBrowseInspiration={handleBrowseInspiration}
                   isInspirationActive={showInspirationGallery}
+                  // Onboarding props
+                  onboardingStep={onboardingStep}
+                  onOnboardingContinue={onContinueFromGoals}
+                  onOnboardingComplete={onCompleteOnboarding}
                 />
               )}
             </div>
@@ -1155,27 +1172,33 @@ export function ShellContentComponent({
                   className="h-full"
                 />
               ) : showCalendar ? (
-                <Calendar
-                  selectedDate={selectedDate}
-                  events={events}
-                  weekStartsOn={weekStartsOn}
-                  zoom={calendarZoom}
-                  scrollToCurrentTimeKey={scrollToCurrentTimeKey}
-                  {...calendarHandlers}
-                  onEventClick={handleEventClick}
-                  enableExternalDrop={true}
-                  onExternalDrop={handleExternalDrop}
-                  externalDragPreview={externalDragPreview}
-                  onDeadlineDrop={handleDeadlineDrop}
-                  deadlines={weekDeadlines}
-                  onDeadlineToggleComplete={onToggleTaskComplete}
-                  onDeadlineUnassign={onClearTaskDeadline}
-                  onDeadlineHover={setHoveredDeadline}
-                  dayStartMinutes={dayStartMinutes}
-                  dayEndMinutes={dayEndMinutes}
-                  dayBoundariesEnabled={dayBoundariesEnabled}
-                  dayBoundariesDisplay={dayBoundariesDisplay}
-                />
+                <div className="relative h-full">
+                  <Calendar
+                    selectedDate={selectedDate}
+                    events={events}
+                    weekStartsOn={weekStartsOn}
+                    zoom={calendarZoom}
+                    scrollToCurrentTimeKey={scrollToCurrentTimeKey}
+                    {...calendarHandlers}
+                    onEventClick={handleEventClick}
+                    enableExternalDrop={!isOnboarding}
+                    onExternalDrop={handleExternalDrop}
+                    externalDragPreview={externalDragPreview}
+                    onDeadlineDrop={handleDeadlineDrop}
+                    deadlines={weekDeadlines}
+                    onDeadlineToggleComplete={onToggleTaskComplete}
+                    onDeadlineUnassign={onClearTaskDeadline}
+                    onDeadlineHover={setHoveredDeadline}
+                    dayStartMinutes={dayStartMinutes}
+                    dayEndMinutes={dayEndMinutes}
+                    dayBoundariesEnabled={dayBoundariesEnabled}
+                    dayBoundariesDisplay={dayBoundariesDisplay}
+                  />
+                  {/* Onboarding dimming overlay */}
+                  {isOnboarding && (
+                    <div className="absolute inset-0 bg-background/60 pointer-events-auto z-10" />
+                  )}
+                </div>
               ) : null}
             </ShellContentPrimitive>
 

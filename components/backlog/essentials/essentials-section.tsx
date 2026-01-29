@@ -107,6 +107,8 @@ export interface EssentialsSectionProps {
   isHidden?: boolean;
   /** Callback when user clicks Skip to hide essentials */
   onHide?: () => void;
+  /** Callback when onboarding is completed (Continue/Skip clicked during onboarding) */
+  onOnboardingComplete?: () => void;
   className?: string;
 }
 
@@ -129,6 +131,7 @@ export function EssentialsSection({
   onToggleCollapse,
   isHidden = false,
   onHide,
+  onOnboardingComplete,
   className,
 }: EssentialsSectionProps) {
   // Internal state for accordion expansion
@@ -194,11 +197,13 @@ export function EssentialsSection({
   const handleSkip = () => {
     setCtaDismissed(true);
     onHide?.();
+    onOnboardingComplete?.();
   };
 
-  // Handler for Done button
+  // Handler for Done/Continue button
   const handleDone = () => {
     setCtaDismissed(true);
+    onOnboardingComplete?.();
   };
 
   // Separate Sleep from other essentials

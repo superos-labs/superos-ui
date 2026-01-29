@@ -55,6 +55,10 @@ export interface GoalSectionProps {
   onBrowseInspiration?: () => void;
   /** Whether the inspiration gallery is currently active */
   isInspirationActive?: boolean;
+  /** Whether we're in the goals onboarding step */
+  isOnboardingGoalsStep?: boolean;
+  /** Callback when user clicks Continue during onboarding */
+  onOnboardingContinue?: () => void;
   className?: string;
 }
 
@@ -79,8 +83,14 @@ export function GoalSection({
   onCreateAndSelectGoal,
   onBrowseInspiration,
   isInspirationActive,
+  isOnboardingGoalsStep = false,
+  onOnboardingContinue,
   className,
 }: GoalSectionProps) {
+  // Show Continue button only during onboarding goals step when at least 1 goal exists
+  const showOnboardingContinue =
+    isOnboardingGoalsStep && items.length > 0 && onOnboardingContinue;
+
   return (
     <div className={cn("flex flex-col px-3", className)}>
       <div className="group/section flex items-center justify-between px-3 py-2">
@@ -167,6 +177,18 @@ export function GoalSection({
           </div>
           <span>Add item</span>
         </button>
+      )}
+
+      {/* Onboarding Continue button */}
+      {showOnboardingContinue && (
+        <div className="px-3 pt-3">
+          <button
+            onClick={onOnboardingContinue}
+            className="w-full rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-all duration-200 hover:bg-foreground/90"
+          >
+            Continue
+          </button>
+        </div>
       )}
     </div>
   );

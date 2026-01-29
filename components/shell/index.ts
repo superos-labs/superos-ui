@@ -15,7 +15,7 @@ export { useShellState } from "./use-shell-state";
 
 // Internal hooks (for advanced customization)
 export { useShellLayout } from "./use-shell-layout";
-export type { UseShellLayoutReturn } from "./use-shell-layout";
+export type { UseShellLayoutReturn, OnboardingStep } from "./use-shell-layout";
 
 export { useShellFocus } from "./use-shell-focus";
 export type {

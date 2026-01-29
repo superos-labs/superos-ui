@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import type {
   GoalStats,
   TaskScheduleInfo,
@@ -105,6 +106,14 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onBrowseInspiration?: () => void;
   /** Whether the inspiration gallery is currently active */
   isInspirationActive?: boolean;
+
+  // Onboarding props
+  /** Current onboarding step (null if not in onboarding) */
+  onboardingStep?: "goals" | "essentials" | null;
+  /** Callback when user clicks Continue during goals onboarding step */
+  onOnboardingContinue?: () => void;
+  /** Callback when onboarding is completed (essentials Continue/Skip clicked) */
+  onOnboardingComplete?: () => void;
 }
 
 export function Backlog({
@@ -147,6 +156,10 @@ export function Backlog({
   onBack,
   onBrowseInspiration,
   isInspirationActive,
+  // Onboarding props
+  onboardingStep,
+  onOnboardingContinue,
+  onOnboardingComplete,
   className,
   ...props
 }: BacklogProps) {
@@ -173,32 +186,56 @@ export function Backlog({
   const [isEssentialsCollapsed, setIsEssentialsCollapsed] =
     React.useState(false);
 
+  // Onboarding: hide essentials during goals step, show during essentials step
+  const isOnboardingGoalsStep = onboardingStep === "goals";
+  const showEssentialsCard = !isEssentialsHidden && onboardingStep !== "goals";
+
+  // Wrap essentials Done/Skip to also trigger onboarding completion
+  const handleEssentialsHide = () => {
+    onEssentialsHide?.();
+    onOnboardingComplete?.();
+  };
+
   return (
     <div
       className={cn("flex w-full max-w-sm flex-col gap-3", className)}
       {...props}
     >
-      {/* Essentials Card - hidden when user clicks Skip */}
-      {!isEssentialsHidden && (
-        <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
-          <EssentialsSection
-            essentials={essentials}
-            templates={essentialTemplates ?? []}
-            onSaveSchedule={onSaveEssentialSchedule ?? (() => {})}
-            onCreateEssential={onCreateEssential ?? (() => {})}
-            onDeleteEssential={onDeleteEssential ?? (() => {})}
-            wakeUpMinutes={wakeUpMinutes}
-            windDownMinutes={windDownMinutes}
-            onSleepTimesChange={onSleepTimesChange ?? (() => {})}
-            isSleepConfigured={isSleepConfigured}
-            essentialIcons={goalIcons ?? []}
-            isCollapsed={isEssentialsCollapsed}
-            onToggleCollapse={() => setIsEssentialsCollapsed((prev) => !prev)}
-            isHidden={isEssentialsHidden}
-            onHide={onEssentialsHide}
-          />
-        </div>
-      )}
+      {/* Essentials Card - hidden during goals onboarding step, animates in for essentials step */}
+      <AnimatePresence mode="sync">
+        {showEssentialsCard && (
+          <motion.div
+            key="essentials-card"
+            initial={
+              onboardingStep === "essentials"
+                ? { opacity: 0, scale: 0.95, height: 0 }
+                : false
+            }
+            animate={{ opacity: 1, scale: 1, height: "auto" }}
+            exit={{ opacity: 0, scale: 0.95, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden rounded-xl border border-border bg-background shadow-sm"
+          >
+            <EssentialsSection
+              essentials={essentials}
+              templates={essentialTemplates ?? []}
+              onSaveSchedule={onSaveEssentialSchedule ?? (() => {})}
+              onCreateEssential={onCreateEssential ?? (() => {})}
+              onDeleteEssential={onDeleteEssential ?? (() => {})}
+              wakeUpMinutes={wakeUpMinutes}
+              windDownMinutes={windDownMinutes}
+              onSleepTimesChange={onSleepTimesChange ?? (() => {})}
+              isSleepConfigured={isSleepConfigured}
+              essentialIcons={goalIcons ?? []}
+              isCollapsed={isEssentialsCollapsed}
+              onToggleCollapse={() => setIsEssentialsCollapsed((prev) => !prev)}
+              isHidden={isEssentialsHidden}
+              onHide={handleEssentialsHide}
+              onOnboardingComplete={onOnboardingComplete}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Goals Card */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
@@ -224,16 +261,20 @@ export function Backlog({
             onCreateAndSelectGoal={onCreateAndSelectGoal}
             onBrowseInspiration={onBrowseInspiration}
             isInspirationActive={isInspirationActive}
+            isOnboardingGoalsStep={isOnboardingGoalsStep}
+            onOnboardingContinue={onOnboardingContinue}
             className="py-2"
           />
         </div>
 
-        {/* Footer */}
-        <div className="shrink-0 border-t border-border bg-background px-4 py-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">168 hours in a week</span>
+        {/* Footer - hide during onboarding goals step to make room for Continue button */}
+        {!isOnboardingGoalsStep && (
+          <div className="shrink-0 border-t border-border bg-background px-4 py-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">168 hours in a week</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
