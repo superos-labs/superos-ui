@@ -470,19 +470,19 @@ function DistributionSection({
       }
     });
 
-    return Array.from(areaHours.entries())
-      .map(([areaId, hours]) => {
-        const area = getLifeArea(areaId);
-        if (!area) return null;
-        return {
+    return Array.from(areaHours.entries()).flatMap(([areaId, hours]) => {
+      const area = getLifeArea(areaId);
+      if (!area) return [];
+      return [
+        {
           id: areaId,
           label: area.label,
           icon: area.icon,
           color: area.color,
           hours,
-        };
-      })
-      .filter((item): item is DistributionItem => item !== null);
+        },
+      ];
+    });
   }, [goals]);
 
   const items = mode === "goals" ? goalItems : lifeAreaItems;
