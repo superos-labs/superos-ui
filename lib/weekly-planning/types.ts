@@ -1,6 +1,8 @@
 /**
  * Types for the weekly planning system.
- * Manages weekly planning flow.
+ * Manages weekly planning flow with two steps:
+ * 1. Prioritize: Select important tasks for the week
+ * 2. Schedule: Drag prioritized tasks to the calendar
  */
 
 // ============================================================================
@@ -17,6 +19,17 @@ export interface WeeklyPlan {
   /** When planning was completed (ISO string) */
   plannedAt: string;
 }
+
+// ============================================================================
+// Planning Flow Types
+// ============================================================================
+
+/**
+ * Planning flow step.
+ * - prioritize: Select 2-3 important tasks per goal (calendar dimmed)
+ * - schedule: Drag prioritized tasks to calendar (calendar active)
+ */
+export type PlanningStep = "prioritize" | "schedule";
 
 // ============================================================================
 // Hook Types
@@ -47,8 +60,22 @@ export interface UsePlanningFlowOptions {
 }
 
 export interface UsePlanningFlowReturn {
-  /** Confirm the planning session */
+  /** Current planning step */
+  step: PlanningStep;
+  /** Advance to the next step (prioritize → schedule) */
+  nextStep: () => void;
+  /** Confirm the planning session (only valid in schedule step) */
   confirm: () => void;
   /** Cancel and exit planning mode */
   cancel: () => void;
+
+  // Weekly focus task tracking (session-only, lost on refresh)
+  /** Set of task IDs marked as weekly focus */
+  weeklyFocusTaskIds: Set<string>;
+  /** Add a task to weekly focus */
+  addToWeeklyFocus: (taskId: string) => void;
+  /** Remove a task from weekly focus */
+  removeFromWeeklyFocus: (taskId: string) => void;
+  /** Check if a task is in weekly focus */
+  isInWeeklyFocus: (taskId: string) => boolean;
 }

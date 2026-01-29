@@ -9,8 +9,9 @@ import type {
   TaskDeadlineInfo,
 } from "@/lib/unified-schedule";
 import type { Blueprint } from "@/lib/blueprint";
-import { formatWeekRange } from "@/components/calendar";
+import type { PlanningStep } from "@/lib/weekly-planning";
 import { PlanningScheduleView } from "./planning-schedule-view";
+import { PlanningPrioritizeView } from "./planning-prioritize-view";
 import { RiCalendarLine, RiCloseLine, RiHistoryLine } from "@remixicon/react";
 
 // =============================================================================
@@ -28,12 +29,28 @@ export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement>
   weekDates: Date[];
   /** Callback to duplicate last week's schedule */
   onDuplicateLastWeek?: () => void;
-  /** Callback when planning is confirmed */
-  onConfirm: () => void;
   /** Callback when planning is cancelled */
   onCancel: () => void;
   /** Whether this is the first time planning (no blueprint exists) */
   isFirstPlan?: boolean;
+
+  // Two-step planning flow
+  /** Current planning step */
+  step: PlanningStep;
+  /** Callback to advance to next step (prioritize → schedule) */
+  onNextStep: () => void;
+  /** Callback when planning is confirmed (in schedule step) */
+  onConfirm: () => void;
+  /** Set of task IDs marked as weekly focus */
+  weeklyFocusTaskIds: Set<string>;
+  /** Add a task to weekly focus */
+  onAddToFocus: (taskId: string) => void;
+  /** Remove a task from weekly focus */
+  onRemoveFromFocus: (taskId: string) => void;
+
+  // Task management
+  /** Callback to add a new task to a goal */
+  onAddTask?: (goalId: string, label: string) => string;
 
   // Schedule data accessors
   /** Function to get schedule info for a task */
@@ -52,17 +69,32 @@ export function PlanningPanel({
   blueprint,
   weekDates,
   onDuplicateLastWeek,
-  onConfirm,
   onCancel,
   isFirstPlan = false,
+  // Two-step planning flow
+  step,
+  onNextStep,
+  onConfirm,
+  weeklyFocusTaskIds,
+  onAddToFocus,
+  onRemoveFromFocus,
+  // Task management
+  onAddTask,
   // Schedule data accessors
   getTaskSchedule,
   getTaskDeadline,
   className,
   ...props
 }: PlanningPanelProps) {
-  const weekLabel = formatWeekRange(weekDates);
   const hasBlueprint = blueprint !== null;
+  const isPrioritizeStep = step === "prioritize";
+  const isScheduleStep = step === "schedule";
+
+  // Header content based on step
+  const headerTitle = "Plan Your Week";
+  const headerDescription = isPrioritizeStep
+    ? "Select 2-3 important tasks per goal for this week"
+    : "Drag your prioritized tasks to the calendar";
 
   return (
     <div
@@ -72,16 +104,14 @@ export function PlanningPanel({
       )}
       {...props}
     >
-      {/* Header - Simplified for single-step flow */}
+      {/* Header */}
       <div className="flex items-start justify-between border-b border-border px-4 py-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <RiCalendarLine className="size-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">Plan Your Week</h2>
+            <h2 className="text-sm font-semibold">{headerTitle}</h2>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Drag goals to the calendar to set your week ahead
-          </p>
+          <p className="text-xs text-muted-foreground">{headerDescription}</p>
         </div>
         <button
           onClick={onCancel}
@@ -91,10 +121,10 @@ export function PlanningPanel({
         </button>
       </div>
 
-      {/* Schedule Content */}
+      {/* Content Area */}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {/* Duplicate last week button - shown when blueprint exists */}
-        {hasBlueprint && onDuplicateLastWeek && (
+        {/* Duplicate last week button - shown when blueprint exists (only in schedule step) */}
+        {isScheduleStep && hasBlueprint && onDuplicateLastWeek && (
           <div className="border-b border-border px-4 py-3">
             <button
               onClick={onDuplicateLastWeek}
@@ -106,30 +136,48 @@ export function PlanningPanel({
           </div>
         )}
 
-        <PlanningScheduleView
-          essentials={essentials}
-          goals={goals}
-          highlightedTaskIds={[]}
-          getTaskSchedule={getTaskSchedule}
-          getTaskDeadline={getTaskDeadline}
-          draggable={true}
-        />
-      </div>
+        {/* Step 1: Prioritize - Show goals with task subsections */}
+        {isPrioritizeStep && (
+          <PlanningPrioritizeView
+            goals={goals}
+            weeklyFocusTaskIds={weeklyFocusTaskIds}
+            onAddToFocus={onAddToFocus}
+            onRemoveFromFocus={onRemoveFromFocus}
+            onAddTask={onAddTask}
+          />
+        )}
 
-      {/* Actions */}
-      <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
-        <button
-          onClick={onCancel}
-          className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          className="shrink-0 whitespace-nowrap rounded-lg bg-foreground px-4 py-1.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-        >
-          {isFirstPlan ? "Start week" : "Confirm"}
-        </button>
+        {/* Step 2: Schedule - Show only focus tasks for dragging */}
+        {isScheduleStep && (
+          <PlanningScheduleView
+            essentials={essentials}
+            goals={goals}
+            weeklyFocusTaskIds={weeklyFocusTaskIds}
+            highlightedTaskIds={[]}
+            getTaskSchedule={getTaskSchedule}
+            getTaskDeadline={getTaskDeadline}
+            draggable={true}
+          />
+        )}
+
+        {/* Action Button - Full width, inside the scrollable content area */}
+        <div className="sticky bottom-0 bg-background px-4 py-4">
+          {isPrioritizeStep ? (
+            <button
+              onClick={onNextStep}
+              className="w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              onClick={onConfirm}
+              className="w-full rounded-lg bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+            >
+              Finish planning
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

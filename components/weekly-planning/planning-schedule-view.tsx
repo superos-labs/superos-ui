@@ -37,6 +37,8 @@ export interface PlanningScheduleViewProps {
   goals: ScheduleGoal[];
   /** Task IDs to highlight */
   highlightedTaskIds?: string[];
+  /** Task IDs marked as weekly focus (only these are shown when set) */
+  weeklyFocusTaskIds?: Set<string>;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -207,6 +209,8 @@ function PlanningTaskRow({
 interface GoalRowProps {
   goal: ScheduleGoal;
   highlightedTaskIds?: string[];
+  /** When set, only show tasks in this set */
+  weeklyFocusTaskIds?: Set<string>;
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   draggable?: boolean;
@@ -215,6 +219,7 @@ interface GoalRowProps {
 function GoalRow({
   goal,
   highlightedTaskIds = [],
+  weeklyFocusTaskIds,
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
@@ -235,9 +240,27 @@ function GoalRow({
     disabled: !canDrag,
   });
 
+  // Filter tasks to only show weekly focus tasks when the set is provided
+  const visibleTasks = React.useMemo(() => {
+    if (!goal.tasks) return [];
+    if (!weeklyFocusTaskIds || weeklyFocusTaskIds.size === 0) {
+      return goal.tasks;
+    }
+    return goal.tasks.filter((t) => weeklyFocusTaskIds.has(t.id));
+  }, [goal.tasks, weeklyFocusTaskIds]);
+
   // Check if any tasks are highlighted
   const hasHighlightedTasks =
-    goal.tasks?.some((t) => highlightedTaskIds.includes(t.id)) ?? false;
+    visibleTasks.some((t) => highlightedTaskIds.includes(t.id)) ?? false;
+
+  // Don't render goal if it has no visible tasks when filtering is active
+  if (
+    weeklyFocusTaskIds &&
+    weeklyFocusTaskIds.size > 0 &&
+    visibleTasks.length === 0
+  ) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col">
@@ -268,10 +291,10 @@ function GoalRow({
         </div>
       </div>
 
-      {/* Tasks */}
-      {goal.tasks && goal.tasks.length > 0 && (
+      {/* Tasks - only show visible tasks */}
+      {visibleTasks.length > 0 && (
         <div className="flex flex-col gap-0.5 pl-2">
-          {goal.tasks.map((task) => (
+          {visibleTasks.map((task) => (
             <PlanningTaskRow
               key={task.id}
               task={task}
@@ -296,11 +319,22 @@ export function PlanningScheduleView({
   essentials,
   goals,
   highlightedTaskIds = [],
+  weeklyFocusTaskIds,
   getTaskSchedule,
   getTaskDeadline,
   draggable = false,
   className,
 }: PlanningScheduleViewProps) {
+  // When filtering by weekly focus, check if any goals have visible tasks
+  const hasVisibleGoals = React.useMemo(() => {
+    if (!weeklyFocusTaskIds || weeklyFocusTaskIds.size === 0) {
+      return goals.length > 0;
+    }
+    return goals.some((goal) =>
+      goal.tasks?.some((t) => weeklyFocusTaskIds.has(t.id)),
+    );
+  }, [goals, weeklyFocusTaskIds]);
+
   return (
     <div className={cn("flex flex-col gap-4 py-3", className)}>
       {/* Essentials section */}
@@ -324,7 +358,7 @@ export function PlanningScheduleView({
       )}
 
       {/* Goals section */}
-      {goals.length > 0 && (
+      {hasVisibleGoals && (
         <div className="flex flex-col">
           <div className="px-4 pb-1">
             <h4 className="text-xs font-medium text-muted-foreground">Goals</h4>
@@ -335,6 +369,7 @@ export function PlanningScheduleView({
                 key={goal.id}
                 goal={goal}
                 highlightedTaskIds={highlightedTaskIds}
+                weeklyFocusTaskIds={weeklyFocusTaskIds}
                 getTaskSchedule={getTaskSchedule}
                 getTaskDeadline={getTaskDeadline}
                 draggable={draggable}
@@ -345,7 +380,7 @@ export function PlanningScheduleView({
       )}
 
       {/* Empty state */}
-      {essentials.length === 0 && goals.length === 0 && (
+      {essentials.length === 0 && !hasVisibleGoals && (
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <p className="text-sm text-muted-foreground">No items to schedule.</p>
           <p className="mt-1 text-xs text-muted-foreground/70">

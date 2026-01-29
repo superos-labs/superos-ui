@@ -1005,9 +1005,16 @@ export function ShellContentComponent({
                   onDuplicateLastWeek={
                     hasBlueprint ? handleDuplicateLastWeek : undefined
                   }
-                  onConfirm={planningFlow.confirm}
                   onCancel={planningFlow.cancel}
                   isFirstPlan={!hasBlueprint}
+                  // Two-step planning flow
+                  step={planningFlow.step}
+                  onNextStep={planningFlow.nextStep}
+                  onConfirm={planningFlow.confirm}
+                  weeklyFocusTaskIds={planningFlow.weeklyFocusTaskIds}
+                  onAddToFocus={planningFlow.addToWeeklyFocus}
+                  onRemoveFromFocus={planningFlow.removeFromWeeklyFocus}
+                  onAddTask={onAddTask}
                   getTaskSchedule={getTaskSchedule}
                   getTaskDeadline={getTaskDeadline}
                   className="h-full w-[420px] max-w-none"
@@ -1148,9 +1155,10 @@ export function ShellContentComponent({
                     dayBoundariesEnabled={dayBoundariesEnabled}
                     dayBoundariesDisplay={dayBoundariesDisplay}
                   />
-                  {/* Onboarding dimming overlay */}
-                  {isOnboarding && (
-                    <div className="absolute inset-0 bg-background/60 pointer-events-auto z-10" />
+                  {/* Dimming overlay - shown during onboarding and planning prioritize step */}
+                  {(isOnboarding ||
+                    (isPlanning && planningFlow.step === "prioritize")) && (
+                    <div className="absolute inset-0 bg-background/60 pointer-events-none z-10" />
                   )}
                 </div>
               ) : null}
