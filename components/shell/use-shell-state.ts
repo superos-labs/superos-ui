@@ -433,6 +433,7 @@ export function useShellState(
     // Event management
     onAddEvent: schedule.addEvent,
     onUpdateEvent: schedule.updateEvent,
+    onReplaceEvents: schedule.replaceEvents,
     onAssignTaskToBlock: schedule.assignTaskToBlock,
     onUnassignTaskFromBlock: schedule.unassignTaskFromBlock,
 

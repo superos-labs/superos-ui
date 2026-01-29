@@ -99,6 +99,7 @@ export function useUnifiedSchedule({
     markEventComplete: baseMarkEventComplete,
     markEventIncomplete: baseMarkEventIncomplete,
     calendarHandlers: baseCalendarHandlers,
+    replaceEvents,
   } = useEventState({
     initialEvents,
     weekDates,
@@ -473,6 +474,7 @@ export function useUnifiedSchedule({
     deleteEvent,
     markEventComplete,
     markEventIncomplete,
+    replaceEvents,
     assignTaskToBlock,
     unassignTaskFromBlock,
     assignTaskToGoalBlock,

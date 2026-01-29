@@ -80,6 +80,7 @@ import {
   RiKeyboardLine,
   RiCalendarCheckLine,
   RiDeleteBin2Line,
+  RiEditLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -182,6 +183,7 @@ export function ShellContentComponent({
   // Event management
   onAddEvent,
   onUpdateEvent,
+  onReplaceEvents,
   onAssignTaskToBlock,
   onUnassignTaskFromBlock,
   // Drop handling
@@ -380,6 +382,10 @@ export function ShellContentComponent({
     handleAnalyticsToggle,
     isPlanningMode,
     setIsPlanningMode,
+    // Blueprint edit mode
+    isBlueprintEditMode,
+    enterBlueprintEditMode,
+    exitBlueprintEditMode,
     // Onboarding state
     onboardingStep,
     isOnboarding,
@@ -462,6 +468,55 @@ export function ShellContentComponent({
       onAddEvent(event);
     });
   }, [blueprint, weekDates, onAddEvent]);
+
+  // -------------------------------------------------------------------------
+  // Blueprint Edit Mode
+  // -------------------------------------------------------------------------
+  const [originalEventsSnapshot, setOriginalEventsSnapshot] = React.useState<
+    typeof events | null
+  >(null);
+
+  const handleEnterBlueprintEdit = React.useCallback(() => {
+    if (!blueprint) return;
+    // Snapshot current events for restoration
+    setOriginalEventsSnapshot([...events]);
+    // Replace calendar with blueprint blocks
+    const blueprintEvents = blueprintToEvents(blueprint, weekDates);
+    onReplaceEvents(blueprintEvents);
+    // Enter edit mode (clears selections and sidebars)
+    enterBlueprintEditMode();
+  }, [blueprint, events, weekDates, onReplaceEvents, enterBlueprintEditMode]);
+
+  const handleCancelBlueprintEdit = React.useCallback(() => {
+    if (originalEventsSnapshot) {
+      // Restore original events
+      onReplaceEvents(originalEventsSnapshot);
+      setOriginalEventsSnapshot(null);
+    }
+    exitBlueprintEditMode();
+  }, [originalEventsSnapshot, onReplaceEvents, exitBlueprintEditMode]);
+
+  const handleSaveBlueprintEdit = React.useCallback(() => {
+    // Convert current events to blueprint and save
+    const newBlueprintBlocks = eventsToBlueprint(events, weekDates);
+    onSaveBlueprint({
+      blocks: newBlueprintBlocks,
+      updatedAt: new Date().toISOString(),
+    });
+    // Restore original events (we saved the blueprint, not the week)
+    if (originalEventsSnapshot) {
+      onReplaceEvents(originalEventsSnapshot);
+      setOriginalEventsSnapshot(null);
+    }
+    exitBlueprintEditMode();
+  }, [
+    events,
+    weekDates,
+    onSaveBlueprint,
+    originalEventsSnapshot,
+    onReplaceEvents,
+    exitBlueprintEditMode,
+  ]);
 
   // -------------------------------------------------------------------------
   // Derived Data
@@ -878,11 +933,12 @@ export function ShellContentComponent({
             onClick={handleNavigateToFocusedBlock}
           />
         )}
-        {/* Show Plan week button only if week is not already planned and not in onboarding */}
+        {/* Show Plan week button only if week is not already planned and not in onboarding/blueprint edit */}
         {showPlanWeek &&
           currentWeekPlan === null &&
           !isPlanning &&
-          !isOnboarding && (
+          !isOnboarding &&
+          !isBlueprintEditMode && (
             <button
               className="flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
               onClick={handlePlanWeekClick}
@@ -956,6 +1012,16 @@ export function ShellContentComponent({
                 </DropdownMenuItem>
               </>
             )}
+            {/* Show "Edit blueprint" when blueprint exists */}
+            {hasBlueprint && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleEnterBlueprintEdit}>
+                  <RiEditLine className="size-4" />
+                  Edit blueprint
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setShowKeyboardShortcuts(true)}>
               <RiKeyboardLine className="size-4" />
@@ -976,11 +1042,52 @@ export function ShellContentComponent({
     </ShellToolbar>
   );
 
+  // Desktop toolbar for blueprint edit mode
+  const renderBlueprintEditToolbar = () => (
+    <ShellToolbar>
+      <div className="flex items-center gap-1">
+        {/* Sidebar toggle still available */}
+        <button
+          className={cn(
+            "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+            showSidebar ? "text-foreground" : "text-muted-foreground",
+          )}
+          onClick={() => setShowSidebar(!showSidebar)}
+        >
+          <RiSideBarLine className="size-4" />
+        </button>
+      </div>
+      <div className="absolute left-1/2 flex -translate-x-1/2 items-center">
+        <span className="text-sm font-medium text-foreground">
+          Editing blueprint
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleCancelBlueprintEdit}
+          className="flex h-8 items-center rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSaveBlueprintEdit}
+          className="flex h-8 items-center rounded-md bg-foreground px-3 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
+        >
+          Save changes
+        </button>
+      </div>
+    </ShellToolbar>
+  );
+
   return (
     <>
       <Shell>
-        {/* Render appropriate toolbar based on breakpoint */}
-        {useMobileLayout ? renderMobileToolbar() : renderDesktopToolbar()}
+        {/* Render appropriate toolbar based on breakpoint and mode */}
+        {useMobileLayout
+          ? renderMobileToolbar()
+          : isBlueprintEditMode
+            ? renderBlueprintEditToolbar()
+            : renderDesktopToolbar()}
 
         {/* Main Content Area - responsive layout */}
         {useMobileLayout ? (
@@ -1012,7 +1119,7 @@ export function ShellContentComponent({
         ) : (
           // Desktop: Three-panel layout
           <div
-            className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning ? "gap-4" : "gap-0"}`}
+            className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning || isBlueprintEditMode ? "gap-4" : "gap-0"}`}
           >
             {/* Left Sidebar - Backlog or Planning Panel */}
             <div
@@ -1020,7 +1127,7 @@ export function ShellContentComponent({
                 "shrink-0 overflow-hidden transition-all duration-300 ease-out",
                 isPlanning
                   ? "w-[420px] opacity-100"
-                  : showSidebar
+                  : showSidebar || isBlueprintEditMode
                     ? "w-[360px] opacity-100"
                     : "w-0 opacity-0",
               )}
@@ -1053,7 +1160,7 @@ export function ShellContentComponent({
                   essentials={essentials as BacklogItem[]}
                   goals={goals as BacklogItem[]}
                   className="h-full w-[360px] max-w-none"
-                  showTasks={showTasks}
+                  showTasks={showTasks && !isBlueprintEditMode}
                   onToggleGoalTask={onToggleTaskComplete}
                   onAddTask={onAddTask}
                   onUpdateTask={onUpdateTask}

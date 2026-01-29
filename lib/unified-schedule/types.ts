@@ -288,6 +288,8 @@ export interface UseUnifiedScheduleReturn {
   deleteEvent: (eventId: string) => void;
   markEventComplete: (eventId: string) => void;
   markEventIncomplete: (eventId: string) => void;
+  /** Replace all events with a new array (for blueprint edit mode) */
+  replaceEvents: (events: CalendarEvent[]) => void;
 
   // Task assignment to blocks (for goal blocks)
   assignTaskToBlock: (blockId: string, taskId: string) => void;

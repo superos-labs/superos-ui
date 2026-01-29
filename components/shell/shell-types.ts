@@ -224,6 +224,8 @@ export interface ShellContentProps {
   onAddEvent: (event: CalendarEvent) => void;
   /** Update a calendar event */
   onUpdateEvent: (eventId: string, updates: Partial<CalendarEvent>) => void;
+  /** Replace all events with a new array (for blueprint edit mode) */
+  onReplaceEvents: (events: CalendarEvent[]) => void;
   /** Assign a task to a block */
   onAssignTaskToBlock: (blockId: string, taskId: string) => void;
   /** Unassign a task from a block */

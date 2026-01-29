@@ -33,6 +33,8 @@ export interface UseEventStateReturn {
   deleteEvent: (eventId: string) => CalendarEvent | undefined;
   markEventComplete: (eventId: string) => CalendarEvent | undefined;
   markEventIncomplete: (eventId: string) => CalendarEvent | undefined;
+  /** Replace all events with a new array (for blueprint edit mode) */
+  replaceEvents: (events: CalendarEvent[]) => void;
   /** Standard calendar handlers (spread onto Calendar component) */
   calendarHandlers: {
     onEventResize: (
@@ -143,6 +145,10 @@ export function useEventState({
     },
     [],
   );
+
+  const replaceEvents = React.useCallback((newEvents: CalendarEvent[]) => {
+    setEvents(newEvents);
+  }, []);
 
   // Calendar handlers
   const handleEventResize = React.useCallback(
@@ -367,6 +373,7 @@ export function useEventState({
     deleteEvent,
     markEventComplete,
     markEventIncomplete,
+    replaceEvents,
     calendarHandlers,
   };
 }

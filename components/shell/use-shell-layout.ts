@@ -50,6 +50,11 @@ export interface UseShellLayoutReturn {
   isPlanningMode: boolean;
   setIsPlanningMode: React.Dispatch<React.SetStateAction<boolean>>;
 
+  // Blueprint edit mode
+  isBlueprintEditMode: boolean;
+  enterBlueprintEditMode: () => void;
+  exitBlueprintEditMode: () => void;
+
   // Onboarding state
   onboardingStep: OnboardingStep;
   isOnboarding: boolean;
@@ -133,6 +138,7 @@ export function useShellLayout(
   // -------------------------------------------------------------------------
   const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view");
   const [isPlanningMode, setIsPlanningMode] = React.useState(false);
+  const [isBlueprintEditMode, setIsBlueprintEditMode] = React.useState(false);
 
   // -------------------------------------------------------------------------
   // Selection State
@@ -173,6 +179,23 @@ export function useShellLayout(
   const onStartPlanningFromPrompt = React.useCallback(() => {
     setShowPlanWeekPrompt(false);
     setIsPlanningMode(true);
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Blueprint Edit Mode Handlers
+  // -------------------------------------------------------------------------
+  const enterBlueprintEditMode = React.useCallback(() => {
+    // Close any open panels that might interfere
+    setSelectedEventId(null);
+    setShowRightSidebar(false);
+    setSelectedGoalId(null);
+    setBacklogMode("view");
+    setShowInspirationGallery(false);
+    setIsBlueprintEditMode(true);
+  }, []);
+
+  const exitBlueprintEditMode = React.useCallback(() => {
+    setIsBlueprintEditMode(false);
   }, []);
 
   // -------------------------------------------------------------------------
@@ -327,6 +350,9 @@ export function useShellLayout(
     setBacklogMode,
     isPlanningMode,
     setIsPlanningMode,
+    isBlueprintEditMode,
+    enterBlueprintEditMode,
+    exitBlueprintEditMode,
 
     // Onboarding state
     onboardingStep,
