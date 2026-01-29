@@ -167,6 +167,7 @@ export function Backlog({
 
   // Onboarding: hide essentials during goals step, show during essentials step
   const isOnboardingGoalsStep = onboardingStep === "goals";
+  const isOnboardingEssentialsStep = onboardingStep === "essentials";
   const showEssentialsCard = !isEssentialsHidden && onboardingStep !== "goals";
 
   // Wrap essentials Done/Skip to also trigger onboarding completion
@@ -217,7 +218,12 @@ export function Backlog({
       </AnimatePresence>
 
       {/* Goals Card */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm transition-opacity duration-300",
+          isOnboardingEssentialsStep && "pointer-events-none opacity-40",
+        )}
+      >
         <div className="scrollbar-hidden flex-1 overflow-y-auto">
           <GoalSection
             title="Goals"

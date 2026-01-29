@@ -114,3 +114,31 @@ export function getIconBgClass(color: GoalColor): string {
   };
   return colorMap[color];
 }
+
+/**
+ * Get Tailwind soft/muted background color class.
+ * Used for subtle colored containers like inspiration cards.
+ */
+export function getIconBgSoftClass(color: GoalColor): string {
+  const colorMap: Record<GoalColor, string> = {
+    slate: "bg-slate-500/10",
+    red: "bg-red-500/10",
+    orange: "bg-orange-500/10",
+    amber: "bg-amber-500/10",
+    yellow: "bg-yellow-500/10",
+    lime: "bg-lime-500/10",
+    green: "bg-green-500/10",
+    emerald: "bg-emerald-500/10",
+    teal: "bg-teal-500/10",
+    cyan: "bg-cyan-500/10",
+    sky: "bg-sky-500/10",
+    blue: "bg-blue-500/10",
+    indigo: "bg-indigo-500/10",
+    violet: "bg-violet-500/10",
+    purple: "bg-purple-500/10",
+    fuchsia: "bg-fuchsia-500/10",
+    pink: "bg-pink-500/10",
+    rose: "bg-rose-500/10",
+  };
+  return colorMap[color];
+}

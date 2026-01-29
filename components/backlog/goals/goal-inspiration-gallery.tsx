@@ -2,8 +2,10 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { RiAddLine, RiCloseLine, RiCheckLine } from "@remixicon/react";
-import { getIconColorClass } from "@/lib/colors";
+import { getIconColorClass, getIconBgSoftClass } from "@/lib/colors";
+import type { GoalColor } from "@/lib/colors";
 import type {
   InspirationCategory,
   InspirationGoal,
@@ -11,56 +13,78 @@ import type {
 } from "./goal-types";
 
 // =============================================================================
-// Inspiration Goal Row
+// Inspiration Goal Card
 // =============================================================================
 
-interface InspirationGoalRowProps {
+interface InspirationGoalCardProps {
   goal: InspirationGoal;
   lifeAreaId: string;
-  lifeAreaColor: string;
+  lifeAreaColor: GoalColor;
   onAdd: (goal: InspirationGoal, lifeAreaId: string) => void;
   isAdded?: boolean;
 }
 
-function InspirationGoalRow({
+function InspirationGoalCard({
   goal,
   lifeAreaId,
   lifeAreaColor,
   onAdd,
   isAdded,
-}: InspirationGoalRowProps) {
+}: InspirationGoalCardProps) {
   const Icon = goal.icon;
 
   return (
-    <div
+    <motion.button
+      onClick={() => !isAdded && onAdd(goal, lifeAreaId)}
+      disabled={isAdded}
+      whileTap={{ scale: isAdded ? 1 : 0.98 }}
       className={cn(
-        "group flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors",
-        isAdded ? "bg-muted/40" : "hover:bg-muted/60",
+        "group relative flex items-center gap-4 rounded-xl border p-4 text-left transition-colors duration-150",
+        isAdded
+          ? "cursor-default border-border/50 bg-muted/30"
+          : "cursor-pointer border-border bg-background hover:bg-muted/30",
       )}
     >
-      <Icon className="size-4 shrink-0 text-muted-foreground" />
+      {/* Larger icon container with colored background */}
+      <div
+        className={cn(
+          "flex size-12 shrink-0 items-center justify-center rounded-xl transition-colors",
+          isAdded ? "bg-muted/50" : getIconBgSoftClass(lifeAreaColor),
+        )}
+      >
+        <Icon
+          className={cn(
+            "size-6 transition-colors",
+            isAdded
+              ? "text-muted-foreground/50"
+              : getIconColorClass(lifeAreaColor),
+          )}
+        />
+      </div>
+
+      {/* Label */}
       <span
         className={cn(
-          "flex-1 text-sm",
-          isAdded ? "text-muted-foreground" : "text-foreground",
+          "flex-1 text-sm font-medium leading-tight",
+          isAdded ? "text-muted-foreground/60" : "text-foreground",
         )}
       >
         {goal.label}
       </span>
-      {isAdded ? (
-        <div className="flex size-6 items-center justify-center">
-          <RiCheckLine className="size-4 text-green-500" />
-        </div>
-      ) : (
-        <button
-          onClick={() => onAdd(goal, lifeAreaId)}
-          className="flex size-6 items-center justify-center rounded-md opacity-0 transition-opacity hover:bg-muted group-hover:opacity-100"
-          aria-label={`Add ${goal.label}`}
-        >
-          <RiAddLine className="size-4 text-muted-foreground hover:text-foreground" />
-        </button>
-      )}
-    </div>
+
+      {/* Added checkmark or hover add indicator */}
+      <div className="shrink-0">
+        {isAdded ? (
+          <div className="flex size-7 items-center justify-center rounded-full bg-green-500/10">
+            <RiCheckLine className="size-4 text-green-500" />
+          </div>
+        ) : (
+          <div className="flex size-7 items-center justify-center rounded-full bg-foreground/0 opacity-0 transition-all group-hover:bg-foreground/10 group-hover:opacity-100">
+            <RiAddLine className="size-4 text-foreground" />
+          </div>
+        )}
+      </div>
+    </motion.button>
   );
 }
 
@@ -82,21 +106,28 @@ function InspirationCategorySection({
   const LifeAreaIcon = category.lifeArea.icon;
 
   return (
-    <div className="mb-6">
-      {/* Life area header */}
-      <div className="sticky top-0 z-10 flex items-center gap-2 bg-background pb-2 pt-1">
-        <LifeAreaIcon
-          className={cn("size-4", getIconColorClass(category.lifeArea.color))}
-        />
-        <h3 className="text-sm font-medium text-foreground">
+    <div className="mb-8">
+      {/* Life area header - larger and more prominent */}
+      <div className="sticky top-0 z-10 flex items-center gap-3 bg-background pb-4 pt-2">
+        <div
+          className={cn(
+            "flex size-10 items-center justify-center rounded-xl",
+            getIconBgSoftClass(category.lifeArea.color),
+          )}
+        >
+          <LifeAreaIcon
+            className={cn("size-5", getIconColorClass(category.lifeArea.color))}
+          />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground">
           {category.lifeArea.label}
         </h3>
       </div>
 
-      {/* Goal suggestions */}
-      <div className="space-y-0.5">
+      {/* Goal suggestion cards in a grid */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {category.goals.map((goal) => (
-          <InspirationGoalRow
+          <InspirationGoalCard
             key={goal.id}
             goal={goal}
             lifeAreaId={category.lifeArea.id}

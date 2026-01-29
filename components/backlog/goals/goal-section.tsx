@@ -153,6 +153,7 @@ export function GoalSection({
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
             currentWeekStart={currentWeekStart}
+            hideTaskCreator={isOnboardingGoalsStep}
           />
         ))}
 

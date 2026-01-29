@@ -54,6 +54,8 @@ export interface GoalItemRowProps {
   draggable?: boolean;
   /** Current week start date for sectioning tasks by "This Week" (ISO string) */
   currentWeekStart?: string;
+  /** Whether to hide the inline task creator (e.g., during onboarding) */
+  hideTaskCreator?: boolean;
   className?: string;
 }
 
@@ -74,6 +76,7 @@ export function GoalItemRow({
   getTaskDeadline,
   draggable = false,
   currentWeekStart,
+  hideTaskCreator = false,
   className,
 }: GoalItemRowProps) {
   const IconComponent = item.icon;
@@ -255,7 +258,7 @@ export function GoalItemRow({
               </>
             );
           })()}
-          {onAddTask && (
+          {onAddTask && !hideTaskCreator && (
             <InlineTaskCreator goalId={item.id} onSave={onAddTask} />
           )}
         </div>
