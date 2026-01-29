@@ -18,8 +18,8 @@ import {
 } from "@/lib/time-utils";
 import { TimeInput, TimeRangeRow } from "@/components/ui/time-input";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
+import { useActivitySchedule } from "@/lib/essentials";
 import type { BacklogItem } from "./backlog-types";
-import { useActivitySchedule } from "./activity-schedule-editor";
 
 // =============================================================================
 // Essential Row Types

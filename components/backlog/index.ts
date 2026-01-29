@@ -31,12 +31,12 @@ export type { EssentialsSectionProps } from "./essentials-section";
 export { EssentialRow, SleepRow } from "./essential-row";
 export type { EssentialRowProps, SleepRowProps } from "./essential-row";
 
-// Hook for managing activity schedule state
-export { useActivitySchedule } from "./activity-schedule-editor";
+// Hook for managing activity schedule state (re-exported from lib/essentials)
+export { useActivitySchedule } from "@/lib/essentials";
 export type {
   UseActivityScheduleOptions,
   UseActivityScheduleReturn,
-} from "./activity-schedule-editor";
+} from "@/lib/essentials";
 
 export { BacklogGoalList } from "./backlog-goal-list";
 export type { BacklogGoalListProps } from "./backlog-goal-list";

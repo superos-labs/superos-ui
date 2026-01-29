@@ -37,7 +37,7 @@ export interface BacklogItem {
 }
 
 /** Mode for the backlog display */
-export type BacklogMode = "view" | "edit-essentials" | "goal-detail";
+export type BacklogMode = "view" | "goal-detail";
 
 /**
  * A goal suggestion in the inspiration gallery.

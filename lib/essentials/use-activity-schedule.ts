@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { EssentialSlot } from "@/lib/essentials";
+import type { EssentialSlot } from "./types";
 
 // =============================================================================
 // Types
