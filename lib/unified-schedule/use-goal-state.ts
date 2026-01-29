@@ -2,6 +2,23 @@
 
 import * as React from "react";
 import type { Subtask, Milestone, ScheduleTask, ScheduleGoal } from "./types";
+import {
+  updateGoalById,
+  updateTaskById,
+  addTaskToGoal,
+  removeTaskFromGoal,
+  findTaskInGoal,
+  addSubtaskToTask,
+  updateSubtaskById,
+  removeSubtaskFromTask,
+  addMilestoneToGoal,
+  updateMilestoneById,
+  removeMilestoneFromGoal,
+  updateTaskInGoals,
+  updateSubtaskInGoals,
+  updateMilestoneInGoals,
+  findTaskAcrossGoals,
+} from "./goal-state-utils";
 
 // ============================================================================
 // Types
@@ -19,14 +36,29 @@ export interface UseGoalStateReturn {
   updateGoal: (goalId: string, updates: Partial<ScheduleGoal>) => void;
   toggleTaskComplete: (goalId: string, taskId: string) => boolean | undefined;
   addTask: (goalId: string, label: string) => string;
-  updateTask: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
+  updateTask: (
+    goalId: string,
+    taskId: string,
+    updates: Partial<ScheduleTask>,
+  ) => void;
   deleteTask: (goalId: string, taskId: string) => string | undefined;
   addSubtask: (goalId: string, taskId: string, label: string) => void;
-  updateSubtask: (goalId: string, taskId: string, subtaskId: string, label: string) => void;
-  toggleSubtaskComplete: (goalId: string, taskId: string, subtaskId: string) => void;
+  updateSubtask: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
+  toggleSubtaskComplete: (
+    goalId: string,
+    taskId: string,
+    subtaskId: string,
+  ) => void;
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Find a task by ID across all goals */
-  findTask: (taskId: string) => { goal: ScheduleGoal; task: ScheduleTask } | null;
+  findTask: (
+    taskId: string,
+  ) => { goal: ScheduleGoal; task: ScheduleTask } | null;
   // Milestone CRUD
   addMilestone: (goalId: string, label: string) => string;
   updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
@@ -45,6 +77,10 @@ export function useGoalState({
 }: UseGoalStateOptions): UseGoalStateReturn {
   const [goals, setGoals] = React.useState<ScheduleGoal[]>(initialGoals);
 
+  // -------------------------------------------------------------------------
+  // Goal CRUD
+  // -------------------------------------------------------------------------
+
   const addGoal = React.useCallback((goal: ScheduleGoal) => {
     setGoals((prev) => [...prev, goal]);
   }, []);
@@ -56,13 +92,15 @@ export function useGoalState({
   const updateGoal = React.useCallback(
     (goalId: string, updates: Partial<ScheduleGoal>) => {
       setGoals((prev) =>
-        prev.map((goal) =>
-          goal.id === goalId ? { ...goal, ...updates } : goal
-        )
+        updateGoalById(prev, goalId, (goal) => ({ ...goal, ...updates })),
       );
     },
-    []
+    [],
   );
+
+  // -------------------------------------------------------------------------
+  // Task CRUD
+  // -------------------------------------------------------------------------
 
   const toggleTaskComplete = React.useCallback(
     (goalId: string, taskId: string): boolean | undefined => {
@@ -70,26 +108,20 @@ export function useGoalState({
 
       setGoals((currentGoals) => {
         const goal = currentGoals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
-        if (!task) return currentGoals;
+        const task = findTaskInGoal(goal!, taskId);
+        if (!goal || !task) return currentGoals;
 
         newCompletedState = !task.completed;
 
-        return currentGoals.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId ? { ...t, completed: newCompletedState } : t
-                ),
-              }
-            : g
-        );
+        return updateTaskInGoals(currentGoals, goalId, taskId, (t) => ({
+          ...t,
+          completed: newCompletedState,
+        }));
       });
 
       return newCompletedState;
     },
-    []
+    [],
   );
 
   const addTask = React.useCallback((goalId: string, label: string): string => {
@@ -98,30 +130,24 @@ export function useGoalState({
       label,
       completed: false,
     };
+
     setGoals((prev) =>
-      prev.map((g) =>
-        g.id === goalId ? { ...g, tasks: [...(g.tasks ?? []), newTask] } : g
-      )
+      updateGoalById(prev, goalId, (goal) => addTaskToGoal(goal, newTask)),
     );
+
     return newTask.id;
   }, []);
 
   const updateTask = React.useCallback(
     (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => {
-      setGoals((currentGoals) =>
-        currentGoals.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId ? { ...t, ...updates } : t
-                ),
-              }
-            : g
-        )
+      setGoals((prev) =>
+        updateTaskInGoals(prev, goalId, taskId, (task) => ({
+          ...task,
+          ...updates,
+        })),
       );
     },
-    []
+    [],
   );
 
   const deleteTask = React.useCallback(
@@ -130,20 +156,22 @@ export function useGoalState({
 
       setGoals((currentGoals) => {
         const goal = currentGoals.find((g) => g.id === goalId);
-        const task = goal?.tasks?.find((t) => t.id === taskId);
+        const task = findTaskInGoal(goal!, taskId);
         scheduledBlockId = task?.scheduledBlockId;
 
-        return currentGoals.map((g) =>
-          g.id === goalId
-            ? { ...g, tasks: g.tasks?.filter((t) => t.id !== taskId) }
-            : g
+        return updateGoalById(currentGoals, goalId, (g) =>
+          removeTaskFromGoal(g, taskId),
         );
       });
 
       return scheduledBlockId;
     },
-    []
+    [],
   );
+
+  // -------------------------------------------------------------------------
+  // Subtask CRUD
+  // -------------------------------------------------------------------------
 
   const addSubtask = React.useCallback(
     (goalId: string, taskId: string, label: string) => {
@@ -152,189 +180,135 @@ export function useGoalState({
         label,
         completed: false,
       };
+
       setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? { ...t, subtasks: [...(t.subtasks ?? []), newSubtask] }
-                    : t
-                ),
-              }
-            : g
-        )
+        updateTaskInGoals(prev, goalId, taskId, (task) =>
+          addSubtaskToTask(task, newSubtask),
+        ),
       );
     },
-    []
+    [],
   );
 
   const updateSubtask = React.useCallback(
     (goalId: string, taskId: string, subtaskId: string, label: string) => {
       setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? {
-                        ...t,
-                        subtasks: t.subtasks?.map((s) =>
-                          s.id === subtaskId ? { ...s, label } : s
-                        ),
-                      }
-                    : t
-                ),
-              }
-            : g
-        )
+        updateSubtaskInGoals(prev, goalId, taskId, subtaskId, (subtask) => ({
+          ...subtask,
+          label,
+        })),
       );
     },
-    []
+    [],
   );
 
   const toggleSubtaskComplete = React.useCallback(
     (goalId: string, taskId: string, subtaskId: string) => {
       setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? {
-                        ...t,
-                        subtasks: t.subtasks?.map((s) =>
-                          s.id === subtaskId
-                            ? { ...s, completed: !s.completed }
-                            : s
-                        ),
-                      }
-                    : t
-                ),
-              }
-            : g
-        )
+        updateSubtaskInGoals(prev, goalId, taskId, subtaskId, (subtask) => ({
+          ...subtask,
+          completed: !subtask.completed,
+        })),
       );
     },
-    []
+    [],
   );
 
   const deleteSubtask = React.useCallback(
     (goalId: string, taskId: string, subtaskId: string) => {
       setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                tasks: g.tasks?.map((t) =>
-                  t.id === taskId
-                    ? { ...t, subtasks: t.subtasks?.filter((s) => s.id !== subtaskId) }
-                    : t
-                ),
-              }
-            : g
-        )
+        updateTaskInGoals(prev, goalId, taskId, (task) =>
+          removeSubtaskFromTask(task, subtaskId),
+        ),
       );
     },
-    []
+    [],
   );
 
   // -------------------------------------------------------------------------
   // Milestone CRUD
   // -------------------------------------------------------------------------
 
-  const addMilestone = React.useCallback((goalId: string, label: string): string => {
-    const newMilestone: Milestone = {
-      id: crypto.randomUUID(),
-      label,
-      completed: false,
-    };
-    setGoals((prev) =>
-      prev.map((g) =>
-        g.id === goalId
-          ? { ...g, milestones: [...(g.milestones ?? []), newMilestone] }
-          : g
-      )
-    );
-    return newMilestone.id;
-  }, []);
+  const addMilestone = React.useCallback(
+    (goalId: string, label: string): string => {
+      const newMilestone: Milestone = {
+        id: crypto.randomUUID(),
+        label,
+        completed: false,
+      };
+
+      setGoals((prev) =>
+        updateGoalById(prev, goalId, (goal) =>
+          addMilestoneToGoal(goal, newMilestone),
+        ),
+      );
+
+      return newMilestone.id;
+    },
+    [],
+  );
 
   const updateMilestone = React.useCallback(
     (goalId: string, milestoneId: string, label: string) => {
       setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                milestones: g.milestones?.map((m) =>
-                  m.id === milestoneId ? { ...m, label } : m
-                ),
-              }
-            : g
-        )
+        updateMilestoneInGoals(prev, goalId, milestoneId, (milestone) => ({
+          ...milestone,
+          label,
+        })),
       );
     },
-    []
+    [],
   );
 
   const toggleMilestoneComplete = React.useCallback(
     (goalId: string, milestoneId: string) => {
       setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                milestones: g.milestones?.map((m) =>
-                  m.id === milestoneId ? { ...m, completed: !m.completed } : m
-                ),
-              }
-            : g
-        )
+        updateMilestoneInGoals(prev, goalId, milestoneId, (milestone) => ({
+          ...milestone,
+          completed: !milestone.completed,
+        })),
       );
     },
-    []
+    [],
   );
 
   const deleteMilestone = React.useCallback(
     (goalId: string, milestoneId: string) => {
       setGoals((prev) =>
-        prev.map((g) =>
-          g.id === goalId
-            ? { ...g, milestones: g.milestones?.filter((m) => m.id !== milestoneId) }
-            : g
-        )
+        updateGoalById(prev, goalId, (goal) =>
+          removeMilestoneFromGoal(goal, milestoneId),
+        ),
       );
     },
-    []
+    [],
   );
 
-  const toggleMilestonesEnabled = React.useCallback(
-    (goalId: string) => {
-      setGoals((prev) =>
-        prev.map((g) => {
-          if (g.id !== goalId) return g;
-          // If milestonesEnabled is undefined, treat it as enabled (true) if milestones exist
-          const currentlyEnabled = g.milestonesEnabled ?? (g.milestones && g.milestones.length > 0);
-          return { ...g, milestonesEnabled: !currentlyEnabled };
-        })
-      );
-    },
-    []
-  );
+  const toggleMilestonesEnabled = React.useCallback((goalId: string) => {
+    setGoals((prev) =>
+      updateGoalById(prev, goalId, (goal) => {
+        // If milestonesEnabled is undefined, treat it as enabled (true) if milestones exist
+        const currentlyEnabled =
+          goal.milestonesEnabled ??
+          (goal.milestones && goal.milestones.length > 0);
+        return { ...goal, milestonesEnabled: !currentlyEnabled };
+      }),
+    );
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Utility Functions
+  // -------------------------------------------------------------------------
 
   const findTask = React.useCallback(
     (taskId: string): { goal: ScheduleGoal; task: ScheduleTask } | null => {
-      for (const goal of goals) {
-        const task = goal.tasks?.find((t) => t.id === taskId);
-        if (task) return { goal, task };
-      }
-      return null;
+      return findTaskAcrossGoals(goals, taskId);
     },
-    [goals]
+    [goals],
   );
+
+  // -------------------------------------------------------------------------
+  // Return
+  // -------------------------------------------------------------------------
 
   return {
     goals,
