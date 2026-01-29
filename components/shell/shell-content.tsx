@@ -823,15 +823,18 @@ export function ShellContentComponent({
   const renderDesktopToolbar = () => (
     <ShellToolbar>
       <div className="flex items-center gap-1">
-        <button
-          className={cn(
-            "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-            showSidebar ? "text-foreground" : "text-muted-foreground",
-          )}
-          onClick={() => setShowSidebar(!showSidebar)}
-        >
-          <RiSideBarLine className="size-4" />
-        </button>
+        {/* Hide sidebar toggle during onboarding */}
+        {!isOnboarding && (
+          <button
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+              showSidebar ? "text-foreground" : "text-muted-foreground",
+            )}
+            onClick={() => setShowSidebar(!showSidebar)}
+          >
+            <RiSideBarLine className="size-4" />
+          </button>
+        )}
       </div>
       <div className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1">
         <button

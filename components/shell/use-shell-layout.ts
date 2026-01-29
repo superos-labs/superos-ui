@@ -120,18 +120,6 @@ export function useShellLayout(
 
   const isOnboarding = onboardingStep !== null;
 
-  // Handler to advance from goals step to essentials step
-  const onContinueFromGoals = React.useCallback(() => {
-    setOnboardingStep("essentials");
-    // Close inspiration gallery if open
-    setShowInspirationGallery(false);
-  }, []);
-
-  // Handler to complete onboarding (called when essentials Done/Skip is clicked)
-  const onCompleteOnboarding = React.useCallback(() => {
-    setOnboardingStep(null);
-  }, []);
-
   // -------------------------------------------------------------------------
   // Mode State
   // -------------------------------------------------------------------------
@@ -147,6 +135,24 @@ export function useShellLayout(
   const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
     null,
   );
+
+  // -------------------------------------------------------------------------
+  // Onboarding Handlers (defined after state they depend on)
+  // -------------------------------------------------------------------------
+  // Handler to advance from goals step to essentials step
+  const onContinueFromGoals = React.useCallback(() => {
+    setOnboardingStep("essentials");
+    // Close inspiration gallery if open
+    setShowInspirationGallery(false);
+    // Close goal detail view if open
+    setSelectedGoalId(null);
+    setBacklogMode("view");
+  }, []);
+
+  // Handler to complete onboarding (called when essentials Done/Skip is clicked)
+  const onCompleteOnboarding = React.useCallback(() => {
+    setOnboardingStep(null);
+  }, []);
 
   // -------------------------------------------------------------------------
   // Goal Notes (local state for demo)

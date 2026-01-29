@@ -226,52 +226,56 @@ export function GoalDetail({
       )}
       {...props}
     >
-      {/* Back button - absolute positioned top left */}
-      {onBack && (
-        <button
-          onClick={onBack}
-          className="absolute left-6 top-6 z-10 flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Close goal detail"
-        >
-          <RiArrowLeftSLine className="size-5" />
-        </button>
-      )}
-
-      {/* Delete button - absolute positioned top right */}
-      <div className="absolute right-6 top-6 z-10 flex items-center gap-1">
-        {onDelete &&
-          (showDeleteConfirm ? (
-            <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
-              <button
-                onClick={() => {
-                  onDelete();
-                  setShowDeleteConfirm(false);
-                }}
-                className="rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-600"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Delete goal"
-            >
-              <RiDeleteBinLine className="size-5" />
-            </button>
-          ))}
-      </div>
-
       {/* Scrollable content */}
       <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto">
         <div className="w-full px-12 py-12">
+          {/* Action buttons row */}
+          <div className="mb-6 flex items-center justify-between">
+            {/* Back button */}
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Close goal detail"
+              >
+                <RiArrowLeftSLine className="size-5" />
+              </button>
+            )}
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Delete button */}
+            {onDelete &&
+              (showDeleteConfirm ? (
+                <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+                  <button
+                    onClick={() => {
+                      onDelete();
+                      setShowDeleteConfirm(false);
+                    }}
+                    className="rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  aria-label="Delete goal"
+                >
+                  <RiDeleteBinLine className="size-5" />
+                </button>
+              ))}
+          </div>
+
           {/* Content flows vertically with consistent spacing */}
           <div className="flex flex-col gap-6">
             {/* Header */}
