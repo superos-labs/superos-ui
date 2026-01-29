@@ -28,39 +28,64 @@ export function PlanWeekPromptCard({
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-5 rounded-2xl bg-white p-8 shadow-lg",
-        "max-w-[400px] text-center",
+        "relative flex flex-col items-center overflow-hidden rounded-2xl border border-border bg-background shadow-sm",
+        "max-w-[420px]",
         className,
       )}
     >
-      {/* Icon container */}
-      <div className="flex size-14 items-center justify-center rounded-full bg-primary/10">
-        <RiCalendarScheduleLine className="size-7 text-primary" />
-      </div>
+      {/* Decorative gradient background */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-primary/[0.03] via-transparent to-transparent" />
 
-      {/* Text content */}
-      <div className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-foreground">
-          Make space for what matters this week
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          You've set your goals and essentials. Now place them into a real week
-          so they actually have room to happen.
-        </p>
-      </div>
+      {/* Subtle grid pattern overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.02]"
+        style={{
+          backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px),
+                           linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
+          backgroundSize: "24px 24px",
+        }}
+      />
 
-      {/* Actions */}
-      <div className="flex flex-col items-center gap-2">
-        <Button size="lg" onClick={onStartPlanning}>
-          Start planning
-        </Button>
-        <button
-          type="button"
-          onClick={onDismiss}
-          className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Maybe later
-        </button>
+      {/* Content container */}
+      <div className="relative flex flex-col items-center gap-6 px-8 py-10 text-center">
+        {/* Icon container with layered design */}
+        <div className="relative">
+          {/* Outer glow ring */}
+          <div className="absolute -inset-2 rounded-2xl bg-primary/5" />
+          {/* Icon box */}
+          <div className="relative flex size-14 items-center justify-center rounded-xl bg-gradient-to-b from-primary/10 to-primary/5 ring-1 ring-primary/10">
+            <RiCalendarScheduleLine className="size-6 text-primary" />
+          </div>
+        </div>
+
+        {/* Text content */}
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">
+            Make space for what matters
+          </h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            You&apos;ve set your goals and essentials. Now place them into a
+            real week so they actually have room to happen.
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex w-full flex-col gap-3 pt-1">
+          <Button
+            size="lg"
+            onClick={onStartPlanning}
+            className="h-10 w-full text-sm font-medium"
+          >
+            Start planning
+          </Button>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="py-1 text-sm text-muted-foreground/70 transition-colors hover:text-muted-foreground"
+          >
+            Maybe later
+          </button>
+        </div>
       </div>
     </div>
   );

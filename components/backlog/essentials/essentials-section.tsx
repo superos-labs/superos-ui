@@ -116,6 +116,29 @@ export interface EssentialsSectionProps {
 // Main Component
 // =============================================================================
 
+// =============================================================================
+// Height Calculation Constants
+// =============================================================================
+
+/** Approximate row heights for configured view (in pixels) */
+const ROW_HEIGHT = 52; // Each essential row height
+const HEADER_HEIGHT = 72; // Header with title and description
+const PADDING = 16; // Container padding
+
+/**
+ * Calculate the expected height of the configured view based on essentials count
+ */
+function calculateConfiguredHeight(essentialsCount: number): number {
+  // Header + Sleep row + other essentials + Add button + padding
+  return (
+    HEADER_HEIGHT +
+    ROW_HEIGHT +
+    essentialsCount * ROW_HEIGHT +
+    ROW_HEIGHT +
+    PADDING
+  );
+}
+
 export function EssentialsSection({
   essentials,
   templates,
@@ -142,6 +165,16 @@ export function EssentialsSection({
   const [ctaAddedIds, setCtaAddedIds] = React.useState<string[]>([]);
   // Manual control: show CTA until user clicks Done (or Skip)
   const [ctaDismissed, setCtaDismissed] = React.useState(false);
+
+  // Animation phase: 'idle' | 'content-exit' | 'height-transition'
+  // This enables sequenced animation: content fades first, then height animates
+  const [animationPhase, setAnimationPhase] = React.useState<
+    "idle" | "content-exit" | "height-transition"
+  >("idle");
+
+  // Ref to measure current CTA height before transition
+  const ctaRef = React.useRef<HTMLDivElement>(null);
+  const [frozenHeight, setFrozenHeight] = React.useState<number | null>(null);
 
   // Capture whether CTA should be shown on initial mount (lazy initializer)
   // This ensures CTA stays visible until explicitly dismissed, even after
@@ -193,17 +226,44 @@ export function EssentialsSection({
     onCreateEssential(data, slots);
   };
 
-  // Handler for Skip button
+  // Handler for Skip button - sequenced animation
   const handleSkip = () => {
+    // Capture current height before transition
+    if (ctaRef.current) {
+      setFrozenHeight(ctaRef.current.offsetHeight);
+    }
+    setAnimationPhase("content-exit");
     setCtaDismissed(true);
-    onHide?.();
+    // Delay the hide callback to allow content to fade first
+    setTimeout(() => {
+      onHide?.();
+      onOnboardingComplete?.();
+      setAnimationPhase("idle");
+      setFrozenHeight(null);
+    }, 300); // Match the content fade duration
+  };
+
+  // Handler for Done/Continue button - sequenced animation
+  const handleDone = () => {
+    // Capture current height before transition
+    if (ctaRef.current) {
+      setFrozenHeight(ctaRef.current.offsetHeight);
+    }
+    setAnimationPhase("content-exit");
+    setCtaDismissed(true);
     onOnboardingComplete?.();
   };
 
-  // Handler for Done/Continue button
-  const handleDone = () => {
-    setCtaDismissed(true);
-    onOnboardingComplete?.();
+  // Callback when content exit animation completes
+  const handleContentExitComplete = () => {
+    if (animationPhase === "content-exit") {
+      setAnimationPhase("height-transition");
+      // Reset frozen height after height transition completes
+      setTimeout(() => {
+        setAnimationPhase("idle");
+        setFrozenHeight(null);
+      }, 300); // Match height transition duration
+    }
   };
 
   // Separate Sleep from other essentials
@@ -238,6 +298,11 @@ export function EssentialsSection({
     return null;
   }
 
+  // Calculate target height for configured view
+  const configuredTargetHeight = calculateConfiguredHeight(
+    otherEssentials.length,
+  );
+
   return (
     <div
       className={cn(
@@ -245,14 +310,19 @@ export function EssentialsSection({
         className,
       )}
     >
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence
+        mode="wait"
+        initial={false}
+        onExitComplete={handleContentExitComplete}
+      >
         {shouldShowCTA && !isCollapsed ? (
-          // CTA empty state - exits with scale, opacity, and height
+          // CTA empty state - exits with opacity/scale only, height stays frozen
           <motion.div
+            ref={ctaRef}
             key="cta-view"
             initial={false}
-            exit={{ opacity: 0, scale: 0.95, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="overflow-hidden origin-top"
           >
             <EssentialsCTA
@@ -289,13 +359,36 @@ export function EssentialsSection({
             />
           </motion.div>
         ) : (
-          // Configured state - enters with same animation as essentials card
+          // Configured state - content fades in first, then height animates
           <motion.div
             key="configured-view"
-            initial={{ opacity: 0, scale: 0.95, height: 0 }}
-            animate={{ opacity: 1, scale: 1, height: "auto" }}
-            exit={{ opacity: 0, scale: 0.95, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            initial={{
+              opacity: 0,
+              scale: 0.98,
+              // Start at frozen height if transitioning from CTA, otherwise 0
+              height: frozenHeight ?? 0,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              // Animate to calculated height, then auto
+              height:
+                animationPhase === "height-transition"
+                  ? configuredTargetHeight
+                  : "auto",
+            }}
+            exit={{ opacity: 0, scale: 0.98, height: 0 }}
+            transition={{
+              // Content (opacity/scale) animates first
+              opacity: { duration: 0.15, ease: "easeOut" },
+              scale: { duration: 0.15, ease: "easeOut" },
+              // Height animates after content is visible
+              height: {
+                duration: 0.25,
+                ease: [0.4, 0, 0.2, 1],
+                delay: animationPhase === "content-exit" ? 0.15 : 0,
+              },
+            }}
             className="overflow-hidden origin-top"
           >
             <div className="px-3 py-2">
