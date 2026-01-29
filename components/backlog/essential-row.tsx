@@ -180,8 +180,8 @@ function TimeInput({ value, onChange, className }: TimeInputProps) {
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-[80px] rounded-md border border-border bg-background px-2 py-1 text-center text-sm text-foreground",
-        "focus:outline-none focus:ring-2 focus:ring-ring",
+        "w-[80px] rounded-md bg-background/60 px-2 py-1.5 text-center text-sm text-foreground",
+        "focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50",
         className,
       )}
     />
@@ -221,7 +221,7 @@ function TimeRangeRow({
   return (
     <div className="flex items-center gap-2">
       <TimeInput value={startMinutes} onChange={onStartChange} />
-      <span className="text-muted-foreground">–</span>
+      <span className="text-muted-foreground/70">–</span>
       <TimeInput value={endMinutes} onChange={handleEndChange} />
       {canDelete && (
         <button
@@ -362,7 +362,7 @@ export function EssentialRow({
         <div className="flex flex-col gap-3 px-3 pb-3">
           {/* Day selector */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
               Days
             </span>
             <div className="flex gap-1">
@@ -375,8 +375,8 @@ export function EssentialRow({
                     className={cn(
                       "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
                       isSelected
-                        ? "bg-foreground text-background"
-                        : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                        ? "bg-foreground/80 text-background"
+                        : "bg-background/60 text-muted-foreground hover:bg-background hover:text-foreground",
                     )}
                     title={DAY_FULL_LABELS[index]}
                   >
@@ -389,7 +389,7 @@ export function EssentialRow({
 
           {/* Time ranges */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
               Time ranges
             </span>
             <div className="flex flex-col gap-2">

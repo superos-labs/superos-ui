@@ -175,43 +175,14 @@ export function InlineGoalCreator({
   ];
 
   return (
-    <div className="mx-3 mb-2 flex flex-col gap-2 rounded-xl border border-border bg-muted/30 p-3">
-      {/* Header row: Title + Actions */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">
-          New goal
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handleSave}
-            disabled={!label.trim()}
-            className={cn(
-              "flex size-6 items-center justify-center rounded-md transition-colors",
-              label.trim()
-                ? "text-muted-foreground hover:bg-muted hover:text-foreground"
-                : "text-muted-foreground/40 cursor-not-allowed",
-            )}
-            title="Save goal"
-          >
-            <RiCheckLine className="size-3.5" />
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            title="Cancel"
-          >
-            <RiCloseLine className="size-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Main row: Icon picker + Input + Life Area */}
+    <div className="mx-3 mb-2 flex flex-col gap-3 rounded-xl bg-muted/30 p-3">
+      {/* Main row: Icon picker + Input + Life Area + Actions */}
       <div className="flex items-center gap-2">
         {/* Icon/Color Picker Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60 transition-colors hover:bg-muted"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background/60 transition-colors hover:bg-background"
               title="Choose icon and color"
             >
               {React.createElement(selectedIcon, {
@@ -219,7 +190,7 @@ export function InlineGoalCreator({
               })}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56 p-2">
+          <DropdownMenuContent align="start" className="w-64 p-2">
             <DropdownMenuLabel className="px-1 py-1">Icon</DropdownMenuLabel>
             <div className="flex flex-wrap gap-1 px-1 pb-2">
               {goalIcons.map((iconOption, index) => {
@@ -232,7 +203,7 @@ export function InlineGoalCreator({
                     className={cn(
                       "flex size-7 items-center justify-center rounded-md transition-colors",
                       isSelected
-                        ? "bg-foreground text-background"
+                        ? "bg-foreground/80 text-background"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                     title={iconOption.label}
@@ -252,7 +223,7 @@ export function InlineGoalCreator({
                   className={cn(
                     "flex size-6 items-center justify-center rounded-md transition-all",
                     selectedColor === color &&
-                      "ring-2 ring-foreground ring-offset-1 ring-offset-background",
+                      "ring-2 ring-foreground/70 ring-offset-1 ring-offset-background",
                   )}
                   title={color}
                 >
@@ -273,13 +244,13 @@ export function InlineGoalCreator({
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Goal name..."
-          className="h-9 min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+          className="h-9 min-w-0 flex-1 rounded-md bg-background/60 px-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50"
         />
 
         {/* Life Area Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-muted px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/80">
+            <button className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-background/60 px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-background">
               {SelectedAreaIcon && <SelectedAreaIcon className="size-3" />}
               <span>{selectedArea?.label}</span>
               <RiArrowDownSLine className="size-3.5 text-muted-foreground" />
@@ -309,6 +280,30 @@ export function InlineGoalCreator({
             })}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Actions */}
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={handleSave}
+            disabled={!label.trim()}
+            className={cn(
+              "flex size-7 items-center justify-center rounded-md transition-colors",
+              label.trim()
+                ? "text-muted-foreground hover:bg-background hover:text-foreground"
+                : "text-muted-foreground/30 cursor-not-allowed",
+            )}
+            title="Save goal"
+          >
+            <RiCheckLine className="size-4" />
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            title="Cancel"
+          >
+            <RiCloseLine className="size-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -400,8 +395,8 @@ function TimeInput({ value, onChange, className }: TimeInputProps) {
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       className={cn(
-        "w-[80px] rounded-md border border-border bg-background px-2 py-1 text-center text-sm text-foreground",
-        "focus:outline-none focus:ring-2 focus:ring-ring",
+        "w-[80px] rounded-md bg-background/60 px-2 py-1.5 text-center text-sm text-foreground",
+        "focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50",
         className,
       )}
     />
@@ -501,43 +496,14 @@ export function InlineEssentialCreator({
   ];
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/30 p-3">
-      {/* Header row: Title + Actions */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">
-          New essential
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handleSave}
-            disabled={!label.trim()}
-            className={cn(
-              "flex size-6 items-center justify-center rounded-md transition-colors",
-              label.trim()
-                ? "text-muted-foreground hover:bg-muted hover:text-foreground"
-                : "text-muted-foreground/40 cursor-not-allowed",
-            )}
-            title="Save essential"
-          >
-            <RiCheckLine className="size-3.5" />
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            title="Cancel"
-          >
-            <RiCloseLine className="size-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Icon picker + Label input */}
+    <div className="flex flex-col gap-3 rounded-xl bg-muted/30 p-3">
+      {/* Icon picker + Label input + Actions */}
       <div className="flex items-center gap-2">
         {/* Icon/Color Picker Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60 transition-colors hover:bg-muted"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background/60 transition-colors hover:bg-background"
               title="Choose icon and color"
             >
               {React.createElement(selectedIcon, {
@@ -545,7 +511,7 @@ export function InlineEssentialCreator({
               })}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56 p-2">
+          <DropdownMenuContent align="start" className="w-64 p-2">
             <DropdownMenuLabel className="px-1 py-1">Icon</DropdownMenuLabel>
             <div className="flex flex-wrap gap-1 px-1 pb-2">
               {essentialIcons.map((iconOption, index) => {
@@ -558,7 +524,7 @@ export function InlineEssentialCreator({
                     className={cn(
                       "flex size-7 items-center justify-center rounded-md transition-colors",
                       isSelected
-                        ? "bg-foreground text-background"
+                        ? "bg-foreground/80 text-background"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                     title={iconOption.label}
@@ -578,7 +544,7 @@ export function InlineEssentialCreator({
                   className={cn(
                     "flex size-6 items-center justify-center rounded-md transition-all",
                     selectedColor === color &&
-                      "ring-2 ring-foreground ring-offset-1 ring-offset-background",
+                      "ring-2 ring-foreground/70 ring-offset-1 ring-offset-background",
                   )}
                   title={color}
                 >
@@ -599,13 +565,37 @@ export function InlineEssentialCreator({
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Essential name..."
-          className="h-9 min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
+          className="h-9 min-w-0 flex-1 rounded-md bg-background/60 px-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50"
         />
+
+        {/* Actions */}
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={handleSave}
+            disabled={!label.trim()}
+            className={cn(
+              "flex size-7 items-center justify-center rounded-md transition-colors",
+              label.trim()
+                ? "text-muted-foreground hover:bg-background hover:text-foreground"
+                : "text-muted-foreground/30 cursor-not-allowed",
+            )}
+            title="Save essential"
+          >
+            <RiCheckLine className="size-4" />
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            title="Cancel"
+          >
+            <RiCloseLine className="size-4" />
+          </button>
+        </div>
       </div>
 
       {/* Day selector */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
           Days
         </span>
         <div className="flex gap-1">
@@ -618,8 +608,8 @@ export function InlineEssentialCreator({
                 className={cn(
                   "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
                   isSelected
-                    ? "bg-foreground text-background"
-                    : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "bg-foreground/80 text-background"
+                    : "bg-background/60 text-muted-foreground hover:bg-background hover:text-foreground",
                 )}
                 title={DAY_FULL_LABELS[index]}
               >
@@ -632,12 +622,12 @@ export function InlineEssentialCreator({
 
       {/* Time range */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
           Time
         </span>
         <div className="flex items-center gap-2">
           <TimeInput value={startMinutes} onChange={setStartMinutes} />
-          <span className="text-muted-foreground">–</span>
+          <span className="text-muted-foreground/70">–</span>
           <TimeInput
             value={startMinutes + durationMinutes}
             onChange={handleEndChange}
