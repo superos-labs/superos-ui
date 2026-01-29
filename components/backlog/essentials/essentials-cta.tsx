@@ -467,8 +467,8 @@ export function EssentialsCTA({
           Define your essentials
         </h3>
         <p className="text-sm text-muted-foreground">
-          Think of these as background time your week needs. You&apos;ll use
-          these when planning each week.
+          Routine activities you do on a weekly basis and help see your
+          availability more clearly. Added during weekly planning.
         </p>
       </div>
 
