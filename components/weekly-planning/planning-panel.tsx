@@ -91,10 +91,10 @@ export function PlanningPanel({
   const isScheduleStep = step === "schedule";
 
   // Header content based on step
-  const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Schedule tasks";
+  const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Plan your week";
   const headerDescription = isPrioritizeStep
     ? "Select 2-3 tasks for each goal that move it forward this week."
-    : "Drag your prioritized tasks to the calendar";
+    : "Drag your goals and tasks to the calendar to make time for them throughout the week.";
 
   return (
     <div
