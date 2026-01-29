@@ -123,6 +123,8 @@ export function useShellLayout(
   // Handler to advance from goals step to essentials step
   const onContinueFromGoals = React.useCallback(() => {
     setOnboardingStep("essentials");
+    // Close inspiration gallery if open
+    setShowInspirationGallery(false);
   }, []);
 
   // Handler to complete onboarding (called when essentials Done/Skip is clicked)

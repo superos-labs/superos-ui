@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiFlagLine, RiCheckLine, RiCloseLine } from "@remixicon/react";
+import { RiFlagLine, RiCloseLine } from "@remixicon/react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -187,29 +187,14 @@ export function InlineEssentialCreator({
           className="h-9 min-w-0 flex-1 rounded-md bg-background px-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring/50"
         />
 
-        {/* Actions */}
-        <div className="flex items-center gap-0.5">
-          <button
-            onClick={handleSave}
-            disabled={!label.trim()}
-            className={cn(
-              "flex size-7 items-center justify-center rounded-md transition-colors",
-              label.trim()
-                ? "text-muted-foreground hover:bg-background hover:text-foreground"
-                : "cursor-not-allowed text-muted-foreground/30",
-            )}
-            title="Save essential"
-          >
-            <RiCheckLine className="size-4" />
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-            title="Cancel"
-          >
-            <RiCloseLine className="size-4" />
-          </button>
-        </div>
+        {/* Cancel button */}
+        <button
+          onClick={onCancel}
+          className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          title="Cancel"
+        >
+          <RiCloseLine className="size-4" />
+        </button>
       </div>
 
       {/* Day selector */}
@@ -258,6 +243,20 @@ export function InlineEssentialCreator({
           />
         </div>
       </div>
+
+      {/* Add button */}
+      <button
+        onClick={handleSave}
+        disabled={!label.trim()}
+        className={cn(
+          "w-full rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
+          label.trim()
+            ? "bg-foreground text-background hover:bg-foreground/90"
+            : "cursor-not-allowed bg-muted text-muted-foreground",
+        )}
+      >
+        Add
+      </button>
     </div>
   );
 }

@@ -7,7 +7,6 @@ import {
   RiRestaurantLine,
   RiCarLine,
   RiHome4Line,
-  RiCheckLine,
   RiCloseLine,
 } from "@remixicon/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -190,7 +189,7 @@ function SuggestionEditor({
       className="overflow-hidden"
     >
       <div className="flex flex-col gap-3 rounded-xl bg-muted/30 p-3">
-        {/* Header with icon, label, and actions */}
+        {/* Header with icon, label, and cancel button */}
         <div className="flex items-center gap-2">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-background">
             <IconComponent
@@ -200,28 +199,13 @@ function SuggestionEditor({
           <span className="flex-1 text-sm font-medium text-foreground">
             {suggestion.label}
           </span>
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={handleSave}
-              disabled={selectedDays.length === 0}
-              className={cn(
-                "flex size-7 items-center justify-center rounded-md transition-colors",
-                selectedDays.length > 0
-                  ? "text-muted-foreground hover:bg-background hover:text-foreground"
-                  : "cursor-not-allowed text-muted-foreground/30",
-              )}
-              title="Save essential"
-            >
-              <RiCheckLine className="size-4" />
-            </button>
-            <button
-              onClick={onCancel}
-              className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-              title="Cancel"
-            >
-              <RiCloseLine className="size-4" />
-            </button>
-          </div>
+          <button
+            onClick={onCancel}
+            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            title="Cancel"
+          >
+            <RiCloseLine className="size-4" />
+          </button>
         </div>
 
         {/* Day selector */}
@@ -270,6 +254,20 @@ function SuggestionEditor({
             />
           </div>
         </div>
+
+        {/* Add button */}
+        <button
+          onClick={handleSave}
+          disabled={selectedDays.length === 0}
+          className={cn(
+            "w-full rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
+            selectedDays.length > 0
+              ? "bg-foreground text-background hover:bg-foreground/90"
+              : "cursor-not-allowed bg-muted text-muted-foreground",
+          )}
+        >
+          Add
+        </button>
       </div>
     </motion.div>
   );

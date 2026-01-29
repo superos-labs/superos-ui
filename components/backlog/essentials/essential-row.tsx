@@ -371,15 +371,6 @@ export function SleepRow({
       >
         <div className="overflow-hidden">
           <div className="flex flex-col gap-3 px-3 pb-3">
-            {/* Wake up time */}
-            <div className="flex items-center gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
-                <RiSunLine className="size-4 text-amber-500" />
-              </div>
-              <span className="flex-1 text-sm text-foreground">Wake up</span>
-              <TimeInput value={localWakeUp} onChange={setLocalWakeUp} />
-            </div>
-
             {/* Wind down time */}
             <div className="flex items-center gap-3">
               <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
@@ -387,6 +378,15 @@ export function SleepRow({
               </div>
               <span className="flex-1 text-sm text-foreground">Wind down</span>
               <TimeInput value={localWindDown} onChange={setLocalWindDown} />
+            </div>
+
+            {/* Wake up time */}
+            <div className="flex items-center gap-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
+                <RiSunLine className="size-4 text-amber-500" />
+              </div>
+              <span className="flex-1 text-sm text-foreground">Wake up</span>
+              <TimeInput value={localWakeUp} onChange={setLocalWakeUp} />
             </div>
 
             {/* Confirm button */}

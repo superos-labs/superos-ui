@@ -108,7 +108,7 @@ function InspirationCategorySection({
   return (
     <div className="mb-8">
       {/* Life area header - larger and more prominent */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 bg-background pb-4 pt-2">
+      <div className="flex items-center gap-3 pb-4 pt-2">
         <div
           className={cn(
             "flex size-10 items-center justify-center rounded-xl",
