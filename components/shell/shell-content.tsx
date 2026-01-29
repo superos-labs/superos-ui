@@ -51,9 +51,7 @@ import { DragGhost, useDragContextOptional } from "@/components/drag";
 import { PlanningPanel } from "@/components/weekly-planning";
 import { toAnalyticsItems } from "@/lib/adapters";
 import { blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
-import type { BlueprintIntention } from "@/lib/blueprint";
 import { usePlanningFlow } from "@/lib/weekly-planning";
-import type { WeeklyIntention } from "@/lib/weekly-planning";
 import type { ScheduleGoal, DeadlineTask } from "@/lib/unified-schedule";
 import type { GoalColor } from "@/lib/colors";
 import { useBreakpoint } from "@/lib/responsive";
@@ -400,26 +398,20 @@ export function ShellContentComponent({
   const planningFlow = usePlanningFlow({
     isActive: isPlanningMode,
     weekDates,
-    onConfirm: (intentions) => {
-      // Save the weekly plan
+    onConfirm: () => {
+      // Save the weekly plan (with empty intentions since we removed that step)
       onSaveWeeklyPlan({
         weekStartDate,
-        intentions,
+        intentions: [],
         plannedAt: new Date().toISOString(),
       });
 
       // On first planning, save the blueprint
       if (!hasBlueprint) {
         const blueprintBlocks = eventsToBlueprint(events, weekDates);
-        const blueprintIntentions: BlueprintIntention[] = intentions.map(
-          (i) => ({
-            goalId: i.goalId,
-            target: i.target,
-          }),
-        );
         onSaveBlueprint({
           blocks: blueprintBlocks,
-          intentions: blueprintIntentions,
+          intentions: [],
           updatedAt: new Date().toISOString(),
         });
       }
@@ -432,41 +424,21 @@ export function ShellContentComponent({
     },
   });
 
-  // Initialize planning flow with blueprint defaults when entering planning mode
+  // Auto-import essentials when entering planning mode
   React.useEffect(() => {
-    if (isPlanningMode) {
-      const initialIntentions = currentWeekPlan?.intentions ?? [];
-      if (initialIntentions.length === 0 && blueprint) {
-        planningFlow.reset(
-          blueprint.intentions.map((i) => ({
-            goalId: i.goalId,
-            target: i.target,
-          })),
-        );
-      } else {
-        planningFlow.reset(initialIntentions);
-      }
+    if (isPlanningMode && weekNeedsEssentialImport) {
+      onImportEssentialsToWeek();
     }
   }, [isPlanningMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Import blueprint blocks to calendar
-  const handleImportBlueprint = React.useCallback(() => {
+  // Duplicate last week's schedule from blueprint
+  const handleDuplicateLastWeek = React.useCallback(() => {
     if (!blueprint) return;
     const importedEvents = blueprintToEvents(blueprint, weekDates);
     importedEvents.forEach((event) => {
       onAddEvent(event);
     });
   }, [blueprint, weekDates, onAddEvent]);
-
-  // Handle continue to schedule step (auto-imports essentials)
-  const handleContinueToSchedule = React.useCallback(() => {
-    // Auto-import essentials if needed
-    if (weekNeedsEssentialImport) {
-      onImportEssentialsToWeek();
-    }
-    // Continue to schedule step
-    planningFlow.continueToSchedule();
-  }, [weekNeedsEssentialImport, onImportEssentialsToWeek, planningFlow]);
 
   // -------------------------------------------------------------------------
   // Derived Data
@@ -1034,22 +1006,12 @@ export function ShellContentComponent({
                   essentials={essentials}
                   blueprint={blueprint}
                   weekDates={weekDates}
-                  intentions={planningFlow.draftIntentions}
-                  onSetIntention={planningFlow.setIntention}
-                  onClearIntention={planningFlow.clearIntention}
-                  onImportBlueprint={
-                    hasBlueprint ? handleImportBlueprint : undefined
+                  onDuplicateLastWeek={
+                    hasBlueprint ? handleDuplicateLastWeek : undefined
                   }
                   onConfirm={planningFlow.confirm}
                   onCancel={planningFlow.cancel}
                   isFirstPlan={!hasBlueprint}
-                  onAddTask={onAddTask}
-                  // Step management props
-                  step={planningFlow.step}
-                  onContinue={handleContinueToSchedule}
-                  onBack={planningFlow.backToIntentions}
-                  highlightedTaskIds={planningFlow.highlightedTaskIds}
-                  // Schedule step data accessors
                   getTaskSchedule={getTaskSchedule}
                   getTaskDeadline={getTaskDeadline}
                   className="h-full w-[420px] max-w-none"

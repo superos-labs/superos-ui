@@ -10,7 +10,6 @@ export type {
   WeeklyIntention,
   WeeklyPlan,
   IntentionProgress,
-  PlanningStep,
   UseWeeklyPlanOptions,
   UseWeeklyPlanReturn,
   UsePlanningFlowOptions,

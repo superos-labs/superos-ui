@@ -302,28 +302,8 @@ export function PlanningScheduleView({
   draggable = false,
   className,
 }: PlanningScheduleViewProps) {
-  const hasHighlightedTasks = highlightedTaskIds.length > 0;
-
   return (
     <div className={cn("flex flex-col gap-4 py-3", className)}>
-      {/* Instructions */}
-      <div className="px-4">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Schedule Your Week
-        </h3>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          Drag items to the calendar to plan your time
-        </p>
-        {hasHighlightedTasks && (
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500">
-            <RiStarFill className="size-3" />
-            <span>
-              Tasks marked with a star are from your intention settings
-            </span>
-          </p>
-        )}
-      </div>
-
       {/* Essentials section */}
       {essentials.length > 0 && (
         <div className="flex flex-col">

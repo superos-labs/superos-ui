@@ -6,20 +6,24 @@
  */
 
 import * as React from "react";
-import type { WeeklyPlan, WeeklyIntention, UseWeeklyPlanOptions, UseWeeklyPlanReturn } from "./types";
+import type {
+  WeeklyPlan,
+  UseWeeklyPlanOptions,
+  UseWeeklyPlanReturn,
+} from "./types";
 
 /**
  * Hook for managing weekly plans across weeks.
  * Provides CRUD operations for weekly plans (session-only, no persistence).
  */
 export function useWeeklyPlan(
-  _options: UseWeeklyPlanOptions = {}
+  _options: UseWeeklyPlanOptions = {},
 ): UseWeeklyPlanReturn {
   // -------------------------------------------------------------------------
   // State - Map of weekStartDate to WeeklyPlan (session-only)
   // -------------------------------------------------------------------------
   const [plans, setPlans] = React.useState<Map<string, WeeklyPlan>>(
-    () => new Map()
+    () => new Map(),
   );
 
   // -------------------------------------------------------------------------
@@ -29,7 +33,7 @@ export function useWeeklyPlan(
     (weekStartDate: string): WeeklyPlan | null => {
       return plans.get(weekStartDate) ?? null;
     },
-    [plans]
+    [plans],
   );
 
   const saveWeeklyPlan = React.useCallback((plan: WeeklyPlan) => {
@@ -43,81 +47,11 @@ export function useWeeklyPlan(
     });
   }, []);
 
-  const updateIntention = React.useCallback(
-    (
-      weekStartDate: string,
-      goalId: string,
-      target: number,
-      targetTaskIds?: string[]
-    ) => {
-      setPlans((prev) => {
-        const next = new Map(prev);
-        const existing = next.get(weekStartDate);
-
-        const newIntention: WeeklyIntention = {
-          goalId,
-          target,
-          targetTaskIds,
-        };
-
-        if (existing) {
-          // Update existing plan
-          const intentions = existing.intentions.filter(
-            (i) => i.goalId !== goalId
-          );
-          intentions.push(newIntention);
-          next.set(weekStartDate, {
-            ...existing,
-            intentions,
-            plannedAt: new Date().toISOString(),
-          });
-        } else {
-          // Create new plan
-          next.set(weekStartDate, {
-            weekStartDate,
-            intentions: [newIntention],
-            plannedAt: new Date().toISOString(),
-          });
-        }
-
-        return next;
-      });
-    },
-    []
-  );
-
-  const clearIntention = React.useCallback(
-    (weekStartDate: string, goalId: string) => {
-      setPlans((prev) => {
-        const next = new Map(prev);
-        const existing = next.get(weekStartDate);
-
-        if (existing) {
-          const intentions = existing.intentions.filter(
-            (i) => i.goalId !== goalId
-          );
-          if (intentions.length === 0) {
-            next.delete(weekStartDate);
-          } else {
-            next.set(weekStartDate, {
-              ...existing,
-              intentions,
-              plannedAt: new Date().toISOString(),
-            });
-          }
-        }
-
-        return next;
-      });
-    },
-    []
-  );
-
   const hasWeeklyPlan = React.useCallback(
     (weekStartDate: string): boolean => {
       return plans.has(weekStartDate);
     },
-    [plans]
+    [plans],
   );
 
   // -------------------------------------------------------------------------
@@ -126,8 +60,6 @@ export function useWeeklyPlan(
   return {
     getWeeklyPlan,
     saveWeeklyPlan,
-    updateIntention,
-    clearIntention,
     hasWeeklyPlan,
   };
 }

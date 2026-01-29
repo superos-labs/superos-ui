@@ -1,16 +1,18 @@
 /**
  * Types for the weekly planning system.
- * Manages weekly intentions and tracks progress against them.
+ * Manages weekly plans and tracks progress.
  */
 
 import type { ProgressIndicator } from "@/lib/unified-schedule";
 
 // ============================================================================
-// Weekly Intention
+// Weekly Intention (kept for data structure compatibility)
 // ============================================================================
 
 /**
  * A single goal's intention for a specific week.
+ * Note: The intentions UI has been removed, but this type is kept for
+ * data structure compatibility with WeeklyPlan and IntentionProgress.
  */
 export interface WeeklyIntention {
   /** The goal this intention is for */
@@ -24,15 +26,6 @@ export interface WeeklyIntention {
 }
 
 // ============================================================================
-// Planning Flow
-// ============================================================================
-
-/**
- * Current step in the planning wizard.
- */
-export type PlanningStep = "intentions" | "schedule";
-
-// ============================================================================
 // Weekly Plan
 // ============================================================================
 
@@ -43,7 +36,7 @@ export type PlanningStep = "intentions" | "schedule";
 export interface WeeklyPlan {
   /** ISO date string of week start (e.g., "2026-01-26") */
   weekStartDate: string;
-  /** Intentions set during planning */
+  /** Intentions set during planning (empty array when no intentions are set) */
   intentions: WeeklyIntention[];
   /** When planning was completed (ISO string) */
   plannedAt: string;
@@ -88,15 +81,6 @@ export interface UseWeeklyPlanReturn {
   getWeeklyPlan: (weekStartDate: string) => WeeklyPlan | null;
   /** Save a weekly plan */
   saveWeeklyPlan: (plan: WeeklyPlan) => void;
-  /** Update intentions for a specific week */
-  updateIntention: (
-    weekStartDate: string,
-    goalId: string,
-    target: number,
-    targetTaskIds?: string[]
-  ) => void;
-  /** Clear intention for a specific goal in a week */
-  clearIntention: (weekStartDate: string, goalId: string) => void;
   /** Check if a weekly plan exists for a specific week */
   hasWeeklyPlan: (weekStartDate: string) => boolean;
 }
@@ -107,40 +91,14 @@ export interface UsePlanningFlowOptions {
   /** Current week dates */
   weekDates: Date[];
   /** Callback when planning is confirmed */
-  onConfirm?: (intentions: WeeklyIntention[]) => void;
+  onConfirm?: () => void;
   /** Callback when planning is cancelled */
   onCancel?: () => void;
 }
 
 export interface UsePlanningFlowReturn {
-  /** Current draft intentions (being edited) */
-  draftIntentions: WeeklyIntention[];
-  /** Set intention for a goal */
-  setIntention: (
-    goalId: string,
-    target: number,
-    targetTaskIds?: string[],
-    progressIndicatorOverride?: ProgressIndicator
-  ) => void;
-  /** Clear intention for a goal */
-  clearIntention: (goalId: string) => void;
-  /** Get intention for a specific goal */
-  getIntention: (goalId: string) => WeeklyIntention | undefined;
-  /** Confirm the current draft intentions */
+  /** Confirm the planning session */
   confirm: () => void;
-  /** Cancel and discard changes */
+  /** Cancel and exit planning mode */
   cancel: () => void;
-  /** Reset draft to initial state */
-  reset: (initialIntentions?: WeeklyIntention[]) => void;
-  
-  // Step management
-  /** Current wizard step */
-  step: PlanningStep;
-  /** Advance to schedule step */
-  continueToSchedule: () => void;
-  /** Go back to intentions step */
-  backToIntentions: () => void;
-  
-  /** Task IDs that should be highlighted in schedule step (from specific-tasks intentions) */
-  highlightedTaskIds: string[];
 }

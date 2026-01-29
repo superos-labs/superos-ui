@@ -3,8 +3,5 @@
 export { PlanningPanel } from "./planning-panel";
 export type { PlanningPanelProps } from "./planning-panel";
 
-export { IntentionRow } from "./intention-row";
-export type { IntentionRowProps } from "./intention-row";
-
 export { PlanningScheduleView } from "./planning-schedule-view";
 export type { PlanningScheduleViewProps } from "./planning-schedule-view";
