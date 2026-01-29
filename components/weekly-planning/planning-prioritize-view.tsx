@@ -82,7 +82,7 @@ function InlineTaskCreator({
     return (
       <button
         onClick={() => setIsEditing(true)}
-        className="flex items-center gap-2 rounded-md py-1.5 pl-4 pr-3 text-xs text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+        className="flex w-full items-center gap-2 rounded-md py-1.5 pl-4 pr-3 text-xs text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
       >
         <RiAddLine className="size-3.5" />
         <span>{placeholder}</span>
@@ -91,7 +91,7 @@ function InlineTaskCreator({
   }
 
   return (
-    <div className="flex items-center gap-2 py-1.5 pl-4 pr-3">
+    <div className="flex w-full items-center gap-2 rounded-md py-1.5 pl-4 pr-3">
       <div className="flex size-4 shrink-0 items-center justify-center rounded bg-muted/60" />
       <input
         ref={inputRef}
@@ -123,11 +123,13 @@ function PrioritizeTaskRow({
   onToggleFocus,
 }: PrioritizeTaskRowProps) {
   return (
-    <div
+    <button
+      onClick={onToggleFocus}
       className={cn(
-        "group flex items-center gap-2.5 rounded-md py-1.5 pl-4 pr-3 transition-all",
+        "group flex w-full items-center gap-2.5 rounded-md py-1.5 pl-4 pr-3 text-left transition-all",
         "hover:bg-muted/60",
       )}
+      aria-label={isInFocus ? "Remove from this week" : "Add to this week"}
     >
       {/* Checkbox (display only) */}
       <div
@@ -153,25 +155,21 @@ function PrioritizeTaskRow({
         {task.label}
       </span>
 
-      {/* Focus toggle button (visible on hover) */}
-      <button
-        onClick={onToggleFocus}
+      {/* Focus toggle icon (visible on hover) */}
+      <div
         className={cn(
           "flex size-5 shrink-0 items-center justify-center rounded transition-all",
           "opacity-0 group-hover:opacity-100",
-          isInFocus
-            ? "text-muted-foreground hover:bg-muted hover:text-foreground"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          "text-muted-foreground",
         )}
-        aria-label={isInFocus ? "Remove from this week" : "Add to this week"}
       >
         {isInFocus ? (
           <RiSubtractLine className="size-3.5" />
         ) : (
           <RiAddLine className="size-3.5" />
         )}
-      </button>
-    </div>
+      </div>
+    </button>
   );
 }
 
@@ -234,52 +232,58 @@ function GoalWithSubsections({
       {/* Task subsections */}
       {showSubsections ? (
         <div className="flex flex-col gap-2 pl-2">
-          {/* This week section */}
-          <div className="flex flex-col">
-            <div className="px-2 py-1">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                This week
-              </span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              {focusTasks.length > 0 ? (
-                focusTasks.map((task) => (
+          {/* This week section - only show if there are focus tasks */}
+          {focusTasks.length > 0 && (
+            <div className="flex flex-col">
+              <div className="px-2 py-1">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+                  This week
+                </span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                {focusTasks.map((task) => (
                   <PrioritizeTaskRow
                     key={task.id}
                     task={task}
                     isInFocus={true}
                     onToggleFocus={() => onRemoveFromFocus(task.id)}
                   />
-                ))
-              ) : (
-                <div className="px-4 py-1.5 text-xs text-muted-foreground/50 italic">
-                  No tasks selected
+                ))}
+                {/* Add a task button - under This Week section */}
+                {onAddTask && (
+                  <InlineTaskCreator goalId={goal.id} onSave={handleAddTask} />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Select tasks section - only show if there are tasks to select */}
+          {(otherTasks.length > 0 ||
+            (focusTasks.length === 0 && onAddTask)) && (
+            <div className="flex flex-col">
+              {otherTasks.length > 0 && (
+                <div className="px-2 py-1">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
+                    Select tasks
+                  </span>
                 </div>
               )}
+              <div className="flex flex-col gap-0.5">
+                {otherTasks.map((task) => (
+                  <PrioritizeTaskRow
+                    key={task.id}
+                    task={task}
+                    isInFocus={false}
+                    onToggleFocus={() => onAddToFocus(task.id)}
+                  />
+                ))}
+                {/* Add a task button - only here if no focus tasks yet */}
+                {focusTasks.length === 0 && onAddTask && (
+                  <InlineTaskCreator goalId={goal.id} onSave={handleAddTask} />
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* Other tasks section */}
-          <div className="flex flex-col">
-            <div className="px-2 py-1">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                Other tasks
-              </span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              {otherTasks.map((task) => (
-                <PrioritizeTaskRow
-                  key={task.id}
-                  task={task}
-                  isInFocus={false}
-                  onToggleFocus={() => onAddToFocus(task.id)}
-                />
-              ))}
-              {onAddTask && (
-                <InlineTaskCreator goalId={goal.id} onSave={handleAddTask} />
-              )}
-            </div>
-          </div>
+          )}
         </div>
       ) : (
         // No tasks yet - show add task button

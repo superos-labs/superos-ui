@@ -91,9 +91,9 @@ export function PlanningPanel({
   const isScheduleStep = step === "schedule";
 
   // Header content based on step
-  const headerTitle = "Plan Your Week";
+  const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Schedule tasks";
   const headerDescription = isPrioritizeStep
-    ? "Select 2-3 important tasks per goal for this week"
+    ? "Select 2-3 tasks for each goal that move it forward this week."
     : "Drag your prioritized tasks to the calendar";
 
   return (
@@ -105,13 +105,19 @@ export function PlanningPanel({
       {...props}
     >
       {/* Header */}
-      <div className="flex items-start justify-between border-b border-border px-4 py-4">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
+      <div className="flex items-start justify-between border-b border-border px-4 py-5">
+        <div className="flex flex-col gap-3">
+          {/* Icon container */}
+          <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
             <RiCalendarLine className="size-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold">{headerTitle}</h2>
           </div>
-          <p className="text-xs text-muted-foreground">{headerDescription}</p>
+          {/* Title and description */}
+          <div className="flex flex-col gap-1">
+            <h2 className="text-base font-semibold tracking-tight">
+              {headerTitle}
+            </h2>
+            <p className="text-sm text-muted-foreground">{headerDescription}</p>
+          </div>
         </div>
         <button
           onClick={onCancel}
