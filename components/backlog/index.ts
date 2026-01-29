@@ -30,11 +30,8 @@ export type {
 // Components
 export {
   GoalSection,
-  BacklogSection,
   GoalItemRow,
-  BacklogItemRow,
   GoalList,
-  BacklogGoalList,
   GoalInspirationGallery,
   TaskRow,
   SubtaskRow,

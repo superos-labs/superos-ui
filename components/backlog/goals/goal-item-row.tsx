@@ -214,8 +214,3 @@ export function GoalItemRow({
     </div>
   );
 }
-
-/**
- * @deprecated Use GoalItemRow instead. Kept for backward compatibility.
- */
-export const BacklogItemRow = GoalItemRow;

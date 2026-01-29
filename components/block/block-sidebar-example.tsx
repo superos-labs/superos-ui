@@ -7,7 +7,7 @@ import {
   type BlockSidebarData,
   type BlockGoalTask,
   type BlockSubtask,
-  type BlockSidebarGoal,
+  type BlockSidebarSource,
   type BlockType,
   type GoalSelectorOption,
 } from "./block-sidebar";
@@ -20,7 +20,7 @@ import {
 } from "@/components/_playground/knobs";
 import { RiRocketLine, RiHeartLine, RiBriefcaseLine } from "@remixicon/react";
 
-const SAMPLE_GOAL: BlockSidebarGoal = {
+const SAMPLE_GOAL: BlockSidebarSource = {
   id: "goal-1",
   label: "Launch MVP",
   icon: RiRocketLine,
@@ -29,9 +29,24 @@ const SAMPLE_GOAL: BlockSidebarGoal = {
 
 // Available goals for the goal selector (when block has no goal assigned)
 const AVAILABLE_GOALS: GoalSelectorOption[] = [
-  { id: "goal-1", label: "Launch MVP", icon: RiRocketLine, color: "text-indigo-500" },
-  { id: "goal-2", label: "Improve Health", icon: RiHeartLine, color: "text-rose-500" },
-  { id: "goal-3", label: "Career Growth", icon: RiBriefcaseLine, color: "text-amber-500" },
+  {
+    id: "goal-1",
+    label: "Launch MVP",
+    icon: RiRocketLine,
+    color: "text-indigo-500",
+  },
+  {
+    id: "goal-2",
+    label: "Improve Health",
+    icon: RiHeartLine,
+    color: "text-rose-500",
+  },
+  {
+    id: "goal-3",
+    label: "Career Growth",
+    icon: RiBriefcaseLine,
+    color: "text-amber-500",
+  },
 ];
 
 // Goal tasks that are assigned to this block
@@ -75,7 +90,7 @@ const BLOCK_TYPE_OPTIONS: { value: BlockType; label: string }[] = [
   { value: "essential", label: "Essential Block" },
 ];
 
-const SAMPLE_ESSENTIAL: BlockSidebarGoal = {
+const SAMPLE_ESSENTIAL: BlockSidebarSource = {
   id: "essential-1",
   label: "Exercise",
   icon: RiRocketLine, // In real use, this would be a different icon
@@ -94,7 +109,9 @@ export function BlockSidebarExample() {
   const [notes, setNotes] = useState(SAMPLE_BLOCK.notes || "");
   // Whether the block has a goal assigned (false simulates a newly created block)
   const [hasGoalAssigned, setHasGoalAssigned] = useState(true);
-  const [assignedGoal, setAssignedGoal] = useState<BlockSidebarGoal | undefined>(SAMPLE_GOAL);
+  const [assignedGoal, setAssignedGoal] = useState<
+    BlockSidebarSource | undefined
+  >(SAMPLE_GOAL);
 
   // Goal task handlers
   const handleToggleGoalTask = useCallback((taskId: string) => {
@@ -105,21 +122,27 @@ export function BlockSidebarExample() {
     );
   }, []);
 
-  const handleAssignTask = useCallback((taskId: string) => {
-    const taskToAssign = availableTasks.find((t) => t.id === taskId);
-    if (taskToAssign) {
-      setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId));
-      setGoalTasks((prev) => [...prev, taskToAssign]);
-    }
-  }, [availableTasks]);
+  const handleAssignTask = useCallback(
+    (taskId: string) => {
+      const taskToAssign = availableTasks.find((t) => t.id === taskId);
+      if (taskToAssign) {
+        setAvailableTasks((prev) => prev.filter((t) => t.id !== taskId));
+        setGoalTasks((prev) => [...prev, taskToAssign]);
+      }
+    },
+    [availableTasks],
+  );
 
-  const handleUnassignTask = useCallback((taskId: string) => {
-    const taskToUnassign = goalTasks.find((t) => t.id === taskId);
-    if (taskToUnassign) {
-      setGoalTasks((prev) => prev.filter((t) => t.id !== taskId));
-      setAvailableTasks((prev) => [...prev, taskToUnassign]);
-    }
-  }, [goalTasks]);
+  const handleUnassignTask = useCallback(
+    (taskId: string) => {
+      const taskToUnassign = goalTasks.find((t) => t.id === taskId);
+      if (taskToUnassign) {
+        setGoalTasks((prev) => prev.filter((t) => t.id !== taskId));
+        setAvailableTasks((prev) => [...prev, taskToUnassign]);
+      }
+    },
+    [goalTasks],
+  );
 
   // Create a new task and assign it to this block
   const handleCreateTask = useCallback((label: string) => {
@@ -186,7 +209,10 @@ export function BlockSidebarExample() {
     goalTasks: blockType === "goal" && hasGoalAssigned ? goalTasks : [],
     subtasks: blockType === "task" ? subtasks : [],
     notes,
-    goal: (blockType === "goal" || blockType === "task") && hasGoalAssigned ? assignedGoal : undefined,
+    goal:
+      (blockType === "goal" || blockType === "task") && hasGoalAssigned
+        ? assignedGoal
+        : undefined,
     essential: blockType === "essential" ? SAMPLE_ESSENTIAL : undefined,
   };
 

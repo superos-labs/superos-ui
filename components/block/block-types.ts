@@ -65,11 +65,6 @@ export interface BlockSidebarSource {
 }
 
 /**
- * @deprecated Use BlockSidebarSource instead
- */
-export type BlockSidebarGoal = BlockSidebarSource;
-
-/**
  * Goal selector option for the goal dropdown
  */
 export interface GoalSelectorOption {

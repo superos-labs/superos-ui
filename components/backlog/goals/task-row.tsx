@@ -6,7 +6,6 @@ import {
   RiCheckLine,
   RiTimeLine,
   RiFlagLine,
-  RiAddLine,
   RiDeleteBinLine,
 } from "@remixicon/react";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
@@ -19,81 +18,11 @@ import type {
 } from "@/lib/unified-schedule";
 import type { GoalItem } from "./goal-types";
 import { formatScheduledTime, formatDeadlineDate } from "./goal-utils";
-import { SubtaskRow } from "@/components/ui/subtask-row";
+import { SubtaskRow, InlineSubtaskCreator } from "@/components/ui";
 
-// SubtaskRow is imported from @/components/ui/subtask-row
+// SubtaskRow is imported from @/components/ui
 // Re-export for backward compatibility
-export { SubtaskRow } from "@/components/ui/subtask-row";
-
-// =============================================================================
-// Inline Subtask Creator
-// =============================================================================
-
-interface InlineSubtaskCreatorProps {
-  onSave: (label: string) => void;
-}
-
-function InlineSubtaskCreator({ onSave }: InlineSubtaskCreatorProps) {
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [value, setValue] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-    }
-  }, [isEditing]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && value.trim()) {
-      e.preventDefault();
-      onSave(value.trim());
-      setValue("");
-      inputRef.current?.focus();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      setValue("");
-      setIsEditing(false);
-    }
-  };
-
-  const handleBlur = () => {
-    if (value.trim()) {
-      onSave(value.trim());
-    }
-    setValue("");
-    setIsEditing(false);
-  };
-
-  if (!isEditing) {
-    return (
-      <button
-        onClick={() => setIsEditing(true)}
-        className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-      >
-        <RiAddLine className="size-3" />
-        <span>Add subtask...</span>
-      </button>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2 py-0.5">
-      {/* Empty checkbox to match SubtaskRow appearance */}
-      <div className="flex size-3.5 shrink-0 items-center justify-center rounded border border-border bg-transparent" />
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        placeholder="Subtask..."
-        className="h-4 min-w-0 flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
-      />
-    </div>
-  );
-}
+export { SubtaskRow } from "@/components/ui";
 
 // =============================================================================
 // Expanded Task Detail
@@ -155,7 +84,9 @@ function ExpandedTaskDetail({
               size="compact"
             />
           ))}
-          {onAddSubtask && <InlineSubtaskCreator onSave={onAddSubtask} />}
+          {onAddSubtask && (
+            <InlineSubtaskCreator onSave={onAddSubtask} size="compact" />
+          )}
         </div>
       )}
     </div>

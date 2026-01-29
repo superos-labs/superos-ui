@@ -6,13 +6,13 @@
 // Components
 // =============================================================================
 
-export { GoalSection, BacklogSection } from "./goal-section";
+export { GoalSection } from "./goal-section";
 export type { GoalSectionProps } from "./goal-section";
 
-export { GoalItemRow, BacklogItemRow } from "./goal-item-row";
+export { GoalItemRow } from "./goal-item-row";
 export type { GoalItemRowProps } from "./goal-item-row";
 
-export { GoalList, BacklogGoalList } from "./goal-list";
+export { GoalList } from "./goal-list";
 export type { GoalListProps } from "./goal-list";
 
 export { GoalInspirationGallery } from "./goal-inspiration-gallery";

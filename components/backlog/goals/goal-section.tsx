@@ -171,8 +171,3 @@ export function GoalSection({
     </div>
   );
 }
-
-/**
- * @deprecated Use GoalSection instead. Kept for backward compatibility.
- */
-export const BacklogSection = GoalSection;

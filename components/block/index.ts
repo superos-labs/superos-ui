@@ -12,7 +12,6 @@ export type { BlockColor } from "./block-colors";
 export {
   BlockSidebar,
   BlockGoalTaskRow,
-  BlockSubtaskRow,
   BlockSidebarSection,
 } from "./block-sidebar";
 export type {
@@ -21,7 +20,6 @@ export type {
   BlockGoalTask,
   BlockSubtask,
   BlockSidebarSource,
-  BlockSidebarGoal,
   GoalSelectorOption,
 } from "./block-sidebar";
 

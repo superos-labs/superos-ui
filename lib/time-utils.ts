@@ -161,6 +161,50 @@ export function formatTimeRange(
 }
 
 // =============================================================================
+// Elapsed Time Formatting (for focus timers)
+// =============================================================================
+
+/**
+ * Format milliseconds to elapsed time display (MM:SS or HH:MM:SS).
+ * Hours are padded to 2 digits.
+ * @example formatElapsedMs(90000) // "01:30"
+ * @example formatElapsedMs(3661000) // "01:01:01"
+ */
+export function formatElapsedMs(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  if (hours > 0) {
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
+
+/**
+ * Format milliseconds to compact elapsed time display (MM:SS or H:MM:SS).
+ * Hours are NOT padded (more compact for UI elements).
+ * @example formatElapsedMsCompact(90000) // "01:30"
+ * @example formatElapsedMsCompact(3661000) // "1:01:01"
+ */
+export function formatElapsedMsCompact(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  if (hours > 0) {
+    return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+  }
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
+
+// =============================================================================
 // Schedule Summary Formatting
 // =============================================================================
 

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { formatElapsedMs } from "@/lib/time-utils";
 import {
   RiPauseFill,
   RiPlayFill,
@@ -15,27 +16,6 @@ import { BLOCK_COLORS, BlockGoalTaskRow } from "@/components/block";
 import type { BlockSidebarData, BlockGoalTask } from "@/components/block";
 import type { ScheduleTask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
-
-// =============================================================================
-// Helpers
-// =============================================================================
-
-/**
- * Format milliseconds to MM:SS or HH:MM:SS display.
- */
-function formatElapsedTime(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  const pad = (n: number) => n.toString().padStart(2, "0");
-
-  if (hours > 0) {
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  }
-  return `${pad(minutes)}:${pad(seconds)}`;
-}
 
 // =============================================================================
 // Auto-resizing textarea (copied from block-sidebar for self-containment)
@@ -170,7 +150,11 @@ export interface FocusSidebarContentProps {
   /** Callback to toggle a goal task's subtask completion */
   onToggleGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
   /** Callback to update a goal task's subtask label */
-  onUpdateGoalTaskSubtask?: (taskId: string, subtaskId: string, label: string) => void;
+  onUpdateGoalTaskSubtask?: (
+    taskId: string,
+    subtaskId: string,
+    label: string,
+  ) => void;
   /** Callback to delete a goal task's subtask */
   onDeleteGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
 
@@ -214,10 +198,12 @@ export function FocusSidebarContent({
   const isTaskBlock = block.blockType === "task";
 
   // Goal task expansion state (accordion - one at a time)
-  const [expandedGoalTaskId, setExpandedGoalTaskId] = React.useState<string | null>(null);
+  const [expandedGoalTaskId, setExpandedGoalTaskId] = React.useState<
+    string | null
+  >(null);
 
   const handleGoalTaskExpand = React.useCallback((taskId: string) => {
-    setExpandedGoalTaskId(prev => prev === taskId ? null : taskId);
+    setExpandedGoalTaskId((prev) => (prev === taskId ? null : taskId));
   }, []);
 
   // Inline subtask creation state (for task blocks)
@@ -275,16 +261,16 @@ export function FocusSidebarContent({
             className={cn(
               "size-3 rounded-full",
               dotColorClass,
-              isRunning && "animate-pulse"
+              isRunning && "animate-pulse",
             )}
           />
           <span
             className={cn(
               "font-mono text-4xl font-semibold tabular-nums tracking-tight",
-              isRunning ? "text-foreground" : "text-muted-foreground"
+              isRunning ? "text-foreground" : "text-muted-foreground",
             )}
           >
-            {formatElapsedTime(elapsedMs)}
+            {formatElapsedMs(elapsedMs)}
           </span>
         </div>
 
@@ -299,7 +285,7 @@ export function FocusSidebarContent({
             onClick={isRunning ? onPause : onResume}
             className={cn(
               "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-              "bg-muted text-foreground hover:bg-muted/80"
+              "bg-muted text-foreground hover:bg-muted/80",
             )}
           >
             {isRunning ? (
@@ -318,7 +304,7 @@ export function FocusSidebarContent({
             onClick={onEnd}
             className={cn(
               "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
-              "bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              "bg-muted text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
             )}
           >
             <RiStopFill className="size-4" />
@@ -345,7 +331,7 @@ export function FocusSidebarContent({
               placeholder="Add notes..."
               className={cn(
                 "w-full min-h-[60px] bg-transparent text-sm text-foreground leading-relaxed",
-                "outline-none placeholder:text-muted-foreground/60"
+                "outline-none placeholder:text-muted-foreground/60",
               )}
             />
           ) : (
@@ -372,11 +358,34 @@ export function FocusSidebarContent({
                     onExpand={handleGoalTaskExpand}
                     onToggle={onToggleGoalTask}
                     onUnassign={onUnassignTask}
-                    onUpdateTask={onUpdateGoalTask ? (updates) => onUpdateGoalTask(task.id, updates) : undefined}
-                    onAddSubtask={onAddGoalTaskSubtask ? (label) => onAddGoalTaskSubtask(task.id, label) : undefined}
-                    onToggleSubtask={onToggleGoalTaskSubtask ? (subtaskId) => onToggleGoalTaskSubtask(task.id, subtaskId) : undefined}
-                    onUpdateSubtask={onUpdateGoalTaskSubtask ? (subtaskId, label) => onUpdateGoalTaskSubtask(task.id, subtaskId, label) : undefined}
-                    onDeleteSubtask={onDeleteGoalTaskSubtask ? (subtaskId) => onDeleteGoalTaskSubtask(task.id, subtaskId) : undefined}
+                    onUpdateTask={
+                      onUpdateGoalTask
+                        ? (updates) => onUpdateGoalTask(task.id, updates)
+                        : undefined
+                    }
+                    onAddSubtask={
+                      onAddGoalTaskSubtask
+                        ? (label) => onAddGoalTaskSubtask(task.id, label)
+                        : undefined
+                    }
+                    onToggleSubtask={
+                      onToggleGoalTaskSubtask
+                        ? (subtaskId) =>
+                            onToggleGoalTaskSubtask(task.id, subtaskId)
+                        : undefined
+                    }
+                    onUpdateSubtask={
+                      onUpdateGoalTaskSubtask
+                        ? (subtaskId, label) =>
+                            onUpdateGoalTaskSubtask(task.id, subtaskId, label)
+                        : undefined
+                    }
+                    onDeleteSubtask={
+                      onDeleteGoalTaskSubtask
+                        ? (subtaskId) =>
+                            onDeleteGoalTaskSubtask(task.id, subtaskId)
+                        : undefined
+                    }
                   />
                 ))
               ) : (

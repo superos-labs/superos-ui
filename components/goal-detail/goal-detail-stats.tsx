@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn, formatHoursWithUnit } from "@/lib/utils";
 import type { GoalStats } from "@/lib/unified-schedule";
 
 export interface GoalDetailStatsProps {
@@ -10,23 +10,12 @@ export interface GoalDetailStatsProps {
   className?: string;
 }
 
-function formatHours(hours: number): string {
-  if (hours === 0) return "0h";
-  // Format with one decimal place, but remove trailing .0
-  const formatted = hours.toFixed(1);
-  return formatted.endsWith(".0")
-    ? `${Math.round(hours)}h`
-    : `${formatted}h`;
-}
-
-export function GoalDetailStats({
-  stats,
-  className,
-}: GoalDetailStatsProps) {
+export function GoalDetailStats({ stats, className }: GoalDetailStatsProps) {
   const { plannedHours, completedHours } = stats;
-  const progress = plannedHours > 0 
-    ? Math.min(Math.round((completedHours / plannedHours) * 100), 100) 
-    : 0;
+  const progress =
+    plannedHours > 0
+      ? Math.min(Math.round((completedHours / plannedHours) * 100), 100)
+      : 0;
 
   return (
     <div className={cn("flex flex-col gap-2 px-6 py-4", className)}>
@@ -44,10 +33,10 @@ export function GoalDetailStats({
       {/* Stats text */}
       <p className="text-sm text-muted-foreground">
         <span className="font-medium text-foreground">
-          {formatHours(completedHours)}
+          {formatHoursWithUnit(completedHours)}
         </span>
         {" completed · "}
-        <span>{formatHours(plannedHours)} planned</span>
+        <span>{formatHoursWithUnit(plannedHours)} planned</span>
       </p>
     </div>
   );

@@ -238,9 +238,6 @@ export const ALL_ESSENTIALS: ScheduleEssential[] = [
   { id: "chores", label: "Chores", icon: RiHome4Line, color: "orange" },
 ];
 
-/** @deprecated Use ALL_ESSENTIALS instead */
-export const SHELL_ESSENTIALS: ScheduleEssential[] = ALL_ESSENTIALS;
-
 /** Default enabled essential IDs (none enabled by default - user chooses) */
 export const DEFAULT_ENABLED_ESSENTIAL_IDS: string[] = [];
 
@@ -687,7 +684,7 @@ export const EMPTY_CALENDAR_EVENTS: CalendarEvent[] = [];
 
 export const DATA_SETS: Record<DataSetId, DataSet> = {
   sample: {
-    essentials: SHELL_ESSENTIALS,
+    essentials: ALL_ESSENTIALS,
     goals: SHELL_GOALS,
     events: SHELL_CALENDAR_EVENTS,
   },

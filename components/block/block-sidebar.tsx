@@ -24,12 +24,21 @@ import {
 import type { BlockColor } from "./block-colors";
 import type { BlockType, BlockStatus, IconComponent } from "@/lib/types";
 import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
-import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
+import {
+  SubtaskRow,
+  InlineSubtaskCreator,
+  type SubtaskRowData,
+} from "@/components/ui";
 import {
   FocusTimer,
   StartFocusButton,
   FocusSidebarContent,
 } from "@/components/focus";
+import type {
+  BlockSubtask,
+  BlockSidebarSource,
+  GoalSelectorOption,
+} from "./block-types";
 
 // Types
 
@@ -39,24 +48,6 @@ import {
  * Use ScheduleTask directly for new code.
  */
 type BlockGoalTask = ScheduleTask;
-
-/** Ephemeral subtask - block-scoped, deleted with block */
-interface BlockSubtask {
-  id: string;
-  text: string;
-  done: boolean;
-}
-
-/** Associated goal or essential for the block */
-interface BlockSidebarSource {
-  id: string;
-  label: string;
-  icon: IconComponent;
-  color: string;
-}
-
-/** @deprecated Use BlockSidebarSource instead */
-type BlockSidebarGoal = BlockSidebarSource;
 
 interface BlockSidebarData {
   id: string;
@@ -179,75 +170,6 @@ function AutoResizeTextarea({
 }
 
 // =============================================================================
-// Inline Subtask Creator (for expanded goal task detail)
-// =============================================================================
-
-interface InlineGoalSubtaskCreatorProps {
-  onSave: (label: string) => void;
-}
-
-function InlineGoalSubtaskCreator({ onSave }: InlineGoalSubtaskCreatorProps) {
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [value, setValue] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-    }
-  }, [isEditing]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && value.trim()) {
-      e.preventDefault();
-      onSave(value.trim());
-      setValue("");
-      inputRef.current?.focus();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      setValue("");
-      setIsEditing(false);
-    }
-  };
-
-  const handleBlur = () => {
-    if (value.trim()) {
-      onSave(value.trim());
-    }
-    setValue("");
-    setIsEditing(false);
-  };
-
-  if (!isEditing) {
-    return (
-      <button
-        onClick={() => setIsEditing(true)}
-        className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-      >
-        <RiAddLine className="size-3" />
-        <span>Add subtask...</span>
-      </button>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2 py-0.5">
-      <div className="flex size-4 shrink-0 items-center justify-center rounded border border-muted-foreground/40" />
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        placeholder="Subtask..."
-        className="h-5 min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
-      />
-    </div>
-  );
-}
-
-// =============================================================================
 // Expanded Goal Task Detail
 // =============================================================================
 
@@ -307,7 +229,7 @@ function ExpandedGoalTaskDetail({
               size="default"
             />
           ))}
-          {onAddSubtask && <InlineGoalSubtaskCreator onSave={onAddSubtask} />}
+          {onAddSubtask && <InlineSubtaskCreator onSave={onAddSubtask} />}
         </div>
       )}
     </div>
@@ -527,68 +449,6 @@ function BlockGoalTaskRow({
           onUpdateSubtask={onUpdateSubtask}
           onDeleteSubtask={onDeleteSubtask}
         />
-      )}
-    </div>
-  );
-}
-
-// Subtask row component (Notion-style subtle checkbox)
-interface BlockSubtaskRowProps {
-  subtask: BlockSubtask;
-  onToggle?: (id: string) => void;
-  onChange?: (id: string, text: string) => void;
-  onDelete?: (id: string) => void;
-}
-
-function BlockSubtaskRow({
-  subtask,
-  onToggle,
-  onChange,
-  onDelete,
-}: BlockSubtaskRowProps) {
-  return (
-    <div className="group flex items-center gap-2 py-0.5">
-      <button
-        onClick={() => onToggle?.(subtask.id)}
-        className={cn(
-          "flex size-4 shrink-0 items-center justify-center rounded border transition-colors",
-          subtask.done
-            ? "border-muted-foreground/30 bg-muted-foreground/20"
-            : "border-muted-foreground/40 hover:border-muted-foreground/60",
-        )}
-      >
-        {subtask.done && (
-          <RiCheckLine className="size-2.5 text-muted-foreground" />
-        )}
-      </button>
-      {onChange ? (
-        <input
-          type="text"
-          value={subtask.text}
-          onChange={(e) => onChange(subtask.id, e.target.value)}
-          className={cn(
-            "flex-1 bg-transparent text-sm outline-none",
-            subtask.done && "text-muted-foreground line-through",
-          )}
-          placeholder="Subtask..."
-        />
-      ) : (
-        <span
-          className={cn(
-            "flex-1 text-sm",
-            subtask.done && "text-muted-foreground line-through",
-          )}
-        >
-          {subtask.text}
-        </span>
-      )}
-      {onDelete && (
-        <button
-          onClick={() => onDelete(subtask.id)}
-          className="flex size-5 items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-all hover:text-muted-foreground group-hover:opacity-100"
-        >
-          <RiCloseLine className="size-3.5" />
-        </button>
       )}
     </div>
   );
@@ -849,14 +709,6 @@ function AvailableTasksList({ tasks, onAssign }: AvailableTasksListProps) {
 // =============================================================================
 // Goal Selector Dropdown (for unassigned blocks)
 // =============================================================================
-
-/** Goal option for the selector dropdown */
-interface GoalSelectorOption {
-  id: string;
-  label: string;
-  icon: IconComponent;
-  color: string;
-}
 
 interface GoalSelectorProps {
   goals: GoalSelectorOption[];
@@ -1503,14 +1355,13 @@ function BlockSidebar({
   );
 }
 
-export { BlockSidebar, BlockGoalTaskRow, BlockSubtaskRow, BlockSidebarSection };
+export { BlockSidebar, BlockGoalTaskRow, BlockSidebarSection };
 export type {
   BlockSidebarProps,
   BlockSidebarData,
   BlockGoalTask,
   BlockSubtask,
   BlockSidebarSource,
-  BlockSidebarGoal,
   GoalSelectorOption,
 };
 // Re-export BlockType for backward compatibility

@@ -102,6 +102,9 @@ export {
 export { Separator } from "./separator";
 export { Shell, ShellToolbar, ShellContent } from "./shell";
 export { SubtaskRow } from "./subtask-row";
+export type { SubtaskRowData, SubtaskRowProps } from "./subtask-row";
+export { InlineSubtaskCreator } from "./inline-subtask-creator";
+export type { InlineSubtaskCreatorProps } from "./inline-subtask-creator";
 export { Textarea } from "./textarea";
 export { TimeInput, TimeRangeRow } from "./time-input";
 export type { TimeInputProps, TimeRangeRowProps } from "./time-input";

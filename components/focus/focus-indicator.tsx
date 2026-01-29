@@ -2,29 +2,9 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { formatElapsedMsCompact } from "@/lib/time-utils";
 import { RiPlayFill, RiPauseFill } from "@remixicon/react";
 import { BLOCK_COLORS, type BlockColor } from "@/components/block";
-
-// =============================================================================
-// Helpers
-// =============================================================================
-
-/**
- * Format milliseconds to compact time display (MM:SS or H:MM:SS).
- */
-function formatCompactTime(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  const pad = (n: number) => n.toString().padStart(2, "0");
-
-  if (hours > 0) {
-    return `${hours}:${pad(minutes)}:${pad(seconds)}`;
-  }
-  return `${pad(minutes)}:${pad(seconds)}`;
-}
 
 // =============================================================================
 // FocusIndicator Component
@@ -65,13 +45,15 @@ export function FocusIndicator({
 }: FocusIndicatorProps) {
   const colorConfig = BLOCK_COLORS[blockColor];
   // Extract the color name for the dot
-  const dotColorClass = colorConfig.text.replace("text-", "bg-").replace("-600", "-500");
+  const dotColorClass = colorConfig.text
+    .replace("text-", "bg-")
+    .replace("-600", "-500");
 
   return (
     <div
       className={cn(
         "flex items-center gap-1 rounded-md bg-background/80 pl-2.5 pr-1 py-1 shadow-sm ring-1 ring-border/50 backdrop-blur-sm",
-        className
+        className,
       )}
     >
       {/* Clickable area: dot + title + time */}
@@ -84,7 +66,7 @@ export function FocusIndicator({
           className={cn(
             "size-2 rounded-full",
             dotColorClass,
-            isRunning && "animate-pulse"
+            isRunning && "animate-pulse",
           )}
         />
         {/* Title (truncated) */}
@@ -95,10 +77,10 @@ export function FocusIndicator({
         <span
           className={cn(
             "font-mono text-xs tabular-nums",
-            isRunning ? "text-foreground" : "text-muted-foreground"
+            isRunning ? "text-foreground" : "text-muted-foreground",
           )}
         >
-          {formatCompactTime(elapsedMs)}
+          {formatElapsedMsCompact(elapsedMs)}
         </span>
       </button>
 
@@ -110,7 +92,7 @@ export function FocusIndicator({
         }}
         className={cn(
           "flex size-6 items-center justify-center rounded transition-colors",
-          "text-muted-foreground hover:bg-muted hover:text-foreground"
+          "text-muted-foreground hover:bg-muted hover:text-foreground",
         )}
         aria-label={isRunning ? "Pause focus" : "Resume focus"}
       >

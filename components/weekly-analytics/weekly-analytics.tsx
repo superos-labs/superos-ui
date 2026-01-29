@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { cn, formatHours, formatHoursWithUnit } from "@/lib/utils";
 import type { IconComponent } from "@/lib/types";
 import type { ProgressMetric } from "@/lib/preferences";
 import type { ProgressIndicator } from "@/lib/unified-schedule";
@@ -47,14 +47,6 @@ export interface WeeklyAnalyticsSectionData {
 // Helpers
 // =============================================================================
 
-function formatHours(hours: number): string {
-  // Format with one decimal place, but remove trailing .0
-  const formatted = hours.toFixed(1);
-  return formatted.endsWith(".0")
-    ? `${Math.round(hours)}h`
-    : `${formatted}h`;
-}
-
 function getProgress(completed: number, planned: number): number {
   if (planned === 0) return 0;
   return Math.min(Math.round((completed / planned) * 100), 100);
@@ -77,13 +69,13 @@ function ProgressBar({ progress, colorClass, className }: ProgressBarProps) {
     <div
       className={cn(
         "h-1.5 w-full overflow-hidden rounded-full bg-muted",
-        className
+        className,
       )}
     >
       <div
         className={cn(
           "h-full rounded-full transition-all",
-          isComplete ? "bg-green-500" : colorClass || "bg-foreground/30"
+          isComplete ? "bg-green-500" : colorClass || "bg-foreground/30",
         )}
         style={{ width: `${Math.min(progress, 100)}%` }}
       />
@@ -114,7 +106,9 @@ function DistributionProgressBar({
     .sort((a, b) => b.completedHours - a.completedHours);
 
   if (totalPlanned === 0) {
-    return <div className={cn("h-2 w-full rounded-full bg-muted", className)} />;
+    return (
+      <div className={cn("h-2 w-full rounded-full bg-muted", className)} />
+    );
   }
 
   // Each segment's width is relative to totalPlanned (not totalCompleted)
@@ -123,7 +117,7 @@ function DistributionProgressBar({
     <div
       className={cn(
         "flex h-2 w-full overflow-hidden rounded-full bg-muted",
-        className
+        className,
       )}
       onMouseLeave={() => onHoverItem?.(null)}
     >
@@ -137,10 +131,10 @@ function DistributionProgressBar({
             className={cn(
               "h-full cursor-pointer transition-all",
               bgColor,
-              index === 0 && "rounded-l-full"
+              index === 0 && "rounded-l-full",
             )}
             style={{ width: `${widthPercent}%` }}
-            title={`${item.label}: ${formatHours(item.completedHours)}`}
+            title={`${item.label}: ${formatHoursWithUnit(item.completedHours)}`}
             onMouseEnter={() => onHoverItem?.(item.id)}
           />
         );
@@ -165,16 +159,16 @@ export function WeeklyAnalyticsItemRow({
   className,
 }: WeeklyAnalyticsItemRowProps) {
   const IconComponent = item.icon;
-  
+
   // Use intention-based progress if available, otherwise fall back to hours
   const intention = item.intention;
   const hasIntention = intention !== undefined;
   const isPlanned = hasIntention ? intention.target > 0 : item.plannedHours > 0;
-  
+
   const progress = hasIntention
     ? getProgress(item.intention!.actual, item.intention!.target)
     : getProgress(item.completedHours, item.plannedHours);
-  
+
   const isComplete = hasIntention
     ? item.intention!.actual >= item.intention!.target && isPlanned
     : item.completedHours >= item.plannedHours && isPlanned;
@@ -186,7 +180,7 @@ export function WeeklyAnalyticsItemRow({
         className={cn(
           "flex items-center gap-3 rounded-lg px-2 py-1.5 opacity-50 transition-colors",
           isHighlighted && "bg-muted/50",
-          className
+          className,
         )}
       >
         <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted/40">
@@ -211,7 +205,7 @@ export function WeeklyAnalyticsItemRow({
       className={cn(
         "flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors",
         isHighlighted && "bg-muted/50",
-        className
+        className,
       )}
     >
       <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted/60">
@@ -219,9 +213,7 @@ export function WeeklyAnalyticsItemRow({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate text-sm text-foreground">
-          {item.label}
-        </span>
+        <span className="truncate text-sm text-foreground">{item.label}</span>
         {progressLabel && (
           <span className="text-[10px] text-muted-foreground">
             {progressLabel}
@@ -233,7 +225,7 @@ export function WeeklyAnalyticsItemRow({
         <span
           className={cn(
             "w-8 text-right text-xs tabular-nums",
-            isComplete ? "font-medium text-green-600" : "text-foreground"
+            isComplete ? "font-medium text-green-600" : "text-foreground",
           )}
         >
           {progress}%
@@ -267,11 +259,11 @@ export function WeeklyAnalyticsSection({
   const plannedItems = items.filter((i) => i.plannedHours > 0);
   const totalPlanned = plannedItems.reduce(
     (sum, item) => sum + item.plannedHours,
-    0
+    0,
   );
   const totalCompleted = plannedItems.reduce(
     (sum, item) => sum + item.completedHours,
-    0
+    0,
   );
   const sectionProgress = getProgress(totalCompleted, totalPlanned);
 
@@ -282,7 +274,7 @@ export function WeeklyAnalyticsSection({
       .sort(
         (a, b) =>
           getProgress(b.completedHours, b.plannedHours) -
-          getProgress(a.completedHours, a.plannedHours)
+          getProgress(a.completedHours, a.plannedHours),
       );
     const notPlanned = items.filter((i) => i.plannedHours === 0);
     return [...planned, ...notPlanned];
@@ -346,7 +338,9 @@ export function WeeklyAnalyticsHeader({
 
   const handleToggleMetric = () => {
     if (!onProgressMetricChange) return;
-    onProgressMetricChange(progressMetric === "completed" ? "focused" : "completed");
+    onProgressMetricChange(
+      progressMetric === "completed" ? "focused" : "completed",
+    );
   };
 
   return (
@@ -368,8 +362,8 @@ export function WeeklyAnalyticsHeader({
         />
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
-            {formatHours(totalCompleted)} {metricLabel} · {formatHours(totalPlanned)}{" "}
-            planned
+            {formatHours(totalCompleted)} {metricLabel} ·{" "}
+            {formatHours(totalPlanned)} planned
           </p>
           {onProgressMetricChange && (
             <button
@@ -389,8 +383,7 @@ export function WeeklyAnalyticsHeader({
 // Main Component
 // =============================================================================
 
-export interface WeeklyAnalyticsProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface WeeklyAnalyticsProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of goal items */
   goals: WeeklyAnalyticsItem[];
   /** Label for the week (e.g., "This Week", "Jan 20-26") */
@@ -421,11 +414,11 @@ export function WeeklyAnalytics({
 
   const totalPlanned = plannedGoals.reduce(
     (sum, item) => sum + item.plannedHours,
-    0
+    0,
   );
   const totalCompleted = plannedGoals.reduce(
     (sum, item) => sum + item.completedHours,
-    0
+    0,
   );
 
   // Sort: items with planned hours first (by % desc), then not planned
@@ -435,7 +428,7 @@ export function WeeklyAnalytics({
       .sort(
         (a, b) =>
           getProgress(b.completedHours, b.plannedHours) -
-          getProgress(a.completedHours, a.plannedHours)
+          getProgress(a.completedHours, a.plannedHours),
       );
     const notPlanned = goals.filter((i) => i.plannedHours === 0);
     return [...planned, ...notPlanned];
@@ -445,7 +438,7 @@ export function WeeklyAnalytics({
     <div
       className={cn(
         "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className
+        className,
       )}
       {...props}
     >

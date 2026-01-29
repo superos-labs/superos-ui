@@ -160,8 +160,3 @@ export function GoalList({
     </div>
   );
 }
-
-/**
- * @deprecated Use GoalList instead. Kept for backward compatibility.
- */
-export const BacklogGoalList = GoalList;
