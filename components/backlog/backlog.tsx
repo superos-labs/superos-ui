@@ -11,11 +11,9 @@ import type {
 } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
-import type { BacklogMode } from "./backlog-types";
 import type { GoalItem, NewGoalData } from "./goals";
 import type { EssentialItem, NewEssentialData } from "./essentials";
 import { GoalSection } from "./goals";
-import { GoalList } from "./goals";
 import { EssentialsSection } from "./essentials";
 
 export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -49,7 +47,7 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   onDeleteSubtask?: (goalId: string, taskId: string, subtaskId: string) => void;
   /** Callback to delete a task */
   onDeleteTask?: (goalId: string, taskId: string) => void;
-  /** Function to get computed stats for a goal (used by goal-detail mode) */
+  /** Function to get computed stats for a goal */
   getGoalStats?: (goalId: string) => GoalStats;
   /** Function to get schedule info for a task (enables time pill display) */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
@@ -59,8 +57,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   draggable?: boolean;
 
   // Essentials section props
-  /** Current display mode */
-  mode?: BacklogMode;
   /** Essential templates (for schedule editing and display) */
   essentialTemplates?: EssentialTemplate[];
   /** Callback when an essential's schedule is saved */
@@ -85,24 +81,22 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Callback when user clicks Skip to hide essentials */
   onEssentialsHide?: () => void;
 
-  // Goal creation props (for goal-detail mode's GoalList)
+  // Goal creation props
   /** Callback for creating a new goal */
   onCreateGoal?: (goal: NewGoalData) => void;
   /** Life areas for goal creation */
   lifeAreas?: LifeArea[];
   /** Available icons for goal/essential creation */
   goalIcons?: GoalIconOption[];
-  /** Callback to create a new goal and immediately select it (for main backlog view) */
+  /** Callback to create a new goal and immediately select it */
   onCreateAndSelectGoal?: () => void;
 
-  // Goal detail mode props
-  /** Currently selected goal ID (for goal-detail mode) */
+  // Goal selection props
+  /** Currently selected goal ID (for highlighting in list) */
   selectedGoalId?: string | null;
-  /** Callback when a goal is selected (for goal-detail mode) */
+  /** Callback when a goal is selected */
   onSelectGoal?: (goalId: string) => void;
-  /** Callback to go back from goal-detail mode */
-  onBack?: () => void;
-  /** Callback to browse inspiration gallery (for goal-detail mode) */
+  /** Callback to browse inspiration gallery */
   onBrowseInspiration?: () => void;
   /** Whether the inspiration gallery is currently active */
   isInspirationActive?: boolean;
@@ -134,7 +128,6 @@ export function Backlog({
   getTaskDeadline,
   draggable = false,
   // Essentials section props
-  mode = "view",
   essentialTemplates,
   onSaveEssentialSchedule,
   onCreateEssential,
@@ -150,10 +143,9 @@ export function Backlog({
   lifeAreas,
   goalIcons,
   onCreateAndSelectGoal,
-  // Goal detail mode props
+  // Goal selection props
   selectedGoalId,
   onSelectGoal,
-  onBack,
   onBrowseInspiration,
   isInspirationActive,
   // Onboarding props
@@ -163,25 +155,6 @@ export function Backlog({
   className,
   ...props
 }: BacklogProps) {
-  const isGoalDetailMode = mode === "goal-detail";
-
-  // Goal detail mode: render simplified goal list
-  if (isGoalDetailMode) {
-    return (
-      <GoalList
-        goals={goals}
-        selectedGoalId={selectedGoalId}
-        onSelectGoal={onSelectGoal}
-        onBack={onBack}
-        onCreateAndSelectGoal={onCreateAndSelectGoal}
-        onBrowseInspiration={onBrowseInspiration}
-        isInspirationActive={isInspirationActive}
-        className={className}
-        {...props}
-      />
-    );
-  }
-
   // State for collapsing essentials card
   const [isEssentialsCollapsed, setIsEssentialsCollapsed] =
     React.useState(false);
@@ -244,6 +217,7 @@ export function Backlog({
             title="Goals"
             description="Things you intentionally want to do"
             items={goals}
+            selectedGoalId={selectedGoalId}
             showTasks={showTasks}
             onAddItem={onAddGoal}
             onItemClick={onSelectGoal}

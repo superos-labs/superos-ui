@@ -15,6 +15,8 @@ export interface GoalSectionProps {
   title: string;
   description?: string;
   items: GoalItem[];
+  /** Currently selected goal ID (for highlighting) */
+  selectedGoalId?: string | null;
   showTasks?: boolean;
   onAddItem?: () => void;
   /** Callback when an item row is clicked (for entering goal-detail mode) */
@@ -66,6 +68,7 @@ export function GoalSection({
   title,
   description,
   items,
+  selectedGoalId,
   showTasks = true,
   onAddItem,
   onItemClick,
@@ -132,6 +135,7 @@ export function GoalSection({
           <GoalItemRow
             key={item.id}
             item={item}
+            isSelected={selectedGoalId === item.id}
             showTasks={showTasks}
             onItemClick={onItemClick}
             onToggleTask={onToggleTask}

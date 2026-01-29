@@ -26,7 +26,7 @@ export interface BacklogItemBase {
 // Display Modes
 // =============================================================================
 
-/** Mode for the backlog display */
+/** Mode for the backlog/shell display */
 export type BacklogMode = "view" | "goal-detail";
 
 // =============================================================================

@@ -2,8 +2,18 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiArrowRightSLine, RiDeleteBinLine } from "@remixicon/react";
-import type { ScheduleGoal, ScheduleTask, TaskScheduleInfo, TaskDeadlineInfo, ProgressIndicator } from "@/lib/unified-schedule";
+import {
+  RiArrowLeftSLine,
+  RiArrowRightSLine,
+  RiDeleteBinLine,
+} from "@remixicon/react";
+import type {
+  ScheduleGoal,
+  ScheduleTask,
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+  ProgressIndicator,
+} from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 import type { BacklogItem } from "@/components/backlog";
@@ -39,7 +49,7 @@ function CollapsibleSection({
         <RiArrowRightSLine
           className={cn(
             "size-4 text-muted-foreground/50 transition-transform",
-            isOpen && "rotate-90"
+            isOpen && "rotate-90",
           )}
         />
         <span className="text-xs text-muted-foreground/70">{label}</span>
@@ -64,11 +74,7 @@ interface GoalDetailNotesProps {
   className?: string;
 }
 
-function GoalDetailNotes({
-  notes,
-  onChange,
-  className,
-}: GoalDetailNotesProps) {
+function GoalDetailNotes({ notes, onChange, className }: GoalDetailNotesProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea based on content
@@ -132,27 +138,29 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
-  
+
   // Task callbacks
   onToggleTask?: (taskId: string) => void;
   onAddTask?: (label: string) => void;
   onUpdateTask?: (taskId: string, updates: Partial<ScheduleTask>) => void;
   onDeleteTask?: (taskId: string) => void;
-  
+
   // Subtask callbacks
   onAddSubtask?: (taskId: string, label: string) => void;
   onToggleSubtask?: (taskId: string, subtaskId: string) => void;
   onUpdateSubtask?: (taskId: string, subtaskId: string, label: string) => void;
   onDeleteSubtask?: (taskId: string, subtaskId: string) => void;
-  
+
   // Milestone callbacks
   onAddMilestone?: (label: string) => void;
   onToggleMilestone?: (milestoneId: string) => void;
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
   onDeleteMilestone?: (milestoneId: string) => void;
-  
+
   /** Callback when goal is deleted */
   onDelete?: () => void;
+  /** Callback to close the goal detail view */
+  onBack?: () => void;
 }
 
 export function GoalDetail({
@@ -182,6 +190,7 @@ export function GoalDetail({
   onUpdateMilestone,
   onDeleteMilestone,
   onDelete,
+  onBack,
   className,
   ...props
 }: GoalDetailProps) {
@@ -221,11 +230,21 @@ export function GoalDetail({
       )}
       {...props}
     >
-      {/* Action buttons - absolute positioned top right */}
+      {/* Back button - absolute positioned top left */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute left-6 top-6 z-10 flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Close goal detail"
+        >
+          <RiArrowLeftSLine className="size-5" />
+        </button>
+      )}
+
+      {/* Delete button - absolute positioned top right */}
       <div className="absolute right-6 top-6 z-10 flex items-center gap-1">
-        {/* Delete button with inline confirmation */}
-        {onDelete && (
-          showDeleteConfirm ? (
+        {onDelete &&
+          (showDeleteConfirm ? (
             <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
               <button
                 onClick={() => {
@@ -251,8 +270,7 @@ export function GoalDetail({
             >
               <RiDeleteBinLine className="size-5" />
             </button>
-          )
-        )}
+          ))}
       </div>
 
       {/* Scrollable content */}
@@ -277,10 +295,7 @@ export function GoalDetail({
             />
 
             {/* Notes (inline, borderless) */}
-            <GoalDetailNotes
-              notes={notes}
-              onChange={onNotesChange}
-            />
+            <GoalDetailNotes notes={notes} onChange={onNotesChange} />
 
             {/* Milestones (collapsible) */}
             {showMilestones && (

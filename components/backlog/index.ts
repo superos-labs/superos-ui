@@ -31,7 +31,6 @@ export type {
 export {
   GoalSection,
   GoalItemRow,
-  GoalList,
   GoalInspirationGallery,
   TaskRow,
   SubtaskRow,
@@ -53,7 +52,6 @@ export type {
   LifeArea,
   GoalSectionProps,
   GoalItemRowProps,
-  GoalListProps,
   GoalInspirationGalleryProps,
   TaskRowProps,
   InlineTaskCreatorProps,

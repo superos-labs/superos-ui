@@ -17,6 +17,8 @@ import { InlineTaskCreator } from "./inline-creators";
 
 export interface GoalItemRowProps {
   item: GoalItem;
+  /** Whether this goal is currently selected (for highlighting) */
+  isSelected?: boolean;
   showTasks?: boolean;
   /** Callback when the item row is clicked (for entering goal-detail mode) */
   onItemClick?: (itemId: string) => void;
@@ -55,6 +57,7 @@ export interface GoalItemRowProps {
 
 export function GoalItemRow({
   item,
+  isSelected = false,
   showTasks = true,
   onItemClick,
   onToggleTask,
@@ -123,7 +126,7 @@ export function GoalItemRow({
       <div
         className={cn(
           "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
-          "hover:bg-muted/60",
+          isSelected ? "bg-muted" : "hover:bg-muted/60",
           isDragging && "opacity-50",
         )}
         {...(canDrag ? draggableProps : {})}

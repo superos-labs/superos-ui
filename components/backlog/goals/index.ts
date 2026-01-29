@@ -12,9 +12,6 @@ export type { GoalSectionProps } from "./goal-section";
 export { GoalItemRow } from "./goal-item-row";
 export type { GoalItemRowProps } from "./goal-item-row";
 
-export { GoalList } from "./goal-list";
-export type { GoalListProps } from "./goal-list";
-
 export { GoalInspirationGallery } from "./goal-inspiration-gallery";
 export type { GoalInspirationGalleryProps } from "./goal-inspiration-gallery";
 

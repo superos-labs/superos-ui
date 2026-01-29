@@ -1072,7 +1072,6 @@ export function ShellContentComponent({
                   getTaskSchedule={getTaskSchedule}
                   getTaskDeadline={getTaskDeadline}
                   draggable={!isOnboarding}
-                  mode={backlogMode}
                   essentialTemplates={essentialTemplates}
                   onSaveEssentialSchedule={onSaveEssentialSchedule}
                   onCreateEssential={onCreateEssential}
@@ -1089,7 +1088,6 @@ export function ShellContentComponent({
                   onCreateAndSelectGoal={handleCreateAndSelectGoal}
                   selectedGoalId={selectedGoalId}
                   onSelectGoal={handleSelectGoal}
-                  onBack={handleCloseGoalDetail}
                   onBrowseInspiration={handleBrowseInspiration}
                   isInspirationActive={showInspirationGallery}
                   // Onboarding props
@@ -1155,6 +1153,7 @@ export function ShellContentComponent({
                     onDeleteMilestone(selectedGoal.id, milestoneId)
                   }
                   onDelete={handleDeleteGoal}
+                  onBack={handleCloseGoalDetail}
                   lifeAreas={lifeAreas}
                   goalIcons={goalIcons}
                   onIconChange={(icon) =>
@@ -1281,7 +1280,6 @@ export function ShellContentComponent({
             getTaskSchedule={getTaskSchedule}
             getTaskDeadline={getTaskDeadline}
             draggable={false}
-            mode="view"
             essentialTemplates={essentialTemplates}
             onSaveEssentialSchedule={onSaveEssentialSchedule}
             onCreateEssential={onCreateEssential}
