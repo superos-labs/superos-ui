@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiCloseLine, RiArrowLeftSLine, RiLoopLeftLine } from "@remixicon/react";
+import { RiCloseLine, RiArrowLeftSLine, RiApps2Line } from "@remixicon/react";
 import { IntegrationList } from "./integration-list";
 import { ProviderSettingsView } from "./calendar";
 import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
@@ -127,7 +127,7 @@ function IntegrationsSidebar({
             </>
           ) : (
             <div className="flex size-7 items-center justify-center rounded-lg bg-muted">
-              <RiLoopLeftLine className="size-4 text-muted-foreground" />
+              <RiApps2Line className="size-4 text-muted-foreground" />
             </div>
           )}
           <h2 className="text-sm font-semibold text-foreground">
