@@ -813,9 +813,11 @@ export function ShellContentComponent({
       tasks: [],
     });
 
+    // Close inspiration gallery if open
+    handleCloseInspiration();
     setBacklogMode("goal-detail");
     setSelectedGoalId(newGoalId);
-  }, [onAddGoal, goalIcons, lifeAreas, setBacklogMode, setSelectedGoalId]);
+  }, [onAddGoal, goalIcons, lifeAreas, handleCloseInspiration, setBacklogMode, setSelectedGoalId]);
 
   // -------------------------------------------------------------------------
   // Goal Deletion Handler
