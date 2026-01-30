@@ -3,12 +3,12 @@
 /**
  * PlanningPrioritizeView - Step 1 of weekly planning.
  *
- * Shows goals with their tasks split into:
- * - "This week": Tasks marked as weekly focus
- * - "Other tasks": Remaining tasks
- *
+ * Shows goals with their tasks (focus tasks first, then other tasks).
  * Users can hover over tasks to see +/- buttons to toggle weekly focus status.
  * For goals with no tasks, adding a task automatically marks it as weekly focus.
+ *
+ * Note: No section headers are displayed - focus tasks are simply ordered first,
+ * and the scheduling on calendar (with time pills) serves as the visual indicator.
  */
 
 import * as React from "react";
@@ -127,7 +127,7 @@ function PrioritizeTaskRow({
       onClick={onToggleFocus}
       className={cn(
         "group flex w-full items-center gap-2.5 rounded-md py-1.5 pl-4 pr-3 text-left transition-all",
-        "hover:bg-muted/60",
+        isInFocus ? "bg-muted/40 hover:bg-muted/60" : "hover:bg-muted/60",
       )}
       aria-label={isInFocus ? "Remove from this week" : "Add to this week"}
     >
@@ -137,19 +137,23 @@ function PrioritizeTaskRow({
           "flex size-4 shrink-0 items-center justify-center rounded transition-colors",
           task.completed
             ? "bg-muted text-muted-foreground"
-            : "bg-muted/60 text-muted-foreground/50",
+            : isInFocus
+              ? "bg-muted/80 text-muted-foreground/60"
+              : "bg-muted/40 text-muted-foreground/30",
         )}
       >
         {task.completed && <RiCheckLine className="size-2.5" />}
       </div>
 
-      {/* Label */}
+      {/* Label - primary when in focus, secondary when not */}
       <span
         className={cn(
-          "flex-1 truncate text-xs",
+          "flex-1 truncate text-xs transition-colors",
           task.completed
             ? "text-muted-foreground line-through"
-            : "text-foreground/80",
+            : isInFocus
+              ? "text-foreground"
+              : "text-muted-foreground",
         )}
       >
         {task.label}
@@ -195,13 +199,9 @@ function GoalWithSubsections({
   const IconComponent = goal.icon;
   const tasks = goal.tasks ?? [];
 
-  // Split tasks into focus and other
+  // Split tasks into focus and other (focus tasks render first)
   const focusTasks = tasks.filter((t) => weeklyFocusTaskIds.has(t.id));
   const otherTasks = tasks.filter((t) => !weeklyFocusTaskIds.has(t.id));
-
-  // Determine if we should show subsections
-  // Show subsections if there's at least one focus task, OR if there are any tasks at all
-  const showSubsections = tasks.length > 0;
 
   // Handle adding a new task - auto-mark as weekly focus
   const handleAddTask = React.useCallback(
@@ -229,70 +229,28 @@ function GoalWithSubsections({
         </span>
       </div>
 
-      {/* Task subsections */}
-      {showSubsections ? (
-        <div className="flex flex-col gap-2 pl-2">
-          {/* This week section - only show if there are focus tasks */}
-          {focusTasks.length > 0 && (
-            <div className="flex flex-col">
-              <div className="px-2 py-1">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                  This week
-                </span>
-              </div>
-              <div className="flex flex-col gap-0.5">
-                {focusTasks.map((task) => (
-                  <PrioritizeTaskRow
-                    key={task.id}
-                    task={task}
-                    isInFocus={true}
-                    onToggleFocus={() => onRemoveFromFocus(task.id)}
-                  />
-                ))}
-                {/* Add a task button - under This Week section */}
-                {onAddTask && (
-                  <InlineTaskCreator goalId={goal.id} onSave={handleAddTask} />
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Select tasks section - only show if there are tasks to select */}
-          {(otherTasks.length > 0 ||
-            (focusTasks.length === 0 && onAddTask)) && (
-            <div className="flex flex-col">
-              {otherTasks.length > 0 && (
-                <div className="px-2 py-1">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                    Select tasks
-                  </span>
-                </div>
-              )}
-              <div className="flex flex-col gap-0.5">
-                {otherTasks.map((task) => (
-                  <PrioritizeTaskRow
-                    key={task.id}
-                    task={task}
-                    isInFocus={false}
-                    onToggleFocus={() => onAddToFocus(task.id)}
-                  />
-                ))}
-                {/* Add a task button - only here if no focus tasks yet */}
-                {focusTasks.length === 0 && onAddTask && (
-                  <InlineTaskCreator goalId={goal.id} onSave={handleAddTask} />
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        // No tasks yet - show add task button
-        <div className="pl-2">
-          {onAddTask && (
-            <InlineTaskCreator goalId={goal.id} onSave={handleAddTask} />
-          )}
-        </div>
-      )}
+      {/* Tasks list - focus tasks first, then other tasks */}
+      <div className="flex flex-col gap-0.5 pl-2">
+        {focusTasks.map((task) => (
+          <PrioritizeTaskRow
+            key={task.id}
+            task={task}
+            isInFocus={true}
+            onToggleFocus={() => onRemoveFromFocus(task.id)}
+          />
+        ))}
+        {otherTasks.map((task) => (
+          <PrioritizeTaskRow
+            key={task.id}
+            task={task}
+            isInFocus={false}
+            onToggleFocus={() => onAddToFocus(task.id)}
+          />
+        ))}
+        {onAddTask && (
+          <InlineTaskCreator goalId={goal.id} onSave={handleAddTask} />
+        )}
+      </div>
     </div>
   );
 }

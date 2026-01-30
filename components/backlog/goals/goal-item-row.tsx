@@ -232,28 +232,10 @@ export function GoalItemRow({
               />
             );
 
+            // Render focus tasks first, then other tasks (no section headers)
             return (
               <>
-                {/* This Week section - only show if there are focus tasks */}
-                {thisWeekTasks.length > 0 && (
-                  <>
-                    <div className="px-3 py-1.5">
-                      <span className="text-xs font-medium text-muted-foreground">
-                        This week
-                      </span>
-                    </div>
-                    {thisWeekTasks.map(renderTaskRow)}
-                  </>
-                )}
-
-                {/* Other tasks - show header only when there are also "This week" tasks */}
-                {thisWeekTasks.length > 0 && otherTasks.length > 0 && (
-                  <div className="px-3 py-1.5 pt-2">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      Other tasks
-                    </span>
-                  </div>
-                )}
+                {thisWeekTasks.map(renderTaskRow)}
                 {otherTasks.map(renderTaskRow)}
               </>
             );
