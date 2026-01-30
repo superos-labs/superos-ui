@@ -392,7 +392,7 @@ export function EssentialsSection({
             className="overflow-hidden origin-top"
           >
             <div className="px-3 py-2">
-              {/* Header - hidden when collapsed */}
+              {/* Header - clicking hides the entire essentials card */}
               <AnimatePresence initial={false}>
                 {!isCollapsed && (
                   <motion.button
@@ -400,7 +400,7 @@ export function EssentialsSection({
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    onClick={onToggleCollapse}
+                    onClick={onHide}
                     className="flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left"
                   >
                     <div className="flex flex-col">
@@ -411,7 +411,7 @@ export function EssentialsSection({
                         Non-negotiables that shape your time
                       </p>
                     </div>
-                    {onToggleCollapse && (
+                    {onHide && (
                       <div className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all group-hover/essentials:opacity-100">
                         <RiArrowUpSLine className="size-4" />
                       </div>

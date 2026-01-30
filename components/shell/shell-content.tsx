@@ -89,6 +89,7 @@ import {
   RiDeleteBin2Line,
   RiEditLine,
   RiMagicLine,
+  RiShapesLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -1013,6 +1014,16 @@ export function ShellContentComponent({
             onClick={() => setShowSidebar(!showSidebar)}
           >
             <RiSideBarLine className="size-4" />
+          </button>
+        )}
+        {/* Show essentials button when hidden */}
+        {isEssentialsHidden && showSidebar && (
+          <button
+            className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            onClick={() => setIsEssentialsHidden(false)}
+            title="Show essentials"
+          >
+            <RiShapesLine className="size-4" />
           </button>
         )}
       </div>

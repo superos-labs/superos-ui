@@ -181,19 +181,15 @@ export function Backlog({
       className={cn("flex w-full max-w-sm flex-col gap-3", className)}
       {...props}
     >
-      {/* Essentials Card - hidden during goals onboarding step, animates in for essentials step */}
+      {/* Essentials Card - hidden during goals onboarding step, animates in/out */}
       <AnimatePresence mode="sync">
         {showEssentialsCard && (
           <motion.div
             key="essentials-card"
-            initial={
-              onboardingStep === "essentials"
-                ? { opacity: 0, scale: 0.95, height: 0 }
-                : false
-            }
+            initial={{ opacity: 0, scale: 0.97, height: 0 }}
             animate={{ opacity: 1, scale: 1, height: "auto" }}
-            exit={{ opacity: 0, scale: 0.95, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            exit={{ opacity: 0, scale: 0.97, height: 0 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
             className="overflow-hidden rounded-xl border border-border bg-background shadow-sm"
           >
             <EssentialsSection
@@ -210,8 +206,8 @@ export function Backlog({
               isCollapsed={isEssentialsCollapsed}
               onToggleCollapse={() => setIsEssentialsCollapsed((prev) => !prev)}
               isHidden={isEssentialsHidden}
-              onHide={handleEssentialsHide}
-              onOnboardingComplete={onOnboardingComplete}
+              onHide={onEssentialsHide}
+              onOnboardingComplete={handleEssentialsHide}
             />
           </motion.div>
         )}
