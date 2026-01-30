@@ -4,6 +4,7 @@
 
 import type { CalendarEvent } from "@/lib/unified-schedule";
 import type { Blueprint, BlueprintBlock } from "./types";
+import type { EssentialTemplate } from "@/lib/essentials";
 
 // ============================================================================
 // Blueprint → Calendar Events
@@ -67,12 +68,11 @@ export function eventsToBlueprint(
   });
 
   // Filter to events in the current week and convert
-  // Exclude essentials - they have their own template system
+  // Essentials are now included in the blueprint
   return events
     .filter((event) => {
       // Only include events that are in the current week
-      // Exclude essentials - they're managed via EssentialTemplate
-      return dateToIndex.has(event.date) && event.blockType !== "essential";
+      return dateToIndex.has(event.date);
     })
     .map((event) => ({
       id: crypto.randomUUID(),
@@ -122,4 +122,168 @@ export function getBlueprintBlocksForEssential(
   return blueprint.blocks.filter(
     (block) => block.sourceEssentialId === essentialId,
   );
+}
+
+// ============================================================================
+// Essential Sync Detection
+// ============================================================================
+
+/**
+ * Represents a normalized essential slot for comparison.
+ * Uses a consistent format to compare blueprint blocks against essential templates.
+ */
+interface NormalizedSlot {
+  essentialId: string;
+  dayOfWeek: number;
+  startMinutes: number;
+  durationMinutes: number;
+}
+
+/**
+ * Create a unique key for a normalized slot for Set comparison.
+ */
+function slotKey(slot: NormalizedSlot): string {
+  return `${slot.essentialId}:${slot.dayOfWeek}:${slot.startMinutes}:${slot.durationMinutes}`;
+}
+
+/**
+ * Check if blueprint essentials differ from current essential templates.
+ * Returns true if there are differences that the user might want to sync.
+ *
+ * This compares:
+ * - Which essentials are present
+ * - The day/time/duration of each essential slot
+ *
+ * @param blueprint - The current blueprint
+ * @param essentialTemplates - Current essential templates from configuration
+ * @param enabledEssentialIds - IDs of currently enabled essentials
+ * @returns true if the blueprint's essentials differ from the templates
+ */
+export function blueprintEssentialsNeedUpdate(
+  blueprint: Blueprint,
+  essentialTemplates: EssentialTemplate[],
+  enabledEssentialIds: string[],
+): boolean {
+  // Normalize blueprint essential blocks
+  const blueprintSlots: NormalizedSlot[] = blueprint.blocks
+    .filter(
+      (block) =>
+        block.blockType === "essential" && block.sourceEssentialId != null,
+    )
+    .map((block) => ({
+      essentialId: block.sourceEssentialId!,
+      dayOfWeek: block.dayOfWeek,
+      startMinutes: block.startMinutes,
+      durationMinutes: block.durationMinutes,
+    }));
+
+  // Normalize essential templates (expand slots to individual day entries)
+  const templateSlots: NormalizedSlot[] = [];
+  for (const template of essentialTemplates) {
+    // Only include enabled essentials
+    if (!enabledEssentialIds.includes(template.essentialId)) continue;
+
+    for (const slot of template.slots) {
+      for (const dayOfWeek of slot.days) {
+        templateSlots.push({
+          essentialId: template.essentialId,
+          dayOfWeek,
+          startMinutes: slot.startMinutes,
+          durationMinutes: slot.durationMinutes,
+        });
+      }
+    }
+  }
+
+  // Compare using Sets for order-independent comparison
+  const blueprintKeys = new Set(blueprintSlots.map(slotKey));
+  const templateKeys = new Set(templateSlots.map(slotKey));
+
+  // Check if sets are different
+  if (blueprintKeys.size !== templateKeys.size) {
+    return true;
+  }
+
+  for (const key of blueprintKeys) {
+    if (!templateKeys.has(key)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if calendar events' essentials differ from current essential templates.
+ * Similar to blueprintEssentialsNeedUpdate but works with CalendarEvent[] instead of Blueprint.
+ * Used during blueprint edit mode to compare the current editing state.
+ *
+ * @param events - Current calendar events (during blueprint edit mode)
+ * @param weekDates - Week dates for day index resolution
+ * @param essentialTemplates - Current essential templates from configuration
+ * @param enabledEssentialIds - IDs of currently enabled essentials
+ * @returns true if the events' essentials differ from the templates
+ */
+export function eventsEssentialsNeedUpdate(
+  events: CalendarEvent[],
+  weekDates: Date[],
+  essentialTemplates: EssentialTemplate[],
+  enabledEssentialIds: string[],
+): boolean {
+  // Create a map of date string to day index
+  const dateToIndex = new Map<string, number>();
+  weekDates.forEach((date, index) => {
+    const dateString = date.toISOString().split("T")[0];
+    dateToIndex.set(dateString, index);
+  });
+
+  // Normalize event essential blocks
+  const eventSlots: NormalizedSlot[] = events
+    .filter(
+      (event) =>
+        event.blockType === "essential" &&
+        event.sourceEssentialId != null &&
+        dateToIndex.has(event.date),
+    )
+    .map((event) => ({
+      essentialId: event.sourceEssentialId!,
+      dayOfWeek: dateToIndex.get(event.date) ?? event.dayIndex,
+      startMinutes: event.startMinutes,
+      durationMinutes: event.durationMinutes,
+    }));
+
+  // Normalize essential templates (expand slots to individual day entries)
+  const templateSlots: NormalizedSlot[] = [];
+  for (const template of essentialTemplates) {
+    // Only include enabled essentials
+    if (!enabledEssentialIds.includes(template.essentialId)) continue;
+
+    for (const slot of template.slots) {
+      for (const dayOfWeek of slot.days) {
+        templateSlots.push({
+          essentialId: template.essentialId,
+          dayOfWeek,
+          startMinutes: slot.startMinutes,
+          durationMinutes: slot.durationMinutes,
+        });
+      }
+    }
+  }
+
+  // Compare using Sets for order-independent comparison
+  const eventKeys = new Set(eventSlots.map(slotKey));
+  const templateKeys = new Set(templateSlots.map(slotKey));
+
+  // Check if sets are different
+  if (eventKeys.size !== templateKeys.size) {
+    return true;
+  }
+
+  for (const key of eventKeys) {
+    if (!templateKeys.has(key)) {
+      return true;
+    }
+  }
+
+  return false;
 }

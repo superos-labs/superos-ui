@@ -57,6 +57,12 @@ export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement>
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
+
+  // Add essentials to calendar (for planning without blueprint)
+  /** Whether to show the "Add essentials to calendar" button */
+  showAddEssentialsButton?: boolean;
+  /** Callback when user clicks "Add essentials to calendar" */
+  onAddEssentialsToCalendar?: () => void;
 }
 
 // =============================================================================
@@ -83,6 +89,9 @@ export function PlanningPanel({
   // Schedule data accessors
   getTaskSchedule,
   getTaskDeadline,
+  // Add essentials to calendar
+  showAddEssentialsButton = false,
+  onAddEssentialsToCalendar,
   className,
   ...props
 }: PlanningPanelProps) {
@@ -166,6 +175,8 @@ export function PlanningPanel({
             getTaskSchedule={getTaskSchedule}
             getTaskDeadline={getTaskDeadline}
             draggable={true}
+            showAddEssentialsButton={showAddEssentialsButton}
+            onAddEssentialsToCalendar={onAddEssentialsToCalendar}
           />
         )}
 

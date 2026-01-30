@@ -46,6 +46,12 @@ export interface PlanningScheduleViewProps {
   /** Enable drag-and-drop */
   draggable?: boolean;
   className?: string;
+
+  // Add essentials to calendar button (for planning without blueprint)
+  /** Whether to show the "Add essentials to calendar" button */
+  showAddEssentialsButton?: boolean;
+  /** Callback when user clicks "Add essentials to calendar" */
+  onAddEssentialsToCalendar?: () => void;
 }
 
 // =============================================================================
@@ -324,6 +330,9 @@ export function PlanningScheduleView({
   getTaskDeadline,
   draggable = false,
   className,
+  // Add essentials button
+  showAddEssentialsButton = false,
+  onAddEssentialsToCalendar,
 }: PlanningScheduleViewProps) {
   // When filtering by weekly focus, check if any goals have visible tasks
   const hasVisibleGoals = React.useMemo(() => {
@@ -354,6 +363,17 @@ export function PlanningScheduleView({
               />
             ))}
           </div>
+          {/* Add essentials to calendar button */}
+          {showAddEssentialsButton && (
+            <div className="px-4 pt-3">
+              <button
+                onClick={onAddEssentialsToCalendar}
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                Add essentials to calendar
+              </button>
+            </div>
+          )}
         </div>
       )}
 

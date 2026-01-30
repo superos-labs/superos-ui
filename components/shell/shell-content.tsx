@@ -54,7 +54,12 @@ import {
   PlanWeekPromptCard,
 } from "@/components/weekly-planning";
 import { toAnalyticsItems } from "@/lib/adapters";
-import { blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
+import {
+  blueprintToEvents,
+  eventsToBlueprint,
+  eventsEssentialsNeedUpdate,
+} from "@/lib/blueprint";
+import { importEssentialsToEvents } from "@/lib/essentials";
 import { usePlanningFlow } from "@/lib/weekly-planning";
 import type { ScheduleGoal, DeadlineTask } from "@/lib/unified-schedule";
 import type { GoalColor } from "@/lib/colors";
@@ -152,7 +157,6 @@ export function ShellContentComponent({
   essentialTemplates,
   onSaveEssentialSchedule,
   onImportEssentialsToWeek,
-  weekNeedsEssentialImport,
   // Goal CRUD
   onAddGoal,
   onDeleteGoal,
@@ -454,12 +458,22 @@ export function ShellContentComponent({
       planningFlow.weeklyFocusTaskIds;
   }, [planningFlow.weeklyFocusTaskIds]);
 
-  // Auto-import essentials when entering planning mode
+  // Track if user has added essentials this planning session (for "Add essentials to calendar" button)
+  const [hasAddedEssentialsThisSession, setHasAddedEssentialsThisSession] =
+    React.useState(false);
+
+  // Reset the flag when planning mode is exited
   React.useEffect(() => {
-    if (isPlanningMode && weekNeedsEssentialImport) {
-      onImportEssentialsToWeek();
+    if (!isPlanningMode) {
+      setHasAddedEssentialsThisSession(false);
     }
-  }, [isPlanningMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isPlanningMode]);
+
+  // Handler for "Add essentials to calendar" button
+  const handleAddEssentialsToCalendar = React.useCallback(() => {
+    onImportEssentialsToWeek();
+    setHasAddedEssentialsThisSession(true);
+  }, [onImportEssentialsToWeek]);
 
   // Auto-open planning budget sidebar when entering schedule step
   React.useEffect(() => {
@@ -524,6 +538,54 @@ export function ShellContentComponent({
     originalEventsSnapshot,
     onReplaceEvents,
     exitBlueprintEditMode,
+  ]);
+
+  // Compute if current events' essentials differ from essential templates
+  // During blueprint edit mode, we compare the current events (not the saved blueprint)
+  const essentialsNeedUpdateInBlueprint = React.useMemo(() => {
+    if (!isBlueprintEditMode) return false;
+    return eventsEssentialsNeedUpdate(
+      events,
+      weekDates,
+      essentialTemplates,
+      allEssentials.map((e) => e.id),
+    );
+  }, [isBlueprintEditMode, events, weekDates, essentialTemplates, allEssentials]);
+
+  // Handler to update essentials in blueprint edit mode
+  const handleUpdateBlueprintEssentials = React.useCallback(() => {
+    // Remove all existing essential events from current events (which are the blueprint events)
+    const nonEssentialEvents = events.filter(
+      (e) => e.blockType !== "essential",
+    );
+
+    // Get enabled templates
+    const enabledTemplates = essentialTemplates.filter((t) =>
+      allEssentials.some((e) => e.id === t.essentialId),
+    );
+
+    // Map essentials to the format expected by importEssentialsToEvents
+    const essentialsData = allEssentials.map((e) => ({
+      id: e.id,
+      label: e.label,
+      color: e.color,
+    }));
+
+    // Import fresh essentials from templates
+    const newEssentialEvents = importEssentialsToEvents({
+      templates: enabledTemplates,
+      weekDates,
+      essentials: essentialsData,
+    });
+
+    // Replace events with non-essential events + new essential events
+    onReplaceEvents([...nonEssentialEvents, ...newEssentialEvents]);
+  }, [
+    events,
+    essentialTemplates,
+    allEssentials,
+    weekDates,
+    onReplaceEvents,
   ]);
 
   // -------------------------------------------------------------------------
@@ -1173,6 +1235,11 @@ export function ShellContentComponent({
                   onAddTask={onAddTask}
                   getTaskSchedule={getTaskSchedule}
                   getTaskDeadline={getTaskDeadline}
+                  // Add essentials to calendar (for planning without blueprint)
+                  showAddEssentialsButton={
+                    !hasBlueprint && !hasAddedEssentialsThisSession
+                  }
+                  onAddEssentialsToCalendar={handleAddEssentialsToCalendar}
                   className="h-full w-[420px] max-w-none"
                 />
               ) : (

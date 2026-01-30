@@ -10,6 +10,8 @@ export {
   getBlueprintTotalHours,
   getBlueprintBlocksForGoal,
   getBlueprintBlocksForEssential,
+  blueprintEssentialsNeedUpdate,
+  eventsEssentialsNeedUpdate,
 } from "./blueprint-utils";
 
 // Types
