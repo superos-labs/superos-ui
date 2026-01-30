@@ -29,6 +29,8 @@ function IntegrationList({
           status: "not_connected" as const,
           accountEmail: null,
           calendars: [],
+          importMeetingsOnly: true,
+          exportBlockVisibility: "busy" as const,
           lastSyncAt: null,
         };
 
