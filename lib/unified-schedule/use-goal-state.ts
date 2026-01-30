@@ -19,6 +19,10 @@ import {
   updateMilestoneInGoals,
   findTaskAcrossGoals,
   setWeeklyFocusOnTasks,
+  getCurrentMilestone,
+  assignAllTasksToMilestone,
+  clearTaskMilestoneAssignments,
+  completeTasksInMilestone,
 } from "./goal-state-utils";
 
 // ============================================================================
@@ -36,7 +40,7 @@ export interface UseGoalStateReturn {
   deleteGoal: (goalId: string) => void;
   updateGoal: (goalId: string, updates: Partial<ScheduleGoal>) => void;
   toggleTaskComplete: (goalId: string, taskId: string) => boolean | undefined;
-  addTask: (goalId: string, label: string) => string;
+  addTask: (goalId: string, label: string, milestoneId?: string) => string;
   updateTask: (
     goalId: string,
     taskId: string,
@@ -127,19 +131,38 @@ export function useGoalState({
     [],
   );
 
-  const addTask = React.useCallback((goalId: string, label: string): string => {
-    const newTask: ScheduleTask = {
-      id: crypto.randomUUID(),
-      label,
-      completed: false,
-    };
+  const addTask = React.useCallback(
+    (goalId: string, label: string, milestoneId?: string): string => {
+      const newTaskId = crypto.randomUUID();
 
-    setGoals((prev) =>
-      updateGoalById(prev, goalId, (goal) => addTaskToGoal(goal, newTask)),
-    );
+      setGoals((prev) =>
+        updateGoalById(prev, goalId, (goal) => {
+          // If milestones are enabled, auto-assign to current milestone if none specified
+          let finalMilestoneId = milestoneId;
+          const milestonesEnabled =
+            goal.milestonesEnabled ??
+            (goal.milestones && goal.milestones.length > 0);
 
-    return newTask.id;
-  }, []);
+          if (milestonesEnabled && !finalMilestoneId) {
+            const currentMilestone = getCurrentMilestone(goal);
+            finalMilestoneId = currentMilestone?.id;
+          }
+
+          const newTask: ScheduleTask = {
+            id: newTaskId,
+            label,
+            completed: false,
+            milestoneId: finalMilestoneId,
+          };
+
+          return addTaskToGoal(goal, newTask);
+        }),
+      );
+
+      return newTaskId;
+    },
+    [],
+  );
 
   const updateTask = React.useCallback(
     (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => {
@@ -266,10 +289,25 @@ export function useGoalState({
   const toggleMilestoneComplete = React.useCallback(
     (goalId: string, milestoneId: string) => {
       setGoals((prev) =>
-        updateMilestoneInGoals(prev, goalId, milestoneId, (milestone) => ({
-          ...milestone,
-          completed: !milestone.completed,
-        })),
+        updateGoalById(prev, goalId, (goal) => {
+          const milestone = goal.milestones?.find((m) => m.id === milestoneId);
+          if (!milestone) return goal;
+
+          const newCompletedState = !milestone.completed;
+
+          // Update the milestone
+          let updatedGoal = updateMilestoneById(goal, milestoneId, (m) => ({
+            ...m,
+            completed: newCompletedState,
+          }));
+
+          // If marking as complete, also complete all tasks in this milestone
+          if (newCompletedState) {
+            updatedGoal = completeTasksInMilestone(updatedGoal, milestoneId);
+          }
+
+          return updatedGoal;
+        }),
       );
     },
     [],
@@ -293,7 +331,38 @@ export function useGoalState({
         const currentlyEnabled =
           goal.milestonesEnabled ??
           (goal.milestones && goal.milestones.length > 0);
-        return { ...goal, milestonesEnabled: !currentlyEnabled };
+
+        if (!currentlyEnabled) {
+          // Enabling milestones: create "Phase 1" if no milestones exist, assign all tasks
+          const hasExistingMilestones =
+            goal.milestones && goal.milestones.length > 0;
+
+          if (hasExistingMilestones) {
+            // Use first milestone to assign tasks
+            const firstMilestoneId = goal.milestones![0].id;
+            const updatedGoal = assignAllTasksToMilestone(goal, firstMilestoneId);
+            return { ...updatedGoal, milestonesEnabled: true };
+          } else {
+            // Create "Phase 1" milestone and assign all tasks to it
+            const phase1Id = crypto.randomUUID();
+            const newMilestone: Milestone = {
+              id: phase1Id,
+              label: "Phase 1",
+              completed: false,
+            };
+            let updatedGoal: ScheduleGoal = {
+              ...goal,
+              milestones: [newMilestone],
+              milestonesEnabled: true,
+            };
+            updatedGoal = assignAllTasksToMilestone(updatedGoal, phase1Id);
+            return updatedGoal;
+          }
+        } else {
+          // Disabling milestones: clear task milestone assignments
+          const updatedGoal = clearTaskMilestoneAssignments(goal);
+          return { ...updatedGoal, milestonesEnabled: false };
+        }
       }),
     );
   }, []);

@@ -87,6 +87,8 @@ export interface ScheduleTask {
   id: string;
   label: string;
   completed?: boolean;
+  /** Milestone this task belongs to (required when milestones are enabled) */
+  milestoneId?: string;
   /** Reference to the calendar block if scheduled (mutually exclusive with deadline) */
   scheduledBlockId?: string;
   /** ISO date string for deadline (e.g., "2026-01-25") - mutually exclusive with scheduledBlockId */
@@ -225,7 +227,7 @@ export interface UseUnifiedScheduleReturn {
   toggleTaskComplete: (goalId: string, taskId: string) => void;
 
   // Task CRUD actions
-  addTask: (goalId: string, label: string) => string;
+  addTask: (goalId: string, label: string, milestoneId?: string) => string;
   updateTask: (
     goalId: string,
     taskId: string,

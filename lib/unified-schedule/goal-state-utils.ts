@@ -274,3 +274,64 @@ export function setWeeklyFocusOnTasks(
     })),
   }));
 }
+
+// ============================================================================
+// Milestone-Task Association Utilities
+// ============================================================================
+
+/**
+ * Get tasks for a specific milestone.
+ */
+export function getTasksForMilestone(
+  goal: ScheduleGoal,
+  milestoneId: string,
+): ScheduleTask[] {
+  return (goal.tasks ?? []).filter((t) => t.milestoneId === milestoneId);
+}
+
+/**
+ * Get the current (first incomplete) milestone.
+ */
+export function getCurrentMilestone(goal: ScheduleGoal): Milestone | undefined {
+  return goal.milestones?.find((m) => !m.completed);
+}
+
+/**
+ * Assign all tasks to a milestone (used when enabling milestones).
+ */
+export function assignAllTasksToMilestone(
+  goal: ScheduleGoal,
+  milestoneId: string,
+): ScheduleGoal {
+  return {
+    ...goal,
+    tasks: goal.tasks?.map((t) => ({ ...t, milestoneId })),
+  };
+}
+
+/**
+ * Clear milestone assignments from all tasks (used when disabling milestones).
+ */
+export function clearTaskMilestoneAssignments(
+  goal: ScheduleGoal,
+): ScheduleGoal {
+  return {
+    ...goal,
+    tasks: goal.tasks?.map((t) => ({ ...t, milestoneId: undefined })),
+  };
+}
+
+/**
+ * Complete all tasks in a milestone.
+ */
+export function completeTasksInMilestone(
+  goal: ScheduleGoal,
+  milestoneId: string,
+): ScheduleGoal {
+  return {
+    ...goal,
+    tasks: goal.tasks?.map((t) =>
+      t.milestoneId === milestoneId ? { ...t, completed: true } : t,
+    ),
+  };
+}

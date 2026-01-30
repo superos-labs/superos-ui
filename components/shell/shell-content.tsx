@@ -178,6 +178,7 @@ export function ShellContentComponent({
   onToggleMilestoneComplete,
   onUpdateMilestone,
   onDeleteMilestone,
+  onToggleMilestonesEnabled,
   // Deadline management
   onClearTaskDeadline,
   // Stats accessors
@@ -229,7 +230,6 @@ export function ShellContentComponent({
   inspirationCategories,
   onLayoutChange,
   // Demo/Development
-  onClearSampleData,
   onLoadSampleData,
 }: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
@@ -993,15 +993,6 @@ export function ShellContentComponent({
                 </DropdownMenuItem>
               </>
             )}
-            {onClearSampleData && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onClearSampleData}>
-                  <RiDeleteBin2Line className="size-4" />
-                  Clear sample data
-                </DropdownMenuItem>
-              </>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -1160,15 +1151,6 @@ export function ShellContentComponent({
                 <DropdownMenuItem onClick={onLoadSampleData}>
                   <RiMagicLine className="size-4" />
                   Load demo data
-                </DropdownMenuItem>
-              </>
-            )}
-            {onClearSampleData && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onClearSampleData}>
-                  <RiDeleteBin2Line className="size-4" />
-                  Clear sample data
                 </DropdownMenuItem>
               </>
             )}
@@ -1400,7 +1382,9 @@ export function ShellContentComponent({
                   onToggleTask={(taskId) =>
                     onToggleTaskComplete(selectedGoal.id, taskId)
                   }
-                  onAddTask={(label) => onAddTask(selectedGoal.id, label)}
+                  onAddTask={(label, milestoneId) =>
+                    onAddTask(selectedGoal.id, label, milestoneId)
+                  }
                   onUpdateTask={(taskId, updates) =>
                     onUpdateTask(selectedGoal.id, taskId, updates)
                   }
@@ -1430,6 +1414,9 @@ export function ShellContentComponent({
                   }
                   onDeleteMilestone={(milestoneId) =>
                     onDeleteMilestone(selectedGoal.id, milestoneId)
+                  }
+                  onToggleMilestones={() =>
+                    onToggleMilestonesEnabled(selectedGoal.id)
                   }
                   onDelete={handleDeleteGoal}
                   onBack={handleCloseGoalDetail}

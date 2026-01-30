@@ -61,6 +61,12 @@ export {
   updateSubtaskInGoals,
   updateMilestoneInGoals,
   findTaskAcrossGoals,
+  // Milestone-task association utilities
+  getTasksForMilestone,
+  getCurrentMilestone,
+  assignAllTasksToMilestone,
+  clearTaskMilestoneAssignments,
+  completeTasksInMilestone,
 } from "./goal-state-utils";
 
 // Types

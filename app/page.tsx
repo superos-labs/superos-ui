@@ -17,13 +17,11 @@ import { INSPIRATION_CATEGORIES } from "@/lib/fixtures/goal-inspiration-data";
 
 interface ShellContentProps {
   dataSetId: DataSetId;
-  onClearSampleData: () => void;
   onLoadSampleData: () => void;
 }
 
 function ShellContent({
   dataSetId,
-  onClearSampleData,
   onLoadSampleData,
 }: ShellContentProps) {
   const dataSet = DATA_SETS[dataSetId];
@@ -49,7 +47,6 @@ function ShellContent({
     <ShellContentComponent
       {...state}
       inspirationCategories={INSPIRATION_CATEGORIES}
-      onClearSampleData={onClearSampleData}
       onLoadSampleData={onLoadSampleData}
     />
   );
@@ -57,10 +54,6 @@ function ShellContent({
 
 export default function Page() {
   const [dataSetId, setDataSetId] = React.useState<DataSetId>("empty");
-
-  const handleClearSampleData = React.useCallback(() => {
-    setDataSetId("empty");
-  }, []);
 
   const handleLoadSampleData = React.useCallback(() => {
     setDataSetId("demo");
@@ -72,7 +65,6 @@ export default function Page() {
         <ShellContent
           key={dataSetId}
           dataSetId={dataSetId}
-          onClearSampleData={handleClearSampleData}
           onLoadSampleData={handleLoadSampleData}
         />
       </DragProvider>

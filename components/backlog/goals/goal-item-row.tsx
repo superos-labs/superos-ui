@@ -24,7 +24,7 @@ export interface GoalItemRowProps {
   onItemClick?: (itemId: string) => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
   /** Callback to add a new task to this goal */
-  onAddTask?: (goalId: string, label: string) => void;
+  onAddTask?: (goalId: string, label: string, milestoneId?: string) => void;
   /** Callback to update a task's properties */
   onUpdateTask?: (
     goalId: string,
@@ -110,8 +110,6 @@ export function GoalItemRow({
   const currentMilestone = milestonesEnabled
     ? item.milestones?.find((m) => !m.completed)
     : undefined;
-  const completedMilestones =
-    item.milestones?.filter((m) => m.completed).length ?? 0;
   const totalMilestones = item.milestones?.length ?? 0;
   const showMilestones = milestonesEnabled && totalMilestones > 0;
 
@@ -151,9 +149,6 @@ export function GoalItemRow({
             <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
               <RiShiningLine className="size-3 shrink-0" />
               <span className="truncate">{currentMilestone.label}</span>
-              <span className="shrink-0 text-muted-foreground/60">
-                ({completedMilestones}/{totalMilestones})
-              </span>
             </span>
           )}
         </div>
@@ -172,7 +167,12 @@ export function GoalItemRow({
       {showTasks && (
         <div className="flex flex-col gap-0.5">
           {(() => {
-            const tasks = item.tasks ?? [];
+            const allTasks = item.tasks ?? [];
+
+            // When milestones are enabled, filter to only show tasks for the current milestone
+            const tasks = milestonesEnabled && currentMilestone
+              ? allTasks.filter((t) => t.milestoneId === currentMilestone.id)
+              : allTasks;
 
             // Partition tasks into "This Week" and "Other"
             const thisWeekTasks = currentWeekStart
@@ -241,7 +241,11 @@ export function GoalItemRow({
             );
           })()}
           {onAddTask && !hideTaskCreator && (
-            <InlineTaskCreator goalId={item.id} onSave={onAddTask} />
+            <InlineTaskCreator
+              goalId={item.id}
+              milestoneId={milestonesEnabled ? currentMilestone?.id : undefined}
+              onSave={onAddTask}
+            />
           )}
         </div>
       )}

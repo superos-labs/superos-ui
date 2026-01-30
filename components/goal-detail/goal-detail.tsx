@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
-  RiDeleteBinLine,
+  RiMoreFill,
 } from "@remixicon/react";
 import type {
   ScheduleGoal,
@@ -16,6 +16,13 @@ import type {
 import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 import type { BacklogItem } from "@/components/backlog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui";
 import { GoalDetailHeader } from "./goal-detail-header";
 import { GoalDetailMilestones } from "./goal-detail-milestones";
 import { GoalDetailTasks } from "./goal-detail-tasks";
@@ -138,7 +145,7 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
 
   // Task callbacks
   onToggleTask?: (taskId: string) => void;
-  onAddTask?: (label: string) => void;
+  onAddTask?: (label: string, milestoneId?: string) => void;
   onUpdateTask?: (taskId: string, updates: Partial<ScheduleTask>) => void;
   onDeleteTask?: (taskId: string) => void;
 
@@ -153,6 +160,8 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onToggleMilestone?: (milestoneId: string) => void;
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
   onDeleteMilestone?: (milestoneId: string) => void;
+  /** Callback to toggle milestones enabled/disabled */
+  onToggleMilestones?: () => void;
 
   /** Callback when goal is deleted */
   onDelete?: () => void;
@@ -185,13 +194,12 @@ export function GoalDetail({
   onToggleMilestone,
   onUpdateMilestone,
   onDeleteMilestone,
+  onToggleMilestones,
   onDelete,
   onBack,
   className,
   ...props
 }: GoalDetailProps) {
-  // State for delete confirmation
-  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   // Convert ScheduleGoal to BacklogItem for task row compatibility
   const goalAsBacklogItem: BacklogItem = {
     id: goal.id,
@@ -215,8 +223,9 @@ export function GoalDetail({
     total: tasks.length,
   };
 
-  // Show milestones section if there are any, or if user can add them
-  const showMilestones = milestones.length > 0 || onAddMilestone;
+  // Check if milestones are enabled for this goal
+  const milestonesEnabled =
+    goal.milestonesEnabled ?? (milestones.length > 0);
 
   return (
     <div
@@ -245,35 +254,32 @@ export function GoalDetail({
             {/* Spacer */}
             <div className="flex-1" />
 
-            {/* Delete button */}
-            {onDelete &&
-              (showDeleteConfirm ? (
-                <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
+            {/* More options menu */}
+            {(onToggleMilestones || onDelete) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <button
-                    onClick={() => {
-                      onDelete();
-                      setShowDeleteConfirm(false);
-                    }}
-                    className="rounded-md bg-red-500 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-600"
+                    className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    aria-label="More options"
                   >
-                    Delete
+                    <RiMoreFill className="size-5" />
                   </button>
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  aria-label="Delete goal"
-                >
-                  <RiDeleteBinLine className="size-5" />
-                </button>
-              ))}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[160px]">
+                  {onToggleMilestones && (
+                    <DropdownMenuItem onClick={onToggleMilestones}>
+                      {milestonesEnabled ? "Disable milestones" : "Enable milestones"}
+                    </DropdownMenuItem>
+                  )}
+                  {onToggleMilestones && onDelete && <DropdownMenuSeparator />}
+                  {onDelete && (
+                    <DropdownMenuItem variant="destructive" onClick={onDelete}>
+                      Delete goal
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
 
           {/* Content flows vertically with consistent spacing */}
@@ -295,34 +301,18 @@ export function GoalDetail({
             {/* Notes (inline, borderless) */}
             <GoalDetailNotes notes={notes} onChange={onNotesChange} />
 
-            {/* Milestones (collapsible) */}
-            {showMilestones && (
-              <CollapsibleSection
-                label="Milestones"
-                count={milestoneCount}
-                defaultOpen={true}
-              >
-                <GoalDetailMilestones
-                  milestones={milestones}
-                  onAdd={onAddMilestone}
-                  onToggle={onToggleMilestone}
-                  onUpdate={onUpdateMilestone}
-                  onDelete={onDeleteMilestone}
-                />
-              </CollapsibleSection>
-            )}
-
-            {/* Tasks (collapsible) */}
-            <CollapsibleSection
-              label="Tasks"
-              count={taskCount}
-              defaultOpen={true}
-            >
-              <GoalDetailTasks
+            {/* When milestones are enabled, show hierarchical milestone/task view */}
+            {milestonesEnabled ? (
+              <GoalDetailMilestones
+                milestones={milestones}
                 tasks={tasks}
                 parentGoal={goalAsBacklogItem}
                 getTaskSchedule={getTaskSchedule}
                 getTaskDeadline={getTaskDeadline}
+                onAddMilestone={onAddMilestone}
+                onToggleMilestone={onToggleMilestone}
+                onUpdateMilestone={onUpdateMilestone}
+                onDeleteMilestone={onDeleteMilestone}
                 onToggleTask={onToggleTask}
                 onAddTask={onAddTask}
                 onUpdateTask={onUpdateTask}
@@ -332,7 +322,29 @@ export function GoalDetail({
                 onDeleteSubtask={onDeleteSubtask}
                 onDeleteTask={onDeleteTask}
               />
-            </CollapsibleSection>
+            ) : (
+              /* When milestones disabled, show flat tasks list */
+              <CollapsibleSection
+                label="Tasks"
+                count={taskCount}
+                defaultOpen={true}
+              >
+                <GoalDetailTasks
+                  tasks={tasks}
+                  parentGoal={goalAsBacklogItem}
+                  getTaskSchedule={getTaskSchedule}
+                  getTaskDeadline={getTaskDeadline}
+                  onToggleTask={onToggleTask}
+                  onAddTask={onAddTask}
+                  onUpdateTask={onUpdateTask}
+                  onAddSubtask={onAddSubtask}
+                  onToggleSubtask={onToggleSubtask}
+                  onUpdateSubtask={onUpdateSubtask}
+                  onDeleteSubtask={onDeleteSubtask}
+                  onDeleteTask={onDeleteTask}
+                />
+              </CollapsibleSection>
+            )}
           </div>
         </div>
       </div>

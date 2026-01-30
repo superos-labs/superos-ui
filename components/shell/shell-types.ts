@@ -146,7 +146,7 @@ export interface ShellContentProps {
   /** Toggle task completion */
   onToggleTaskComplete: (goalId: string, taskId: string) => void;
   /** Add a task to a goal (returns the new task ID) */
-  onAddTask: (goalId: string, label: string) => string;
+  onAddTask: (goalId: string, label: string, milestoneId?: string) => string;
   /** Update a task */
   onUpdateTask: (
     goalId: string,
@@ -192,6 +192,8 @@ export interface ShellContentProps {
   ) => void;
   /** Delete a milestone */
   onDeleteMilestone: (goalId: string, milestoneId: string) => void;
+  /** Toggle whether milestones are enabled for a goal */
+  onToggleMilestonesEnabled: (goalId: string) => void;
 
   // -------------------------------------------------------------------------
   // Deadline Management
@@ -314,8 +316,6 @@ export interface ShellContentProps {
   // -------------------------------------------------------------------------
   // Demo/Development (optional)
   // -------------------------------------------------------------------------
-  /** Clear all sample data (for demo purposes) */
-  onClearSampleData?: () => void;
   /** Load demo data (goals without tasks, skips onboarding) */
   onLoadSampleData?: () => void;
 }

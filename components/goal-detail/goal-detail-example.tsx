@@ -51,15 +51,28 @@ function GoalDetailDemo() {
   );
 
   const handleAddTask = React.useCallback(
-    (label: string) => {
+    (label: string, milestoneId?: string) => {
       setGoals((prev) =>
         prev.map((goal) => {
           if (goal.id !== selectedGoalId) return goal;
+          // If milestones are enabled and no milestoneId, assign to current milestone
+          let finalMilestoneId = milestoneId;
+          const milestonesEnabled =
+            goal.milestonesEnabled ??
+            (goal.milestones && goal.milestones.length > 0);
+          if (milestonesEnabled && !finalMilestoneId) {
+            finalMilestoneId = goal.milestones?.find((m) => !m.completed)?.id;
+          }
           return {
             ...goal,
             tasks: [
               ...(goal.tasks ?? []),
-              { id: crypto.randomUUID(), label, completed: false },
+              {
+                id: crypto.randomUUID(),
+                label,
+                completed: false,
+                milestoneId: finalMilestoneId,
+              },
             ],
           };
         }),
@@ -107,11 +120,20 @@ function GoalDetailDemo() {
       setGoals((prev) =>
         prev.map((goal) => {
           if (goal.id !== selectedGoalId) return goal;
+          const milestone = goal.milestones?.find((m) => m.id === milestoneId);
+          if (!milestone) return goal;
+          const newCompletedState = !milestone.completed;
           return {
             ...goal,
             milestones: goal.milestones?.map((m) =>
-              m.id === milestoneId ? { ...m, completed: !m.completed } : m,
+              m.id === milestoneId ? { ...m, completed: newCompletedState } : m,
             ),
+            // If completing milestone, also complete all its tasks
+            tasks: newCompletedState
+              ? goal.tasks?.map((t) =>
+                  t.milestoneId === milestoneId ? { ...t, completed: true } : t,
+                )
+              : goal.tasks,
           };
         }),
       );
@@ -175,6 +197,51 @@ function GoalDetailDemo() {
     [selectedGoalId],
   );
 
+  const handleToggleMilestones = React.useCallback(() => {
+    setGoals((prev) =>
+      prev.map((goal) => {
+        if (goal.id !== selectedGoalId) return goal;
+        const currentlyEnabled =
+          goal.milestonesEnabled ??
+          (goal.milestones && goal.milestones.length > 0);
+
+        if (!currentlyEnabled) {
+          // Enabling milestones
+          const hasExistingMilestones =
+            goal.milestones && goal.milestones.length > 0;
+          if (hasExistingMilestones) {
+            // Assign all tasks to first milestone
+            const firstMilestoneId = goal.milestones![0].id;
+            return {
+              ...goal,
+              milestonesEnabled: true,
+              tasks: goal.tasks?.map((t) => ({
+                ...t,
+                milestoneId: firstMilestoneId,
+              })),
+            };
+          } else {
+            // Create "Phase 1" and assign all tasks
+            const phase1Id = crypto.randomUUID();
+            return {
+              ...goal,
+              milestonesEnabled: true,
+              milestones: [{ id: phase1Id, label: "Phase 1", completed: false }],
+              tasks: goal.tasks?.map((t) => ({ ...t, milestoneId: phase1Id })),
+            };
+          }
+        } else {
+          // Disabling milestones: clear task milestone assignments
+          return {
+            ...goal,
+            milestonesEnabled: false,
+            tasks: goal.tasks?.map((t) => ({ ...t, milestoneId: undefined })),
+          };
+        }
+      }),
+    );
+  }, [selectedGoalId]);
+
   if (!selectedGoal) {
     return <div className="p-8 text-muted-foreground">No goal selected</div>;
   }
@@ -197,6 +264,7 @@ function GoalDetailDemo() {
           onToggleMilestone={handleToggleMilestone}
           onUpdateMilestone={handleUpdateMilestone}
           onDeleteMilestone={handleDeleteMilestone}
+          onToggleMilestones={handleToggleMilestones}
           className="h-[600px] w-[480px]"
         />
       </div>

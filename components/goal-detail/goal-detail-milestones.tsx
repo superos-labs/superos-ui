@@ -6,8 +6,16 @@ import {
   RiAddLine,
   RiCheckLine,
   RiDeleteBinLine,
+  RiArrowRightSLine,
 } from "@remixicon/react";
-import type { Milestone } from "@/lib/unified-schedule";
+import type {
+  Milestone,
+  ScheduleTask,
+  TaskScheduleInfo,
+  TaskDeadlineInfo,
+} from "@/lib/unified-schedule";
+import type { GoalItem } from "@/components/backlog";
+import { TaskRow } from "@/components/backlog";
 
 // =============================================================================
 // Inline Milestone Creator
@@ -85,24 +93,129 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
 }
 
 // =============================================================================
-// Milestone Row
+// Inline Task Creator (for within milestones)
 // =============================================================================
 
-interface MilestoneRowProps {
-  milestone: Milestone;
-  isCurrent: boolean;
-  onToggle?: () => void;
-  onUpdate?: (label: string) => void;
-  onDelete?: () => void;
+interface InlineTaskCreatorProps {
+  milestoneId: string;
+  onSave: (label: string, milestoneId: string) => void;
 }
 
-function MilestoneRow({
+function InlineTaskCreator({ milestoneId, onSave }: InlineTaskCreatorProps) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && value.trim()) {
+      e.preventDefault();
+      onSave(value.trim(), milestoneId);
+      setValue("");
+      inputRef.current?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setValue("");
+      setIsEditing(false);
+    }
+  };
+
+  const handleBlur = () => {
+    if (value.trim()) {
+      onSave(value.trim(), milestoneId);
+    }
+    setValue("");
+    setIsEditing(false);
+  };
+
+  if (!isEditing) {
+    return (
+      <button
+        onClick={() => setIsEditing(true)}
+        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-[18px] pr-3 text-left transition-all hover:bg-muted/60"
+      >
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground/40 transition-colors group-hover:bg-muted/60 group-hover:text-muted-foreground/60">
+          <RiAddLine className="size-3" />
+        </div>
+        <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
+          Add task...
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg py-1.5 pl-[18px] pr-3">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/60 text-muted-foreground/50">
+        <RiAddLine className="size-3" />
+      </div>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        placeholder="Task name..."
+        className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none"
+      />
+    </div>
+  );
+}
+
+// =============================================================================
+// Milestone Section (with tasks)
+// =============================================================================
+
+interface MilestoneSectionProps {
+  milestone: Milestone;
+  tasks: ScheduleTask[];
+  isCurrent: boolean;
+  parentGoal: GoalItem;
+  expandedTaskId: string | null;
+  onExpandTask: (taskId: string) => void;
+  getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
+  onToggleMilestone?: () => void;
+  onUpdateMilestone?: (label: string) => void;
+  onDeleteMilestone?: () => void;
+  onToggleTask?: (taskId: string) => void;
+  onAddTask?: (label: string, milestoneId: string) => void;
+  onUpdateTask?: (taskId: string, updates: Partial<ScheduleTask>) => void;
+  onAddSubtask?: (taskId: string, label: string) => void;
+  onToggleSubtask?: (taskId: string, subtaskId: string) => void;
+  onUpdateSubtask?: (taskId: string, subtaskId: string, label: string) => void;
+  onDeleteSubtask?: (taskId: string, subtaskId: string) => void;
+  onDeleteTask?: (taskId: string) => void;
+}
+
+function MilestoneSection({
   milestone,
+  tasks,
   isCurrent,
-  onToggle,
-  onUpdate,
-  onDelete,
-}: MilestoneRowProps) {
+  parentGoal,
+  expandedTaskId,
+  onExpandTask,
+  getTaskSchedule,
+  getTaskDeadline,
+  onToggleMilestone,
+  onUpdateMilestone,
+  onDeleteMilestone,
+  onToggleTask,
+  onAddTask,
+  onUpdateTask,
+  onAddSubtask,
+  onToggleSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+  onDeleteTask,
+}: MilestoneSectionProps) {
+  const [isOpen, setIsOpen] = React.useState(!milestone.completed);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState(milestone.label);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -118,7 +231,7 @@ function MilestoneRow({
     if (e.key === "Enter") {
       e.preventDefault();
       if (editValue.trim() && editValue.trim() !== milestone.label) {
-        onUpdate?.(editValue.trim());
+        onUpdateMilestone?.(editValue.trim());
       }
       setIsEditing(false);
     } else if (e.key === "Escape") {
@@ -130,7 +243,7 @@ function MilestoneRow({
 
   const handleBlur = () => {
     if (editValue.trim() && editValue.trim() !== milestone.label) {
-      onUpdate?.(editValue.trim());
+      onUpdateMilestone?.(editValue.trim());
     } else {
       setEditValue(milestone.label);
     }
@@ -138,72 +251,154 @@ function MilestoneRow({
   };
 
   const handleDoubleClick = () => {
-    if (onUpdate) {
+    if (onUpdateMilestone) {
       setIsEditing(true);
     }
   };
 
+  // Count completed tasks
+  const completedCount = tasks.filter((t) => t.completed).length;
+  const totalCount = tasks.length;
+
   return (
-    <div
-      className={cn(
-        "group flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-2 transition-all",
-        isCurrent && !milestone.completed && "bg-muted/40",
-        !isCurrent && !milestone.completed && "opacity-70",
-      )}
-    >
-      {/* Checkbox */}
-      <button
-        onClick={onToggle}
-        disabled={!onToggle}
+    <div className="flex flex-col">
+      {/* Milestone header */}
+      <div
         className={cn(
-          "flex size-5 shrink-0 items-center justify-center rounded-full border transition-all",
-          milestone.completed
-            ? "border-green-500/50 bg-green-500/10 text-green-600"
-            : isCurrent
-              ? "border-border hover:border-muted-foreground/50 hover:bg-muted/60"
-              : "border-border/50 hover:border-muted-foreground/30",
-          !onToggle && "cursor-default",
+          "group flex items-center gap-2 rounded-lg py-1.5 pl-1 pr-2 transition-all",
+          isCurrent && !milestone.completed && "bg-muted/40",
+          !isCurrent && !milestone.completed && "opacity-70",
         )}
       >
-        {milestone.completed && <RiCheckLine className="size-3" />}
-      </button>
+        {/* Expand/collapse chevron */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+        >
+          <RiArrowRightSLine
+            className={cn(
+              "size-4 transition-transform",
+              isOpen && "rotate-90",
+            )}
+          />
+        </button>
 
-      {/* Label */}
-      {isEditing ? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
-          className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground focus:outline-none"
-        />
-      ) : (
-        <span
-          onDoubleClick={handleDoubleClick}
+        {/* Checkbox */}
+        <button
+          onClick={onToggleMilestone}
+          disabled={!onToggleMilestone}
           className={cn(
-            "min-w-0 flex-1 truncate text-xs",
+            "flex size-5 shrink-0 items-center justify-center rounded-full border transition-all",
             milestone.completed
-              ? "text-muted-foreground line-through"
+              ? "border-green-500/50 bg-green-500/10 text-green-600"
               : isCurrent
-                ? "font-medium text-foreground"
-                : "text-foreground/80",
-            onUpdate && "cursor-text",
+                ? "border-border hover:border-muted-foreground/50 hover:bg-muted/60"
+                : "border-border/50 hover:border-muted-foreground/30",
+            !onToggleMilestone && "cursor-default",
           )}
         >
-          {milestone.label}
-        </span>
-      )}
-
-      {/* Delete button */}
-      {onDelete && !isEditing && (
-        <button
-          onClick={onDelete}
-          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/40 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-        >
-          <RiDeleteBinLine className="size-3" />
+          {milestone.completed && <RiCheckLine className="size-3" />}
         </button>
+
+        {/* Label */}
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            className="h-5 min-w-0 flex-1 bg-transparent text-xs font-medium text-foreground focus:outline-none"
+          />
+        ) : (
+          <span
+            onDoubleClick={handleDoubleClick}
+            className={cn(
+              "min-w-0 flex-1 truncate text-xs",
+              milestone.completed
+                ? "text-muted-foreground line-through"
+                : isCurrent
+                  ? "font-medium text-foreground"
+                  : "text-foreground/80",
+              onUpdateMilestone && "cursor-text",
+            )}
+          >
+            {milestone.label}
+          </span>
+        )}
+
+        {/* Task count */}
+        {totalCount > 0 && !isEditing && (
+          <span className="text-xs text-muted-foreground/50">
+            {completedCount}/{totalCount}
+          </span>
+        )}
+
+        {/* Delete button */}
+        {onDeleteMilestone && !isEditing && (
+          <button
+            onClick={onDeleteMilestone}
+            className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/40 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+          >
+            <RiDeleteBinLine className="size-3" />
+          </button>
+        )}
+      </div>
+
+      {/* Tasks */}
+      {isOpen && (
+        <div className="flex flex-col gap-0.5 pl-[14px]">
+          {tasks.map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              parentGoal={parentGoal}
+              scheduleInfo={getTaskSchedule?.(task.id)}
+              deadlineInfo={getTaskDeadline?.(task.id)}
+              isExpanded={expandedTaskId === task.id}
+              onToggle={onToggleTask}
+              onExpand={onExpandTask}
+              onUpdateTask={
+                onUpdateTask
+                  ? (updates) => onUpdateTask(task.id, updates)
+                  : undefined
+              }
+              onAddSubtask={
+                onAddSubtask
+                  ? (label) => onAddSubtask(task.id, label)
+                  : undefined
+              }
+              onToggleSubtask={
+                onToggleSubtask
+                  ? (subtaskId) => onToggleSubtask(task.id, subtaskId)
+                  : undefined
+              }
+              onUpdateSubtask={
+                onUpdateSubtask
+                  ? (subtaskId, label) => onUpdateSubtask(task.id, subtaskId, label)
+                  : undefined
+              }
+              onDeleteSubtask={
+                onDeleteSubtask
+                  ? (subtaskId) => onDeleteSubtask(task.id, subtaskId)
+                  : undefined
+              }
+              onDeleteTask={
+                onDeleteTask ? () => onDeleteTask(task.id) : undefined
+              }
+              draggable={false}
+            />
+          ))}
+
+          {/* Inline task creator */}
+          {onAddTask && (
+            <InlineTaskCreator
+              milestoneId={milestone.id}
+              onSave={onAddTask}
+            />
+          )}
+        </div>
       )}
     </div>
   );
@@ -216,43 +411,133 @@ function MilestoneRow({
 export interface GoalDetailMilestonesProps {
   /** Milestones for this goal */
   milestones: Milestone[];
+  /** Tasks for this goal */
+  tasks: ScheduleTask[];
+  /** Parent goal for task row context */
+  parentGoal: GoalItem;
+  /** Function to get schedule info for a task */
+  getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
+  /** Function to get deadline info for a task */
+  getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   /** Callback to add a new milestone */
-  onAdd?: (label: string) => void;
+  onAddMilestone?: (label: string) => void;
   /** Callback to toggle a milestone's completion */
-  onToggle?: (milestoneId: string) => void;
+  onToggleMilestone?: (milestoneId: string) => void;
   /** Callback to update a milestone's label */
-  onUpdate?: (milestoneId: string, label: string) => void;
+  onUpdateMilestone?: (milestoneId: string, label: string) => void;
   /** Callback to delete a milestone */
-  onDelete?: (milestoneId: string) => void;
+  onDeleteMilestone?: (milestoneId: string) => void;
+  /** Callback when a task is toggled */
+  onToggleTask?: (taskId: string) => void;
+  /** Callback to add a new task */
+  onAddTask?: (label: string, milestoneId?: string) => void;
+  /** Callback to update a task */
+  onUpdateTask?: (taskId: string, updates: Partial<ScheduleTask>) => void;
+  /** Callback to add a subtask */
+  onAddSubtask?: (taskId: string, label: string) => void;
+  /** Callback to toggle a subtask */
+  onToggleSubtask?: (taskId: string, subtaskId: string) => void;
+  /** Callback to update a subtask */
+  onUpdateSubtask?: (taskId: string, subtaskId: string, label: string) => void;
+  /** Callback to delete a subtask */
+  onDeleteSubtask?: (taskId: string, subtaskId: string) => void;
+  /** Callback to delete a task */
+  onDeleteTask?: (taskId: string) => void;
   className?: string;
 }
 
 export function GoalDetailMilestones({
   milestones,
-  onAdd,
-  onToggle,
-  onUpdate,
-  onDelete,
+  tasks,
+  parentGoal,
+  getTaskSchedule,
+  getTaskDeadline,
+  onAddMilestone,
+  onToggleMilestone,
+  onUpdateMilestone,
+  onDeleteMilestone,
+  onToggleTask,
+  onAddTask,
+  onUpdateTask,
+  onAddSubtask,
+  onToggleSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+  onDeleteTask,
   className,
 }: GoalDetailMilestonesProps) {
   // Find the current milestone (first incomplete)
   const currentMilestoneId = milestones.find((m) => !m.completed)?.id;
 
+  // Task expansion state (accordion - one at a time)
+  const [expandedTaskId, setExpandedTaskId] = React.useState<string | null>(
+    null,
+  );
+
+  const handleExpandTask = React.useCallback((taskId: string) => {
+    setExpandedTaskId((prev) => (prev === taskId ? null : taskId));
+  }, []);
+
+  // Group tasks by milestone
+  const tasksByMilestone = React.useMemo(() => {
+    const grouped = new Map<string, ScheduleTask[]>();
+    
+    // Initialize with empty arrays for each milestone
+    milestones.forEach((m) => {
+      grouped.set(m.id, []);
+    });
+
+    // Group tasks
+    tasks.forEach((task) => {
+      if (task.milestoneId && grouped.has(task.milestoneId)) {
+        grouped.get(task.milestoneId)!.push(task);
+      }
+    });
+
+    return grouped;
+  }, [milestones, tasks]);
+
   return (
-    <div className={cn("flex flex-col gap-0.5", className)}>
+    <div className={cn("flex flex-col gap-1", className)}>
       {milestones.map((milestone) => (
-        <MilestoneRow
+        <MilestoneSection
           key={milestone.id}
           milestone={milestone}
+          tasks={tasksByMilestone.get(milestone.id) ?? []}
           isCurrent={milestone.id === currentMilestoneId}
-          onToggle={onToggle ? () => onToggle(milestone.id) : undefined}
-          onUpdate={onUpdate ? (label) => onUpdate(milestone.id, label) : undefined}
-          onDelete={onDelete ? () => onDelete(milestone.id) : undefined}
+          parentGoal={parentGoal}
+          expandedTaskId={expandedTaskId}
+          onExpandTask={handleExpandTask}
+          getTaskSchedule={getTaskSchedule}
+          getTaskDeadline={getTaskDeadline}
+          onToggleMilestone={
+            onToggleMilestone
+              ? () => onToggleMilestone(milestone.id)
+              : undefined
+          }
+          onUpdateMilestone={
+            onUpdateMilestone
+              ? (label) => onUpdateMilestone(milestone.id, label)
+              : undefined
+          }
+          onDeleteMilestone={
+            onDeleteMilestone
+              ? () => onDeleteMilestone(milestone.id)
+              : undefined
+          }
+          onToggleTask={onToggleTask}
+          onAddTask={onAddTask}
+          onUpdateTask={onUpdateTask}
+          onAddSubtask={onAddSubtask}
+          onToggleSubtask={onToggleSubtask}
+          onUpdateSubtask={onUpdateSubtask}
+          onDeleteSubtask={onDeleteSubtask}
+          onDeleteTask={onDeleteTask}
         />
       ))}
 
       {/* Inline milestone creator */}
-      {onAdd && <InlineMilestoneCreator onSave={onAdd} />}
+      {onAddMilestone && <InlineMilestoneCreator onSave={onAddMilestone} />}
     </div>
   );
 }
