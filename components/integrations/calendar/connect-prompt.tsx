@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { cn } from "@/lib/utils";
+import { RiLinksLine } from "@remixicon/react";
 import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
 import type { CalendarProvider } from "@/lib/calendar-sync";
 
@@ -20,27 +22,45 @@ function ConnectPrompt({ provider, onConnect }: ConnectPromptProps) {
   const Icon = config.icon;
 
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
-      {/* Provider Icon */}
+    <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+      {/* Provider Icon - Circular with subtle shadow */}
       <div
-        className="mb-4 flex size-16 items-center justify-center rounded-2xl"
-        style={{ backgroundColor: `${config.brandColor}15`, color: config.brandColor }}
+        className={cn(
+          "mb-5 flex size-16 items-center justify-center rounded-full",
+          "ring-1 ring-inset ring-black/[0.08] dark:ring-white/[0.08]",
+          "shadow-sm",
+        )}
+        style={{
+          backgroundColor: `${config.brandColor}10`,
+          color: config.brandColor,
+        }}
       >
-        <Icon className="size-8" />
+        <Icon className="size-7" />
       </div>
 
+      {/* Title */}
+      <h3 className="mb-2 text-sm font-medium text-foreground">
+        Connect {config.name}
+      </h3>
+
       {/* Description */}
-      <p className="mb-6 max-w-[220px] text-sm text-muted-foreground">
-        Connect your {config.name} to see your events in SuperOS and sync your
-        blueprint.
+      <p className="mb-6 max-w-[240px] text-sm leading-relaxed text-muted-foreground">
+        See your events in SuperOS and sync your blueprint as focus time blocks.
       </p>
 
-      {/* Connect Button */}
+      {/* Connect Button - Full width with icon */}
       <button
         onClick={onConnect}
-        className="h-9 rounded-md bg-foreground px-4 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+        className={cn(
+          "flex w-full max-w-[200px] items-center justify-center gap-2",
+          "rounded-lg bg-foreground px-4 py-2.5",
+          "text-sm font-medium text-background",
+          "transition-colors duration-150 hover:bg-foreground/90",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        )}
       >
-        Connect {config.name}
+        <RiLinksLine className="size-4" />
+        <span>Connect</span>
       </button>
     </div>
   );

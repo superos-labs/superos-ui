@@ -96,7 +96,7 @@ import {
   RiMagicLine,
   RiShapesLine,
   RiLayoutGridLine,
-  RiPlugLine,
+  RiLoopLeftLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -1169,7 +1169,7 @@ export function ShellContentComponent({
             onClick={handleIntegrationsToggle}
             title="Integrations"
           >
-            <RiPlugLine className="size-4" />
+            <RiLoopLeftLine className="size-4" />
           </button>
         )}
         {!isOnboarding && (

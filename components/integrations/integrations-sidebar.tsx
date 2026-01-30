@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiCloseLine, RiArrowLeftSLine } from "@remixicon/react";
+import { RiCloseLine, RiArrowLeftSLine, RiLoopLeftLine } from "@remixicon/react";
 import { IntegrationList } from "./integration-list";
 import { ProviderSettingsView } from "./calendar";
 import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
@@ -66,6 +66,10 @@ function IntegrationsSidebar({
     return CALENDAR_PROVIDERS[provider].name;
   };
 
+  const getProviderIcon = (provider: CalendarProvider) => {
+    return CALENDAR_PROVIDERS[provider].icon;
+  };
+
   const getIntegrationState = (
     provider: CalendarProvider,
   ): CalendarIntegrationState => {
@@ -80,6 +84,11 @@ function IntegrationsSidebar({
     );
   };
 
+  // Get provider icon for header when in provider view
+  const ProviderIcon = !isListView
+    ? getProviderIcon(currentView.provider)
+    : null;
+
   return (
     <div
       className={cn(
@@ -88,18 +97,40 @@ function IntegrationsSidebar({
       )}
     >
       {/* Header */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-        <div className="flex items-center gap-2">
-          {!isListView && (
-            <button
-              onClick={onNavigateToList}
-              className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Back to integrations"
-            >
-              <RiArrowLeftSLine className="size-5" />
-            </button>
+      <div className="flex shrink-0 items-center justify-between border-b border-border/60 px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          {!isListView ? (
+            <>
+              <button
+                onClick={onNavigateToList}
+                className={cn(
+                  "flex size-7 items-center justify-center rounded-lg",
+                  "text-muted-foreground transition-colors duration-150",
+                  "hover:bg-muted hover:text-foreground",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                )}
+                aria-label="Back to integrations"
+              >
+                <RiArrowLeftSLine className="size-4" />
+              </button>
+              {ProviderIcon && (
+                <div
+                  className="flex size-6 items-center justify-center rounded-full ring-1 ring-inset ring-black/[0.08] dark:ring-white/[0.08]"
+                  style={{
+                    backgroundColor: `${CALENDAR_PROVIDERS[currentView.provider].brandColor}12`,
+                    color: CALENDAR_PROVIDERS[currentView.provider].brandColor,
+                  }}
+                >
+                  <ProviderIcon className="size-3.5" />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex size-7 items-center justify-center rounded-lg bg-muted">
+              <RiLoopLeftLine className="size-4 text-muted-foreground" />
+            </div>
           )}
-          <h2 className="text-sm font-medium text-foreground">
+          <h2 className="text-sm font-semibold text-foreground">
             {isListView
               ? "Integrations"
               : getProviderTitle(currentView.provider)}
@@ -107,15 +138,20 @@ function IntegrationsSidebar({
         </div>
         <button
           onClick={onClose}
-          className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className={cn(
+            "flex size-7 items-center justify-center rounded-lg",
+            "text-muted-foreground transition-colors duration-150",
+            "hover:bg-muted hover:text-foreground",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          )}
           aria-label="Close"
         >
-          <RiCloseLine className="size-5" />
+          <RiCloseLine className="size-4" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scrollbar-hidden">
         {isListView ? (
           <IntegrationList
             integrationStates={integrationStates}

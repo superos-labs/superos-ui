@@ -22,7 +22,7 @@ function IntegrationList({
   onSelectProvider,
 }: IntegrationListProps) {
   return (
-    <div className="flex flex-col gap-1 p-2">
+    <div className="flex flex-col gap-1 p-3">
       {PROVIDER_ORDER.map((provider) => {
         const state = integrationStates.get(provider) ?? {
           provider,

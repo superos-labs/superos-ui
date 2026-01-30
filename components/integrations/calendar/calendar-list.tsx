@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { RiDownloadLine } from "@remixicon/react";
 import { CalendarRow } from "./calendar-row";
 import type { ProviderCalendar, CalendarProvider } from "@/lib/calendar-sync";
 
@@ -27,14 +28,15 @@ function CalendarList({ calendars, provider, onToggleImport }: CalendarListProps
   }
 
   return (
-    <div className="flex flex-col">
-      {/* Section Label */}
-      <p className="px-2 pb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground/70">
-        Import to SuperOS
-      </p>
+    <div className="flex flex-col gap-2">
+      {/* Section Label with Icon */}
+      <div className="flex items-center gap-2 px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <RiDownloadLine className="size-3.5" />
+        <span>Import to SuperOS</span>
+      </div>
 
       {/* Calendar Toggles */}
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col">
         {calendars.map((calendar) => (
           <CalendarRow
             key={calendar.id}

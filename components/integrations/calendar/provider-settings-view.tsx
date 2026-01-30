@@ -1,9 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { cn } from "@/lib/utils";
+import { RiUserLine } from "@remixicon/react";
 import { ConnectPrompt } from "./connect-prompt";
 import { CalendarList } from "./calendar-list";
 import { ExportSection } from "./export-section";
+import { Separator } from "@/components/ui/separator";
 import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
 import type {
   CalendarProvider,
@@ -51,18 +54,31 @@ function ProviderSettingsView({
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-5 p-4">
       {/* Account Info */}
-      <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
-        <span className="truncate text-sm text-foreground">
-          {state.accountEmail}
-        </span>
-        <button
-          onClick={onDisconnect}
-          className="shrink-0 text-xs text-muted-foreground transition-colors hover:text-red-500"
-        >
-          Disconnect
-        </button>
+      <div
+        className={cn(
+          "flex items-center gap-3 rounded-xl px-3 py-3",
+          "ring-1 ring-inset ring-border/60",
+        )}
+      >
+        {/* Account icon */}
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+          <RiUserLine className="size-4 text-muted-foreground" />
+        </div>
+
+        {/* Email and disconnect */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm font-medium text-foreground">
+            {state.accountEmail}
+          </span>
+          <button
+            onClick={onDisconnect}
+            className="w-fit text-xs text-muted-foreground/70 transition-colors hover:text-destructive"
+          >
+            Disconnect
+          </button>
+        </div>
       </div>
 
       {/* Calendar Import List */}
@@ -72,8 +88,10 @@ function ProviderSettingsView({
         onToggleImport={onToggleCalendarImport}
       />
 
-      {/* Divider */}
-      <div className="border-t border-border" />
+      {/* Soft Divider */}
+      <div className="px-2">
+        <Separator className="bg-border/60" />
+      </div>
 
       {/* Blueprint Export Section */}
       <ExportSection
