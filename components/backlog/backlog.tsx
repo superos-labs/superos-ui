@@ -103,7 +103,7 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
 
   // Onboarding props
   /** Current onboarding step (null if not in onboarding) */
-  onboardingStep?: "goals" | "essentials" | null;
+  onboardingStep?: "goals" | "essentials" | "blueprint" | null;
   /** Callback when user clicks Continue during goals onboarding step */
   onOnboardingContinue?: () => void;
   /** Callback when onboarding is completed (essentials Continue/Skip clicked) */

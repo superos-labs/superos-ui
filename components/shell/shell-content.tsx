@@ -52,6 +52,7 @@ import { DragGhost, useDragContextOptional } from "@/components/drag";
 import {
   PlanningPanel,
   PlanWeekPromptCard,
+  BlueprintBacklog,
 } from "@/components/weekly-planning";
 import { toAnalyticsItems } from "@/lib/adapters";
 import {
@@ -394,8 +395,11 @@ export function ShellContentComponent({
     // Onboarding state
     onboardingStep,
     isOnboarding,
+    isOnboardingBlueprint,
     onContinueFromGoals,
+    onContinueFromEssentials,
     onCompleteOnboarding,
+    onSkipBlueprintCreation,
     // Plan week prompt
     showPlanWeekPrompt,
     onDismissPlanWeekPrompt,
@@ -458,16 +462,16 @@ export function ShellContentComponent({
       planningFlow.weeklyFocusTaskIds;
   }, [planningFlow.weeklyFocusTaskIds]);
 
-  // Track if user has added essentials this planning session (for "Add essentials to calendar" button)
+  // Track if user has added essentials this session (for "Add essentials to calendar" button)
   const [hasAddedEssentialsThisSession, setHasAddedEssentialsThisSession] =
     React.useState(false);
 
-  // Reset the flag when planning mode is exited
+  // Reset the flag when planning mode or onboarding blueprint mode is exited
   React.useEffect(() => {
-    if (!isPlanningMode) {
+    if (!isPlanningMode && !isOnboardingBlueprint) {
       setHasAddedEssentialsThisSession(false);
     }
-  }, [isPlanningMode]);
+  }, [isPlanningMode, isOnboardingBlueprint]);
 
   // Handler for "Add essentials to calendar" button
   const handleAddEssentialsToCalendar = React.useCallback(() => {
@@ -475,12 +479,15 @@ export function ShellContentComponent({
     setHasAddedEssentialsThisSession(true);
   }, [onImportEssentialsToWeek]);
 
-  // Auto-open planning budget sidebar when entering schedule step
+  // Auto-open planning budget sidebar when entering schedule step or blueprint creation
   React.useEffect(() => {
     if (isPlanning && planningFlow.step === "schedule") {
       setShowRightSidebar(true);
     }
-  }, [isPlanning, planningFlow.step, setShowRightSidebar]);
+    if (isOnboardingBlueprint) {
+      setShowRightSidebar(true);
+    }
+  }, [isPlanning, planningFlow.step, isOnboardingBlueprint, setShowRightSidebar]);
 
   // Duplicate last week's schedule from blueprint
   const handleDuplicateLastWeek = React.useCallback(() => {
@@ -539,6 +546,31 @@ export function ShellContentComponent({
     onReplaceEvents,
     exitBlueprintEditMode,
   ]);
+
+  // -------------------------------------------------------------------------
+  // Blueprint Creation During Onboarding
+  // -------------------------------------------------------------------------
+  const handleSaveOnboardingBlueprint = React.useCallback(() => {
+    // Convert current events to blueprint and save
+    const blueprintBlocks = eventsToBlueprint(events, weekDates);
+    onSaveBlueprint({
+      blocks: blueprintBlocks,
+      updatedAt: new Date().toISOString(),
+    });
+    // Clear the calendar - blueprint creation is just setting the starting point,
+    // not planning the actual week
+    onReplaceEvents([]);
+    // Complete onboarding (shows plan week prompt)
+    onCompleteOnboarding();
+  }, [events, weekDates, onSaveBlueprint, onReplaceEvents, onCompleteOnboarding]);
+
+  // Handler to skip blueprint creation and clear any events added during the step
+  const handleSkipOnboardingBlueprint = React.useCallback(() => {
+    // Clear any events the user may have added during blueprint creation
+    onReplaceEvents([]);
+    // Skip blueprint creation (shows plan week prompt)
+    onSkipBlueprintCreation();
+  }, [onReplaceEvents, onSkipBlueprintCreation]);
 
   // Compute if current events' essentials differ from essential templates
   // During blueprint edit mode, we compare the current events (not the saved blueprint)
@@ -1161,15 +1193,39 @@ export function ShellContentComponent({
     </ShellToolbar>
   );
 
+  // Desktop toolbar for onboarding blueprint creation
+  const renderOnboardingBlueprintToolbar = () => (
+    <ShellToolbar>
+      <div className="flex items-center gap-1">
+        {/* Empty left section for balance */}
+      </div>
+      <div className="absolute left-1/2 flex -translate-x-1/2 items-center">
+        <span className="text-sm font-medium text-foreground">
+          Create your blueprint
+        </span>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleSkipOnboardingBlueprint}
+          className="flex h-8 items-center rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+        >
+          Skip
+        </button>
+      </div>
+    </ShellToolbar>
+  );
+
   return (
     <>
       <Shell>
         {/* Render appropriate toolbar based on breakpoint and mode */}
         {useMobileLayout
           ? renderMobileToolbar()
-          : isBlueprintEditMode
-            ? renderBlueprintEditToolbar()
-            : renderDesktopToolbar()}
+          : isOnboardingBlueprint
+            ? renderOnboardingBlueprintToolbar()
+            : isBlueprintEditMode
+              ? renderBlueprintEditToolbar()
+              : renderDesktopToolbar()}
 
         {/* Main Content Area - responsive layout */}
         {useMobileLayout ? (
@@ -1201,20 +1257,31 @@ export function ShellContentComponent({
         ) : (
           // Desktop: Three-panel layout
           <div
-            className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning || isBlueprintEditMode ? "gap-4" : "gap-0"}`}
+            className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning || isBlueprintEditMode || isOnboardingBlueprint ? "gap-4" : "gap-0"}`}
           >
-            {/* Left Sidebar - Backlog or Planning Panel */}
+            {/* Left Sidebar - Backlog, Planning Panel, or Blueprint Backlog */}
             <div
               className={cn(
                 "shrink-0 overflow-hidden transition-all duration-300 ease-out",
                 isPlanning
                   ? "w-[420px] opacity-100"
-                  : showSidebar || isBlueprintEditMode
+                  : showSidebar || isBlueprintEditMode || isOnboardingBlueprint
                     ? "w-[360px] opacity-100"
                     : "w-0 opacity-0",
               )}
             >
-              {isPlanning ? (
+              {isOnboardingBlueprint ? (
+                <BlueprintBacklog
+                  goals={goals}
+                  essentials={essentials}
+                  onSave={handleSaveOnboardingBlueprint}
+                  showAddEssentialsButton={!hasAddedEssentialsThisSession}
+                  onAddEssentialsToCalendar={handleAddEssentialsToCalendar}
+                  getTaskSchedule={getTaskSchedule}
+                  getTaskDeadline={getTaskDeadline}
+                  className="h-full w-[360px] max-w-none"
+                />
+              ) : isPlanning ? (
                 <PlanningPanel
                   goals={goals}
                   essentials={essentials}
@@ -1281,7 +1348,7 @@ export function ShellContentComponent({
                   // Onboarding props
                   onboardingStep={onboardingStep}
                   onOnboardingContinue={onContinueFromGoals}
-                  onOnboardingComplete={onCompleteOnboarding}
+                  onOnboardingComplete={onContinueFromEssentials}
                   // Weekly focus
                   currentWeekStart={weekStartDate}
                 />
@@ -1367,7 +1434,7 @@ export function ShellContentComponent({
                     scrollToCurrentTimeKey={scrollToCurrentTimeKey}
                     {...calendarHandlers}
                     onEventClick={handleEventClick}
-                    enableExternalDrop={!isOnboarding}
+                    enableExternalDrop={!isOnboarding || isOnboardingBlueprint}
                     onExternalDrop={handleExternalDrop}
                     externalDragPreview={externalDragPreview}
                     onDeadlineDrop={handleDeadlineDrop}
@@ -1380,8 +1447,8 @@ export function ShellContentComponent({
                     dayBoundariesEnabled={dayBoundariesEnabled}
                     dayBoundariesDisplay={dayBoundariesDisplay}
                   />
-                  {/* Dimming overlay - shown during onboarding, planning prioritize step, and plan week prompt */}
-                  {(isOnboarding ||
+                  {/* Dimming overlay - shown during onboarding (except blueprint step), planning prioritize step, and plan week prompt */}
+                  {((isOnboarding && !isOnboardingBlueprint) ||
                     showPlanWeekPrompt ||
                     (isPlanning && planningFlow.step === "prioritize")) && (
                     <div className="absolute inset-0 bg-background/60 pointer-events-none z-10" />
@@ -1440,14 +1507,14 @@ export function ShellContentComponent({
                   className="h-full w-[380px] max-w-none overflow-y-auto"
                 />
               ) : renderedContent === "analytics" ? (
-                isPlanning ? (
+                isPlanning || isOnboardingBlueprint ? (
                   <PlanningBudget
                     goals={planningBudgetData.goals}
                     essentials={planningBudgetData.essentials}
                     wakeUpMinutes={dayStartMinutes}
                     windDownMinutes={dayEndMinutes}
                     isSleepConfigured={dayBoundariesEnabled}
-                    weekLabel={formatWeekRange(weekDates)}
+                    weekLabel={isOnboardingBlueprint ? "Your typical week" : formatWeekRange(weekDates)}
                     className="h-full w-[380px] max-w-none overflow-y-auto"
                   />
                 ) : (

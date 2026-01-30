@@ -18,7 +18,7 @@ import type { UseBlockSidebarHandlersReturn } from "@/components/block";
 // =============================================================================
 
 /** Onboarding step for first-time user experience */
-export type OnboardingStep = "goals" | "essentials" | null;
+export type OnboardingStep = "goals" | "essentials" | "blueprint" | null;
 
 export interface UseShellLayoutOptions {
   /** Callback when an event is created (to auto-select it) */
@@ -58,8 +58,11 @@ export interface UseShellLayoutReturn {
   // Onboarding state
   onboardingStep: OnboardingStep;
   isOnboarding: boolean;
+  isOnboardingBlueprint: boolean;
   onContinueFromGoals: () => void;
+  onContinueFromEssentials: () => void;
   onCompleteOnboarding: () => void;
+  onSkipBlueprintCreation: () => void;
 
   // Plan week prompt (shown after onboarding completes)
   showPlanWeekPrompt: boolean;
@@ -129,6 +132,7 @@ export function useShellLayout(
   );
 
   const isOnboarding = onboardingStep !== null;
+  const isOnboardingBlueprint = onboardingStep === "blueprint";
 
   // Plan week prompt - shown after onboarding completes
   const [showPlanWeekPrompt, setShowPlanWeekPrompt] = React.useState(false);
@@ -163,10 +167,22 @@ export function useShellLayout(
     setBacklogMode("view");
   }, []);
 
-  // Handler to complete onboarding (called when essentials Done/Skip is clicked)
+  // Handler to advance from essentials step to blueprint creation
+  const onContinueFromEssentials = React.useCallback(() => {
+    setOnboardingStep("blueprint");
+  }, []);
+
+  // Handler to complete onboarding (called after blueprint creation or skip)
   const onCompleteOnboarding = React.useCallback(() => {
     setOnboardingStep(null);
     // Show plan week prompt after onboarding completes
+    setShowPlanWeekPrompt(true);
+  }, []);
+
+  // Handler to skip blueprint creation during onboarding
+  const onSkipBlueprintCreation = React.useCallback(() => {
+    setOnboardingStep(null);
+    // Show plan week prompt (same as completing onboarding)
     setShowPlanWeekPrompt(true);
   }, []);
 
@@ -357,8 +373,11 @@ export function useShellLayout(
     // Onboarding state
     onboardingStep,
     isOnboarding,
+    isOnboardingBlueprint,
     onContinueFromGoals,
+    onContinueFromEssentials,
     onCompleteOnboarding,
+    onSkipBlueprintCreation,
 
     // Plan week prompt
     showPlanWeekPrompt,

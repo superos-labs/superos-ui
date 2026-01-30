@@ -12,5 +12,8 @@ export type { PlanningPrioritizeViewProps } from "./planning-prioritize-view";
 export { PlanWeekPromptCard } from "./plan-week-prompt-card";
 export type { PlanWeekPromptCardProps } from "./plan-week-prompt-card";
 
+export { BlueprintBacklog } from "./blueprint-backlog";
+export type { BlueprintBacklogProps } from "./blueprint-backlog";
+
 // Re-export types from lib/weekly-planning for convenience
 export type { PlanningStep } from "@/lib/weekly-planning";
