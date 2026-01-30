@@ -24,9 +24,9 @@ function ConnectPrompt({ provider, onConnect }: ConnectPromptProps) {
       {/* Provider Icon */}
       <div
         className="mb-4 flex size-16 items-center justify-center rounded-2xl"
-        style={{ backgroundColor: `${config.brandColor}15` }}
+        style={{ backgroundColor: `${config.brandColor}15`, color: config.brandColor }}
       >
-        <Icon className="size-8" style={{ color: config.brandColor }} />
+        <Icon className="size-8" />
       </div>
 
       {/* Description */}
