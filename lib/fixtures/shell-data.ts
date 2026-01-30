@@ -113,7 +113,7 @@ export type { LifeArea, GoalIconOption } from "@/lib/types";
 // Data Set Types
 // =============================================================================
 
-export type DataSetId = "sample" | "empty";
+export type DataSetId = "sample" | "empty" | "demo";
 
 export interface DataSet {
   essentials: ScheduleEssential[];
@@ -682,6 +682,24 @@ export const EMPTY_GOALS: ScheduleGoal[] = [];
 export const EMPTY_CALENDAR_EVENTS: CalendarEvent[] = [];
 
 // =============================================================================
+// Demo Data Set (goals without tasks, for quick demo setup)
+// =============================================================================
+
+/** Demo goals - same as sample goals but without tasks/milestones */
+export const DEMO_GOALS: ScheduleGoal[] = SHELL_GOALS.map((goal) => ({
+  ...goal,
+  tasks: [],
+  milestones: [],
+}));
+
+/** Default enabled essentials for demo mode (common ones) */
+export const DEMO_ENABLED_ESSENTIAL_IDS: string[] = [
+  "eat",
+  "exercise",
+  "downtime",
+];
+
+// =============================================================================
 // Data Set Configuration
 // =============================================================================
 
@@ -694,6 +712,11 @@ export const DATA_SETS: Record<DataSetId, DataSet> = {
   empty: {
     essentials: EMPTY_ESSENTIALS,
     goals: EMPTY_GOALS,
+    events: EMPTY_CALENDAR_EVENTS,
+  },
+  demo: {
+    essentials: ALL_ESSENTIALS,
+    goals: DEMO_GOALS,
     events: EMPTY_CALENDAR_EVENTS,
   },
 };

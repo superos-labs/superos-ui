@@ -316,6 +316,8 @@ export interface ShellContentProps {
   // -------------------------------------------------------------------------
   /** Clear all sample data (for demo purposes) */
   onClearSampleData?: () => void;
+  /** Load demo data (goals without tasks, skips onboarding) */
+  onLoadSampleData?: () => void;
 }
 
 // =============================================================================

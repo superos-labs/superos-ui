@@ -88,6 +88,7 @@ import {
   RiCalendarCheckLine,
   RiDeleteBin2Line,
   RiEditLine,
+  RiMagicLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -229,6 +230,7 @@ export function ShellContentComponent({
   onLayoutChange,
   // Demo/Development
   onClearSampleData,
+  onLoadSampleData,
 }: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
   // Responsive Breakpoint Detection
@@ -982,6 +984,15 @@ export function ShellContentComponent({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
+            {onLoadSampleData && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onLoadSampleData}>
+                  <RiMagicLine className="size-4" />
+                  Load demo data
+                </DropdownMenuItem>
+              </>
+            )}
             {onClearSampleData && (
               <>
                 <DropdownMenuSeparator />
@@ -1143,6 +1154,15 @@ export function ShellContentComponent({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
+            {onLoadSampleData && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onLoadSampleData}>
+                  <RiMagicLine className="size-4" />
+                  Load demo data
+                </DropdownMenuItem>
+              </>
+            )}
             {onClearSampleData && (
               <>
                 <DropdownMenuSeparator />
