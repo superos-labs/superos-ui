@@ -1004,8 +1004,8 @@ export function ShellContentComponent({
   const renderDesktopToolbar = () => (
     <ShellToolbar>
       <div className="flex items-center gap-1">
-        {/* Hide sidebar toggle during onboarding */}
-        {!isOnboarding && (
+        {/* Hide sidebar toggle during onboarding or planning */}
+        {!isOnboarding && !isPlanning && (
           <button
             className={cn(
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
@@ -1016,8 +1016,8 @@ export function ShellContentComponent({
             <RiSideBarLine className="size-4" />
           </button>
         )}
-        {/* Show essentials button when hidden */}
-        {isEssentialsHidden && showSidebar && (
+        {/* Show essentials button when hidden (not during onboarding or planning) */}
+        {isEssentialsHidden && showSidebar && !isOnboarding && !isPlanning && (
           <button
             className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
             onClick={() => setIsEssentialsHidden(false)}

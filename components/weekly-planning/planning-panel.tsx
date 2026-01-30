@@ -12,7 +12,7 @@ import type { Blueprint } from "@/lib/blueprint";
 import type { PlanningStep } from "@/lib/weekly-planning";
 import { PlanningScheduleView } from "./planning-schedule-view";
 import { PlanningPrioritizeView } from "./planning-prioritize-view";
-import { RiCalendarLine, RiCloseLine, RiHistoryLine } from "@remixicon/react";
+import { RiCalendarLine, RiCloseLine } from "@remixicon/react";
 
 // =============================================================================
 // Types
@@ -23,11 +23,11 @@ export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement>
   goals: ScheduleGoal[];
   /** Essentials for scheduling */
   essentials?: ScheduleEssential[];
-  /** Blueprint template (if exists, enables "Duplicate last week" button) */
+  /** Blueprint template (if exists, enables "Start from blueprint" button) */
   blueprint: Blueprint | null;
   /** Current week dates */
   weekDates: Date[];
-  /** Callback to duplicate last week's schedule */
+  /** Callback to apply blueprint to the current week */
   onDuplicateLastWeek?: () => void;
   /** Callback when planning is cancelled */
   onCancel: () => void;
@@ -102,6 +102,9 @@ export function PlanningPanel({
   // Blueprint save preference (default on, only shown when no blueprint exists)
   const [saveAsBlueprint, setSaveAsBlueprint] = React.useState(true);
 
+  // Track if "Start from blueprint" has been clicked (hides button after click)
+  const [blueprintApplied, setBlueprintApplied] = React.useState(false);
+
   // Header content based on step
   const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Plan your week";
   const headerDescription = isPrioritizeStep
@@ -141,15 +144,17 @@ export function PlanningPanel({
 
       {/* Content Area */}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {/* Duplicate last week button - shown when blueprint exists (only in schedule step) */}
-        {isScheduleStep && hasBlueprint && onDuplicateLastWeek && (
+        {/* Start from blueprint button - shown when blueprint exists (only in schedule step, hidden after click) */}
+        {isScheduleStep && hasBlueprint && onDuplicateLastWeek && !blueprintApplied && (
           <div className="border-b border-border px-4 py-3">
             <button
-              onClick={onDuplicateLastWeek}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/50 hover:text-foreground"
+              onClick={() => {
+                onDuplicateLastWeek();
+                setBlueprintApplied(true);
+              }}
+              className="flex w-full items-center justify-center rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/50 hover:text-foreground"
             >
-              <RiHistoryLine className="size-4" />
-              <span>Duplicate last week&apos;s planning</span>
+              Start from blueprint
             </button>
           </div>
         )}
