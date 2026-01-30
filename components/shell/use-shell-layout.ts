@@ -80,7 +80,10 @@ export interface UseShellLayoutReturn {
   setGoalNotes: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 
   // Right sidebar content management
-  renderedContent: "block" | "analytics" | null;
+  renderedContent: "block" | "analytics" | "integrations" | null;
+  setRenderedContent: React.Dispatch<
+    React.SetStateAction<"block" | "analytics" | "integrations" | null>
+  >;
   frozenSidebarData: UseBlockSidebarHandlersReturn["sidebarData"];
   isRightSidebarOpen: boolean;
   updateFrozenSidebarData: (
@@ -223,7 +226,7 @@ export function useShellLayout(
   // Right Sidebar Content State
   // -------------------------------------------------------------------------
   const [renderedContent, setRenderedContent] = React.useState<
-    "block" | "analytics" | null
+    "block" | "analytics" | "integrations" | null
   >(null);
   const [frozenSidebarData, setFrozenSidebarData] =
     React.useState<UseBlockSidebarHandlersReturn["sidebarData"]>(null);
@@ -396,6 +399,7 @@ export function useShellLayout(
 
     // Right sidebar content management
     renderedContent,
+    setRenderedContent,
     frozenSidebarData,
     isRightSidebarOpen,
     updateFrozenSidebarData,

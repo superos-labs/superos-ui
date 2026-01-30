@@ -410,6 +410,7 @@ export function ShellContentComponent({
     setSelectedGoalId,
     goalNotes,
     renderedContent,
+    setRenderedContent,
     frozenSidebarData,
     isRightSidebarOpen,
     updateFrozenSidebarData,
@@ -812,8 +813,10 @@ export function ShellContentComponent({
       setSelectedEventId(null);
       setShowRightSidebar(false);
       integrationsSidebar.open();
+      // Set rendered content immediately so it persists during close animation
+      setRenderedContent("integrations");
     }
-  }, [integrationsSidebar, setSelectedEventId, setShowRightSidebar]);
+  }, [integrationsSidebar, setSelectedEventId, setShowRightSidebar, setRenderedContent]);
 
   // Close integrations sidebar when block or analytics sidebar opens
   React.useEffect(() => {
@@ -822,7 +825,7 @@ export function ShellContentComponent({
     }
   }, [selectedEventId, showRightSidebar, integrationsSidebar]);
 
-  // Compute if integrations sidebar is the active right sidebar
+  // Compute if integrations sidebar is the active right sidebar (for width animation)
   const showIntegrationsSidebar =
     integrationsSidebar.isOpen && !selectedEventId && !showRightSidebar;
 
@@ -1591,7 +1594,8 @@ export function ShellContentComponent({
                   : "w-0 opacity-0",
               )}
             >
-              {showIntegrationsSidebar ? (
+              {/* Use renderedContent for content persistence during close animation */}
+              {renderedContent === "integrations" ? (
                 <IntegrationsSidebar
                   integrationStates={calendarIntegrations}
                   currentView={integrationsSidebar.currentView}
