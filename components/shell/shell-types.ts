@@ -368,6 +368,8 @@ export interface ShellContentProps {
   onToggleCalendarImport: (provider: CalendarProvider, calendarId: string) => void;
   /** Toggle exporting blueprint to a calendar */
   onToggleCalendarExport: (provider: CalendarProvider, calendarId: string) => void;
+  /** Toggle meetings-only filter for an integration */
+  onToggleMeetingsOnly: (provider: CalendarProvider) => void;
   /** Update an external event's local state (notes, status, focus time) */
   onUpdateExternalEvent: (eventId: string, updates: Partial<ExternalEvent>) => void;
 }

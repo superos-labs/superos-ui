@@ -18,7 +18,11 @@ interface CalendarListProps {
  * List of calendars with import toggles.
  * Shows which calendars will have their events imported into SuperOS.
  */
-function CalendarList({ calendars, provider, onToggleImport }: CalendarListProps) {
+function CalendarList({
+  calendars,
+  provider,
+  onToggleImport,
+}: CalendarListProps) {
   if (calendars.length === 0) {
     return (
       <p className="px-2 py-4 text-center text-sm text-muted-foreground">

@@ -37,6 +37,8 @@ interface IntegrationsSidebarProps {
     provider: CalendarProvider,
     calendarId: string,
   ) => void;
+  /** Toggle meetings-only filter for an integration */
+  onToggleMeetingsOnly?: (provider: CalendarProvider) => void;
   /** Optional class name */
   className?: string;
 }
@@ -58,6 +60,7 @@ function IntegrationsSidebar({
   onDisconnectProvider,
   onToggleCalendarImport,
   onToggleCalendarExport,
+  onToggleMeetingsOnly,
   className,
 }: IntegrationsSidebarProps) {
   const isListView = currentView.type === "list";
@@ -168,6 +171,9 @@ function IntegrationsSidebar({
             }
             onToggleCalendarExport={(calendarId) =>
               onToggleCalendarExport?.(currentView.provider, calendarId)
+            }
+            onToggleMeetingsOnly={() =>
+              onToggleMeetingsOnly?.(currentView.provider)
             }
           />
         )}

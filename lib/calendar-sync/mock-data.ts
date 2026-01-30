@@ -91,7 +91,7 @@ export const MOCK_OUTLOOK_CALENDARS: ProviderCalendar[] = [
 // =============================================================================
 
 export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
-  // Google Work Calendar
+  // Google Work Calendar - Meetings (with attendees)
   {
     id: "ext-gw-1",
     provider: "google",
@@ -103,6 +103,7 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
     startMinutes: 540, // 9:00 AM
     durationMinutes: 30,
     isAllDay: false,
+    isMeeting: true,
   },
   {
     id: "ext-gw-2",
@@ -115,6 +116,7 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
     startMinutes: 840, // 2:00 PM
     durationMinutes: 30,
     isAllDay: false,
+    isMeeting: true,
   },
   {
     id: "ext-gw-3",
@@ -127,6 +129,34 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
     startMinutes: 600, // 10:00 AM
     durationMinutes: 60,
     isAllDay: false,
+    isMeeting: true,
+  },
+  // Google Work Calendar - Solo events (no attendees, filtered by default)
+  {
+    id: "ext-gw-4",
+    provider: "google",
+    calendarId: "gc-work",
+    calendarName: "Work",
+    calendarColor: "#4285f4",
+    title: "Focus: Write proposal",
+    date: "2026-01-27", // Tuesday
+    startMinutes: 600, // 10:00 AM
+    durationMinutes: 120,
+    isAllDay: false,
+    isMeeting: false, // Solo event - filtered when "Only show meetings" is on
+  },
+  {
+    id: "ext-gw-5",
+    provider: "google",
+    calendarId: "gc-work",
+    calendarName: "Work",
+    calendarColor: "#4285f4",
+    title: "Lunch break",
+    date: "2026-01-28", // Wednesday
+    startMinutes: 720, // 12:00 PM
+    durationMinutes: 60,
+    isAllDay: false,
+    isMeeting: false, // Solo event - filtered when "Only show meetings" is on
   },
   // Google Personal Calendar
   {
@@ -140,6 +170,7 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
     startMinutes: 690, // 11:30 AM
     durationMinutes: 60,
     isAllDay: false,
+    isMeeting: false, // Solo appointment
   },
   {
     id: "ext-gp-2",
@@ -152,6 +183,20 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
     startMinutes: 0,
     durationMinutes: 0,
     isAllDay: true,
+    isMeeting: false, // Solo reminder
+  },
+  {
+    id: "ext-gp-3",
+    provider: "google",
+    calendarId: "gc-personal",
+    calendarName: "Personal",
+    calendarColor: "#0f9d58",
+    title: "Dinner with Alex",
+    date: "2026-01-29", // Thursday
+    startMinutes: 1110, // 6:30 PM
+    durationMinutes: 90,
+    isAllDay: false,
+    isMeeting: true, // Has another person
   },
   // Outlook Calendar
   {
@@ -165,6 +210,20 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
     startMinutes: 0,
     durationMinutes: 0,
     isAllDay: true,
+    isMeeting: true, // Company meeting
+  },
+  {
+    id: "ext-ol-2",
+    provider: "outlook",
+    calendarId: "ol-calendar",
+    calendarName: "Calendar",
+    calendarColor: "#0078d4",
+    title: "Submit expense report",
+    date: "2026-01-30", // Friday
+    startMinutes: 540, // 9:00 AM
+    durationMinutes: 30,
+    isAllDay: false,
+    isMeeting: false, // Solo task/reminder
   },
 ];
 
@@ -178,6 +237,7 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     status: "not_connected",
     accountEmail: null,
     calendars: [],
+    importMeetingsOnly: true,
     lastSyncAt: null,
   },
   {
@@ -185,6 +245,7 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     status: "not_connected",
     accountEmail: null,
     calendars: [],
+    importMeetingsOnly: true,
     lastSyncAt: null,
   },
   {
@@ -192,6 +253,7 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     status: "not_connected",
     accountEmail: null,
     calendars: [],
+    importMeetingsOnly: true,
     lastSyncAt: null,
   },
 ];

@@ -67,23 +67,34 @@ export function useCalendarSync(
   const [allExternalEvents, setAllExternalEvents] =
     React.useState<ExternalEvent[]>(initialExternalEvents);
 
-  // Derived: filter events by enabled calendars
+  // Derived: filter events by enabled calendars and meetings-only setting
   const externalEvents = React.useMemo(() => {
-    const enabledCalendarIds = new Set<string>();
+    // Build a map of enabled calendar IDs to their provider's meetings-only setting
+    const enabledCalendars = new Map<string, { importMeetingsOnly: boolean }>();
 
     statesMap.forEach((state) => {
       if (state.status === "connected") {
         state.calendars.forEach((cal) => {
           if (cal.importEnabled) {
-            enabledCalendarIds.add(cal.id);
+            enabledCalendars.set(cal.id, {
+              importMeetingsOnly: state.importMeetingsOnly,
+            });
           }
         });
       }
     });
 
-    return allExternalEvents.filter((event) =>
-      enabledCalendarIds.has(event.calendarId),
-    );
+    return allExternalEvents.filter((event) => {
+      const settings = enabledCalendars.get(event.calendarId);
+      if (!settings) return false;
+
+      // If meetings-only is enabled at integration level, filter out non-meeting events
+      if (settings.importMeetingsOnly && !event.isMeeting) {
+        return false;
+      }
+
+      return true;
+    });
   }, [statesMap, allExternalEvents]);
 
   // Connect provider (simulates OAuth flow)
@@ -95,6 +106,7 @@ export function useCalendarSync(
         status: "connected",
         accountEmail: MOCK_EMAILS[provider],
         calendars: MOCK_CALENDARS[provider],
+        importMeetingsOnly: true,
         lastSyncAt: new Date(),
       });
       return next;
@@ -110,6 +122,7 @@ export function useCalendarSync(
         status: "not_connected",
         accountEmail: null,
         calendars: [],
+        importMeetingsOnly: true,
         lastSyncAt: null,
       });
       return next;
@@ -152,6 +165,24 @@ export function useCalendarSync(
                 ? { ...cal, exportBlueprintEnabled: !cal.exportBlueprintEnabled }
                 : cal,
             ),
+          });
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
+  // Toggle "Only show meetings" filter for an integration
+  const toggleMeetingsOnly = React.useCallback(
+    (provider: CalendarProvider) => {
+      setStatesMap((prev) => {
+        const next = new Map(prev);
+        const state = next.get(provider);
+        if (state) {
+          next.set(provider, {
+            ...state,
+            importMeetingsOnly: !state.importMeetingsOnly,
           });
         }
         return next;
@@ -212,6 +243,7 @@ export function useCalendarSync(
     disconnectProvider,
     toggleCalendarImport,
     toggleCalendarExport,
+    toggleMeetingsOnly,
     updateExternalEvent,
     getIntegrationState,
     isConnected,

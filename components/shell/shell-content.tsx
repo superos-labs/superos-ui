@@ -253,6 +253,7 @@ export function ShellContentComponent({
   onDisconnectProvider,
   onToggleCalendarImport,
   onToggleCalendarExport,
+  onToggleMeetingsOnly,
   onUpdateExternalEvent,
 }: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
@@ -1606,6 +1607,7 @@ export function ShellContentComponent({
                   onDisconnectProvider={onDisconnectProvider}
                   onToggleCalendarImport={onToggleCalendarImport}
                   onToggleCalendarExport={onToggleCalendarExport}
+                  onToggleMeetingsOnly={onToggleMeetingsOnly}
                   className="h-full w-[380px] max-w-none overflow-y-auto"
                 />
               ) : renderedContent === "block" && sidebarDataToRender ? (

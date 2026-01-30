@@ -43,6 +43,8 @@ export interface CalendarIntegrationState {
   accountEmail: string | null;
   /** Calendars available from this provider */
   calendars: ProviderCalendar[];
+  /** When true, only import events that have attendees (meetings). Defaults to true. */
+  importMeetingsOnly: boolean;
   /** Last successful sync timestamp */
   lastSyncAt: Date | null;
 }
@@ -81,6 +83,8 @@ export interface ExternalEvent {
   durationMinutes: number;
   /** Whether this is an all-day event */
   isAllDay: boolean;
+  /** Whether this event has attendees (is a meeting vs solo event) */
+  isMeeting: boolean;
 
   // --- Local SuperOS state (not synced back to provider) ---
   /** Optional notes added locally */
@@ -135,6 +139,8 @@ export interface UseCalendarSyncReturn {
     provider: CalendarProvider,
     calendarId: string,
   ) => void;
+  /** Toggle "Only show meetings" filter for an integration */
+  toggleMeetingsOnly: (provider: CalendarProvider) => void;
 
   // --- External Event Actions (local state) ---
   /** Update local state of an external event */

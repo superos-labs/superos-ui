@@ -572,6 +572,7 @@ export function useShellState(
     onDisconnectProvider: calendarSync.disconnectProvider,
     onToggleCalendarImport: calendarSync.toggleCalendarImport,
     onToggleCalendarExport: calendarSync.toggleCalendarExport,
+    onToggleMeetingsOnly: calendarSync.toggleMeetingsOnly,
     onUpdateExternalEvent: calendarSync.updateExternalEvent,
   };
 }
