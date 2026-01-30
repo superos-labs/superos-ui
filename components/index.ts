@@ -257,3 +257,13 @@ export { BottomSheet } from "./ui/bottom-sheet";
 export type { BottomSheetProps } from "./ui/bottom-sheet";
 export { FullScreenOverlay } from "./ui/full-screen-overlay";
 export type { FullScreenOverlayProps } from "./ui/full-screen-overlay";
+
+// -----------------------------------------------------------------------------
+// Settings Components
+// -----------------------------------------------------------------------------
+
+export { LifeAreaCreatorModal, LifeAreaManagerModal } from "./settings";
+export type {
+  LifeAreaCreatorModalProps,
+  LifeAreaManagerModalProps,
+} from "./settings";

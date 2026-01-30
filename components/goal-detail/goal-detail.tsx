@@ -138,6 +138,8 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
+  /** Callback to open the add life area modal */
+  onAddLifeArea?: () => void;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
@@ -180,6 +182,7 @@ export function GoalDetail({
   onIconChange,
   onColorChange,
   onLifeAreaChange,
+  onAddLifeArea,
   getTaskSchedule,
   getTaskDeadline,
   onToggleTask,
@@ -296,6 +299,7 @@ export function GoalDetail({
               onIconChange={onIconChange}
               onColorChange={onColorChange}
               onLifeAreaChange={onLifeAreaChange}
+              onAddLifeArea={onAddLifeArea}
             />
 
             {/* Notes (inline, borderless) */}

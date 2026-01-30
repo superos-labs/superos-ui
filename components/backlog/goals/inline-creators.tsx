@@ -115,6 +115,8 @@ export interface InlineGoalCreatorProps {
   goalIcons: GoalIconOption[];
   onSave: (goal: NewGoalData) => void;
   onCancel: () => void;
+  /** Callback to open the add life area modal */
+  onAddLifeArea?: () => void;
 }
 
 export function InlineGoalCreator({
@@ -122,6 +124,7 @@ export function InlineGoalCreator({
   goalIcons,
   onSave,
   onCancel,
+  onAddLifeArea,
 }: InlineGoalCreatorProps) {
   const [label, setLabel] = React.useState("");
   const [selectedIconIndex, setSelectedIconIndex] = React.useState(0);
@@ -282,6 +285,18 @@ export function InlineGoalCreator({
                 </DropdownMenuItem>
               );
             })}
+            {onAddLifeArea && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={onAddLifeArea}
+                  className="gap-2 text-muted-foreground"
+                >
+                  <RiAddLine className="size-3.5" />
+                  Add new...
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
 

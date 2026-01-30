@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { getIconColorClass, getIconBgClass } from "@/lib/colors";
-import { RiArrowDownSLine, RiCheckLine } from "@remixicon/react";
+import { RiArrowDownSLine, RiCheckLine, RiAddLine } from "@remixicon/react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -36,6 +36,8 @@ export interface GoalDetailHeaderProps {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
+  /** Callback to open the add life area modal */
+  onAddLifeArea?: () => void;
   className?: string;
 }
 
@@ -67,6 +69,7 @@ export function GoalDetailHeader({
   onIconChange,
   onColorChange,
   onLifeAreaChange,
+  onAddLifeArea,
   className,
 }: GoalDetailHeaderProps) {
   const [editValue, setEditValue] = React.useState(title);
@@ -190,22 +193,28 @@ export function GoalDetailHeader({
       {/* Metadata pills row */}
       <div className="flex items-center gap-2">
         {/* Life area pill */}
-        {lifeArea && canEditLifeArea ? (
+        {canEditLifeArea ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs transition-colors hover:bg-muted/80">
-                {(() => {
-                  const AreaIcon = lifeArea.icon;
-                  return (
-                    <AreaIcon
-                      className={cn(
-                        "size-3.5",
-                        getIconColorClass(lifeArea.color),
-                      )}
-                    />
-                  );
-                })()}
-                <span>{lifeArea.label}</span>
+                {lifeArea ? (
+                  <>
+                    {(() => {
+                      const AreaIcon = lifeArea.icon;
+                      return (
+                        <AreaIcon
+                          className={cn(
+                            "size-3.5",
+                            getIconColorClass(lifeArea.color),
+                          )}
+                        />
+                      );
+                    })()}
+                    <span>{lifeArea.label}</span>
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">Set life area</span>
+                )}
                 <RiArrowDownSLine className="size-3 text-muted-foreground/50" />
               </button>
             </DropdownMenuTrigger>
@@ -215,7 +224,7 @@ export function GoalDetailHeader({
               </DropdownMenuLabel>
               {lifeAreas.map((area) => {
                 const AreaIcon = area.icon;
-                const isSelected = lifeArea.id === area.id;
+                const isSelected = lifeArea?.id === area.id;
                 return (
                   <DropdownMenuItem
                     key={area.id}
@@ -230,6 +239,18 @@ export function GoalDetailHeader({
                   </DropdownMenuItem>
                 );
               })}
+              {onAddLifeArea && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={onAddLifeArea}
+                    className="gap-2 text-muted-foreground"
+                  >
+                    <RiAddLine className="size-3.5" />
+                    Add new...
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : lifeArea ? (

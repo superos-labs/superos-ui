@@ -39,7 +39,9 @@ import {
 } from "@/lib/blueprint";
 import { useWeeklyPlan, usePlanningFlow } from "@/lib/weekly-planning";
 import { usePreferences } from "@/lib/preferences";
-import type { LifeArea, GoalIconOption } from "@/lib/types";
+import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
+import type { GoalColor } from "@/lib/colors";
+import { LIFE_AREAS } from "@/lib/life-areas";
 import type { NewEssentialData } from "@/components/backlog";
 import type { UseShellStateOptions, UseShellStateReturn } from "./shell-types";
 
@@ -55,9 +57,58 @@ export function useShellState(
     allEssentials: allEssentialsInput,
     initialEnabledEssentialIds,
     initialEvents,
-    lifeAreas,
+    lifeAreas: defaultLifeAreas,
     goalIcons,
   } = options;
+
+  // -------------------------------------------------------------------------
+  // Custom Life Areas
+  // -------------------------------------------------------------------------
+  const [customLifeAreas, setCustomLifeAreas] = React.useState<LifeArea[]>([]);
+
+  // Combined life areas (defaults + custom)
+  const allLifeAreas = React.useMemo(
+    () => [...LIFE_AREAS, ...customLifeAreas],
+    [customLifeAreas],
+  );
+
+  const handleAddLifeArea = React.useCallback(
+    (data: { label: string; icon: IconComponent; color: GoalColor }): string | null => {
+      // Validate: no duplicate labels (case-insensitive)
+      const exists = allLifeAreas.some(
+        (a) => a.label.toLowerCase() === data.label.toLowerCase(),
+      );
+      if (exists) return null;
+
+      const newArea: LifeArea = {
+        id: `custom-${Date.now()}`,
+        label: data.label,
+        icon: data.icon,
+        color: data.color,
+        isCustom: true,
+      };
+      setCustomLifeAreas((prev) => [...prev, newArea]);
+      return newArea.id;
+    },
+    [allLifeAreas],
+  );
+
+  const handleUpdateLifeArea = React.useCallback(
+    (
+      id: string,
+      updates: { label?: string; icon?: IconComponent; color?: GoalColor },
+    ) => {
+      // Only allow updating custom areas
+      setCustomLifeAreas((prev) =>
+        prev.map((area) => (area.id === id ? { ...area, ...updates } : area)),
+      );
+    },
+    [],
+  );
+
+  const handleRemoveLifeArea = React.useCallback((id: string) => {
+    setCustomLifeAreas((prev) => prev.filter((a) => a.id !== id));
+  }, []);
 
   // -------------------------------------------------------------------------
   // Mutable Essentials List
@@ -473,7 +524,13 @@ export function useShellState(
     onToday: goToToday,
 
     // Reference data
-    lifeAreas,
+    lifeAreas: allLifeAreas,
+    customLifeAreas,
     goalIcons,
+
+    // Life area management
+    onAddLifeArea: handleAddLifeArea,
+    onUpdateLifeArea: handleUpdateLifeArea,
+    onRemoveLifeArea: handleRemoveLifeArea,
   };
 }

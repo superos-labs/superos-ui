@@ -12,8 +12,8 @@
 import * as React from "react";
 import { cn, formatHours, formatHoursWithUnit } from "@/lib/utils";
 import { getIconColorClass, getHexColor, type GoalColor } from "@/lib/colors";
-import { getLifeArea, LIFE_AREAS } from "@/lib/life-areas";
-import type { IconComponent } from "@/lib/types";
+import { LIFE_AREAS } from "@/lib/life-areas";
+import type { IconComponent, LifeArea } from "@/lib/types";
 import { RiMoonLine, RiTimeLine } from "@remixicon/react";
 
 // =============================================================================
@@ -52,6 +52,8 @@ export interface PlanningBudgetProps extends React.HTMLAttributes<HTMLDivElement
   isSleepConfigured: boolean;
   /** Week label for display */
   weekLabel?: string;
+  /** All life areas (default + custom) for distribution view */
+  lifeAreas?: LifeArea[];
 }
 
 // =============================================================================
@@ -458,11 +460,13 @@ type DistributionMode = "goals" | "life-areas";
 interface DistributionSectionProps {
   goals: PlanningBudgetGoal[];
   scheduledGoalHours: number;
+  lifeAreas: LifeArea[];
 }
 
 function DistributionSection({
   goals,
   scheduledGoalHours,
+  lifeAreas,
 }: DistributionSectionProps) {
   const [mode, setMode] = React.useState<DistributionMode>("goals");
   const [hoveredItemId, setHoveredItemId] = React.useState<string | null>(null);
@@ -489,8 +493,11 @@ function DistributionSection({
       }
     });
 
+    // Create a lookup map from the passed lifeAreas
+    const lifeAreaMap = new Map(lifeAreas.map((area) => [area.id, area]));
+
     return Array.from(areaHours.entries()).flatMap(([areaId, hours]) => {
-      const area = getLifeArea(areaId);
+      const area = lifeAreaMap.get(areaId);
       if (!area) return [];
       return [
         {
@@ -502,7 +509,7 @@ function DistributionSection({
         },
       ];
     });
-  }, [goals]);
+  }, [goals, lifeAreas]);
 
   const items = mode === "goals" ? goalItems : lifeAreaItems;
 
@@ -571,6 +578,7 @@ export function PlanningBudget({
   windDownMinutes,
   isSleepConfigured,
   weekLabel = "Your Week",
+  lifeAreas = LIFE_AREAS,
   className,
   ...props
 }: PlanningBudgetProps) {
@@ -621,6 +629,7 @@ export function PlanningBudget({
       <DistributionSection
         goals={goals}
         scheduledGoalHours={scheduledGoalHours}
+        lifeAreas={lifeAreas}
       />
     </div>
   );

@@ -46,6 +46,8 @@ export interface LifeArea {
   label: string;
   icon: IconComponent;
   color: GoalColor;
+  /** Whether this is a user-created custom life area */
+  isCustom?: boolean;
 }
 
 /**

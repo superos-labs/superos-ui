@@ -308,10 +308,33 @@ export interface ShellContentProps {
   // -------------------------------------------------------------------------
   // Reference Data
   // -------------------------------------------------------------------------
-  /** Available life areas */
+  /** Available life areas (default + custom) */
   lifeAreas: LifeArea[];
+  /** Custom user-created life areas */
+  customLifeAreas: LifeArea[];
   /** Available goal icons */
   goalIcons: GoalIconOption[];
+
+  // -------------------------------------------------------------------------
+  // Life Area Management
+  // -------------------------------------------------------------------------
+  /** Add a custom life area. Returns the new life area ID, or null if duplicate. */
+  onAddLifeArea: (data: {
+    label: string;
+    icon: import("@/lib/types").IconComponent;
+    color: import("@/lib/colors").GoalColor;
+  }) => string | null;
+  /** Update a custom life area */
+  onUpdateLifeArea: (
+    id: string,
+    updates: {
+      label?: string;
+      icon?: import("@/lib/types").IconComponent;
+      color?: import("@/lib/colors").GoalColor;
+    },
+  ) => void;
+  /** Remove a custom life area */
+  onRemoveLifeArea: (id: string) => void;
 
   // -------------------------------------------------------------------------
   // Demo/Development (optional)

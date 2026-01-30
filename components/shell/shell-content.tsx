@@ -54,6 +54,10 @@ import {
   PlanWeekPromptCard,
   BlueprintBacklog,
 } from "@/components/weekly-planning";
+import {
+  LifeAreaCreatorModal,
+  LifeAreaManagerModal,
+} from "@/components/settings";
 import { toAnalyticsItems } from "@/lib/adapters";
 import {
   blueprintToEvents,
@@ -90,6 +94,7 @@ import {
   RiEditLine,
   RiMagicLine,
   RiShapesLine,
+  RiLayoutGridLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -226,7 +231,12 @@ export function ShellContentComponent({
   onToday,
   // Reference data
   lifeAreas,
+  customLifeAreas,
   goalIcons,
+  // Life area management
+  onAddLifeArea,
+  onUpdateLifeArea,
+  onRemoveLifeArea,
   // UI-specific props
   inspirationCategories,
   onLayoutChange,
@@ -267,6 +277,14 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] =
     React.useState(false);
+
+  // -------------------------------------------------------------------------
+  // Life Area Modal State
+  // -------------------------------------------------------------------------
+  const [showLifeAreaCreator, setShowLifeAreaCreator] = React.useState(false);
+  const [showLifeAreaManager, setShowLifeAreaManager] = React.useState(false);
+  // Track goal ID to auto-assign when creating life area from goal detail
+  const [lifeAreaCreatorForGoalId, setLifeAreaCreatorForGoalId] = React.useState<string | null>(null);
 
   // Global ? key to open keyboard shortcuts
   React.useEffect(() => {
@@ -981,6 +999,10 @@ export function ShellContentComponent({
               </>
             )}
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setShowLifeAreaManager(true)}>
+              <RiLayoutGridLine className="size-4" />
+              Edit life areas
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowKeyboardShortcuts(true)}>
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
@@ -1142,6 +1164,10 @@ export function ShellContentComponent({
               </>
             )}
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setShowLifeAreaManager(true)}>
+              <RiLayoutGridLine className="size-4" />
+              Edit life areas
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowKeyboardShortcuts(true)}>
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
@@ -1432,6 +1458,10 @@ export function ShellContentComponent({
                   onLifeAreaChange={(lifeAreaId) =>
                     onUpdateGoal(selectedGoal.id, { lifeAreaId })
                   }
+                  onAddLifeArea={() => {
+                    setLifeAreaCreatorForGoalId(selectedGoal.id);
+                    setShowLifeAreaCreator(true);
+                  }}
                   className="h-full"
                 />
               ) : showCalendar ? (
@@ -1525,6 +1555,7 @@ export function ShellContentComponent({
                     windDownMinutes={dayEndMinutes}
                     isSleepConfigured={dayBoundariesEnabled}
                     weekLabel={isOnboardingBlueprint ? "Your typical week" : formatWeekRange(weekDates)}
+                    lifeAreas={lifeAreas}
                     className="h-full w-[380px] max-w-none overflow-y-auto"
                   />
                 ) : (
@@ -1631,6 +1662,37 @@ export function ShellContentComponent({
       <KeyboardShortcuts
         open={showKeyboardShortcuts}
         onClose={() => setShowKeyboardShortcuts(false)}
+      />
+
+      {/* Life area creator modal */}
+      <LifeAreaCreatorModal
+        open={showLifeAreaCreator}
+        onClose={() => {
+          setShowLifeAreaCreator(false);
+          setLifeAreaCreatorForGoalId(null);
+        }}
+        goalIcons={goalIcons}
+        existingLifeAreas={lifeAreas}
+        onCreateLifeArea={(data) => {
+          const newLifeAreaId = onAddLifeArea(data);
+          // If opened from a goal detail, auto-assign the new life area to that goal
+          if (newLifeAreaId && lifeAreaCreatorForGoalId) {
+            onUpdateGoal(lifeAreaCreatorForGoalId, { lifeAreaId: newLifeAreaId });
+          }
+          setLifeAreaCreatorForGoalId(null);
+        }}
+      />
+
+      {/* Life area manager modal */}
+      <LifeAreaManagerModal
+        open={showLifeAreaManager}
+        onClose={() => setShowLifeAreaManager(false)}
+        customLifeAreas={customLifeAreas}
+        goalIcons={goalIcons}
+        goals={goals}
+        onAddLifeArea={onAddLifeArea}
+        onUpdateLifeArea={onUpdateLifeArea}
+        onRemoveLifeArea={onRemoveLifeArea}
       />
     </>
   );
