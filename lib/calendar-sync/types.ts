@@ -21,6 +21,9 @@ export type CalendarProvider = "google" | "apple" | "outlook";
 /** Connection status for an integration */
 export type IntegrationStatus = "connected" | "not_connected" | "coming_soon";
 
+/** How exported blocks appear in external calendars */
+export type ExportBlockVisibility = "block_title" | "goal_title" | "busy";
+
 // =============================================================================
 // Integration Types
 // =============================================================================
@@ -45,6 +48,8 @@ export interface CalendarIntegrationState {
   calendars: ProviderCalendar[];
   /** When true, only import events that have attendees (meetings). Defaults to true. */
   importMeetingsOnly: boolean;
+  /** How exported blocks appear in external calendar. Defaults to "busy". */
+  exportBlockVisibility: ExportBlockVisibility;
   /** Last successful sync timestamp */
   lastSyncAt: Date | null;
 }
@@ -141,6 +146,11 @@ export interface UseCalendarSyncReturn {
   ) => void;
   /** Toggle "Only show meetings" filter for an integration */
   toggleMeetingsOnly: (provider: CalendarProvider) => void;
+  /** Set how exported blocks appear in external calendar */
+  setExportBlockVisibility: (
+    provider: CalendarProvider,
+    visibility: ExportBlockVisibility,
+  ) => void;
 
   // --- External Event Actions (local state) ---
   /** Update local state of an external event */

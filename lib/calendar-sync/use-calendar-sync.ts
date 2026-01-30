@@ -5,6 +5,7 @@ import type {
   CalendarProvider,
   CalendarIntegrationState,
   ExternalEvent,
+  ExportBlockVisibility,
   ProviderCalendar,
   UseCalendarSyncOptions,
   UseCalendarSyncReturn,
@@ -107,6 +108,7 @@ export function useCalendarSync(
         accountEmail: MOCK_EMAILS[provider],
         calendars: MOCK_CALENDARS[provider],
         importMeetingsOnly: true,
+        exportBlockVisibility: "busy",
         lastSyncAt: new Date(),
       });
       return next;
@@ -123,6 +125,7 @@ export function useCalendarSync(
         accountEmail: null,
         calendars: [],
         importMeetingsOnly: true,
+        exportBlockVisibility: "busy",
         lastSyncAt: null,
       });
       return next;
@@ -191,6 +194,24 @@ export function useCalendarSync(
     [],
   );
 
+  // Set how exported blocks appear in external calendar
+  const setExportBlockVisibility = React.useCallback(
+    (provider: CalendarProvider, visibility: ExportBlockVisibility) => {
+      setStatesMap((prev) => {
+        const next = new Map(prev);
+        const state = next.get(provider);
+        if (state) {
+          next.set(provider, {
+            ...state,
+            exportBlockVisibility: visibility,
+          });
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
   // Update external event (local state only)
   const updateExternalEvent = React.useCallback(
     (eventId: string, updates: Partial<ExternalEvent>) => {
@@ -212,6 +233,8 @@ export function useCalendarSync(
           status: "not_connected",
           accountEmail: null,
           calendars: [],
+          importMeetingsOnly: true,
+          exportBlockVisibility: "busy",
           lastSyncAt: null,
         }
       );
@@ -244,6 +267,7 @@ export function useCalendarSync(
     toggleCalendarImport,
     toggleCalendarExport,
     toggleMeetingsOnly,
+    setExportBlockVisibility,
     updateExternalEvent,
     getIntegrationState,
     isConnected,

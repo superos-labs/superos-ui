@@ -3,15 +3,33 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiUploadLine } from "@remixicon/react";
-import type { ProviderCalendar, CalendarProvider } from "@/lib/calendar-sync";
+import type {
+  ProviderCalendar,
+  CalendarProvider,
+  ExportBlockVisibility,
+} from "@/lib/calendar-sync";
+
+/** Display labels for visibility options */
+const VISIBILITY_OPTIONS: {
+  value: ExportBlockVisibility;
+  label: string;
+}[] = [
+  { value: "block_title", label: "Block title" },
+  { value: "goal_title", label: "Goal" },
+  { value: "busy", label: "Busy" },
+];
 
 interface ExportSectionProps {
   /** List of calendars available for export */
   calendars: ProviderCalendar[];
   /** The provider these calendars belong to */
   provider: CalendarProvider;
+  /** Current visibility setting for exported blocks */
+  blockVisibility: ExportBlockVisibility;
   /** Callback when a calendar's export toggle is clicked */
   onToggleExport: (calendarId: string) => void;
+  /** Callback when block visibility is changed */
+  onChangeBlockVisibility: (visibility: ExportBlockVisibility) => void;
 }
 
 /**
@@ -23,7 +41,9 @@ interface ExportSectionProps {
 function ExportSection({
   calendars,
   provider,
+  blockVisibility,
   onToggleExport,
+  onChangeBlockVisibility,
 }: ExportSectionProps) {
   if (calendars.length === 0) {
     return null;
@@ -96,62 +116,97 @@ function ExportSection({
         </button>
       </div>
 
-      {/* Calendar selector - only shown when export is enabled */}
+      {/* Calendar selector and visibility - only shown when export is enabled */}
       {isExportEnabled && (
-        <div className="flex flex-col gap-1 px-2">
-          <p className="mb-1 text-xs text-muted-foreground">
-            Select calendar:
-          </p>
-          <div className="flex flex-col gap-0.5">
-            {calendars.map((calendar) => {
-              const isSelected = calendar.exportBlueprintEnabled;
-              return (
-                <button
-                  key={calendar.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  onClick={() => handleSelectCalendar(calendar.id)}
-                  className={cn(
-                    "group flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left",
-                    "transition-colors duration-150",
-                    "hover:bg-muted/60",
-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                  )}
-                >
-                  {/* Radio button */}
-                  <div
+        <div className="flex flex-col gap-4 px-2">
+          {/* Calendar selector */}
+          <div className="flex flex-col gap-1">
+            <p className="mb-1 text-xs text-muted-foreground">
+              Select calendar:
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {calendars.map((calendar) => {
+                const isSelected = calendar.exportBlueprintEnabled;
+                return (
+                  <button
+                    key={calendar.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => handleSelectCalendar(calendar.id)}
                     className={cn(
-                      "flex size-[18px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
+                      "group flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left",
+                      "transition-colors duration-150",
+                      "hover:bg-muted/60",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                    )}
+                  >
+                    {/* Radio button */}
+                    <div
+                      className={cn(
+                        "flex size-[18px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
+                        isSelected
+                          ? "bg-foreground"
+                          : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
+                      )}
+                    >
+                      {isSelected && (
+                        <span className="size-2 rounded-full bg-background" />
+                      )}
+                    </div>
+
+                    {/* Calendar color indicator */}
+                    <div
+                      className="size-3 shrink-0 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10"
+                      style={{ backgroundColor: calendar.color }}
+                      aria-hidden="true"
+                    />
+
+                    {/* Calendar name */}
+                    <span
+                      className={cn(
+                        "truncate text-sm transition-colors",
+                        isSelected ? "text-foreground" : "text-muted-foreground",
+                      )}
+                    >
+                      {calendar.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Block visibility selector */}
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-muted-foreground">Show blocks as:</p>
+            <div
+              className="inline-flex rounded-lg bg-muted p-0.5"
+              role="radiogroup"
+              aria-label="Block visibility"
+            >
+              {VISIBILITY_OPTIONS.map((option) => {
+                const isSelected = blockVisibility === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => onChangeBlockVisibility(option.value)}
+                    className={cn(
+                      "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                       isSelected
-                        ? "bg-foreground"
-                        : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    {isSelected && (
-                      <span className="size-2 rounded-full bg-background" />
-                    )}
-                  </div>
-
-                  {/* Calendar color indicator */}
-                  <div
-                    className="size-3 shrink-0 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10"
-                    style={{ backgroundColor: calendar.color }}
-                    aria-hidden="true"
-                  />
-
-                  {/* Calendar name */}
-                  <span
-                    className={cn(
-                      "truncate text-sm transition-colors",
-                      isSelected ? "text-foreground" : "text-muted-foreground",
-                    )}
-                  >
-                    {calendar.name}
-                  </span>
-                </button>
-              );
-            })}
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

@@ -238,6 +238,7 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     accountEmail: null,
     calendars: [],
     importMeetingsOnly: true,
+    exportBlockVisibility: "busy",
     lastSyncAt: null,
   },
   {
@@ -246,6 +247,7 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     accountEmail: null,
     calendars: [],
     importMeetingsOnly: true,
+    exportBlockVisibility: "busy",
     lastSyncAt: null,
   },
   {
@@ -254,6 +256,7 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     accountEmail: null,
     calendars: [],
     importMeetingsOnly: true,
+    exportBlockVisibility: "busy",
     lastSyncAt: null,
   },
 ];

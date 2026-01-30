@@ -10,6 +10,7 @@ import type {
   CalendarProvider,
   CalendarIntegrationState,
   IntegrationsSidebarView,
+  ExportBlockVisibility,
 } from "@/lib/calendar-sync";
 
 interface IntegrationsSidebarProps {
@@ -39,6 +40,11 @@ interface IntegrationsSidebarProps {
   ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly?: (provider: CalendarProvider) => void;
+  /** Set block visibility for exports */
+  onSetExportBlockVisibility?: (
+    provider: CalendarProvider,
+    visibility: ExportBlockVisibility,
+  ) => void;
   /** Optional class name */
   className?: string;
 }
@@ -61,6 +67,7 @@ function IntegrationsSidebar({
   onToggleCalendarImport,
   onToggleCalendarExport,
   onToggleMeetingsOnly,
+  onSetExportBlockVisibility,
   className,
 }: IntegrationsSidebarProps) {
   const isListView = currentView.type === "list";
@@ -82,6 +89,8 @@ function IntegrationsSidebar({
         status: "not_connected",
         accountEmail: null,
         calendars: [],
+        importMeetingsOnly: true,
+        exportBlockVisibility: "busy",
         lastSyncAt: null,
       }
     );
@@ -174,6 +183,9 @@ function IntegrationsSidebar({
             }
             onToggleMeetingsOnly={() =>
               onToggleMeetingsOnly?.(currentView.provider)
+            }
+            onChangeBlockVisibility={(visibility) =>
+              onSetExportBlockVisibility?.(currentView.provider, visibility)
             }
           />
         )}

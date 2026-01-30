@@ -254,6 +254,7 @@ export function ShellContentComponent({
   onToggleCalendarImport,
   onToggleCalendarExport,
   onToggleMeetingsOnly,
+  onSetExportBlockVisibility,
   onUpdateExternalEvent,
 }: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
@@ -1608,6 +1609,7 @@ export function ShellContentComponent({
                   onToggleCalendarImport={onToggleCalendarImport}
                   onToggleCalendarExport={onToggleCalendarExport}
                   onToggleMeetingsOnly={onToggleMeetingsOnly}
+                  onSetExportBlockVisibility={onSetExportBlockVisibility}
                   className="h-full w-[380px] max-w-none overflow-y-auto"
                 />
               ) : renderedContent === "block" && sidebarDataToRender ? (

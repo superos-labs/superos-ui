@@ -18,6 +18,7 @@
 export type {
   CalendarProvider,
   IntegrationStatus,
+  ExportBlockVisibility,
   IntegrationConfig,
   CalendarIntegrationState,
   ProviderCalendar,

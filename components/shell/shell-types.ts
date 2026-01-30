@@ -41,6 +41,7 @@ import type {
   CalendarProvider,
   CalendarIntegrationState,
   ExternalEvent,
+  ExportBlockVisibility,
   UseIntegrationsSidebarReturn,
 } from "@/lib/calendar-sync";
 import type { AllDayEvent } from "@/components/calendar";
@@ -370,6 +371,8 @@ export interface ShellContentProps {
   onToggleCalendarExport: (provider: CalendarProvider, calendarId: string) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly: (provider: CalendarProvider) => void;
+  /** Set block visibility for exports */
+  onSetExportBlockVisibility: (provider: CalendarProvider, visibility: ExportBlockVisibility) => void;
   /** Update an external event's local state (notes, status, focus time) */
   onUpdateExternalEvent: (eventId: string, updates: Partial<ExternalEvent>) => void;
 }

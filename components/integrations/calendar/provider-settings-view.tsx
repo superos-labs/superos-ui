@@ -11,6 +11,7 @@ import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
 import type {
   CalendarProvider,
   CalendarIntegrationState,
+  ExportBlockVisibility,
 } from "@/lib/calendar-sync";
 
 interface ProviderSettingsViewProps {
@@ -28,6 +29,8 @@ interface ProviderSettingsViewProps {
   onToggleCalendarExport: (calendarId: string) => void;
   /** Callback to toggle meetings-only filter for this integration */
   onToggleMeetingsOnly: () => void;
+  /** Callback to change block visibility for exports */
+  onChangeBlockVisibility: (visibility: ExportBlockVisibility) => void;
 }
 
 /**
@@ -47,6 +50,7 @@ function ProviderSettingsView({
   onToggleCalendarImport,
   onToggleCalendarExport,
   onToggleMeetingsOnly,
+  onChangeBlockVisibility,
 }: ProviderSettingsViewProps) {
   const config = CALENDAR_PROVIDERS[provider];
   const isConnected = state.status === "connected";
@@ -131,7 +135,9 @@ function ProviderSettingsView({
       <ExportSection
         calendars={state.calendars}
         provider={provider}
+        blockVisibility={state.exportBlockVisibility}
         onToggleExport={onToggleCalendarExport}
+        onChangeBlockVisibility={onChangeBlockVisibility}
       />
     </div>
   );
