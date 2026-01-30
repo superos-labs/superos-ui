@@ -490,6 +490,8 @@ export function TimeColumn({
                     ? event.blockType
                     : undefined
                 }
+                sourceProvider={event.sourceProvider}
+                customColor={event.customColor}
               />
             );
           };
