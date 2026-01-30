@@ -131,7 +131,8 @@ function WaterfallBar({ segments, totalHours, className }: WaterfallBarProps) {
 interface BudgetHeaderProps {
   sleepHours: number;
   essentialsHours: number;
-  availableHours: number;
+  scheduledGoalHours: number;
+  remainingHours: number;
   isSleepConfigured: boolean;
   weekLabel: string;
 }
@@ -139,12 +140,11 @@ interface BudgetHeaderProps {
 function BudgetHeader({
   sleepHours,
   essentialsHours,
-  availableHours,
+  scheduledGoalHours,
+  remainingHours,
   isSleepConfigured,
   weekLabel,
 }: BudgetHeaderProps) {
-  const committedHours = sleepHours + essentialsHours;
-
   const segments: WaterfallSegment[] = [];
 
   if (isSleepConfigured && sleepHours > 0) {
@@ -165,13 +165,25 @@ function BudgetHeader({
     });
   }
 
-  // Available shown as empty/muted
-  segments.push({
-    id: "available",
-    label: "Available",
-    hours: availableHours,
-    color: "bg-muted",
-  });
+  // Goals shown as violet
+  if (scheduledGoalHours > 0) {
+    segments.push({
+      id: "goals",
+      label: "Goals",
+      hours: scheduledGoalHours,
+      color: "bg-violet-500/60",
+    });
+  }
+
+  // Unallocated shown as empty/muted
+  if (remainingHours > 0) {
+    segments.push({
+      id: "unallocated",
+      label: "Unallocated",
+      hours: remainingHours,
+      color: "bg-muted",
+    });
+  }
 
   return (
     <div className="flex flex-col gap-4 px-4 py-4">
@@ -201,9 +213,15 @@ function BudgetHeader({
               <span>Essentials {formatHours(essentialsHours)}h</span>
             </div>
           )}
+          {scheduledGoalHours > 0 && (
+            <div className="flex items-center gap-1.5">
+              <div className="size-2 rounded-full bg-violet-500/60" />
+              <span>Goals {formatHours(scheduledGoalHours)}h</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5">
             <div className="size-2 rounded-full bg-muted ring-1 ring-inset ring-border" />
-            <span>Available {formatHours(availableHours)}h</span>
+            <span>Unallocated {formatHours(Math.max(0, remainingHours))}h</span>
           </div>
         </div>
       </div>
@@ -216,18 +234,19 @@ function BudgetHeader({
 // =============================================================================
 
 interface BudgetTrackerProps {
-  availableHours: number;
   scheduledGoalHours: number;
   remainingHours: number;
+  /** Total hours available for goals (168 - sleep - essentials) */
+  goalBudgetHours: number;
 }
 
 function BudgetTracker({
-  availableHours,
   scheduledGoalHours,
   remainingHours,
+  goalBudgetHours,
 }: BudgetTrackerProps) {
   const scheduledPercent =
-    availableHours > 0 ? (scheduledGoalHours / availableHours) * 100 : 0;
+    goalBudgetHours > 0 ? (scheduledGoalHours / goalBudgetHours) * 100 : 0;
 
   const isOverBudget = remainingHours < 0;
 
@@ -268,7 +287,7 @@ function BudgetTracker({
         </div>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{formatHours(scheduledGoalHours)}h scheduled</span>
-          <span>{formatHours(availableHours)}h available</span>
+          <span>of {formatHours(goalBudgetHours)}h budget</span>
         </div>
       </div>
 
@@ -277,7 +296,7 @@ function BudgetTracker({
         <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-500">
           <RiTimeLine className="size-3.5 shrink-0" />
           <span>
-            {formatHours(Math.abs(remainingHours))}h over your available time
+            {formatHours(Math.abs(remainingHours))}h over budget
           </span>
         </div>
       )}
@@ -585,16 +604,17 @@ export function PlanningBudget({
       <BudgetHeader
         sleepHours={sleepHours}
         essentialsHours={essentialsHours}
-        availableHours={availableHours}
+        scheduledGoalHours={scheduledGoalHours}
+        remainingHours={remainingHours}
         isSleepConfigured={isSleepConfigured}
         weekLabel={weekLabel}
       />
 
       {/* Tracker: Scheduled vs remaining */}
       <BudgetTracker
-        availableHours={availableHours}
         scheduledGoalHours={scheduledGoalHours}
         remainingHours={remainingHours}
+        goalBudgetHours={availableHours}
       />
 
       {/* Distribution: Goals or life areas */}
