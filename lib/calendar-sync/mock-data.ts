@@ -169,16 +169,16 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
 ];
 
 // =============================================================================
-// Initial Demo State (one provider connected)
+// Initial Demo State (all providers disconnected by default)
 // =============================================================================
 
 export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
   {
     provider: "google",
-    status: "connected",
-    accountEmail: "user@gmail.com",
-    calendars: MOCK_GOOGLE_CALENDARS,
-    lastSyncAt: new Date(),
+    status: "not_connected",
+    accountEmail: null,
+    calendars: [],
+    lastSyncAt: null,
   },
   {
     provider: "apple",
