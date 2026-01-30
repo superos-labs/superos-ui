@@ -10,6 +10,7 @@ export { DayView } from "./day-view";
 export { WeekView } from "./week-view";
 export { TimeColumn } from "./time-column";
 export { DeadlineTray } from "./deadline-tray";
+export type { AllDayEvent } from "./deadline-tray";
 export {
   BlockContextMenu,
   EmptySpaceContextMenu,

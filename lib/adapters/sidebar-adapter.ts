@@ -203,6 +203,10 @@ export function eventToBlockSidebarData(
             color: getIconColorClass(sourceEssential.color),
           }
         : undefined,
+      // External calendar integration fields
+      sourceProvider: event.sourceProvider,
+      sourceCalendarName: event.sourceCalendarName,
+      sourceCalendarColor: event.customColor,
     },
     availableGoalTasks,
   };

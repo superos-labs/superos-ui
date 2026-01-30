@@ -36,9 +36,12 @@ export function Calendar({
   externalDragPreview,
   onDeadlineDrop,
   deadlines,
+  allDayEvents,
   onDeadlineToggleComplete,
   onDeadlineUnassign,
   onDeadlineHover,
+  onToggleAllDayEvent,
+  onAllDayEventHover,
   onDayHeaderHover,
   onMarkDayComplete,
   dayStartMinutes,
@@ -120,9 +123,12 @@ export function Calendar({
       externalDragPreview={externalDragPreview}
       onDeadlineDrop={onDeadlineDrop}
       deadlines={deadlines}
+      allDayEvents={allDayEvents}
       onDeadlineToggleComplete={onDeadlineToggleComplete}
       onDeadlineUnassign={onDeadlineUnassign}
       onDeadlineHover={onDeadlineHover}
+      onToggleAllDayEvent={onToggleAllDayEvent}
+      onAllDayEventHover={onAllDayEventHover}
       onDayHeaderHover={onDayHeaderHover}
       onMarkDayComplete={onMarkDayComplete}
       dayStartMinutes={dayStartMinutes}

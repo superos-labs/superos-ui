@@ -9,6 +9,8 @@ import {
   type BlockColor,
 } from "./block-colors";
 import type { BlockStatus, BlockType } from "@/lib/types";
+import type { CalendarProvider } from "@/lib/calendar-sync";
+import { ProviderBadge } from "@/components/integrations";
 
 type BlockDuration = 30 | 60 | 240;
 
@@ -50,6 +52,10 @@ interface BlockProps extends React.HTMLAttributes<HTMLDivElement> {
   isDragOver?: boolean;
   /** Block type for visual differentiation */
   blockType?: BlockType;
+  /** Provider for external blocks (shows provider badge) */
+  sourceProvider?: CalendarProvider;
+  /** Custom hex color override (for external blocks using provider calendar colors) */
+  customColor?: string;
 }
 
 function Block({
@@ -67,6 +73,8 @@ function Block({
   isDropTarget = false,
   isDragOver = false,
   blockType,
+  sourceProvider,
+  customColor,
   className,
   style,
   ...props
@@ -77,6 +85,7 @@ function Block({
   const colorStyles = BLOCK_COLORS[color];
   const isCompleted = status === "completed";
   const isEssential = blockType === "essential";
+  const isExternal = blockType === "external";
 
   const height = fillContainer
     ? undefined
@@ -92,7 +101,37 @@ function Block({
     end: "rounded-t-none rounded-b-md", // Flat top for overnight end
   };
 
-  // Essential blocks use muted neutral styling to visually recede
+  // Generate inline styles for external blocks with custom hex colors
+  const getExternalBlockInlineStyles = (): React.CSSProperties => {
+    if (!isExternal || !customColor) return {};
+
+    // Convert hex to RGB for rgba calculations
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
+        : { r: 100, g: 100, b: 100 };
+    };
+
+    const rgb = hexToRgb(customColor);
+    const bgOpacity = isCompleted ? 0.15 : 0.25;
+    const textLightness = isCompleted ? 0.6 : 0.4; // Darken for text
+
+    return {
+      borderLeftColor: isCompleted
+        ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`
+        : customColor,
+      backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${bgOpacity})`,
+      // Darken the color for text by reducing lightness
+      color: `rgb(${Math.floor(rgb.r * textLightness)}, ${Math.floor(rgb.g * textLightness)}, ${Math.floor(rgb.b * textLightness)})`,
+    };
+  };
+
+  // Essential and external blocks use muted/custom styling
   const getBlockStyles = () => {
     if (isEssential) {
       return [
@@ -101,6 +140,15 @@ function Block({
         ESSENTIAL_BLOCK_STYLE.bg,
         ESSENTIAL_BLOCK_STYLE.bgHover,
         ESSENTIAL_BLOCK_STYLE.text,
+      ];
+    }
+
+    // External blocks use inline styles for custom hex colors
+    if (isExternal && customColor) {
+      return [
+        "border-l-[3px]",
+        "hover:brightness-95",
+        isCompleted && "opacity-60",
       ];
     }
 
@@ -124,6 +172,13 @@ function Block({
     ];
   };
 
+  // Merge inline styles for external blocks
+  const mergedStyle: React.CSSProperties = {
+    height,
+    ...getExternalBlockInlineStyles(),
+    ...style,
+  };
+
   return (
     <div
       className={cn(
@@ -138,16 +193,30 @@ function Block({
         isDragOver && "ring-2 ring-primary/60 scale-[1.02] shadow-lg",
         className,
       )}
-      style={{ height, ...style }}
+      style={mergedStyle}
       {...props}
     >
       <span className="truncate font-medium leading-tight">{title}</span>
       {timeDisplay && !isCompact && (
         <span className="mt-0.5 truncate text-[11px]">{timeDisplay}</span>
       )}
-      {/* Task count badge for goal blocks (not for essentials or tasks) */}
+
+      {/* Provider badge for external blocks */}
+      {isExternal && sourceProvider && (
+        <ProviderBadge
+          provider={sourceProvider}
+          size="sm"
+          className={cn(
+            "absolute",
+            isCompact ? "top-1/2 right-1.5 -translate-y-1/2" : "top-1.5 right-1.5",
+          )}
+        />
+      )}
+
+      {/* Task count badge for goal blocks (not for essentials, tasks, or external) */}
       {blockType !== "task" &&
         blockType !== "essential" &&
+        blockType !== "external" &&
         (() => {
           const pending = pendingTaskCount ?? 0;
           const completed = completedTaskCount ?? 0;

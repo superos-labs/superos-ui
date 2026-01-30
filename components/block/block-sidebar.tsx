@@ -34,6 +34,7 @@ import {
   StartFocusButton,
   FocusSidebarContent,
 } from "@/components/focus";
+import { ProviderBadge } from "@/components/integrations";
 import type {
   BlockSubtask,
   BlockSidebarSource,
@@ -52,7 +53,7 @@ type BlockGoalTask = ScheduleTask;
 interface BlockSidebarData {
   id: string;
   title: string;
-  /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'essential' shows notes only */
+  /** Block type: 'goal' shows goal tasks section, 'task' shows subtasks, 'essential' shows notes only, 'external' shows calendar source */
   blockType: BlockType;
   /** Block status: 'planned' or 'completed' */
   status?: BlockStatus;
@@ -76,6 +77,14 @@ interface BlockSidebarData {
   goal?: BlockSidebarSource;
   /** Associated essential (for essential blocks) */
   essential?: BlockSidebarSource;
+
+  // --- External Calendar Integration (blockType === 'external') ---
+  /** Provider for external events (google, apple, outlook) */
+  sourceProvider?: import("@/lib/calendar-sync").CalendarProvider;
+  /** Source calendar name (for display) */
+  sourceCalendarName?: string;
+  /** Source calendar color (hex) */
+  sourceCalendarColor?: string;
 }
 
 // Helper to format date for display
@@ -887,6 +896,7 @@ function BlockSidebar({
   const isGoalBlock = block.blockType === "goal";
   const isTaskBlock = block.blockType === "task";
   const isEssentialBlock = block.blockType === "essential";
+  const isExternalBlock = block.blockType === "external";
 
   // Get the source info (goal or essential)
   const sourceInfo = block.goal ?? block.essential;
@@ -987,7 +997,7 @@ function BlockSidebar({
           onDelete ||
           (block.status === "completed" && onMarkIncomplete)) && (
           <div className="flex justify-end gap-1">
-            {/* Mark incomplete button - only when completed (not for essentials) */}
+            {/* Mark incomplete button - only when completed (not for essentials, allowed for external) */}
             {!isEssentialBlock &&
               block.status === "completed" &&
               onMarkIncomplete && (
@@ -1049,8 +1059,16 @@ function BlockSidebar({
           </h2>
         )}
 
-        {/* Associated goal or essential / Goal selector */}
-        {sourceInfo ? (
+        {/* Associated goal or essential / Goal selector / External source */}
+        {isExternalBlock && block.sourceProvider ? (
+          // External block: show provider badge + calendar name (read-only)
+          <div className="flex items-center gap-2">
+            <ProviderBadge provider={block.sourceProvider} size="md" />
+            <span className="text-sm text-muted-foreground">
+              {block.sourceCalendarName ?? "External Calendar"}
+            </span>
+          </div>
+        ) : sourceInfo ? (
           <div className="flex items-center gap-2">
             <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
               <sourceInfo.icon className={cn("size-3", sourceInfo.color)} />
@@ -1068,7 +1086,7 @@ function BlockSidebar({
           )
         )}
 
-        {/* Mark Complete action - only for planned blocks (not for essentials) */}
+        {/* Mark Complete action - for goal, task, and external blocks (not essentials) */}
         {!isEssentialBlock &&
           block.status !== "completed" &&
           onMarkComplete && (
@@ -1082,7 +1100,7 @@ function BlockSidebar({
           )}
 
         {/* Focus mode: show timer when focused, or start button when not */}
-        {/* Hide focus controls for completed blocks and essentials */}
+        {/* Hide focus controls for completed blocks and essentials (allow for external) */}
         {!isEssentialBlock &&
           (isFocused ? (
             <FocusTimer
@@ -1187,7 +1205,7 @@ function BlockSidebar({
           </div>
         </BlockSidebarSection>
 
-        {/* Focus Time (only for goal/task blocks, not essentials) */}
+        {/* Focus Time (for goal, task, and external blocks - not essentials) */}
         {!isEssentialBlock && totalFocusedMinutes !== undefined && (
           <FocusTimeSection
             focusedMinutes={totalFocusedMinutes}

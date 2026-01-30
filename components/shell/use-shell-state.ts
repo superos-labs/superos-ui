@@ -43,6 +43,12 @@ import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 import { LIFE_AREAS } from "@/lib/life-areas";
 import type { NewEssentialData } from "@/components/backlog";
+import {
+  useCalendarSync,
+  useIntegrationsSidebar,
+  externalEventsToCalendarEvents,
+  externalEventsToAllDayEvents,
+} from "@/lib/calendar-sync";
 import type { UseShellStateOptions, UseShellStateReturn } from "./shell-types";
 
 // =============================================================================
@@ -300,6 +306,30 @@ export function useShellState(
   ) as Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
 
   // -------------------------------------------------------------------------
+  // Calendar Integrations
+  // -------------------------------------------------------------------------
+  const calendarSync = useCalendarSync();
+  const integrationsSidebar = useIntegrationsSidebar();
+
+  // Convert external events to calendar events for rendering
+  const externalCalendarEvents = React.useMemo(
+    () => externalEventsToCalendarEvents(calendarSync.externalEvents, weekDates),
+    [calendarSync.externalEvents, weekDates],
+  );
+
+  // Convert external all-day events for the deadline tray
+  const allDayEvents = React.useMemo(
+    () => externalEventsToAllDayEvents(calendarSync.externalEvents, weekDates),
+    [calendarSync.externalEvents, weekDates],
+  );
+
+  // Merge regular events with external events
+  const mergedEvents = React.useMemo(
+    () => [...schedule.events, ...externalCalendarEvents],
+    [schedule.events, externalCalendarEvents],
+  );
+
+  // -------------------------------------------------------------------------
   // Essential Schedule Handlers
   // -------------------------------------------------------------------------
   const handleSaveEssentialSchedule = React.useCallback(
@@ -409,7 +439,7 @@ export function useShellState(
     goals: schedule.goals,
     essentials: schedule.essentials,
     allEssentials: schedule.allEssentials,
-    events: schedule.events,
+    events: mergedEvents, // Includes external events
     weekDates,
     weekDeadlines,
 
@@ -532,5 +562,16 @@ export function useShellState(
     onAddLifeArea: handleAddLifeArea,
     onUpdateLifeArea: handleUpdateLifeArea,
     onRemoveLifeArea: handleRemoveLifeArea,
+
+    // Calendar integrations
+    calendarIntegrations: calendarSync.integrationStates,
+    externalEvents: calendarSync.externalEvents,
+    allDayEvents,
+    integrationsSidebar,
+    onConnectProvider: calendarSync.connectProvider,
+    onDisconnectProvider: calendarSync.disconnectProvider,
+    onToggleCalendarImport: calendarSync.toggleCalendarImport,
+    onToggleCalendarExport: calendarSync.toggleCalendarExport,
+    onUpdateExternalEvent: calendarSync.updateExternalEvent,
   };
 }

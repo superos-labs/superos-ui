@@ -4,13 +4,14 @@
  */
 
 import type { GoalColor } from "./colors";
+import type { CalendarProvider } from "./calendar-sync";
 
 /**
  * Represents an item being dragged from the backlog or deadline tray to the calendar.
  */
 export interface DragItem {
-  /** Whether dragging a goal, task, or essential */
-  type: "goal" | "task" | "essential";
+  /** Whether dragging a goal, task, essential, or external all-day event */
+  type: "goal" | "task" | "essential" | "external-all-day";
   /** The goal ID (for goal/task drags) */
   goalId?: string;
   /** Goal label for display (for goal/task drags) */
@@ -29,6 +30,20 @@ export interface DragItem {
   essentialColor?: GoalColor;
   /** ISO date string if dragging an existing deadline from the tray */
   sourceDeadline?: string;
+
+  // --- External all-day event fields ---
+  /** External event ID (for external-all-day drags) */
+  externalEventId?: string;
+  /** External event title (for external-all-day drags) */
+  externalEventTitle?: string;
+  /** Calendar provider (for external-all-day drags) */
+  externalProvider?: CalendarProvider;
+  /** Calendar ID within the provider (for external-all-day drags) */
+  externalCalendarId?: string;
+  /** Calendar name (for external-all-day drags) */
+  externalCalendarName?: string;
+  /** Calendar hex color (for external-all-day drags) */
+  externalCalendarColor?: string;
 }
 
 /**
@@ -65,10 +80,11 @@ export const ADAPTIVE_DROP_MIN_GAP = 10;
  * Goals: 60 minutes (1 hour)
  * Tasks: 30 minutes
  * Essentials: 60 minutes (1 hour)
+ * External all-day: 60 minutes (1 hour)
  */
 export function getDefaultDuration(type: DragItem["type"]): number {
   if (type === "task") return 30;
-  return 60; // goal and essential default to 1 hour
+  return 60; // goal, essential, and external-all-day default to 1 hour
 }
 
 /**
@@ -77,13 +93,16 @@ export function getDefaultDuration(type: DragItem["type"]): number {
 export function getDragItemTitle(item: DragItem): string {
   if (item.type === "task") return item.taskLabel ?? item.goalLabel ?? "";
   if (item.type === "essential") return item.essentialLabel ?? "";
+  if (item.type === "external-all-day") return item.externalEventTitle ?? "";
   return item.goalLabel ?? "";
 }
 
 /**
  * Get the color for a drag item.
+ * Returns undefined for external-all-day items (they use custom hex colors).
  */
 export function getDragItemColor(item: DragItem): GoalColor | undefined {
   if (item.type === "essential") return item.essentialColor;
+  if (item.type === "external-all-day") return undefined; // Uses custom hex color
   return item.goalColor;
 }

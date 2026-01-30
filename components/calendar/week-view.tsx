@@ -53,9 +53,12 @@ export function WeekView({
   externalDragPreview,
   onDeadlineDrop,
   deadlines,
+  allDayEvents,
   onDeadlineToggleComplete,
   onDeadlineUnassign,
   onDeadlineHover,
+  onToggleAllDayEvent,
+  onAllDayEventHover,
   onDayHeaderHover,
   onMarkDayComplete,
   dayStartMinutes,
@@ -141,14 +144,17 @@ export function WeekView({
         })}
       </div>
 
-      {/* Deadline Tray - only visible when there are deadlines */}
+      {/* Deadline Tray - only visible when there are deadlines or all-day events */}
       <DeadlineTray
         weekDates={weekDates}
         deadlines={deadlines ?? new Map()}
+        allDayEvents={allDayEvents}
         showHourLabels={showHourLabels}
         onToggleComplete={onDeadlineToggleComplete}
         onUnassign={onDeadlineUnassign}
         onDeadlineHover={onDeadlineHover}
+        onToggleAllDayEvent={onToggleAllDayEvent}
+        onAllDayEventHover={onAllDayEventHover}
       />
 
       {/* Time Grid */}

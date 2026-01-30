@@ -58,6 +58,7 @@ import {
   LifeAreaCreatorModal,
   LifeAreaManagerModal,
 } from "@/components/settings";
+import { IntegrationsSidebar } from "@/components/integrations";
 import { toAnalyticsItems } from "@/lib/adapters";
 import {
   blueprintToEvents,
@@ -95,6 +96,7 @@ import {
   RiMagicLine,
   RiShapesLine,
   RiLayoutGridLine,
+  RiPlugLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -242,6 +244,16 @@ export function ShellContentComponent({
   onLayoutChange,
   // Demo/Development
   onLoadSampleData,
+  // Calendar integrations
+  calendarIntegrations,
+  externalEvents,
+  allDayEvents,
+  integrationsSidebar,
+  onConnectProvider,
+  onDisconnectProvider,
+  onToggleCalendarImport,
+  onToggleCalendarExport,
+  onUpdateExternalEvent,
 }: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
   // Responsive Breakpoint Detection
@@ -261,6 +273,11 @@ export function ShellContentComponent({
   // Determine calendar view based on breakpoint
   // Mobile/Tablet Portrait → Day view, Tablet Landscape/Desktop → Week view
   const shouldShowWeekView = isTabletLandscape || isDesktop;
+
+  // -------------------------------------------------------------------------
+  // Calendar Integration State
+  // -------------------------------------------------------------------------
+  // Integration state is now passed via props from useShellState
 
   // -------------------------------------------------------------------------
   // Mobile Overlay State
@@ -785,6 +802,31 @@ export function ShellContentComponent({
   );
 
   // -------------------------------------------------------------------------
+  // Integrations Sidebar Toggle
+  // -------------------------------------------------------------------------
+  const handleIntegrationsToggle = React.useCallback(() => {
+    if (integrationsSidebar.isOpen) {
+      integrationsSidebar.close();
+    } else {
+      // Close other sidebars to ensure mutual exclusivity
+      setSelectedEventId(null);
+      setShowRightSidebar(false);
+      integrationsSidebar.open();
+    }
+  }, [integrationsSidebar, setSelectedEventId, setShowRightSidebar]);
+
+  // Close integrations sidebar when block or analytics sidebar opens
+  React.useEffect(() => {
+    if ((selectedEventId || showRightSidebar) && integrationsSidebar.isOpen) {
+      integrationsSidebar.close();
+    }
+  }, [selectedEventId, showRightSidebar, integrationsSidebar]);
+
+  // Compute if integrations sidebar is the active right sidebar
+  const showIntegrationsSidebar =
+    integrationsSidebar.isOpen && !selectedEventId && !showRightSidebar;
+
+  // -------------------------------------------------------------------------
   // Sleep/Day Boundaries Handler
   // -------------------------------------------------------------------------
   // When sleep times are configured via SleepRow, also enable day boundaries
@@ -880,6 +922,21 @@ export function ShellContentComponent({
   const handleCloseBottomSheet = React.useCallback(() => {
     setSelectedEventId(null);
   }, [setSelectedEventId]);
+
+  // -------------------------------------------------------------------------
+  // All-Day Event Toggle Handler
+  // -------------------------------------------------------------------------
+  const handleToggleAllDayEvent = React.useCallback(
+    (eventId: string) => {
+      // Find the current event status and toggle it
+      const currentEvent = externalEvents.find((e) => e.id === eventId);
+      if (currentEvent) {
+        const newStatus = currentEvent.status === "completed" ? "planned" : "completed";
+        onUpdateExternalEvent(eventId, { status: newStatus });
+      }
+    },
+    [externalEvents, onUpdateExternalEvent],
+  );
 
   // Format date for mobile toolbar
   const formatMobileDateLabel = (date: Date, isWeekView: boolean): string => {
@@ -1097,7 +1154,21 @@ export function ShellContentComponent({
               Plan week
             </button>
           )}
-        {/* Hide analytics button during onboarding */}
+        {/* Hide integrations and analytics buttons during onboarding */}
+        {!isOnboarding && (
+          <button
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+              showIntegrationsSidebar
+                ? "text-foreground"
+                : "text-muted-foreground",
+            )}
+            onClick={handleIntegrationsToggle}
+            title="Integrations"
+          >
+            <RiPlugLine className="size-4" />
+          </button>
+        )}
         {!isOnboarding && (
           <button
             className={cn(
@@ -1279,6 +1350,8 @@ export function ShellContentComponent({
               onDeadlineToggleComplete={onToggleTaskComplete}
               onDeadlineUnassign={onClearTaskDeadline}
               deadlines={weekDeadlines}
+              allDayEvents={allDayEvents}
+              onToggleAllDayEvent={handleToggleAllDayEvent}
               dayStartMinutes={dayStartMinutes}
               dayEndMinutes={dayEndMinutes}
               dayBoundariesEnabled={dayBoundariesEnabled}
@@ -1479,9 +1552,11 @@ export function ShellContentComponent({
                     externalDragPreview={externalDragPreview}
                     onDeadlineDrop={handleDeadlineDrop}
                     deadlines={weekDeadlines}
+                    allDayEvents={allDayEvents}
                     onDeadlineToggleComplete={onToggleTaskComplete}
                     onDeadlineUnassign={onClearTaskDeadline}
                     onDeadlineHover={setHoveredDeadline}
+                    onToggleAllDayEvent={handleToggleAllDayEvent}
                     dayStartMinutes={dayStartMinutes}
                     dayEndMinutes={dayEndMinutes}
                     dayBoundariesEnabled={dayBoundariesEnabled}
@@ -1507,14 +1582,29 @@ export function ShellContentComponent({
               ) : null}
             </ShellContentPrimitive>
 
-            {/* Right Sidebar - Block Details / Analytics */}
+            {/* Right Sidebar - Block Details / Analytics / Integrations */}
             <div
               className={cn(
                 "shrink-0 overflow-hidden transition-all duration-300 ease-out",
-                isRightSidebarOpen ? "w-[380px] opacity-100" : "w-0 opacity-0",
+                isRightSidebarOpen || showIntegrationsSidebar
+                  ? "w-[380px] opacity-100"
+                  : "w-0 opacity-0",
               )}
             >
-              {renderedContent === "block" && sidebarDataToRender ? (
+              {showIntegrationsSidebar ? (
+                <IntegrationsSidebar
+                  integrationStates={calendarIntegrations}
+                  currentView={integrationsSidebar.currentView}
+                  onClose={integrationsSidebar.close}
+                  onNavigateToProvider={integrationsSidebar.navigateToProvider}
+                  onNavigateToList={integrationsSidebar.navigateToList}
+                  onConnectProvider={onConnectProvider}
+                  onDisconnectProvider={onDisconnectProvider}
+                  onToggleCalendarImport={onToggleCalendarImport}
+                  onToggleCalendarExport={onToggleCalendarExport}
+                  className="h-full w-[380px] max-w-none overflow-y-auto"
+                />
+              ) : renderedContent === "block" && sidebarDataToRender ? (
                 <BlockSidebar
                   block={sidebarDataToRender.block}
                   availableGoalTasks={sidebarDataToRender.availableGoalTasks}

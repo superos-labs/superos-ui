@@ -37,6 +37,13 @@ import type {
   DayBoundariesDisplay,
 } from "@/lib/preferences";
 import type { EssentialTemplate, EssentialSlot } from "@/lib/essentials";
+import type {
+  CalendarProvider,
+  CalendarIntegrationState,
+  ExternalEvent,
+  UseIntegrationsSidebarReturn,
+} from "@/lib/calendar-sync";
+import type { AllDayEvent } from "@/components/calendar";
 
 // =============================================================================
 // Core Shell Props
@@ -341,6 +348,28 @@ export interface ShellContentProps {
   // -------------------------------------------------------------------------
   /** Load demo data (goals without tasks, skips onboarding) */
   onLoadSampleData?: () => void;
+
+  // -------------------------------------------------------------------------
+  // Calendar Integrations
+  // -------------------------------------------------------------------------
+  /** Integration states for each calendar provider */
+  calendarIntegrations: Map<CalendarProvider, CalendarIntegrationState>;
+  /** External events from connected calendars (timed events) */
+  externalEvents: ExternalEvent[];
+  /** All-day external events for the deadline tray */
+  allDayEvents: Map<string, AllDayEvent[]>;
+  /** Integrations sidebar state and navigation */
+  integrationsSidebar: UseIntegrationsSidebarReturn;
+  /** Connect a calendar provider */
+  onConnectProvider: (provider: CalendarProvider) => void;
+  /** Disconnect a calendar provider */
+  onDisconnectProvider: (provider: CalendarProvider) => void;
+  /** Toggle importing events from a calendar */
+  onToggleCalendarImport: (provider: CalendarProvider, calendarId: string) => void;
+  /** Toggle exporting blueprint to a calendar */
+  onToggleCalendarExport: (provider: CalendarProvider, calendarId: string) => void;
+  /** Update an external event's local state (notes, status, focus time) */
+  onUpdateExternalEvent: (eventId: string, updates: Partial<ExternalEvent>) => void;
 }
 
 // =============================================================================

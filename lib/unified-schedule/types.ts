@@ -62,6 +62,18 @@ export interface CalendarEvent {
   assignedTaskIds?: string[];
   /** Accumulated focus time in minutes (from focus sessions) */
   focusedMinutes?: number;
+
+  // --- External Calendar Integration ---
+  /** Provider for external events (google, apple, outlook) */
+  sourceProvider?: import("@/lib/calendar-sync").CalendarProvider;
+  /** Source calendar ID within the provider */
+  sourceCalendarId?: string;
+  /** Source calendar name (for display) */
+  sourceCalendarName?: string;
+  /** Whether this is a read-only external event */
+  isExternal?: boolean;
+  /** Custom hex color override (for external blocks using provider calendar colors) */
+  customColor?: string;
 }
 
 // ============================================================================

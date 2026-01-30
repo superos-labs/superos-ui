@@ -253,6 +253,8 @@ export interface CalendarProps
   onDeadlineDrop?: (dayIndex: number, date: string) => void;
   /** Map of ISO date string to array of deadline tasks for that day */
   deadlines?: Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
+  /** Map of ISO date string to array of all-day external events for that day */
+  allDayEvents?: Map<string, import("./deadline-tray").AllDayEvent[]>;
   /** Called when a deadline task's completion status is toggled */
   onDeadlineToggleComplete?: (goalId: string, taskId: string) => void;
   /** Called when a deadline is removed (unassigned) */
@@ -261,6 +263,10 @@ export interface CalendarProps
   onDeadlineHover?: (
     deadline: import("@/lib/unified-schedule").DeadlineTask | null,
   ) => void;
+  /** Called when an all-day event's completion status is toggled */
+  onToggleAllDayEvent?: (eventId: string) => void;
+  /** Called when mouse enters/leaves an all-day event pill */
+  onAllDayEventHover?: (event: import("./deadline-tray").AllDayEvent | null) => void;
   /** Day start time in minutes from midnight (for dimming hours outside day boundaries) */
   dayStartMinutes?: number;
   /** Day end time in minutes from midnight (for dimming hours outside day boundaries) */
@@ -342,6 +348,8 @@ export interface WeekViewProps
   onDeadlineDrop?: (dayIndex: number, date: string) => void;
   /** Map of ISO date string to array of deadline tasks for that day */
   deadlines?: Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
+  /** Map of ISO date string to array of all-day external events for that day */
+  allDayEvents?: Map<string, import("./deadline-tray").AllDayEvent[]>;
   /** Called when a deadline task's completion status is toggled */
   onDeadlineToggleComplete?: (goalId: string, taskId: string) => void;
   /** Called when a deadline is removed (unassigned) */
@@ -350,6 +358,10 @@ export interface WeekViewProps
   onDeadlineHover?: (
     deadline: import("@/lib/unified-schedule").DeadlineTask | null,
   ) => void;
+  /** Called when an all-day event's completion status is toggled */
+  onToggleAllDayEvent?: (eventId: string) => void;
+  /** Called when mouse enters/leaves an all-day event pill */
+  onAllDayEventHover?: (event: import("./deadline-tray").AllDayEvent | null) => void;
   /** Called when mouse enters/leaves a day header (for keyboard shortcuts) */
   onDayHeaderHover?: (dayIndex: number | null) => void;
   /** Called when user wants to mark all blocks on a day as complete */
