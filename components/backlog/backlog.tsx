@@ -208,6 +208,7 @@ export function Backlog({
               isHidden={isEssentialsHidden}
               onHide={onEssentialsHide}
               onOnboardingComplete={handleEssentialsHide}
+              isOnboarding={isOnboardingEssentialsStep}
             />
           </motion.div>
         )}

@@ -1131,16 +1131,6 @@ export function ShellContentComponent({
                 <RiAddLine className="size-3.5" />
               </button>
             </div>
-            {/* Show "Set essentials" when hidden */}
-            {isEssentialsHidden && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsEssentialsHidden(false)}>
-                  <RiCalendarCheckLine className="size-4" />
-                  Set essentials
-                </DropdownMenuItem>
-              </>
-            )}
             {/* Show "Edit blueprint" when blueprint exists */}
             {hasBlueprint && (
               <>

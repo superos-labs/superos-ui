@@ -109,6 +109,8 @@ export interface EssentialsSectionProps {
   onHide?: () => void;
   /** Callback when onboarding is completed (Continue/Skip clicked during onboarding) */
   onOnboardingComplete?: () => void;
+  /** Whether we're currently in onboarding flow (affects CTA button behavior) */
+  isOnboarding?: boolean;
   className?: string;
 }
 
@@ -155,6 +157,7 @@ export function EssentialsSection({
   isHidden = false,
   onHide,
   onOnboardingComplete,
+  isOnboarding = false,
   className,
 }: EssentialsSectionProps) {
   // Internal state for accordion expansion
@@ -251,7 +254,10 @@ export function EssentialsSection({
     }
     setAnimationPhase("content-exit");
     setCtaDismissed(true);
-    onOnboardingComplete?.();
+    // Only trigger onboarding completion if we're actually in onboarding
+    if (isOnboarding) {
+      onOnboardingComplete?.();
+    }
   };
 
   // Callback when content exit animation completes
