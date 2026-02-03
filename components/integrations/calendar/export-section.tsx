@@ -425,91 +425,105 @@ function ExportSection({
                 </div>
 
                 {/* Goal Selection - shown when Goals is selected */}
-                {exportParticipation.goals && availableGoals.length > 0 && (
-                  <div className="mt-3 flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Select goals
-                    </p>
-                    <div className="flex flex-col gap-0.5">
-                      {availableGoals.map((goal) => {
-                        const isSelected =
-                          exportGoalFilter === "all" ||
-                          exportSelectedGoalIds.has(goal.id);
-                        const GoalIcon = goal.icon;
+                {exportParticipation.goals &&
+                  (() => {
+                    // Filter out goals that have sync disabled at the goal level
+                    const syncableGoals = availableGoals.filter(
+                      (g) => g.syncSettings?.syncEnabled !== false
+                    );
 
-                        const handleToggle = () => {
-                          if (exportGoalFilter === "all") {
-                            // Switch to selected mode, with all goals except this one
-                            const newSelected = new Set(
-                              availableGoals
-                                .filter((g) => g.id !== goal.id)
-                                .map((g) => g.id)
-                            );
-                            onGoalFilterChange("selected", newSelected);
-                          } else {
-                            // Toggle this goal in the selected set
-                            const newSelected = new Set(exportSelectedGoalIds);
-                            if (newSelected.has(goal.id)) {
-                              newSelected.delete(goal.id);
-                            } else {
-                              newSelected.add(goal.id);
-                            }
-                            // If all goals are now selected, switch back to "all" mode
-                            if (newSelected.size === availableGoals.length) {
-                              onGoalFilterChange("all");
-                            } else {
-                              onGoalFilterChange("selected", newSelected);
-                            }
-                          }
-                        };
+                    if (syncableGoals.length === 0) return null;
 
-                        return (
-                          <button
-                            key={goal.id}
-                            type="button"
-                            role="checkbox"
-                            aria-checked={isSelected}
-                            onClick={handleToggle}
-                            className={cn(
-                              "group flex items-center gap-2.5 rounded-lg py-1.5 px-2 text-left",
-                              "transition-colors duration-150 hover:bg-muted/60",
-                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
-                                isSelected
-                                  ? "bg-foreground text-background"
-                                  : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
-                              )}
-                            >
-                              {isSelected && <RiCheckLine className="size-3" />}
-                            </div>
-                            <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
-                              <GoalIcon
+                    return (
+                      <div className="mt-3 flex flex-col gap-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Select goals
+                        </p>
+                        <div className="flex flex-col gap-0.5">
+                          {syncableGoals.map((goal) => {
+                            const isSelected =
+                              exportGoalFilter === "all" ||
+                              exportSelectedGoalIds.has(goal.id);
+                            const GoalIcon = goal.icon;
+
+                            const handleToggle = () => {
+                              if (exportGoalFilter === "all") {
+                                // Switch to selected mode, with all syncable goals except this one
+                                const newSelected = new Set(
+                                  syncableGoals
+                                    .filter((g) => g.id !== goal.id)
+                                    .map((g) => g.id)
+                                );
+                                onGoalFilterChange("selected", newSelected);
+                              } else {
+                                // Toggle this goal in the selected set
+                                const newSelected = new Set(
+                                  exportSelectedGoalIds
+                                );
+                                if (newSelected.has(goal.id)) {
+                                  newSelected.delete(goal.id);
+                                } else {
+                                  newSelected.add(goal.id);
+                                }
+                                // If all syncable goals are now selected, switch back to "all" mode
+                                if (newSelected.size === syncableGoals.length) {
+                                  onGoalFilterChange("all");
+                                } else {
+                                  onGoalFilterChange("selected", newSelected);
+                                }
+                              }
+                            };
+
+                            return (
+                              <button
+                                key={goal.id}
+                                type="button"
+                                role="checkbox"
+                                aria-checked={isSelected}
+                                onClick={handleToggle}
                                 className={cn(
-                                  "size-3",
-                                  `text-${goal.color}-500`
+                                  "group flex items-center gap-2.5 rounded-lg py-1.5 px-2 text-left",
+                                  "transition-colors duration-150 hover:bg-muted/60",
+                                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 )}
-                              />
-                            </div>
-                            <span
-                              className={cn(
-                                "truncate text-sm transition-colors",
-                                isSelected
-                                  ? "text-foreground"
-                                  : "text-muted-foreground"
-                              )}
-                            >
-                              {goal.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                              >
+                                <div
+                                  className={cn(
+                                    "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
+                                    isSelected
+                                      ? "bg-foreground text-background"
+                                      : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                                  )}
+                                >
+                                  {isSelected && (
+                                    <RiCheckLine className="size-3" />
+                                  )}
+                                </div>
+                                <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
+                                  <GoalIcon
+                                    className={cn(
+                                      "size-3",
+                                      `text-${goal.color}-500`
+                                    )}
+                                  />
+                                </div>
+                                <span
+                                  className={cn(
+                                    "truncate text-sm transition-colors",
+                                    isSelected
+                                      ? "text-foreground"
+                                      : "text-muted-foreground"
+                                  )}
+                                >
+                                  {goal.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
               </div>
             )}
           </div>
