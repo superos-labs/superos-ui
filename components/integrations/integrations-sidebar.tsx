@@ -11,13 +11,19 @@ import type {
   CalendarIntegrationState,
   IntegrationsSidebarView,
   ExportBlockVisibility,
+  SyncScope,
+  SyncParticipation,
+  GoalFilterMode,
 } from "@/lib/calendar-sync";
+import type { ScheduleGoal } from "@/lib/unified-schedule";
 
 interface IntegrationsSidebarProps {
   /** State for each calendar provider */
   integrationStates: Map<CalendarProvider, CalendarIntegrationState>;
   /** Current view within the sidebar */
   currentView: IntegrationsSidebarView;
+  /** All available goals for the goal filter */
+  availableGoals?: ScheduleGoal[];
   /** Close the sidebar */
   onClose: () => void;
   /** Navigate to a provider's settings */
@@ -40,10 +46,26 @@ interface IntegrationsSidebarProps {
   ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly?: (provider: CalendarProvider) => void;
-  /** Set block visibility for exports */
-  onSetExportBlockVisibility?: (
+  // Export settings callbacks
+  /** Toggle export enabled for a provider */
+  onToggleExportEnabled?: (provider: CalendarProvider) => void;
+  /** Set sync scope for a provider */
+  onSetExportScope?: (provider: CalendarProvider, scope: SyncScope) => void;
+  /** Update participation settings for a provider */
+  onSetExportParticipation?: (
     provider: CalendarProvider,
-    visibility: ExportBlockVisibility
+    participation: Partial<SyncParticipation>
+  ) => void;
+  /** Set goal filter for a provider */
+  onSetExportGoalFilter?: (
+    provider: CalendarProvider,
+    mode: GoalFilterMode,
+    selectedIds?: Set<string>
+  ) => void;
+  /** Set default appearance for a provider */
+  onSetExportDefaultAppearance?: (
+    provider: CalendarProvider,
+    appearance: ExportBlockVisibility
   ) => void;
   /** Optional class name */
   className?: string;
@@ -59,6 +81,7 @@ interface IntegrationsSidebarProps {
 function IntegrationsSidebar({
   integrationStates,
   currentView,
+  availableGoals = [],
   onClose,
   onNavigateToProvider,
   onNavigateToList,
@@ -67,7 +90,11 @@ function IntegrationsSidebar({
   onToggleCalendarImport,
   onToggleCalendarExport,
   onToggleMeetingsOnly,
-  onSetExportBlockVisibility,
+  onToggleExportEnabled,
+  onSetExportScope,
+  onSetExportParticipation,
+  onSetExportGoalFilter,
+  onSetExportDefaultAppearance,
   className,
 }: IntegrationsSidebarProps) {
   const isListView = currentView.type === "list";
@@ -90,8 +117,17 @@ function IntegrationsSidebar({
         accountEmail: null,
         calendars: [],
         importMeetingsOnly: true,
-        exportBlockVisibility: "busy",
         lastSyncAt: null,
+        exportEnabled: false,
+        exportScope: "scheduled_and_blueprint",
+        exportParticipation: {
+          essentials: true,
+          goals: true,
+          standaloneTaskBlocks: false,
+        },
+        exportGoalFilter: "all",
+        exportSelectedGoalIds: new Set(),
+        exportDefaultAppearance: "busy",
       }
     );
   };
@@ -175,6 +211,7 @@ function IntegrationsSidebar({
           <ProviderSettingsView
             provider={currentView.provider}
             state={getIntegrationState(currentView.provider)}
+            availableGoals={availableGoals}
             onConnect={() => onConnectProvider?.(currentView.provider)}
             onDisconnect={() => onDisconnectProvider?.(currentView.provider)}
             onToggleCalendarImport={(calendarId) =>
@@ -186,8 +223,20 @@ function IntegrationsSidebar({
             onToggleMeetingsOnly={() =>
               onToggleMeetingsOnly?.(currentView.provider)
             }
-            onChangeBlockVisibility={(visibility) =>
-              onSetExportBlockVisibility?.(currentView.provider, visibility)
+            onToggleExportEnabled={() =>
+              onToggleExportEnabled?.(currentView.provider)
+            }
+            onScopeChange={(scope) =>
+              onSetExportScope?.(currentView.provider, scope)
+            }
+            onParticipationChange={(participation) =>
+              onSetExportParticipation?.(currentView.provider, participation)
+            }
+            onGoalFilterChange={(mode, selectedIds) =>
+              onSetExportGoalFilter?.(currentView.provider, mode, selectedIds)
+            }
+            onDefaultAppearanceChange={(appearance) =>
+              onSetExportDefaultAppearance?.(currentView.provider, appearance)
             }
           />
         )}

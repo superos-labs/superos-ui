@@ -19,6 +19,10 @@ export type {
   CalendarProvider,
   IntegrationStatus,
   ExportBlockVisibility,
+  SyncScope,
+  SyncParticipation,
+  GoalFilterMode,
+  AppearanceOverride,
   IntegrationConfig,
   CalendarIntegrationState,
   ProviderCalendar,
@@ -43,6 +47,20 @@ export {
   getAllDayEventsForWeek,
   externalEventsToAllDayEvents,
 } from "./event-utils";
+
+// Sync Resolution
+export {
+  resolveSyncState,
+  getBlockSyncState,
+  isWeekPlanned,
+  isBlockInScope,
+  blockTypeParticipates,
+  goalParticipates,
+  resolveAppearance,
+  DEFAULT_GOAL_SYNC_SETTINGS,
+  DEFAULT_BLOCK_SYNC_SETTINGS,
+} from "./sync-resolver";
+export type { SyncResolution } from "./sync-resolver";
 
 // Mock data (for demo/prototype)
 export {

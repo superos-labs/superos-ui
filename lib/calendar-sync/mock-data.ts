@@ -231,6 +231,13 @@ export const MOCK_EXTERNAL_EVENTS: ExternalEvent[] = [
 // Initial Demo State (all providers disconnected by default)
 // =============================================================================
 
+/** Default export participation settings */
+const DEFAULT_EXPORT_PARTICIPATION = {
+  essentials: true,
+  goals: true,
+  standaloneTaskBlocks: false,
+};
+
 export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
   {
     provider: "google",
@@ -238,8 +245,13 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     accountEmail: null,
     calendars: [],
     importMeetingsOnly: true,
-    exportBlockVisibility: "busy",
     lastSyncAt: null,
+    exportEnabled: false,
+    exportScope: "scheduled_and_blueprint",
+    exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
+    exportGoalFilter: "all",
+    exportSelectedGoalIds: new Set(),
+    exportDefaultAppearance: "busy",
   },
   {
     provider: "apple",
@@ -247,8 +259,13 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     accountEmail: null,
     calendars: [],
     importMeetingsOnly: true,
-    exportBlockVisibility: "busy",
     lastSyncAt: null,
+    exportEnabled: false,
+    exportScope: "scheduled_and_blueprint",
+    exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
+    exportGoalFilter: "all",
+    exportSelectedGoalIds: new Set(),
+    exportDefaultAppearance: "busy",
   },
   {
     provider: "outlook",
@@ -256,7 +273,12 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     accountEmail: null,
     calendars: [],
     importMeetingsOnly: true,
-    exportBlockVisibility: "busy",
     lastSyncAt: null,
+    exportEnabled: false,
+    exportScope: "scheduled_and_blueprint",
+    exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
+    exportGoalFilter: "all",
+    exportSelectedGoalIds: new Set(),
+    exportDefaultAppearance: "busy",
   },
 ];

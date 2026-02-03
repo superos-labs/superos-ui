@@ -7,6 +7,7 @@
  * - Calendar selection and sync settings
  * - External events imported from providers
  * - Integrations sidebar navigation
+ * - Export sync scope and participation settings
  */
 
 import type { BlockStatus, IconComponent } from "@/lib/types";
@@ -23,6 +24,48 @@ export type IntegrationStatus = "connected" | "not_connected" | "coming_soon";
 
 /** How exported blocks appear in external calendars */
 export type ExportBlockVisibility = "block_title" | "goal_title" | "busy";
+
+// =============================================================================
+// Export Sync Types
+// =============================================================================
+
+/**
+ * Sync scope determines which planning layers are synced to external calendars.
+ * - scheduled: Only explicitly scheduled blocks
+ * - blueprint: Only blueprint blocks (for unplanned weeks)
+ * - scheduled_and_blueprint: Both layers
+ */
+export type SyncScope = "scheduled" | "blueprint" | "scheduled_and_blueprint";
+
+/**
+ * Flags controlling which block types participate in external sync.
+ */
+export interface SyncParticipation {
+  /** Whether essential blocks are synced */
+  essentials: boolean;
+  /** Whether goal work session blocks are synced */
+  goals: boolean;
+  /** Whether standalone task blocks are synced */
+  standaloneTaskBlocks: boolean;
+}
+
+/**
+ * Goal filter mode for export.
+ * - all: All goals participate in sync
+ * - selected: Only selected goals participate
+ */
+export type GoalFilterMode = "all" | "selected";
+
+/**
+ * Appearance override options for goals and blocks.
+ * - use_default: Falls back to the next level in hierarchy
+ * - busy/goal_name/block_title: Explicit appearance setting
+ */
+export type AppearanceOverride =
+  | "use_default"
+  | "busy"
+  | "goal_name"
+  | "block_title";
 
 // =============================================================================
 // Integration Types
@@ -48,10 +91,22 @@ export interface CalendarIntegrationState {
   calendars: ProviderCalendar[];
   /** When true, only import events that have attendees (meetings). Defaults to true. */
   importMeetingsOnly: boolean;
-  /** How exported blocks appear in external calendar. Defaults to "busy". */
-  exportBlockVisibility: ExportBlockVisibility;
   /** Last successful sync timestamp */
   lastSyncAt: Date | null;
+
+  // --- Export Settings ---
+  /** Master toggle: whether sync to external calendar is enabled */
+  exportEnabled: boolean;
+  /** Which planning layers should sync */
+  exportScope: SyncScope;
+  /** Which block types participate in sync */
+  exportParticipation: SyncParticipation;
+  /** Whether to sync all goals or only selected ones */
+  exportGoalFilter: GoalFilterMode;
+  /** Goal IDs that participate when filter is "selected" */
+  exportSelectedGoalIds: Set<string>;
+  /** How exported blocks appear by default (can be overridden per goal/block) */
+  exportDefaultAppearance: ExportBlockVisibility;
 }
 
 /** A calendar within a provider account */
@@ -137,26 +192,43 @@ export interface UseCalendarSyncReturn {
   /** Toggle importing events from a calendar */
   toggleCalendarImport: (
     provider: CalendarProvider,
-    calendarId: string,
+    calendarId: string
   ) => void;
   /** Toggle exporting blueprint to a calendar */
   toggleCalendarExport: (
     provider: CalendarProvider,
-    calendarId: string,
+    calendarId: string
   ) => void;
   /** Toggle "Only show meetings" filter for an integration */
   toggleMeetingsOnly: (provider: CalendarProvider) => void;
-  /** Set how exported blocks appear in external calendar */
-  setExportBlockVisibility: (
+
+  // --- Export Settings ---
+  /** Toggle export enabled for a provider */
+  toggleExportEnabled: (provider: CalendarProvider) => void;
+  /** Set the sync scope (scheduled, blueprint, or both) */
+  setExportScope: (provider: CalendarProvider, scope: SyncScope) => void;
+  /** Update which block types participate in sync */
+  setExportParticipation: (
     provider: CalendarProvider,
-    visibility: ExportBlockVisibility,
+    participation: Partial<SyncParticipation>
+  ) => void;
+  /** Set goal filter mode and optionally selected goal IDs */
+  setExportGoalFilter: (
+    provider: CalendarProvider,
+    mode: GoalFilterMode,
+    selectedIds?: Set<string>
+  ) => void;
+  /** Set the default appearance for exported blocks */
+  setExportDefaultAppearance: (
+    provider: CalendarProvider,
+    appearance: ExportBlockVisibility
   ) => void;
 
   // --- External Event Actions (local state) ---
   /** Update local state of an external event */
   updateExternalEvent: (
     eventId: string,
-    updates: Partial<ExternalEvent>,
+    updates: Partial<ExternalEvent>
   ) => void;
 
   // --- Computed Helpers ---

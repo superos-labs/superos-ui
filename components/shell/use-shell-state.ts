@@ -56,7 +56,7 @@ import type { UseShellStateOptions, UseShellStateReturn } from "./shell-types";
 // =============================================================================
 
 export function useShellState(
-  options: UseShellStateOptions,
+  options: UseShellStateOptions
 ): UseShellStateReturn {
   const {
     initialGoals,
@@ -75,14 +75,18 @@ export function useShellState(
   // Combined life areas (defaults + custom)
   const allLifeAreas = React.useMemo(
     () => [...LIFE_AREAS, ...customLifeAreas],
-    [customLifeAreas],
+    [customLifeAreas]
   );
 
   const handleAddLifeArea = React.useCallback(
-    (data: { label: string; icon: IconComponent; color: GoalColor }): string | null => {
+    (data: {
+      label: string;
+      icon: IconComponent;
+      color: GoalColor;
+    }): string | null => {
       // Validate: no duplicate labels (case-insensitive)
       const exists = allLifeAreas.some(
-        (a) => a.label.toLowerCase() === data.label.toLowerCase(),
+        (a) => a.label.toLowerCase() === data.label.toLowerCase()
       );
       if (exists) return null;
 
@@ -96,20 +100,20 @@ export function useShellState(
       setCustomLifeAreas((prev) => [...prev, newArea]);
       return newArea.id;
     },
-    [allLifeAreas],
+    [allLifeAreas]
   );
 
   const handleUpdateLifeArea = React.useCallback(
     (
       id: string,
-      updates: { label?: string; icon?: IconComponent; color?: GoalColor },
+      updates: { label?: string; icon?: IconComponent; color?: GoalColor }
     ) => {
       // Only allow updating custom areas
       setCustomLifeAreas((prev) =>
-        prev.map((area) => (area.id === id ? { ...area, ...updates } : area)),
+        prev.map((area) => (area.id === id ? { ...area, ...updates } : area))
       );
     },
-    [],
+    []
   );
 
   const handleRemoveLifeArea = React.useCallback((id: string) => {
@@ -158,7 +162,7 @@ export function useShellState(
           ...slot,
           id: `slot-init-${essentialId}-${slot.id}`,
         })),
-      }),
+      })
     );
   }, [initialEnabledEssentialIds, allEssentialsState]);
 
@@ -175,7 +179,7 @@ export function useShellState(
 
   const weekDates = React.useMemo(
     () => getWeekDates(selectedDate, weekStartsOn),
-    [selectedDate, weekStartsOn],
+    [selectedDate, weekStartsOn]
   );
 
   const goToPreviousWeek = React.useCallback(() => {
@@ -208,10 +212,10 @@ export function useShellState(
   // Selection State (lifted here for coordination)
   // -------------------------------------------------------------------------
   const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
-    null,
+    null
   );
   const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
-    null,
+    null
   );
 
   // -------------------------------------------------------------------------
@@ -259,7 +263,7 @@ export function useShellState(
     onSessionEnd: (completed) => {
       // Find the event using ref to get current value
       const event = calendarEventsRef.current.find(
-        (e) => e.id === completed.blockId,
+        (e) => e.id === completed.blockId
       );
       if (!event) return;
 
@@ -302,7 +306,7 @@ export function useShellState(
   const weekDeadlines = React.useMemo(
     () => schedule.getWeekDeadlines(weekDates),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [schedule.getWeekDeadlines, weekDates],
+    [schedule.getWeekDeadlines, weekDates]
   ) as Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
 
   // -------------------------------------------------------------------------
@@ -313,20 +317,21 @@ export function useShellState(
 
   // Convert external events to calendar events for rendering
   const externalCalendarEvents = React.useMemo(
-    () => externalEventsToCalendarEvents(calendarSync.externalEvents, weekDates),
-    [calendarSync.externalEvents, weekDates],
+    () =>
+      externalEventsToCalendarEvents(calendarSync.externalEvents, weekDates),
+    [calendarSync.externalEvents, weekDates]
   );
 
   // Convert external all-day events for the deadline tray
   const allDayEvents = React.useMemo(
     () => externalEventsToAllDayEvents(calendarSync.externalEvents, weekDates),
-    [calendarSync.externalEvents, weekDates],
+    [calendarSync.externalEvents, weekDates]
   );
 
   // Merge regular events with external events
   const mergedEvents = React.useMemo(
     () => [...schedule.events, ...externalCalendarEvents],
-    [schedule.events, externalCalendarEvents],
+    [schedule.events, externalCalendarEvents]
   );
 
   // -------------------------------------------------------------------------
@@ -336,14 +341,14 @@ export function useShellState(
     (essentialId: string, slots: EssentialSlot[]) => {
       essentialConfig.setSlots(essentialId, slots);
     },
-    [essentialConfig],
+    [essentialConfig]
   );
 
   // Check if the week needs essential import
   const needsEssentialImport = React.useMemo(() => {
     return weekNeedsEssentialImport(
       schedule.events,
-      essentialConfig.config.enabledIds,
+      essentialConfig.config.enabledIds
     );
   }, [schedule.events, essentialConfig.config.enabledIds]);
 
@@ -353,7 +358,7 @@ export function useShellState(
 
     // Get enabled templates
     const enabledTemplates = essentialConfig.config.templates.filter((t) =>
-      essentialConfig.config.enabledIds.includes(t.essentialId),
+      essentialConfig.config.enabledIds.includes(t.essentialId)
     );
 
     // Map essentials to the format expected by importEssentialsToEvents
@@ -388,7 +393,9 @@ export function useShellState(
   const handleCreateEssential = React.useCallback(
     (data: NewEssentialData, slots: EssentialSlot[]) => {
       // Generate a unique ID for the new essential
-      const id = `essential-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      const id = `essential-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 9)}`;
 
       // Create the new essential
       const newEssential: ScheduleEssential = {
@@ -414,7 +421,7 @@ export function useShellState(
         essentialConfig.setSlots(id, slots);
       }, 0);
     },
-    [essentialConfig, schedule.toggleEssentialEnabled],
+    [essentialConfig, schedule.toggleEssentialEnabled]
   );
 
   const handleDeleteEssential = React.useCallback(
@@ -428,7 +435,7 @@ export function useShellState(
       // Remove from allEssentials state
       setAllEssentialsState((prev) => prev.filter((e) => e.id !== essentialId));
     },
-    [essentialConfig],
+    [essentialConfig]
   );
 
   // -------------------------------------------------------------------------
@@ -518,6 +525,8 @@ export function useShellState(
     onReplaceEvents: schedule.replaceEvents,
     onAssignTaskToBlock: schedule.assignTaskToBlock,
     onUnassignTaskFromBlock: schedule.unassignTaskFromBlock,
+    onUpdateBlockSyncSettings: schedule.updateBlockSyncSettings,
+    onUpdateGoalSyncSettings: schedule.updateGoalSyncSettings,
 
     // Drop handling
     onDrop: schedule.handleDrop,
@@ -573,7 +582,12 @@ export function useShellState(
     onToggleCalendarImport: calendarSync.toggleCalendarImport,
     onToggleCalendarExport: calendarSync.toggleCalendarExport,
     onToggleMeetingsOnly: calendarSync.toggleMeetingsOnly,
-    onSetExportBlockVisibility: calendarSync.setExportBlockVisibility,
+    // Export settings
+    onToggleExportEnabled: calendarSync.toggleExportEnabled,
+    onSetExportScope: calendarSync.setExportScope,
+    onSetExportParticipation: calendarSync.setExportParticipation,
+    onSetExportGoalFilter: calendarSync.setExportGoalFilter,
+    onSetExportDefaultAppearance: calendarSync.setExportDefaultAppearance,
     onUpdateExternalEvent: calendarSync.updateExternalEvent,
   };
 }

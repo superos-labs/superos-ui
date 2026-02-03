@@ -42,6 +42,9 @@ import type {
   CalendarIntegrationState,
   ExternalEvent,
   ExportBlockVisibility,
+  SyncScope,
+  SyncParticipation,
+  GoalFilterMode,
   UseIntegrationsSidebarReturn,
 } from "@/lib/calendar-sync";
 import type { AllDayEvent } from "@/components/calendar";
@@ -131,7 +134,7 @@ export interface ShellContentProps {
   /** Save an essential's schedule */
   onSaveEssentialSchedule: (
     essentialId: string,
-    slots: EssentialSlot[],
+    slots: EssentialSlot[]
   ) => void;
   /** Import essentials to the current week (for weekly planning) */
   onImportEssentialsToWeek: () => void;
@@ -159,7 +162,7 @@ export interface ShellContentProps {
   onUpdateTask: (
     goalId: string,
     taskId: string,
-    updates: Partial<ScheduleTask>,
+    updates: Partial<ScheduleTask>
   ) => void;
   /** Delete a task */
   onDeleteTask: (goalId: string, taskId: string) => void;
@@ -173,14 +176,14 @@ export interface ShellContentProps {
   onToggleSubtaskComplete: (
     goalId: string,
     taskId: string,
-    subtaskId: string,
+    subtaskId: string
   ) => void;
   /** Update a subtask */
   onUpdateSubtask: (
     goalId: string,
     taskId: string,
     subtaskId: string,
-    label: string,
+    label: string
   ) => void;
   /** Delete a subtask */
   onDeleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
@@ -196,7 +199,7 @@ export interface ShellContentProps {
   onUpdateMilestone: (
     goalId: string,
     milestoneId: string,
-    label: string,
+    label: string
   ) => void;
   /** Delete a milestone */
   onDeleteMilestone: (goalId: string, milestoneId: string) => void;
@@ -240,6 +243,16 @@ export interface ShellContentProps {
   onAssignTaskToBlock: (blockId: string, taskId: string) => void;
   /** Unassign a task from a block */
   onUnassignTaskFromBlock: (blockId: string, taskId: string) => void;
+  /** Update block sync settings */
+  onUpdateBlockSyncSettings: (
+    blockId: string,
+    settings: Partial<import("@/lib/unified-schedule").BlockSyncSettings>
+  ) => void;
+  /** Update goal sync settings */
+  onUpdateGoalSyncSettings: (
+    goalId: string,
+    settings: Partial<import("@/lib/unified-schedule").GoalSyncSettings>
+  ) => void;
 
   // -------------------------------------------------------------------------
   // Drop Handling
@@ -248,7 +261,7 @@ export interface ShellContentProps {
   onDrop: (
     item: import("@/lib/drag-types").DragItem,
     position: import("@/lib/drag-types").DropPosition,
-    weekDates: Date[],
+    weekDates: Date[]
   ) => void;
 
   // -------------------------------------------------------------------------
@@ -339,7 +352,7 @@ export interface ShellContentProps {
       label?: string;
       icon?: import("@/lib/types").IconComponent;
       color?: import("@/lib/colors").GoalColor;
-    },
+    }
   ) => void;
   /** Remove a custom life area */
   onRemoveLifeArea: (id: string) => void;
@@ -366,15 +379,43 @@ export interface ShellContentProps {
   /** Disconnect a calendar provider */
   onDisconnectProvider: (provider: CalendarProvider) => void;
   /** Toggle importing events from a calendar */
-  onToggleCalendarImport: (provider: CalendarProvider, calendarId: string) => void;
+  onToggleCalendarImport: (
+    provider: CalendarProvider,
+    calendarId: string
+  ) => void;
   /** Toggle exporting blueprint to a calendar */
-  onToggleCalendarExport: (provider: CalendarProvider, calendarId: string) => void;
+  onToggleCalendarExport: (
+    provider: CalendarProvider,
+    calendarId: string
+  ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly: (provider: CalendarProvider) => void;
-  /** Set block visibility for exports */
-  onSetExportBlockVisibility: (provider: CalendarProvider, visibility: ExportBlockVisibility) => void;
+  // Export settings callbacks
+  /** Toggle export enabled for a provider */
+  onToggleExportEnabled: (provider: CalendarProvider) => void;
+  /** Set sync scope for a provider */
+  onSetExportScope: (provider: CalendarProvider, scope: SyncScope) => void;
+  /** Update participation settings for a provider */
+  onSetExportParticipation: (
+    provider: CalendarProvider,
+    participation: Partial<SyncParticipation>
+  ) => void;
+  /** Set goal filter for a provider */
+  onSetExportGoalFilter: (
+    provider: CalendarProvider,
+    mode: GoalFilterMode,
+    selectedIds?: Set<string>
+  ) => void;
+  /** Set default appearance for a provider */
+  onSetExportDefaultAppearance: (
+    provider: CalendarProvider,
+    appearance: ExportBlockVisibility
+  ) => void;
   /** Update an external event's local state (notes, status, focus time) */
-  onUpdateExternalEvent: (eventId: string, updates: Partial<ExternalEvent>) => void;
+  onUpdateExternalEvent: (
+    eventId: string,
+    updates: Partial<ExternalEvent>
+  ) => void;
 }
 
 // =============================================================================

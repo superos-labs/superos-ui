@@ -14,6 +14,7 @@ import {
   RiFocusLine,
   RiPencilLine,
   RiDeleteBinLine,
+  RiShareLine,
 } from "@remixicon/react";
 import {
   DropdownMenu,
@@ -23,7 +24,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { BlockColor } from "./block-colors";
 import type { BlockType, BlockStatus, IconComponent } from "@/lib/types";
-import type { ScheduleTask, Subtask } from "@/lib/unified-schedule";
+import type {
+  ScheduleTask,
+  Subtask,
+  BlockSyncState,
+  BlockSyncSettings,
+} from "@/lib/unified-schedule";
+import type { AppearanceOverride } from "@/lib/calendar-sync";
 import {
   SubtaskRow,
   InlineSubtaskCreator,
@@ -200,7 +207,7 @@ function ExpandedGoalTaskDetail({
   onDeleteSubtask,
 }: ExpandedGoalTaskDetailProps) {
   const [descriptionValue, setDescriptionValue] = React.useState(
-    task.description ?? "",
+    task.description ?? ""
   );
 
   // Sync description when task changes externally
@@ -379,7 +386,7 @@ function BlockGoalTaskRow({
         className={cn(
           "group relative flex items-center gap-2.5 rounded-lg py-2 px-2 transition-all",
           !isExpanded && "hover:bg-muted/60",
-          onExpand && "cursor-pointer",
+          onExpand && "cursor-pointer"
         )}
         onClick={handleRowClick}
       >
@@ -394,7 +401,7 @@ function BlockGoalTaskRow({
             "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
             task.completed
               ? "bg-primary text-primary-foreground"
-              : "border border-border bg-background hover:bg-muted",
+              : "border border-border bg-background hover:bg-muted"
           )}
         >
           {task.completed && <RiCheckLine className="size-3" />}
@@ -412,7 +419,7 @@ function BlockGoalTaskRow({
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex-1 min-w-0 bg-transparent text-sm outline-none",
-              task.completed ? "text-muted-foreground" : "text-foreground",
+              task.completed ? "text-muted-foreground" : "text-foreground"
             )}
           />
         ) : (
@@ -426,7 +433,7 @@ function BlockGoalTaskRow({
                 : "text-foreground",
               isExpanded &&
                 onUpdateTask &&
-                "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",
+                "cursor-text hover:bg-muted/60 rounded px-1 -mx-1"
             )}
           >
             {task.label}
@@ -562,7 +569,7 @@ function FocusTimeSection({
             placeholder="e.g., 90 or 1h 30m"
             className={cn(
               "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-              "outline-none focus:bg-muted",
+              "outline-none focus:bg-muted"
             )}
           />
           <span className="text-xs text-muted-foreground">min</span>
@@ -575,7 +582,7 @@ function FocusTimeSection({
             "group flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors",
             onFocusedMinutesChange
               ? "hover:bg-muted/60 cursor-pointer"
-              : "cursor-default",
+              : "cursor-default"
           )}
         >
           <span className="text-sm font-medium tabular-nums text-foreground">
@@ -586,6 +593,127 @@ function FocusTimeSection({
           )}
         </button>
       )}
+    </BlockSidebarSection>
+  );
+}
+
+// =============================================================================
+// External Calendar Sync Section
+// =============================================================================
+
+/** Appearance options for block sync */
+const APPEARANCE_OPTIONS: {
+  value: AppearanceOverride;
+  label: string;
+}[] = [
+  { value: "use_default", label: "Use goal setting" },
+  { value: "busy", label: "Busy" },
+  { value: "goal_name", label: "Goal name" },
+  { value: "block_title", label: "Block title" },
+];
+
+interface ExternalCalendarSyncSectionProps {
+  /** Computed sync state for this block */
+  syncState: BlockSyncState;
+  /** Current block-level sync settings */
+  blockSyncSettings?: BlockSyncSettings;
+  /** Callback to update block sync appearance override */
+  onSyncAppearanceChange?: (appearance: AppearanceOverride) => void;
+}
+
+function ExternalCalendarSyncSection({
+  syncState,
+  blockSyncSettings,
+  onSyncAppearanceChange,
+}: ExternalCalendarSyncSectionProps) {
+  const currentAppearance =
+    blockSyncSettings?.appearanceOverride ?? "use_default";
+
+  // Format the "synced as" display text
+  const getSyncedAsLabel = (syncedAs: string | undefined): string => {
+    switch (syncedAs) {
+      case "busy":
+        return "Busy";
+      case "goal_name":
+        return "Goal name";
+      case "block_title":
+        return "Block title";
+      default:
+        return "Not shared";
+    }
+  };
+
+  return (
+    <BlockSidebarSection
+      icon={<RiShareLine className="size-3.5" />}
+      label="External Calendar"
+    >
+      <div className="flex flex-col gap-3">
+        {/* Sync status indicator */}
+        {syncState.isSynced ? (
+          <div className="flex items-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 px-3 py-2">
+            <RiCheckLine className="size-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-xs text-blue-700 dark:text-blue-300">
+              Shared as: <strong>{getSyncedAsLabel(syncState.syncedAs)}</strong>
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+            <span className="text-xs text-muted-foreground">
+              Not shared to external calendar
+            </span>
+          </div>
+        )}
+
+        {/* Appearance override selector */}
+        {onSyncAppearanceChange && (
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-muted-foreground">
+              Override appearance:
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {APPEARANCE_OPTIONS.map((option) => {
+                const isSelected = currentAppearance === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    onClick={() => onSyncAppearanceChange(option.value)}
+                    className={cn(
+                      "group flex items-center gap-2.5 rounded-lg py-1.5 px-2 text-left",
+                      "transition-colors duration-150 hover:bg-muted/60",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex size-[16px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
+                        isSelected
+                          ? "bg-foreground"
+                          : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                      )}
+                    >
+                      {isSelected && (
+                        <span className="size-1.5 rounded-full bg-background" />
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        "text-sm transition-colors",
+                        isSelected ? "text-foreground" : "text-muted-foreground"
+                      )}
+                    >
+                      {option.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
     </BlockSidebarSection>
   );
 }
@@ -684,7 +812,7 @@ function AvailableTasksList({ tasks, onAssign }: AvailableTasksListProps) {
           <RiArrowDownSLine
             className={cn(
               "size-4 text-muted-foreground/50 transition-transform group-hover:text-muted-foreground/70",
-              isExpanded && "rotate-180",
+              isExpanded && "rotate-180"
             )}
           />
         </div>
@@ -813,7 +941,7 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onUpdateGoalTaskSubtask?: (
     taskId: string,
     subtaskId: string,
-    label: string,
+    label: string
   ) => void;
   /** Callback to delete a goal task's subtask */
   onDeleteGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
@@ -847,6 +975,14 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   totalFocusedMinutes?: number;
   /** Callback when focus time is manually edited */
   onFocusedMinutesChange?: (minutes: number) => void;
+
+  // External calendar sync (only for goal/task blocks when sync is enabled)
+  /** Computed sync state for this block */
+  syncState?: BlockSyncState;
+  /** Current block-level sync settings */
+  blockSyncSettings?: BlockSyncSettings;
+  /** Callback to update block sync appearance override */
+  onSyncAppearanceChange?: (appearance: AppearanceOverride) => void;
 }
 
 function BlockSidebar({
@@ -890,6 +1026,10 @@ function BlockSidebar({
   // Focus time tracking
   totalFocusedMinutes,
   onFocusedMinutesChange,
+  // External calendar sync
+  syncState,
+  blockSyncSettings,
+  onSyncAppearanceChange,
   className,
   ...props
 }: BlockSidebarProps) {
@@ -950,7 +1090,7 @@ function BlockSidebar({
       <div
         className={cn(
           "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-          className,
+          className
         )}
         {...props}
       >
@@ -986,7 +1126,7 @@ function BlockSidebar({
     <div
       className={cn(
         "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className,
+        className
       )}
       {...props}
     >
@@ -1049,7 +1189,7 @@ function BlockSidebar({
             className={cn(
               "w-full bg-transparent text-lg font-semibold text-foreground leading-tight",
               "outline-none placeholder:text-muted-foreground/60",
-              "focus:outline-none",
+              "focus:outline-none"
             )}
             placeholder="Block title..."
           />
@@ -1137,7 +1277,7 @@ function BlockSidebar({
                 }}
                 className={cn(
                   "w-full rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                  "outline-none focus:bg-muted",
+                  "outline-none focus:bg-muted"
                 )}
               />
             ) : (
@@ -1160,7 +1300,7 @@ function BlockSidebar({
                     }}
                     className={cn(
                       "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                      "outline-none focus:bg-muted",
+                      "outline-none focus:bg-muted"
                     )}
                   />
                   <span className="text-sm text-muted-foreground">to</span>
@@ -1177,7 +1317,7 @@ function BlockSidebar({
                       }}
                       className={cn(
                         "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                        "outline-none focus:bg-muted",
+                        "outline-none focus:bg-muted"
                       )}
                     />
                     {isOvernightBlock(block) && (
@@ -1305,7 +1445,7 @@ function BlockSidebar({
                 placeholder="Add notes..."
                 className={cn(
                   "w-full min-h-[24px] bg-transparent text-sm text-foreground leading-relaxed",
-                  "outline-none placeholder:text-muted-foreground/60",
+                  "outline-none placeholder:text-muted-foreground/60"
                 )}
               />
             ) : (
@@ -1368,6 +1508,15 @@ function BlockSidebar({
             )}
           </div>
         </BlockSidebarSection>
+
+        {/* External Calendar Sync Section - only for goal/task blocks, not external blocks */}
+        {(isGoalBlock || isTaskBlock) && !isExternalBlock && syncState && (
+          <ExternalCalendarSyncSection
+            syncState={syncState}
+            blockSyncSettings={blockSyncSettings}
+            onSyncAppearanceChange={onSyncAppearanceChange}
+          />
+        )}
       </div>
     </div>
   );

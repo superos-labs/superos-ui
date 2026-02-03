@@ -5,6 +5,8 @@ import type {
   CalendarEvent,
   BlockStatus,
   ScheduleTask,
+  GoalSyncSettings,
+  BlockSyncSettings,
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
 } from "./types";
@@ -162,7 +164,7 @@ export function useUnifiedSchedule({
         .map((e) => `${e.id}:${e.assignedTaskIds?.slice().sort().join(",")}`)
         .sort()
         .join("|"),
-    [allEvents],
+    [allEvents]
   );
 
   // Keep event.pendingTaskCount and event.completedTaskCount in sync with goals
@@ -192,7 +194,7 @@ export function useUnifiedSchedule({
 
         // Compute counts from assigned tasks
         const assignedTasks = goal.tasks.filter((t) =>
-          event.assignedTaskIds!.includes(t.id),
+          event.assignedTaskIds!.includes(t.id)
         );
         const pendingCount = assignedTasks.filter((t) => !t.completed).length;
         const completedCount = assignedTasks.filter((t) => t.completed).length;
@@ -241,7 +243,7 @@ export function useUnifiedSchedule({
         updateEvent(blockId, { status: newStatus });
       }
     },
-    [findTask, baseToggleTaskComplete, updateEvent],
+    [findTask, baseToggleTaskComplete, updateEvent]
   );
 
   // Update task with event sync
@@ -269,7 +271,7 @@ export function useUnifiedSchedule({
         }
       }
     },
-    [findTask, baseUpdateTask, updateEvent],
+    [findTask, baseUpdateTask, updateEvent]
   );
 
   // Delete task with event cleanup
@@ -285,7 +287,7 @@ export function useUnifiedSchedule({
 
       baseDeleteTask(goalId, taskId);
     },
-    [findTask, baseDeleteTask, baseDeleteEvent],
+    [findTask, baseDeleteTask, baseDeleteEvent]
   );
 
   // Delete event with goal sync
@@ -306,7 +308,7 @@ export function useUnifiedSchedule({
 
       baseDeleteEvent(eventId);
     },
-    [allEvents, baseUpdateTask, baseDeleteEvent],
+    [allEvents, baseUpdateTask, baseDeleteEvent]
   );
 
   // Mark event complete with goal sync
@@ -339,7 +341,7 @@ export function useUnifiedSchedule({
 
       baseMarkEventComplete(eventId);
     },
-    [allEvents, baseUpdateTask, baseMarkEventComplete],
+    [allEvents, baseUpdateTask, baseMarkEventComplete]
   );
 
   // Mark event incomplete with goal sync
@@ -361,7 +363,7 @@ export function useUnifiedSchedule({
 
       baseMarkEventIncomplete(eventId);
     },
-    [allEvents, baseUpdateTask, baseMarkEventIncomplete],
+    [allEvents, baseUpdateTask, baseMarkEventIncomplete]
   );
 
   // -------------------------------------------------------------------------
@@ -387,7 +389,7 @@ export function useUnifiedSchedule({
         }
       }
     },
-    [weekDates, baseCalendarHandlers, goals, baseUpdateTask],
+    [weekDates, baseCalendarHandlers, goals, baseUpdateTask]
   );
 
   const calendarHandlers = React.useMemo(
@@ -417,7 +419,45 @@ export function useUnifiedSchedule({
       markEventIncomplete,
       updateEvent,
       handleMarkDayComplete,
-    ],
+    ]
+  );
+
+  // -------------------------------------------------------------------------
+  // Goal Sync Settings
+  // -------------------------------------------------------------------------
+
+  const updateGoalSyncSettings = React.useCallback(
+    (goalId: string, settings: Partial<GoalSyncSettings>) => {
+      updateGoal(goalId, {
+        syncSettings: {
+          syncEnabled: true,
+          appearanceOverride: "use_default",
+          ...goals.find((g) => g.id === goalId)?.syncSettings,
+          ...settings,
+        },
+      });
+    },
+    [goals, updateGoal]
+  );
+
+  // -------------------------------------------------------------------------
+  // Block Sync Settings
+  // -------------------------------------------------------------------------
+
+  const updateBlockSyncSettings = React.useCallback(
+    (blockId: string, settings: Partial<BlockSyncSettings>) => {
+      const event = allEvents.find((e) => e.id === blockId);
+      if (!event) return;
+
+      updateEvent(blockId, {
+        syncSettings: {
+          appearanceOverride: "use_default",
+          ...event.syncSettings,
+          ...settings,
+        },
+      });
+    },
+    [allEvents, updateEvent]
   );
 
   // -------------------------------------------------------------------------
@@ -442,6 +482,10 @@ export function useUnifiedSchedule({
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
+    // Goal sync settings
+    updateGoalSyncSettings,
+    // Block sync settings
+    updateBlockSyncSettings,
     addGoal,
     deleteGoal,
     updateGoal,

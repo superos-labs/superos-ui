@@ -74,6 +74,46 @@ export interface CalendarEvent {
   isExternal?: boolean;
   /** Custom hex color override (for external blocks using provider calendar colors) */
   customColor?: string;
+
+  // --- External Calendar Sync Settings (for exporting to external calendars) ---
+  /** Block-level sync settings (overrides goal and global settings) */
+  syncSettings?: BlockSyncSettings;
+}
+
+// ============================================================================
+// External Calendar Sync Settings
+// ============================================================================
+
+import type { AppearanceOverride } from "@/lib/calendar-sync/types";
+
+/**
+ * Goal-level sync settings for external calendar export.
+ * These settings override the global defaults set at the provider level.
+ */
+export interface GoalSyncSettings {
+  /** Whether this goal's blocks should sync to external calendars */
+  syncEnabled: boolean;
+  /** How blocks from this goal appear (use_default falls back to global) */
+  appearanceOverride: AppearanceOverride;
+}
+
+/**
+ * Block-level sync settings for external calendar export.
+ * These settings override both goal-level and global settings.
+ */
+export interface BlockSyncSettings {
+  /** How this specific block appears (use_default falls back to goal setting) */
+  appearanceOverride: AppearanceOverride;
+}
+
+/**
+ * Computed sync state for a block (for UI display).
+ */
+export interface BlockSyncState {
+  /** Whether this block is currently being synced to external calendar */
+  isSynced: boolean;
+  /** How this block appears in the external calendar */
+  syncedAs?: "busy" | "goal_name" | "block_title";
 }
 
 // ============================================================================
@@ -126,6 +166,8 @@ export interface ScheduleGoal {
   /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
   milestonesEnabled?: boolean;
   tasks?: ScheduleTask[];
+  /** External calendar sync settings for this goal */
+  syncSettings?: GoalSyncSettings;
 }
 
 /** Essential in the backlog (simpler than goals, no tasks) */
@@ -232,6 +274,20 @@ export interface UseUnifiedScheduleReturn {
   getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
 
+  // Goal sync settings
+  /** Update sync settings for a goal */
+  updateGoalSyncSettings: (
+    goalId: string,
+    settings: Partial<GoalSyncSettings>
+  ) => void;
+
+  // Block sync settings
+  /** Update sync settings for a block */
+  updateBlockSyncSettings: (
+    blockId: string,
+    settings: Partial<BlockSyncSettings>
+  ) => void;
+
   // Backlog actions
   addGoal: (goal: ScheduleGoal) => void;
   deleteGoal: (goalId: string) => void;
@@ -243,7 +299,7 @@ export interface UseUnifiedScheduleReturn {
   updateTask: (
     goalId: string,
     taskId: string,
-    updates: Partial<ScheduleTask>,
+    updates: Partial<ScheduleTask>
   ) => void;
   deleteTask: (goalId: string, taskId: string) => void;
 
@@ -253,12 +309,12 @@ export interface UseUnifiedScheduleReturn {
     goalId: string,
     taskId: string,
     subtaskId: string,
-    label: string,
+    label: string
   ) => void;
   toggleSubtaskComplete: (
     goalId: string,
     taskId: string,
-    subtaskId: string,
+    subtaskId: string
   ) => void;
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
@@ -278,18 +334,18 @@ export interface UseUnifiedScheduleReturn {
   scheduleGoal: (
     goalId: string,
     dayIndex: number,
-    startMinutes: number,
+    startMinutes: number
   ) => void;
   scheduleTask: (
     goalId: string,
     taskId: string,
     dayIndex: number,
-    startMinutes: number,
+    startMinutes: number
   ) => void;
   scheduleEssential: (
     essentialId: string,
     dayIndex: number,
-    startMinutes: number,
+    startMinutes: number
   ) => void;
 
   // Deadline actions
@@ -314,7 +370,7 @@ export interface UseUnifiedScheduleReturn {
   assignTaskToGoalBlock: (
     blockId: string,
     goalId: string,
-    taskId: string,
+    taskId: string
   ) => void;
   /** Convert a task block into a goal block containing both tasks */
   convertTaskBlockToGoalBlock: (blockId: string, droppedTaskId: string) => void;
@@ -323,7 +379,7 @@ export interface UseUnifiedScheduleReturn {
   handleDrop: (
     item: DragItem,
     position: DropPosition,
-    weekDates: Date[],
+    weekDates: Date[]
   ) => void;
 
   // Hover state (for keyboard shortcuts)
@@ -336,24 +392,24 @@ export interface UseUnifiedScheduleReturn {
     onEventResize: (
       eventId: string,
       newStartMinutes: number,
-      newDurationMinutes: number,
+      newDurationMinutes: number
     ) => void;
     onEventResizeEnd: () => void;
     onEventDragEnd: (
       eventId: string,
       newDayIndex: number,
-      newStartMinutes: number,
+      newStartMinutes: number
     ) => void;
     onEventDuplicate: (
       sourceEventId: string,
       newDayIndex: number,
-      newStartMinutes: number,
+      newStartMinutes: number
     ) => void;
     onGridDoubleClick: (dayIndex: number, startMinutes: number) => void;
     onGridDragCreate: (
       dayIndex: number,
       startMinutes: number,
-      durationMinutes: number,
+      durationMinutes: number
     ) => void;
     onEventCopy: (event: CalendarEvent) => void;
     onEventDelete: (eventId: string) => void;

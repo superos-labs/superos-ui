@@ -12,13 +12,19 @@ import type {
   CalendarProvider,
   CalendarIntegrationState,
   ExportBlockVisibility,
+  SyncScope,
+  SyncParticipation,
+  GoalFilterMode,
 } from "@/lib/calendar-sync";
+import type { ScheduleGoal } from "@/lib/unified-schedule";
 
 interface ProviderSettingsViewProps {
   /** The provider being configured */
   provider: CalendarProvider;
   /** Current state of the integration */
   state: CalendarIntegrationState;
+  /** All available goals for the goal filter */
+  availableGoals?: ScheduleGoal[];
   /** Callback to connect the provider */
   onConnect: () => void;
   /** Callback to disconnect the provider */
@@ -29,8 +35,17 @@ interface ProviderSettingsViewProps {
   onToggleCalendarExport: (calendarId: string) => void;
   /** Callback to toggle meetings-only filter for this integration */
   onToggleMeetingsOnly: () => void;
-  /** Callback to change block visibility for exports */
-  onChangeBlockVisibility: (visibility: ExportBlockVisibility) => void;
+  // Export settings callbacks
+  /** Toggle export enabled */
+  onToggleExportEnabled: () => void;
+  /** Set sync scope */
+  onScopeChange: (scope: SyncScope) => void;
+  /** Update participation settings */
+  onParticipationChange: (participation: Partial<SyncParticipation>) => void;
+  /** Set goal filter */
+  onGoalFilterChange: (mode: GoalFilterMode, selectedIds?: Set<string>) => void;
+  /** Set default appearance */
+  onDefaultAppearanceChange: (appearance: ExportBlockVisibility) => void;
 }
 
 /**
@@ -40,17 +55,22 @@ interface ProviderSettingsViewProps {
  * - Shows connect prompt if not connected
  * - Account info with disconnect button when connected
  * - Calendar import toggles
- * - Blueprint export settings
+ * - Comprehensive export settings
  */
 function ProviderSettingsView({
   provider,
   state,
+  availableGoals = [],
   onConnect,
   onDisconnect,
   onToggleCalendarImport,
   onToggleCalendarExport,
   onToggleMeetingsOnly,
-  onChangeBlockVisibility,
+  onToggleExportEnabled,
+  onScopeChange,
+  onParticipationChange,
+  onGoalFilterChange,
+  onDefaultAppearanceChange,
 }: ProviderSettingsViewProps) {
   const config = CALENDAR_PROVIDERS[provider];
   const isConnected = state.status === "connected";
@@ -66,7 +86,7 @@ function ProviderSettingsView({
       <div
         className={cn(
           "flex items-center gap-3 rounded-xl px-3 py-3",
-          "ring-1 ring-inset ring-border/60",
+          "ring-1 ring-inset ring-border/60"
         )}
       >
         {/* Account icon */}
@@ -111,7 +131,7 @@ function ProviderSettingsView({
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             state.importMeetingsOnly
               ? "bg-foreground"
-              : "bg-muted-foreground/30",
+              : "bg-muted-foreground/30"
           )}
         >
           <span
@@ -120,7 +140,7 @@ function ProviderSettingsView({
               "transition-transform duration-150",
               state.importMeetingsOnly
                 ? "translate-x-[18px]"
-                : "translate-x-0.5",
+                : "translate-x-0.5"
             )}
           />
         </button>
@@ -131,13 +151,23 @@ function ProviderSettingsView({
         <Separator className="bg-border/60" />
       </div>
 
-      {/* Blueprint Export Section */}
+      {/* External Calendar Sync Section */}
       <ExportSection
         calendars={state.calendars}
         provider={provider}
-        blockVisibility={state.exportBlockVisibility}
-        onToggleExport={onToggleCalendarExport}
-        onChangeBlockVisibility={onChangeBlockVisibility}
+        exportEnabled={state.exportEnabled}
+        exportScope={state.exportScope}
+        exportParticipation={state.exportParticipation}
+        exportGoalFilter={state.exportGoalFilter}
+        exportSelectedGoalIds={state.exportSelectedGoalIds}
+        exportDefaultAppearance={state.exportDefaultAppearance}
+        availableGoals={availableGoals}
+        onToggleExportEnabled={onToggleExportEnabled}
+        onScopeChange={onScopeChange}
+        onParticipationChange={onParticipationChange}
+        onGoalFilterChange={onGoalFilterChange}
+        onDefaultAppearanceChange={onDefaultAppearanceChange}
+        onToggleCalendarExport={onToggleCalendarExport}
       />
     </div>
   );

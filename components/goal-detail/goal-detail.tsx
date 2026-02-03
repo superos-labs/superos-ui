@@ -6,13 +6,17 @@ import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
   RiMoreFill,
+  RiCloseLine,
+  RiCheckLine,
 } from "@remixicon/react";
 import type {
   ScheduleGoal,
   ScheduleTask,
   TaskScheduleInfo,
   TaskDeadlineInfo,
+  GoalSyncSettings,
 } from "@/lib/unified-schedule";
+import type { AppearanceOverride } from "@/lib/calendar-sync";
 import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 import type { BacklogItem } from "@/components/backlog";
@@ -55,7 +59,7 @@ function CollapsibleSection({
         <RiArrowRightSLine
           className={cn(
             "size-4 text-muted-foreground/50 transition-transform",
-            isOpen && "rotate-90",
+            isOpen && "rotate-90"
           )}
         />
         <span className="text-xs text-muted-foreground/70">{label}</span>
@@ -105,10 +109,163 @@ function GoalDetailNotes({ notes, onChange, className }: GoalDetailNotesProps) {
           "w-full resize-none bg-transparent text-sm text-muted-foreground leading-relaxed",
           "placeholder:text-muted-foreground/40",
           "focus:outline-none",
-          !onChange && "cursor-default",
+          !onChange && "cursor-default"
         )}
         readOnly={!onChange}
       />
+    </div>
+  );
+}
+
+// =============================================================================
+// Goal Sync Settings Dialog
+// =============================================================================
+
+/** Appearance options for goal sync */
+const APPEARANCE_OPTIONS: {
+  value: AppearanceOverride;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "use_default",
+    label: "Use default",
+    description: "Follow the global setting",
+  },
+  { value: "busy", label: "Busy", description: "Show as 'Busy'" },
+  { value: "goal_name", label: "Goal name", description: "Show goal name" },
+  {
+    value: "block_title",
+    label: "Block title",
+    description: "Show block title",
+  },
+];
+
+interface GoalSyncSettingsDialogProps {
+  open: boolean;
+  syncSettings?: GoalSyncSettings;
+  onClose: () => void;
+  onSyncSettingsChange?: (settings: Partial<GoalSyncSettings>) => void;
+}
+
+function GoalSyncSettingsDialog({
+  open,
+  syncSettings,
+  onClose,
+  onSyncSettingsChange,
+}: GoalSyncSettingsDialogProps) {
+  if (!open) return null;
+
+  const syncEnabled = syncSettings?.syncEnabled ?? true;
+  const appearanceOverride = syncSettings?.appearanceOverride ?? "use_default";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+      {/* Dialog */}
+      <div className="relative z-10 w-full max-w-sm rounded-xl border border-border bg-background p-5 shadow-lg">
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-base font-semibold">Sync Settings</h3>
+          <button
+            onClick={onClose}
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <RiCloseLine className="size-4" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-col gap-5">
+          {/* Sync enabled toggle */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium">Sync this goal</span>
+              <span className="text-xs text-muted-foreground">
+                Share blocks from this goal to external calendar
+              </span>
+            </div>
+            <button
+              role="switch"
+              aria-checked={syncEnabled}
+              onClick={() =>
+                onSyncSettingsChange?.({ syncEnabled: !syncEnabled })
+              }
+              className={cn(
+                "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full",
+                "transition-colors duration-150",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                syncEnabled ? "bg-foreground" : "bg-muted-foreground/30"
+              )}
+            >
+              <span
+                className={cn(
+                  "pointer-events-none block size-4 rounded-full bg-background shadow-sm ring-0",
+                  "transition-transform duration-150",
+                  syncEnabled ? "translate-x-[18px]" : "translate-x-0.5"
+                )}
+              />
+            </button>
+          </div>
+
+          {/* Appearance override - only when sync is enabled */}
+          {syncEnabled && (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">Show blocks as</span>
+              <div className="flex flex-col gap-0.5">
+                {APPEARANCE_OPTIONS.map((option) => {
+                  const isSelected = appearanceOverride === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() =>
+                        onSyncSettingsChange?.({
+                          appearanceOverride: option.value,
+                        })
+                      }
+                      className={cn(
+                        "group flex items-center gap-2.5 rounded-lg py-2 px-3 text-left",
+                        "transition-colors duration-150 hover:bg-muted/60",
+                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex size-[18px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
+                          isSelected
+                            ? "bg-foreground"
+                            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                        )}
+                      >
+                        {isSelected && (
+                          <span className="size-2 rounded-full bg-background" />
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span
+                          className={cn(
+                            "text-sm transition-colors",
+                            isSelected
+                              ? "text-foreground"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          {option.label}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -169,6 +326,10 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onDelete?: () => void;
   /** Callback to close the goal detail view */
   onBack?: () => void;
+
+  // Sync settings callbacks
+  /** Callback to update goal sync settings */
+  onSyncSettingsChange?: (settings: Partial<GoalSyncSettings>) => void;
 }
 
 export function GoalDetail({
@@ -200,9 +361,13 @@ export function GoalDetail({
   onToggleMilestones,
   onDelete,
   onBack,
+  onSyncSettingsChange,
   className,
   ...props
 }: GoalDetailProps) {
+  // Sync settings dialog state
+  const [syncSettingsOpen, setSyncSettingsOpen] = React.useState(false);
+
   // Convert ScheduleGoal to BacklogItem for task row compatibility
   const goalAsBacklogItem: BacklogItem = {
     id: goal.id,
@@ -227,14 +392,13 @@ export function GoalDetail({
   };
 
   // Check if milestones are enabled for this goal
-  const milestonesEnabled =
-    goal.milestonesEnabled ?? (milestones.length > 0);
+  const milestonesEnabled = goal.milestonesEnabled ?? milestones.length > 0;
 
   return (
     <div
       className={cn(
         "relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className,
+        className
       )}
       {...props}
     >
@@ -258,7 +422,7 @@ export function GoalDetail({
             <div className="flex-1" />
 
             {/* More options menu */}
-            {(onToggleMilestones || onDelete) && (
+            {(onSyncSettingsChange || onToggleMilestones || onDelete) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -269,12 +433,24 @@ export function GoalDetail({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[160px]">
-                  {onToggleMilestones && (
-                    <DropdownMenuItem onClick={onToggleMilestones}>
-                      {milestonesEnabled ? "Disable milestones" : "Enable milestones"}
+                  {onSyncSettingsChange && (
+                    <DropdownMenuItem onClick={() => setSyncSettingsOpen(true)}>
+                      Sync settings
                     </DropdownMenuItem>
                   )}
-                  {onToggleMilestones && onDelete && <DropdownMenuSeparator />}
+                  {onSyncSettingsChange && onToggleMilestones && (
+                    <DropdownMenuSeparator />
+                  )}
+                  {onToggleMilestones && (
+                    <DropdownMenuItem onClick={onToggleMilestones}>
+                      {milestonesEnabled
+                        ? "Disable milestones"
+                        : "Enable milestones"}
+                    </DropdownMenuItem>
+                  )}
+                  {(onSyncSettingsChange || onToggleMilestones) && onDelete && (
+                    <DropdownMenuSeparator />
+                  )}
                   {onDelete && (
                     <DropdownMenuItem variant="destructive" onClick={onDelete}>
                       Delete goal
@@ -352,6 +528,14 @@ export function GoalDetail({
           </div>
         </div>
       </div>
+
+      {/* Sync Settings Dialog */}
+      <GoalSyncSettingsDialog
+        open={syncSettingsOpen}
+        syncSettings={goal.syncSettings}
+        onClose={() => setSyncSettingsOpen(false)}
+        onSyncSettingsChange={onSyncSettingsChange}
+      />
     </div>
   );
 }

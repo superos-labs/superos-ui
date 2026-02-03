@@ -7,6 +7,9 @@ import type {
   ExternalEvent,
   ExportBlockVisibility,
   ProviderCalendar,
+  SyncScope,
+  SyncParticipation,
+  GoalFilterMode,
   UseCalendarSyncOptions,
   UseCalendarSyncReturn,
 } from "./types";
@@ -17,6 +20,13 @@ import {
   MOCK_EXTERNAL_EVENTS,
   DEMO_INITIAL_STATES,
 } from "./mock-data";
+
+/** Default export participation settings */
+const DEFAULT_EXPORT_PARTICIPATION: SyncParticipation = {
+  essentials: true,
+  goals: true,
+  standaloneTaskBlocks: false,
+};
 
 /** Mock calendars by provider (populated on simulated connect) */
 const MOCK_CALENDARS: Record<CalendarProvider, ProviderCalendar[]> = {
@@ -52,7 +62,7 @@ const MOCK_EMAILS: Record<CalendarProvider, string> = {
  * ```
  */
 export function useCalendarSync(
-  options: UseCalendarSyncOptions = {},
+  options: UseCalendarSyncOptions = {}
 ): UseCalendarSyncReturn {
   const {
     initialStates = DEMO_INITIAL_STATES,
@@ -65,8 +75,9 @@ export function useCalendarSync(
   >(() => new Map(initialStates.map((s) => [s.provider, s])));
 
   // External events with local state
-  const [allExternalEvents, setAllExternalEvents] =
-    React.useState<ExternalEvent[]>(initialExternalEvents);
+  const [allExternalEvents, setAllExternalEvents] = React.useState<
+    ExternalEvent[]
+  >(initialExternalEvents);
 
   // Derived: filter events by enabled calendars and meetings-only setting
   const externalEvents = React.useMemo(() => {
@@ -108,14 +119,20 @@ export function useCalendarSync(
         accountEmail: MOCK_EMAILS[provider],
         calendars: MOCK_CALENDARS[provider],
         importMeetingsOnly: true,
-        exportBlockVisibility: "busy",
         lastSyncAt: new Date(),
+        // Export settings - defaults
+        exportEnabled: false,
+        exportScope: "scheduled_and_blueprint",
+        exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
+        exportGoalFilter: "all",
+        exportSelectedGoalIds: new Set(),
+        exportDefaultAppearance: "busy",
       });
       return next;
     });
   }, []);
 
-  // Disconnect provider
+  // Disconnect provider - clears all integration settings
   const disconnectProvider = React.useCallback((provider: CalendarProvider) => {
     setStatesMap((prev) => {
       const next = new Map(prev);
@@ -125,8 +142,14 @@ export function useCalendarSync(
         accountEmail: null,
         calendars: [],
         importMeetingsOnly: true,
-        exportBlockVisibility: "busy",
         lastSyncAt: null,
+        // Reset all export settings on disconnect
+        exportEnabled: false,
+        exportScope: "scheduled_and_blueprint",
+        exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
+        exportGoalFilter: "all",
+        exportSelectedGoalIds: new Set(),
+        exportDefaultAppearance: "busy",
       });
       return next;
     });
@@ -144,14 +167,14 @@ export function useCalendarSync(
             calendars: state.calendars.map((cal) =>
               cal.id === calendarId
                 ? { ...cal, importEnabled: !cal.importEnabled }
-                : cal,
+                : cal
             ),
           });
         }
         return next;
       });
     },
-    [],
+    []
   );
 
   // Toggle calendar blueprint export
@@ -165,51 +188,143 @@ export function useCalendarSync(
             ...state,
             calendars: state.calendars.map((cal) =>
               cal.id === calendarId
-                ? { ...cal, exportBlueprintEnabled: !cal.exportBlueprintEnabled }
-                : cal,
+                ? {
+                    ...cal,
+                    exportBlueprintEnabled: !cal.exportBlueprintEnabled,
+                  }
+                : cal
             ),
           });
         }
         return next;
       });
     },
-    [],
+    []
   );
 
   // Toggle "Only show meetings" filter for an integration
-  const toggleMeetingsOnly = React.useCallback(
+  const toggleMeetingsOnly = React.useCallback((provider: CalendarProvider) => {
+    setStatesMap((prev) => {
+      const next = new Map(prev);
+      const state = next.get(provider);
+      if (state) {
+        next.set(provider, {
+          ...state,
+          importMeetingsOnly: !state.importMeetingsOnly,
+        });
+      }
+      return next;
+    });
+  }, []);
+
+  // Toggle export enabled for a provider
+  const toggleExportEnabled = React.useCallback(
     (provider: CalendarProvider) => {
       setStatesMap((prev) => {
         const next = new Map(prev);
         const state = next.get(provider);
         if (state) {
+          const wasEnabled = state.exportEnabled;
           next.set(provider, {
             ...state,
-            importMeetingsOnly: !state.importMeetingsOnly,
+            exportEnabled: !wasEnabled,
+            // When enabling, auto-select first calendar if none selected
+            calendars:
+              !wasEnabled &&
+              !state.calendars.some((c) => c.exportBlueprintEnabled)
+                ? state.calendars.map((cal, i) =>
+                    i === 0 ? { ...cal, exportBlueprintEnabled: true } : cal
+                  )
+                : state.calendars,
           });
         }
         return next;
       });
     },
-    [],
+    []
   );
 
-  // Set how exported blocks appear in external calendar
-  const setExportBlockVisibility = React.useCallback(
-    (provider: CalendarProvider, visibility: ExportBlockVisibility) => {
+  // Set the sync scope (scheduled, blueprint, or both)
+  const setExportScope = React.useCallback(
+    (provider: CalendarProvider, scope: SyncScope) => {
       setStatesMap((prev) => {
         const next = new Map(prev);
         const state = next.get(provider);
         if (state) {
           next.set(provider, {
             ...state,
-            exportBlockVisibility: visibility,
+            exportScope: scope,
           });
         }
         return next;
       });
     },
-    [],
+    []
+  );
+
+  // Update which block types participate in sync
+  const setExportParticipation = React.useCallback(
+    (provider: CalendarProvider, participation: Partial<SyncParticipation>) => {
+      setStatesMap((prev) => {
+        const next = new Map(prev);
+        const state = next.get(provider);
+        if (state) {
+          next.set(provider, {
+            ...state,
+            exportParticipation: {
+              ...state.exportParticipation,
+              ...participation,
+            },
+          });
+        }
+        return next;
+      });
+    },
+    []
+  );
+
+  // Set goal filter mode and optionally selected goal IDs
+  const setExportGoalFilter = React.useCallback(
+    (
+      provider: CalendarProvider,
+      mode: GoalFilterMode,
+      selectedIds?: Set<string>
+    ) => {
+      setStatesMap((prev) => {
+        const next = new Map(prev);
+        const state = next.get(provider);
+        if (state) {
+          next.set(provider, {
+            ...state,
+            exportGoalFilter: mode,
+            exportSelectedGoalIds:
+              selectedIds !== undefined
+                ? selectedIds
+                : state.exportSelectedGoalIds,
+          });
+        }
+        return next;
+      });
+    },
+    []
+  );
+
+  // Set the default appearance for exported blocks
+  const setExportDefaultAppearance = React.useCallback(
+    (provider: CalendarProvider, appearance: ExportBlockVisibility) => {
+      setStatesMap((prev) => {
+        const next = new Map(prev);
+        const state = next.get(provider);
+        if (state) {
+          next.set(provider, {
+            ...state,
+            exportDefaultAppearance: appearance,
+          });
+        }
+        return next;
+      });
+    },
+    []
   );
 
   // Update external event (local state only)
@@ -217,11 +332,11 @@ export function useCalendarSync(
     (eventId: string, updates: Partial<ExternalEvent>) => {
       setAllExternalEvents((prev) =>
         prev.map((event) =>
-          event.id === eventId ? { ...event, ...updates } : event,
-        ),
+          event.id === eventId ? { ...event, ...updates } : event
+        )
       );
     },
-    [],
+    []
   );
 
   // Helper: get integration state for a provider
@@ -234,12 +349,17 @@ export function useCalendarSync(
           accountEmail: null,
           calendars: [],
           importMeetingsOnly: true,
-          exportBlockVisibility: "busy",
           lastSyncAt: null,
+          exportEnabled: false,
+          exportScope: "scheduled_and_blueprint",
+          exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
+          exportGoalFilter: "all",
+          exportSelectedGoalIds: new Set(),
+          exportDefaultAppearance: "busy",
         }
       );
     },
-    [statesMap],
+    [statesMap]
   );
 
   // Helper: check if provider is connected
@@ -247,7 +367,7 @@ export function useCalendarSync(
     (provider: CalendarProvider): boolean => {
       return statesMap.get(provider)?.status === "connected";
     },
-    [statesMap],
+    [statesMap]
   );
 
   // Helper: get enabled calendars for a provider
@@ -256,7 +376,7 @@ export function useCalendarSync(
       const state = statesMap.get(provider);
       return state?.calendars.filter((c) => c.importEnabled) ?? [];
     },
-    [statesMap],
+    [statesMap]
   );
 
   return {
@@ -267,8 +387,15 @@ export function useCalendarSync(
     toggleCalendarImport,
     toggleCalendarExport,
     toggleMeetingsOnly,
-    setExportBlockVisibility,
+    // Export settings
+    toggleExportEnabled,
+    setExportScope,
+    setExportParticipation,
+    setExportGoalFilter,
+    setExportDefaultAppearance,
+    // External event actions
     updateExternalEvent,
+    // Helpers
     getIntegrationState,
     isConnected,
     getEnabledCalendars,

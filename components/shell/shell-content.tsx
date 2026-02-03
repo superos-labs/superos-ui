@@ -202,6 +202,8 @@ export function ShellContentComponent({
   onReplaceEvents,
   onAssignTaskToBlock,
   onUnassignTaskFromBlock,
+  onUpdateBlockSyncSettings,
+  onUpdateGoalSyncSettings,
   // Drop handling
   onDrop,
   // Focus mode
@@ -254,7 +256,12 @@ export function ShellContentComponent({
   onToggleCalendarImport,
   onToggleCalendarExport,
   onToggleMeetingsOnly,
-  onSetExportBlockVisibility,
+  // Export settings callbacks
+  onToggleExportEnabled,
+  onSetExportScope,
+  onSetExportParticipation,
+  onSetExportGoalFilter,
+  onSetExportDefaultAppearance,
   onUpdateExternalEvent,
 }: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
@@ -757,9 +764,22 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // Block Sidebar Handlers
   // -------------------------------------------------------------------------
+
+  // Find the connected calendar integration with export enabled (for sync status)
+  const connectedCalendarIntegration = React.useMemo(() => {
+    for (const integration of calendarIntegrations.values()) {
+      if (integration.status === "connected" && integration.exportEnabled) {
+        return integration;
+      }
+    }
+    return undefined;
+  }, [calendarIntegrations]);
+
   const {
     sidebarData,
     availableGoals,
+    syncState,
+    blockSyncSettings,
     handlers: sidebarHandlers,
   } = useBlockSidebarHandlers({
     selectedEvent,
@@ -777,8 +797,10 @@ export function ShellContentComponent({
       deleteSubtask: onDeleteSubtask,
       assignTaskToBlock: onAssignTaskToBlock,
       unassignTaskFromBlock: onUnassignTaskFromBlock,
+      updateBlockSyncSettings: onUpdateBlockSyncSettings,
       calendarHandlers,
     },
+    calendarIntegration: connectedCalendarIntegration,
     onToast: toasts.setSidebarToast,
     onEndFocus:
       focusSession?.blockId === selectedEvent?.id ? onEndFocus : undefined,
@@ -1574,6 +1596,9 @@ export function ShellContentComponent({
                     setLifeAreaCreatorForGoalId(selectedGoal.id);
                     setShowLifeAreaCreator(true);
                   }}
+                  onSyncSettingsChange={(settings) =>
+                    onUpdateGoalSyncSettings(selectedGoal.id, settings)
+                  }
                   className="h-full"
                 />
               ) : showCalendar ? (
@@ -1635,6 +1660,7 @@ export function ShellContentComponent({
                 <IntegrationsSidebar
                   integrationStates={calendarIntegrations}
                   currentView={integrationsSidebar.currentView}
+                  availableGoals={goals}
                   onClose={integrationsSidebar.close}
                   onNavigateToProvider={integrationsSidebar.navigateToProvider}
                   onNavigateToList={integrationsSidebar.navigateToList}
@@ -1643,7 +1669,11 @@ export function ShellContentComponent({
                   onToggleCalendarImport={onToggleCalendarImport}
                   onToggleCalendarExport={onToggleCalendarExport}
                   onToggleMeetingsOnly={onToggleMeetingsOnly}
-                  onSetExportBlockVisibility={onSetExportBlockVisibility}
+                  onToggleExportEnabled={onToggleExportEnabled}
+                  onSetExportScope={onSetExportScope}
+                  onSetExportParticipation={onSetExportParticipation}
+                  onSetExportGoalFilter={onSetExportGoalFilter}
+                  onSetExportDefaultAppearance={onSetExportDefaultAppearance}
                   className="h-full w-[380px] max-w-none overflow-y-auto"
                 />
               ) : renderedContent === "block" && sidebarDataToRender ? (
@@ -1676,6 +1706,8 @@ export function ShellContentComponent({
                           })
                       : undefined
                   }
+                  syncState={syncState}
+                  blockSyncSettings={blockSyncSettings}
                   className="h-full w-[380px] max-w-none overflow-y-auto"
                 />
               ) : renderedContent === "analytics" ? (
@@ -1781,6 +1813,9 @@ export function ShellContentComponent({
                 ? selectedEvent?.focusedMinutes ?? 0
                 : undefined
             }
+            syncState={syncState}
+            blockSyncSettings={blockSyncSettings}
+            onSyncAppearanceChange={sidebarHandlers.onSyncAppearanceChange}
             className="border-0 rounded-none shadow-none max-w-none w-full"
           />
         </BottomSheet>

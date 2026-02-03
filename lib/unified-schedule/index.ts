@@ -86,6 +86,10 @@ export type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
   DeadlineTask,
+  // Sync settings types
+  GoalSyncSettings,
+  BlockSyncSettings,
+  BlockSyncState,
   // Hook types
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
