@@ -89,6 +89,7 @@ export type {
   // Sync settings types
   GoalSyncSettings,
   BlockSyncSettings,
+  SyncDestination,
   BlockSyncState,
   // Hook types
   UseUnifiedScheduleOptions,

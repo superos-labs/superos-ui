@@ -17,6 +17,7 @@ import type {
   SyncScope,
   AppearanceOverride,
 } from "./types";
+import { CALENDAR_PROVIDERS } from "./provider-config";
 import type {
   CalendarEvent,
   ScheduleGoal,
@@ -251,39 +252,92 @@ export function resolveSyncState(
 }
 
 /**
- * Get the computed sync state for a block (for UI display).
+ * Get the computed sync state for a block across all providers (for UI display).
  *
- * This is a convenience wrapper around resolveSyncState that returns
- * a BlockSyncState suitable for the UI.
+ * This checks all connected providers and returns sync destinations for each
+ * provider where the block would be synced.
  */
 export function getBlockSyncState(
   block: CalendarEvent,
   goal: ScheduleGoal | undefined,
-  integrationState: CalendarIntegrationState | undefined,
+  integrationStates:
+    | Map<string, CalendarIntegrationState>
+    | CalendarIntegrationState
+    | undefined,
   options: {
     isFromBlueprint?: boolean;
     isWeekPlanned?: boolean;
   } = {}
 ): BlockSyncState {
-  // No integration state or external blocks don't sync
-  if (!integrationState || block.isExternal || block.blockType === "external") {
-    return { isSynced: false };
+  // External blocks don't sync
+  if (block.isExternal || block.blockType === "external") {
+    return { isSynced: false, destinations: [] };
   }
 
-  const resolution = resolveSyncState(block, goal, integrationState, options);
+  // Normalize to array of integration states
+  const states: CalendarIntegrationState[] = [];
+  if (integrationStates instanceof Map) {
+    integrationStates.forEach((state) => {
+      if (state.status === "connected" && state.exportEnabled) {
+        states.push(state);
+      }
+    });
+  } else if (integrationStates && integrationStates.exportEnabled) {
+    states.push(integrationStates);
+  }
 
-  if (!resolution || !resolution.shouldSync) {
-    return { isSynced: false };
+  if (states.length === 0) {
+    return { isSynced: false, destinations: [] };
+  }
+
+  // Check if the goal participates in sync (check first provider - all should have same goal filter)
+  // For goal/task blocks, we need to check if the goal participates in ANY provider
+  let doesGoalParticipate = true;
+  if (block.blockType === "goal" || block.blockType === "task") {
+    // Goal participates if it's included in at least one provider's export
+    doesGoalParticipate = states.some((state) => goalParticipates(goal, state));
+  }
+
+  // Collect destinations from all providers
+  const destinations: BlockSyncState["destinations"] = [];
+
+  for (const state of states) {
+    // Skip if goal doesn't participate in this provider
+    if (
+      (block.blockType === "goal" || block.blockType === "task") &&
+      !goalParticipates(goal, state)
+    ) {
+      continue;
+    }
+
+    const resolution = resolveSyncState(block, goal, state, options);
+
+    if (resolution && resolution.shouldSync) {
+      const providerConfig = CALENDAR_PROVIDERS[state.provider];
+      const targetCalendar = state.calendars.find(
+        (c) => c.exportBlueprintEnabled
+      );
+
+      if (targetCalendar) {
+        destinations.push({
+          providerName: providerConfig?.name ?? state.provider,
+          calendarName: targetCalendar.name,
+          calendarColor: targetCalendar.color,
+          syncedAs:
+            resolution.appearance === "busy"
+              ? "busy"
+              : resolution.appearance === "goal_title"
+              ? "goal_name"
+              : "block_title",
+        });
+      }
+    }
   }
 
   return {
-    isSynced: true,
-    syncedAs:
-      resolution.appearance === "busy"
-        ? "busy"
-        : resolution.appearance === "goal_title"
-        ? "goal_name"
-        : "block_title",
+    isSynced: destinations.length > 0,
+    goalParticipates: doesGoalParticipate,
+    destinations,
   };
 }
 

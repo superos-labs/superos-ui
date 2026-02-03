@@ -10,6 +10,7 @@ import {
   RiCloseLine,
   RiAddLine,
   RiArrowDownSLine,
+  RiArrowRightSLine,
   RiCheckboxCircleFill,
   RiFocusLine,
   RiPencilLine,
@@ -601,8 +602,8 @@ function FocusTimeSection({
 // External Calendar Sync Section
 // =============================================================================
 
-/** Appearance options for block sync */
-const APPEARANCE_OPTIONS: {
+/** Appearance options for block sync override */
+const APPEARANCE_OVERRIDE_OPTIONS: {
   value: AppearanceOverride;
   label: string;
 }[] = [
@@ -626,12 +627,14 @@ function ExternalCalendarSyncSection({
   blockSyncSettings,
   onSyncAppearanceChange,
 }: ExternalCalendarSyncSectionProps) {
+  const [showOverride, setShowOverride] = React.useState(false);
   const currentAppearance =
     blockSyncSettings?.appearanceOverride ?? "use_default";
+  const hasOverride = currentAppearance !== "use_default";
 
-  // Format the "synced as" display text
-  const getSyncedAsLabel = (syncedAs: string | undefined): string => {
-    switch (syncedAs) {
+  // Format the appearance display text
+  const getAppearanceLabel = (appearance: string | undefined): string => {
+    switch (appearance) {
       case "busy":
         return "Busy";
       case "goal_name":
@@ -639,78 +642,136 @@ function ExternalCalendarSyncSection({
       case "block_title":
         return "Block title";
       default:
-        return "Not shared";
+        return "Busy";
     }
   };
+
+  const destinations = syncState.destinations ?? [];
 
   return (
     <BlockSidebarSection
       icon={<RiShareLine className="size-3.5" />}
-      label="External Calendar"
+      label="External Calendars"
     >
       <div className="flex flex-col gap-3">
-        {/* Sync status indicator */}
-        {syncState.isSynced ? (
-          <div className="flex items-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 px-3 py-2">
-            <RiCheckLine className="size-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-xs text-blue-700 dark:text-blue-300">
-              Shared as: <strong>{getSyncedAsLabel(syncState.syncedAs)}</strong>
-            </span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-            <span className="text-xs text-muted-foreground">
-              Not shared to external calendar
-            </span>
+        {/* Sync destinations */}
+        {destinations.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {destinations.map((dest, index) => (
+              <div
+                key={`${dest.providerName}-${dest.calendarName}-${index}`}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5",
+                  "bg-gradient-to-br from-muted/80 to-muted/40",
+                  "ring-1 ring-inset ring-border/50"
+                )}
+              >
+                {/* Calendar color indicator */}
+                <div
+                  className="size-4 shrink-0 rounded-full shadow-sm ring-1 ring-inset ring-black/10 dark:ring-white/10"
+                  style={{ backgroundColor: dest.calendarColor }}
+                />
+
+                {/* Calendar and provider info */}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {dest.calendarName}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground/70 shrink-0">
+                      · {dest.providerName}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    Shared as{" "}
+                    <span className="text-foreground/80">
+                      {getAppearanceLabel(dest.syncedAs)}
+                    </span>
+                  </span>
+                </div>
+
+                {/* Sync status indicator */}
+                <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 dark:bg-emerald-500/20">
+                  <RiCheckLine className="size-3 text-emerald-600 dark:text-emerald-400" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {/* Appearance override selector */}
+        {/* Override toggle */}
         {onSyncAppearanceChange && (
-          <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground">
-              Override appearance:
-            </p>
-            <div className="flex flex-col gap-0.5">
-              {APPEARANCE_OPTIONS.map((option) => {
-                const isSelected = currentAppearance === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    onClick={() => onSyncAppearanceChange(option.value)}
-                    className={cn(
-                      "group flex items-center gap-2.5 rounded-lg py-1.5 px-2 text-left",
-                      "transition-colors duration-150 hover:bg-muted/60",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    )}
-                  >
-                    <div
+          <div className="flex flex-col">
+            <button
+              type="button"
+              onClick={() => setShowOverride(!showOverride)}
+              className={cn(
+                "group flex w-full items-center gap-1.5 py-1 text-left rounded",
+                "transition-colors duration-150",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              )}
+            >
+              <RiArrowRightSLine
+                className={cn(
+                  "size-4 text-muted-foreground/60 transition-transform duration-200",
+                  showOverride && "rotate-90"
+                )}
+              />
+              <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                Override appearance
+              </span>
+              {hasOverride && !showOverride && (
+                <span className="ml-auto text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-1.5 py-0.5 rounded">
+                  {getAppearanceLabel(currentAppearance)}
+                </span>
+              )}
+            </button>
+
+            {/* Override options */}
+            {showOverride && (
+              <div className="mt-2 flex flex-col gap-0.5 pl-1">
+                {APPEARANCE_OVERRIDE_OPTIONS.map((option) => {
+                  const isSelected = currentAppearance === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => onSyncAppearanceChange(option.value)}
                       className={cn(
-                        "flex size-[16px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
-                        isSelected
-                          ? "bg-foreground"
-                          : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                        "group flex items-center gap-2.5 rounded-lg py-1.5 text-left",
+                        "transition-colors duration-150",
+                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       )}
                     >
-                      {isSelected && (
-                        <span className="size-1.5 rounded-full bg-background" />
-                      )}
-                    </div>
-                    <span
-                      className={cn(
-                        "text-sm transition-colors",
-                        isSelected ? "text-foreground" : "text-muted-foreground"
-                      )}
-                    >
-                      {option.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                      <div
+                        className={cn(
+                          "flex size-[18px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
+                          isSelected
+                            ? "bg-foreground"
+                            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                        )}
+                      >
+                        {isSelected && (
+                          <span className="size-2 rounded-full bg-background" />
+                        )}
+                      </div>
+                      <span
+                        className={cn(
+                          "text-sm transition-colors",
+                          isSelected
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {option.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1509,14 +1570,17 @@ function BlockSidebar({
           </div>
         </BlockSidebarSection>
 
-        {/* External Calendar Sync Section - only for goal/task blocks, not external blocks */}
-        {(isGoalBlock || isTaskBlock) && !isExternalBlock && syncState && (
-          <ExternalCalendarSyncSection
-            syncState={syncState}
-            blockSyncSettings={blockSyncSettings}
-            onSyncAppearanceChange={onSyncAppearanceChange}
-          />
-        )}
+        {/* External Calendar Sync Section - only for goal/task blocks whose goal participates in sync */}
+        {(isGoalBlock || isTaskBlock) &&
+          !isExternalBlock &&
+          syncState &&
+          syncState.goalParticipates !== false && (
+            <ExternalCalendarSyncSection
+              syncState={syncState}
+              blockSyncSettings={blockSyncSettings}
+              onSyncAppearanceChange={onSyncAppearanceChange}
+            />
+          )}
       </div>
     </div>
   );

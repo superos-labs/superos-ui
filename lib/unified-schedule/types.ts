@@ -107,13 +107,29 @@ export interface BlockSyncSettings {
 }
 
 /**
+ * Sync destination info for a single provider.
+ */
+export interface SyncDestination {
+  /** Provider name for display (e.g., "Google Calendar") */
+  providerName: string;
+  /** Target calendar name for display */
+  calendarName: string;
+  /** Target calendar color (hex) for display */
+  calendarColor: string;
+  /** How this block appears in the external calendar */
+  syncedAs: "busy" | "goal_name" | "block_title";
+}
+
+/**
  * Computed sync state for a block (for UI display).
  */
 export interface BlockSyncState {
-  /** Whether this block is currently being synced to external calendar */
+  /** Whether this block is currently being synced to any external calendar */
   isSynced: boolean;
-  /** How this block appears in the external calendar */
-  syncedAs?: "busy" | "goal_name" | "block_title";
+  /** Whether the goal participates in sync (if false, hide the section entirely) */
+  goalParticipates?: boolean;
+  /** All sync destinations for this block */
+  destinations: SyncDestination[];
 }
 
 // ============================================================================

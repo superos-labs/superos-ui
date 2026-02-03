@@ -767,15 +767,8 @@ export function ShellContentComponent({
   // Block Sidebar Handlers
   // -------------------------------------------------------------------------
 
-  // Find the connected calendar integration with export enabled (for sync status)
-  const connectedCalendarIntegration = React.useMemo(() => {
-    for (const integration of calendarIntegrations.values()) {
-      if (integration.status === "connected" && integration.exportEnabled) {
-        return integration;
-      }
-    }
-    return undefined;
-  }, [calendarIntegrations]);
+  // All calendar integrations (for sync status across all providers)
+  // The hook will filter to only connected ones with export enabled
 
   const {
     sidebarData,
@@ -802,7 +795,7 @@ export function ShellContentComponent({
       updateBlockSyncSettings: onUpdateBlockSyncSettings,
       calendarHandlers,
     },
-    calendarIntegration: connectedCalendarIntegration,
+    calendarIntegrations,
     onToast: toasts.setSidebarToast,
     onEndFocus:
       focusSession?.blockId === selectedEvent?.id ? onEndFocus : undefined,

@@ -11,6 +11,7 @@ import type {
 } from "@/lib/unified-schedule";
 import type {
   CalendarIntegrationState,
+  CalendarProvider,
   AppearanceOverride,
 } from "@/lib/calendar-sync";
 import { getBlockSyncState } from "@/lib/calendar-sync";
@@ -47,8 +48,8 @@ export interface UseBlockSidebarHandlersOptions {
     | "calendarHandlers"
     | "updateBlockSyncSettings"
   >;
-  /** Calendar integration state for computing sync status (optional) */
-  calendarIntegration?: CalendarIntegrationState;
+  /** Calendar integration states for computing sync status (optional) */
+  calendarIntegrations?: Map<CalendarProvider, CalendarIntegrationState>;
   /** Callback when toast message should be shown */
   onToast?: (message: string) => void;
   /** Callback to end any active focus session (called when marking block complete) */
@@ -118,7 +119,7 @@ export function useBlockSidebarHandlers({
   essentials,
   weekDates,
   schedule,
-  calendarIntegration,
+  calendarIntegrations,
   onToast,
   onEndFocus,
   onClose,
@@ -144,9 +145,15 @@ export function useBlockSidebarHandlers({
     return eventToBlockSidebarData(selectedEvent, goals, essentials, weekDates);
   }, [selectedEvent, goals, essentials, weekDates]);
 
-  // Compute sync state for the selected block
+  // Compute sync state for the selected block across all providers
   const syncState = React.useMemo<BlockSyncState | undefined>(() => {
-    if (!selectedEvent || !calendarIntegration) return undefined;
+    if (
+      !selectedEvent ||
+      !calendarIntegrations ||
+      calendarIntegrations.size === 0
+    ) {
+      return undefined;
+    }
     // Only compute sync state for goal/task blocks
     if (
       selectedEvent.blockType !== "goal" &&
@@ -159,8 +166,8 @@ export function useBlockSidebarHandlers({
       ? goals.find((g) => g.id === selectedEvent.sourceGoalId)
       : undefined;
 
-    return getBlockSyncState(selectedEvent, goal, calendarIntegration);
-  }, [selectedEvent, calendarIntegration, goals]);
+    return getBlockSyncState(selectedEvent, goal, calendarIntegrations);
+  }, [selectedEvent, calendarIntegrations, goals]);
 
   // Get block sync settings from the event
   const blockSyncSettings = selectedEvent?.syncSettings;

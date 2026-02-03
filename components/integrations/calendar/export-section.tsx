@@ -169,7 +169,7 @@ const SCOPE_OPTIONS: {
 }[] = [
   { value: "scheduled", label: "Scheduled blocks" },
   { value: "blueprint", label: "Blueprint" },
-  { value: "scheduled_and_blueprint", label: "Weekly plan + Blueprint" },
+  { value: "scheduled_and_blueprint", label: "Scheduled + Blueprint" },
 ];
 
 // =============================================================================
