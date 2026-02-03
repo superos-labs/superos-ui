@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Shell,
   ShellToolbar,
@@ -38,11 +39,15 @@ import {
 import {
   Backlog,
   GoalInspirationGallery,
+  OnboardingGoalsCard,
   type BacklogItem,
   type BacklogMode,
   type NewGoalData,
   type InspirationCategory,
+  type AddedGoal,
+  type InlineGoalEditorData,
 } from "@/components/backlog";
+import { ONBOARDING_GOAL_SUGGESTIONS } from "@/lib/fixtures/onboarding-goals";
 import { WeeklyAnalytics, PlanningBudget } from "@/components/weekly-analytics";
 import { buildPlanningBudgetData } from "@/lib/adapters";
 import { BlockSidebar, useBlockSidebarHandlers } from "@/components/block";
@@ -447,6 +452,7 @@ export function ShellContentComponent({
     onboardingStep,
     isOnboarding,
     isOnboardingBlueprint,
+    isOnboardingGoalsCentered,
     onContinueFromGoals,
     onContinueFromEssentials,
     onCompleteOnboarding,
@@ -939,6 +945,56 @@ export function ShellContentComponent({
   }, [selectedGoalId, onDeleteGoal, setSelectedGoalId, setBacklogMode]);
 
   // -------------------------------------------------------------------------
+  // Onboarding Goal Handlers
+  // -------------------------------------------------------------------------
+  const handleOnboardingAddGoal = React.useCallback(
+    (data: InlineGoalEditorData) => {
+      const newGoalId = crypto.randomUUID();
+      onAddGoal({
+        id: newGoalId,
+        label: data.label,
+        icon: data.icon,
+        color: data.color,
+        lifeAreaId: data.lifeAreaId,
+        tasks: [],
+      });
+    },
+    [onAddGoal]
+  );
+
+  const handleOnboardingUpdateGoal = React.useCallback(
+    (goalId: string, data: InlineGoalEditorData) => {
+      onUpdateGoal(goalId, {
+        label: data.label,
+        icon: data.icon,
+        color: data.color,
+        lifeAreaId: data.lifeAreaId,
+      });
+    },
+    [onUpdateGoal]
+  );
+
+  const handleOnboardingRemoveGoal = React.useCallback(
+    (goalId: string) => {
+      onDeleteGoal(goalId);
+    },
+    [onDeleteGoal]
+  );
+
+  // Convert goals to AddedGoal format for OnboardingGoalsCard
+  const onboardingGoals: AddedGoal[] = React.useMemo(
+    () =>
+      goals.map((g) => ({
+        id: g.id,
+        label: g.label,
+        icon: g.icon,
+        color: g.color,
+        lifeAreaId: g.lifeAreaId ?? "",
+      })),
+    [goals]
+  );
+
+  // -------------------------------------------------------------------------
   // Goal Detail Mode Derived Data
   // -------------------------------------------------------------------------
   const selectedGoal = selectedGoalId
@@ -1368,13 +1424,15 @@ export function ShellContentComponent({
     <>
       <Shell>
         {/* Render appropriate toolbar based on breakpoint and mode */}
-        {useMobileLayout
-          ? renderMobileToolbar()
-          : isOnboardingBlueprint
-          ? renderOnboardingBlueprintToolbar()
-          : isBlueprintEditMode
-          ? renderBlueprintEditToolbar()
-          : renderDesktopToolbar()}
+        {/* Hide toolbar during centered goals onboarding step for cleaner focus */}
+        {!isOnboardingGoalsCentered &&
+          (useMobileLayout
+            ? renderMobileToolbar()
+            : isOnboardingBlueprint
+            ? renderOnboardingBlueprintToolbar()
+            : isBlueprintEditMode
+            ? renderBlueprintEditToolbar()
+            : renderDesktopToolbar())}
 
         {/* Main Content Area - responsive layout */}
         {useMobileLayout ? (
@@ -1405,335 +1463,375 @@ export function ShellContentComponent({
               dayBoundariesDisplay={dayBoundariesDisplay}
             />
           </ShellContentPrimitive>
+        ) : isOnboardingGoalsCentered ? (
+          // Desktop: Centered goals card for onboarding first step
+          <ShellContentPrimitive className="flex items-center justify-center bg-muted">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key="onboarding-goals"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <OnboardingGoalsCard
+                  goals={onboardingGoals}
+                  onAddGoal={handleOnboardingAddGoal}
+                  onUpdateGoal={handleOnboardingUpdateGoal}
+                  onRemoveGoal={handleOnboardingRemoveGoal}
+                  onContinue={onContinueFromGoals}
+                  suggestions={ONBOARDING_GOAL_SUGGESTIONS}
+                  lifeAreas={lifeAreas}
+                  goalIcons={goalIcons}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </ShellContentPrimitive>
         ) : (
           // Desktop: Three-panel layout
-          <div
-            className={`flex min-h-0 flex-1 ${
-              showSidebar ||
-              isRightSidebarOpen ||
-              showIntegrationsSidebar ||
-              isPlanning ||
-              isBlueprintEditMode ||
-              isOnboardingBlueprint
-                ? "gap-4"
-                : "gap-0"
-            }`}
-          >
-            {/* Left Sidebar - Backlog, Planning Panel, or Blueprint Backlog */}
-            <div
-              className={cn(
-                "shrink-0 overflow-hidden transition-all duration-300 ease-out",
-                isPlanning
-                  ? "w-[420px] opacity-100"
-                  : showSidebar || isBlueprintEditMode || isOnboardingBlueprint
-                  ? "w-[360px] opacity-100"
-                  : "w-0 opacity-0"
-              )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="main-layout"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              className={`flex min-h-0 flex-1 ${
+                showSidebar ||
+                isRightSidebarOpen ||
+                showIntegrationsSidebar ||
+                isPlanning ||
+                isBlueprintEditMode ||
+                isOnboardingBlueprint
+                  ? "gap-4"
+                  : "gap-0"
+              }`}
             >
-              {isOnboardingBlueprint ? (
-                <BlueprintBacklog
-                  goals={goals}
-                  essentials={essentials}
-                  onSave={handleSaveOnboardingBlueprint}
-                  showAddEssentialsButton={!hasAddedEssentialsThisSession}
-                  onAddEssentialsToCalendar={handleAddEssentialsToCalendar}
-                  getTaskSchedule={getTaskSchedule}
-                  getTaskDeadline={getTaskDeadline}
-                  className="h-full w-[360px] max-w-none"
-                />
-              ) : isPlanning ? (
-                <PlanningPanel
-                  goals={goals}
-                  essentials={essentials}
-                  blueprint={blueprint}
-                  weekDates={weekDates}
-                  onDuplicateLastWeek={
-                    hasBlueprint ? handleDuplicateLastWeek : undefined
-                  }
-                  onCancel={planningFlow.cancel}
-                  isFirstPlan={!hasBlueprint}
-                  // Two-step planning flow
-                  step={planningFlow.step}
-                  onNextStep={planningFlow.nextStep}
-                  onConfirm={planningFlow.confirm}
-                  weeklyFocusTaskIds={planningFlow.weeklyFocusTaskIds}
-                  onAddToFocus={planningFlow.addToWeeklyFocus}
-                  onRemoveFromFocus={planningFlow.removeFromWeeklyFocus}
-                  onAddTask={onAddTask}
-                  getTaskSchedule={getTaskSchedule}
-                  getTaskDeadline={getTaskDeadline}
-                  // Add essentials to calendar (for planning without blueprint)
-                  showAddEssentialsButton={
-                    !hasBlueprint && !hasAddedEssentialsThisSession
-                  }
-                  onAddEssentialsToCalendar={handleAddEssentialsToCalendar}
-                  className="h-full w-[420px] max-w-none"
-                />
-              ) : (
-                <Backlog
-                  essentials={essentials as BacklogItem[]}
-                  goals={goals as BacklogItem[]}
-                  className="h-full w-[360px] max-w-none"
-                  showTasks={showTasks && !isBlueprintEditMode}
-                  onToggleGoalTask={onToggleTaskComplete}
-                  onAddTask={onAddTask}
-                  onUpdateTask={onUpdateTask}
-                  onAddSubtask={onAddSubtask}
-                  onToggleSubtask={onToggleSubtaskComplete}
-                  onUpdateSubtask={onUpdateSubtask}
-                  onDeleteSubtask={onDeleteSubtask}
-                  onDeleteTask={onDeleteTask}
-                  getGoalStats={getGoalStats}
-                  getTaskSchedule={getTaskSchedule}
-                  getTaskDeadline={getTaskDeadline}
-                  draggable={!isOnboarding}
-                  essentialTemplates={essentialTemplates}
-                  onSaveEssentialSchedule={onSaveEssentialSchedule}
-                  onCreateEssential={onCreateEssential}
-                  onDeleteEssential={onDeleteEssential}
-                  wakeUpMinutes={dayStartMinutes}
-                  windDownMinutes={dayEndMinutes}
-                  onSleepTimesChange={handleSleepTimesChange}
-                  isSleepConfigured={dayBoundariesEnabled}
-                  isEssentialsHidden={isEssentialsHidden}
-                  onEssentialsHide={() => setIsEssentialsHidden(true)}
-                  onCreateGoal={handleCreateGoal}
-                  lifeAreas={lifeAreas}
-                  goalIcons={goalIcons}
-                  onCreateAndSelectGoal={handleCreateAndSelectGoal}
-                  selectedGoalId={selectedGoalId}
-                  onSelectGoal={handleSelectGoal}
-                  onBrowseInspiration={handleBrowseInspiration}
-                  isInspirationActive={showInspirationGallery}
-                  // Onboarding props
-                  onboardingStep={onboardingStep}
-                  onOnboardingContinue={onContinueFromGoals}
-                  onOnboardingComplete={onContinueFromEssentials}
-                  // Weekly focus
-                  currentWeekStart={weekStartDate}
-                />
-              )}
-            </div>
-
-            {/* Main Content - Calendar, Goal Detail, or Inspiration Gallery */}
-            <ShellContentPrimitive className="overflow-hidden">
-              {showInspirationGallery && inspirationCategories ? (
-                <GoalInspirationGallery
-                  categories={inspirationCategories}
-                  onAddGoal={handleCreateGoal}
-                  onClose={handleCloseInspiration}
-                  className="h-full"
-                />
-              ) : isGoalDetailMode && selectedGoal ? (
-                <GoalDetail
-                  goal={selectedGoal}
-                  lifeArea={selectedGoalLifeArea}
-                  notes={goalNotes[selectedGoal.id] ?? ""}
-                  onNotesChange={handleGoalNotesChange}
-                  onTitleChange={(title) =>
-                    onUpdateGoal(selectedGoal.id, { label: title })
-                  }
-                  getTaskSchedule={getTaskSchedule}
-                  getTaskDeadline={getTaskDeadline}
-                  onToggleTask={(taskId) =>
-                    onToggleTaskComplete(selectedGoal.id, taskId)
-                  }
-                  onAddTask={(label, milestoneId) =>
-                    onAddTask(selectedGoal.id, label, milestoneId)
-                  }
-                  onUpdateTask={(taskId, updates) =>
-                    onUpdateTask(selectedGoal.id, taskId, updates)
-                  }
-                  onDeleteTask={(taskId) =>
-                    onDeleteTask(selectedGoal.id, taskId)
-                  }
-                  onAddSubtask={(taskId, label) =>
-                    onAddSubtask(selectedGoal.id, taskId, label)
-                  }
-                  onToggleSubtask={(taskId, subtaskId) =>
-                    onToggleSubtaskComplete(selectedGoal.id, taskId, subtaskId)
-                  }
-                  onUpdateSubtask={(taskId, subtaskId, label) =>
-                    onUpdateSubtask(selectedGoal.id, taskId, subtaskId, label)
-                  }
-                  onDeleteSubtask={(taskId, subtaskId) =>
-                    onDeleteSubtask(selectedGoal.id, taskId, subtaskId)
-                  }
-                  onAddMilestone={(label) =>
-                    onAddMilestone(selectedGoal.id, label)
-                  }
-                  onToggleMilestone={(milestoneId) =>
-                    onToggleMilestoneComplete(selectedGoal.id, milestoneId)
-                  }
-                  onUpdateMilestone={(milestoneId, label) =>
-                    onUpdateMilestone(selectedGoal.id, milestoneId, label)
-                  }
-                  onDeleteMilestone={(milestoneId) =>
-                    onDeleteMilestone(selectedGoal.id, milestoneId)
-                  }
-                  onToggleMilestones={() =>
-                    onToggleMilestonesEnabled(selectedGoal.id)
-                  }
-                  onDelete={handleDeleteGoal}
-                  onBack={handleCloseGoalDetail}
-                  lifeAreas={lifeAreas}
-                  goalIcons={goalIcons}
-                  onIconChange={(icon) =>
-                    onUpdateGoal(selectedGoal.id, { icon })
-                  }
-                  onColorChange={(color) =>
-                    onUpdateGoal(selectedGoal.id, { color })
-                  }
-                  onLifeAreaChange={(lifeAreaId) =>
-                    onUpdateGoal(selectedGoal.id, { lifeAreaId })
-                  }
-                  onAddLifeArea={() => {
-                    setLifeAreaCreatorForGoalId(selectedGoal.id);
-                    setShowLifeAreaCreator(true);
-                  }}
-                  onSyncSettingsChange={(settings) =>
-                    onUpdateGoalSyncSettings(selectedGoal.id, settings)
-                  }
-                  className="h-full"
-                />
-              ) : showCalendar ? (
-                <div className="relative h-full">
-                  <Calendar
-                    selectedDate={selectedDate}
-                    events={events}
-                    weekStartsOn={weekStartsOn}
-                    zoom={calendarZoom}
-                    scrollToCurrentTimeKey={scrollToCurrentTimeKey}
-                    {...calendarHandlers}
-                    onEventClick={handleEventClick}
-                    enableExternalDrop={!isOnboarding || isOnboardingBlueprint}
-                    onExternalDrop={handleExternalDrop}
-                    externalDragPreview={externalDragPreview}
-                    onDeadlineDrop={handleDeadlineDrop}
-                    deadlines={weekDeadlines}
-                    allDayEvents={allDayEvents}
-                    onDeadlineToggleComplete={onToggleTaskComplete}
-                    onDeadlineUnassign={onClearTaskDeadline}
-                    onDeadlineHover={setHoveredDeadline}
-                    onToggleAllDayEvent={handleToggleAllDayEvent}
-                    dayStartMinutes={dayStartMinutes}
-                    dayEndMinutes={dayEndMinutes}
-                    dayBoundariesEnabled={dayBoundariesEnabled}
-                    dayBoundariesDisplay={dayBoundariesDisplay}
-                  />
-                  {/* Dimming overlay - shown during onboarding (except blueprint step), planning prioritize step, and plan week prompt */}
-                  {((isOnboarding && !isOnboardingBlueprint) ||
-                    showPlanWeekPrompt ||
-                    (isPlanning && planningFlow.step === "prioritize")) && (
-                    <div className="absolute inset-0 bg-background/60 pointer-events-none z-10" />
-                  )}
-
-                  {/* Plan week prompt card - shown after onboarding completes */}
-                  {showPlanWeekPrompt && (
-                    <div className="absolute inset-0 z-20 flex items-center justify-center">
-                      <PlanWeekPromptCard
-                        onStartPlanning={onStartPlanningFromPrompt}
-                        onDismiss={onDismissPlanWeekPrompt}
-                      />
-                    </div>
-                  )}
-                </div>
-              ) : null}
-            </ShellContentPrimitive>
-
-            {/* Right Sidebar - Block Details / Analytics / Integrations */}
-            <div
-              className={cn(
-                "shrink-0 overflow-hidden transition-all duration-300 ease-out",
-                isRightSidebarOpen || showIntegrationsSidebar
-                  ? "w-[380px] opacity-100"
-                  : "w-0 opacity-0"
-              )}
-            >
-              {/* Use renderedContent for content persistence during close animation */}
-              {renderedContent === "integrations" ? (
-                <IntegrationsSidebar
-                  integrationStates={calendarIntegrations}
-                  currentView={integrationsSidebar.currentView}
-                  availableGoals={goals}
-                  onClose={integrationsSidebar.close}
-                  onNavigateToProvider={integrationsSidebar.navigateToProvider}
-                  onNavigateToList={integrationsSidebar.navigateToList}
-                  onConnectProvider={onConnectProvider}
-                  onDisconnectProvider={onDisconnectProvider}
-                  onToggleImportEnabled={onToggleImportEnabled}
-                  onToggleCalendarImport={onToggleCalendarImport}
-                  onToggleMeetingsOnly={onToggleMeetingsOnly}
-                  onToggleCalendarExport={onToggleCalendarExport}
-                  onToggleExportEnabled={onToggleExportEnabled}
-                  onSetExportScope={onSetExportScope}
-                  onSetExportParticipation={onSetExportParticipation}
-                  onSetExportGoalFilter={onSetExportGoalFilter}
-                  onSetExportDefaultAppearance={onSetExportDefaultAppearance}
-                  className="h-full w-[380px] max-w-none overflow-y-auto"
-                />
-              ) : renderedContent === "block" && sidebarDataToRender ? (
-                <BlockSidebar
-                  block={sidebarDataToRender.block}
-                  availableGoalTasks={sidebarDataToRender.availableGoalTasks}
-                  availableGoals={availableGoals}
-                  onClose={handleCloseSidebar}
-                  {...sidebarHandlers}
-                  isFocused={isSidebarBlockFocused}
-                  focusIsRunning={focusIsRunning}
-                  focusElapsedMs={focusElapsedMs}
-                  onStartFocus={handleStartFocus}
-                  onPauseFocus={onPauseFocus}
-                  onResumeFocus={onResumeFocus}
-                  onEndFocus={onEndFocus}
-                  focusDisabled={
-                    focusSession !== null && !isSidebarBlockFocused
-                  }
-                  totalFocusedMinutes={
-                    selectedEvent?.blockType !== "essential"
-                      ? selectedEvent?.focusedMinutes ?? 0
-                      : undefined
-                  }
-                  onFocusedMinutesChange={
-                    selectedEvent?.blockType !== "essential" && selectedEvent
-                      ? (minutes) =>
-                          onUpdateEvent(selectedEvent.id, {
-                            focusedMinutes: minutes,
-                          })
-                      : undefined
-                  }
-                  syncState={syncState}
-                  blockSyncSettings={blockSyncSettings}
-                  className="h-full w-[380px] max-w-none overflow-y-auto"
-                />
-              ) : renderedContent === "analytics" ? (
-                isPlanning || isOnboardingBlueprint ? (
-                  <PlanningBudget
-                    goals={planningBudgetData.goals}
-                    essentials={planningBudgetData.essentials}
-                    wakeUpMinutes={dayStartMinutes}
-                    windDownMinutes={dayEndMinutes}
-                    isSleepConfigured={dayBoundariesEnabled}
-                    weekLabel={
+              {/* Left Sidebar - Backlog, Planning Panel, or Blueprint Backlog */}
+              <div
+                className={cn(
+                  "shrink-0 overflow-hidden transition-all duration-300 ease-out",
+                  isPlanning
+                    ? "w-[420px] opacity-100"
+                    : showSidebar ||
+                      isBlueprintEditMode ||
                       isOnboardingBlueprint
-                        ? "Your typical week"
-                        : formatWeekRange(weekDates)
+                    ? "w-[360px] opacity-100"
+                    : "w-0 opacity-0"
+                )}
+              >
+                {isOnboardingBlueprint ? (
+                  <BlueprintBacklog
+                    goals={goals}
+                    essentials={essentials}
+                    onSave={handleSaveOnboardingBlueprint}
+                    showAddEssentialsButton={!hasAddedEssentialsThisSession}
+                    onAddEssentialsToCalendar={handleAddEssentialsToCalendar}
+                    getTaskSchedule={getTaskSchedule}
+                    getTaskDeadline={getTaskDeadline}
+                    className="h-full w-[360px] max-w-none"
+                  />
+                ) : isPlanning ? (
+                  <PlanningPanel
+                    goals={goals}
+                    essentials={essentials}
+                    blueprint={blueprint}
+                    weekDates={weekDates}
+                    onDuplicateLastWeek={
+                      hasBlueprint ? handleDuplicateLastWeek : undefined
                     }
-                    lifeAreas={lifeAreas}
-                    className="h-full w-[380px] max-w-none overflow-y-auto"
+                    onCancel={planningFlow.cancel}
+                    isFirstPlan={!hasBlueprint}
+                    // Two-step planning flow
+                    step={planningFlow.step}
+                    onNextStep={planningFlow.nextStep}
+                    onConfirm={planningFlow.confirm}
+                    weeklyFocusTaskIds={planningFlow.weeklyFocusTaskIds}
+                    onAddToFocus={planningFlow.addToWeeklyFocus}
+                    onRemoveFromFocus={planningFlow.removeFromWeeklyFocus}
+                    onAddTask={onAddTask}
+                    getTaskSchedule={getTaskSchedule}
+                    getTaskDeadline={getTaskDeadline}
+                    // Add essentials to calendar (for planning without blueprint)
+                    showAddEssentialsButton={
+                      !hasBlueprint && !hasAddedEssentialsThisSession
+                    }
+                    onAddEssentialsToCalendar={handleAddEssentialsToCalendar}
+                    className="h-full w-[420px] max-w-none"
                   />
                 ) : (
-                  <WeeklyAnalytics
-                    goals={analyticsGoals}
-                    weekLabel={formatWeekRange(weekDates)}
-                    progressMetric={progressMetric}
-                    onProgressMetricChange={onProgressMetricChange}
+                  <Backlog
+                    essentials={essentials as BacklogItem[]}
+                    goals={goals as BacklogItem[]}
+                    className="h-full w-[360px] max-w-none"
+                    showTasks={showTasks && !isBlueprintEditMode}
+                    onToggleGoalTask={onToggleTaskComplete}
+                    onAddTask={onAddTask}
+                    onUpdateTask={onUpdateTask}
+                    onAddSubtask={onAddSubtask}
+                    onToggleSubtask={onToggleSubtaskComplete}
+                    onUpdateSubtask={onUpdateSubtask}
+                    onDeleteSubtask={onDeleteSubtask}
+                    onDeleteTask={onDeleteTask}
+                    getGoalStats={getGoalStats}
+                    getTaskSchedule={getTaskSchedule}
+                    getTaskDeadline={getTaskDeadline}
+                    draggable={!isOnboarding}
+                    essentialTemplates={essentialTemplates}
+                    onSaveEssentialSchedule={onSaveEssentialSchedule}
+                    onCreateEssential={onCreateEssential}
+                    onDeleteEssential={onDeleteEssential}
+                    wakeUpMinutes={dayStartMinutes}
+                    windDownMinutes={dayEndMinutes}
+                    onSleepTimesChange={handleSleepTimesChange}
+                    isSleepConfigured={dayBoundariesEnabled}
+                    isEssentialsHidden={isEssentialsHidden}
+                    onEssentialsHide={() => setIsEssentialsHidden(true)}
+                    onCreateGoal={handleCreateGoal}
+                    lifeAreas={lifeAreas}
+                    goalIcons={goalIcons}
+                    onCreateAndSelectGoal={handleCreateAndSelectGoal}
+                    selectedGoalId={selectedGoalId}
+                    onSelectGoal={handleSelectGoal}
+                    onBrowseInspiration={handleBrowseInspiration}
+                    isInspirationActive={showInspirationGallery}
+                    // Onboarding props
+                    onboardingStep={onboardingStep}
+                    onOnboardingContinue={onContinueFromGoals}
+                    onOnboardingComplete={onContinueFromEssentials}
+                    // Weekly focus
+                    currentWeekStart={weekStartDate}
+                  />
+                )}
+              </div>
+
+              {/* Main Content - Calendar, Goal Detail, or Inspiration Gallery */}
+              <ShellContentPrimitive className="overflow-hidden">
+                {showInspirationGallery && inspirationCategories ? (
+                  <GoalInspirationGallery
+                    categories={inspirationCategories}
+                    onAddGoal={handleCreateGoal}
+                    onClose={handleCloseInspiration}
+                    className="h-full"
+                  />
+                ) : isGoalDetailMode && selectedGoal ? (
+                  <GoalDetail
+                    goal={selectedGoal}
+                    lifeArea={selectedGoalLifeArea}
+                    notes={goalNotes[selectedGoal.id] ?? ""}
+                    onNotesChange={handleGoalNotesChange}
+                    onTitleChange={(title) =>
+                      onUpdateGoal(selectedGoal.id, { label: title })
+                    }
+                    getTaskSchedule={getTaskSchedule}
+                    getTaskDeadline={getTaskDeadline}
+                    onToggleTask={(taskId) =>
+                      onToggleTaskComplete(selectedGoal.id, taskId)
+                    }
+                    onAddTask={(label, milestoneId) =>
+                      onAddTask(selectedGoal.id, label, milestoneId)
+                    }
+                    onUpdateTask={(taskId, updates) =>
+                      onUpdateTask(selectedGoal.id, taskId, updates)
+                    }
+                    onDeleteTask={(taskId) =>
+                      onDeleteTask(selectedGoal.id, taskId)
+                    }
+                    onAddSubtask={(taskId, label) =>
+                      onAddSubtask(selectedGoal.id, taskId, label)
+                    }
+                    onToggleSubtask={(taskId, subtaskId) =>
+                      onToggleSubtaskComplete(
+                        selectedGoal.id,
+                        taskId,
+                        subtaskId
+                      )
+                    }
+                    onUpdateSubtask={(taskId, subtaskId, label) =>
+                      onUpdateSubtask(selectedGoal.id, taskId, subtaskId, label)
+                    }
+                    onDeleteSubtask={(taskId, subtaskId) =>
+                      onDeleteSubtask(selectedGoal.id, taskId, subtaskId)
+                    }
+                    onAddMilestone={(label) =>
+                      onAddMilestone(selectedGoal.id, label)
+                    }
+                    onToggleMilestone={(milestoneId) =>
+                      onToggleMilestoneComplete(selectedGoal.id, milestoneId)
+                    }
+                    onUpdateMilestone={(milestoneId, label) =>
+                      onUpdateMilestone(selectedGoal.id, milestoneId, label)
+                    }
+                    onDeleteMilestone={(milestoneId) =>
+                      onDeleteMilestone(selectedGoal.id, milestoneId)
+                    }
+                    onToggleMilestones={() =>
+                      onToggleMilestonesEnabled(selectedGoal.id)
+                    }
+                    onDelete={handleDeleteGoal}
+                    onBack={handleCloseGoalDetail}
+                    lifeAreas={lifeAreas}
+                    goalIcons={goalIcons}
+                    onIconChange={(icon) =>
+                      onUpdateGoal(selectedGoal.id, { icon })
+                    }
+                    onColorChange={(color) =>
+                      onUpdateGoal(selectedGoal.id, { color })
+                    }
+                    onLifeAreaChange={(lifeAreaId) =>
+                      onUpdateGoal(selectedGoal.id, { lifeAreaId })
+                    }
+                    onAddLifeArea={() => {
+                      setLifeAreaCreatorForGoalId(selectedGoal.id);
+                      setShowLifeAreaCreator(true);
+                    }}
+                    onSyncSettingsChange={(settings) =>
+                      onUpdateGoalSyncSettings(selectedGoal.id, settings)
+                    }
+                    className="h-full"
+                  />
+                ) : showCalendar ? (
+                  <div className="relative h-full">
+                    <Calendar
+                      selectedDate={selectedDate}
+                      events={events}
+                      weekStartsOn={weekStartsOn}
+                      zoom={calendarZoom}
+                      scrollToCurrentTimeKey={scrollToCurrentTimeKey}
+                      {...calendarHandlers}
+                      onEventClick={handleEventClick}
+                      enableExternalDrop={
+                        !isOnboarding || isOnboardingBlueprint
+                      }
+                      onExternalDrop={handleExternalDrop}
+                      externalDragPreview={externalDragPreview}
+                      onDeadlineDrop={handleDeadlineDrop}
+                      deadlines={weekDeadlines}
+                      allDayEvents={allDayEvents}
+                      onDeadlineToggleComplete={onToggleTaskComplete}
+                      onDeadlineUnassign={onClearTaskDeadline}
+                      onDeadlineHover={setHoveredDeadline}
+                      onToggleAllDayEvent={handleToggleAllDayEvent}
+                      dayStartMinutes={dayStartMinutes}
+                      dayEndMinutes={dayEndMinutes}
+                      dayBoundariesEnabled={dayBoundariesEnabled}
+                      dayBoundariesDisplay={dayBoundariesDisplay}
+                    />
+                    {/* Dimming overlay - shown during onboarding (except blueprint step), planning prioritize step, and plan week prompt */}
+                    {((isOnboarding && !isOnboardingBlueprint) ||
+                      showPlanWeekPrompt ||
+                      (isPlanning && planningFlow.step === "prioritize")) && (
+                      <div className="absolute inset-0 bg-background/60 pointer-events-none z-10" />
+                    )}
+
+                    {/* Plan week prompt card - shown after onboarding completes */}
+                    {showPlanWeekPrompt && (
+                      <div className="absolute inset-0 z-20 flex items-center justify-center">
+                        <PlanWeekPromptCard
+                          onStartPlanning={onStartPlanningFromPrompt}
+                          onDismiss={onDismissPlanWeekPrompt}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </ShellContentPrimitive>
+
+              {/* Right Sidebar - Block Details / Analytics / Integrations */}
+              <div
+                className={cn(
+                  "shrink-0 overflow-hidden transition-all duration-300 ease-out",
+                  isRightSidebarOpen || showIntegrationsSidebar
+                    ? "w-[380px] opacity-100"
+                    : "w-0 opacity-0"
+                )}
+              >
+                {/* Use renderedContent for content persistence during close animation */}
+                {renderedContent === "integrations" ? (
+                  <IntegrationsSidebar
+                    integrationStates={calendarIntegrations}
+                    currentView={integrationsSidebar.currentView}
+                    availableGoals={goals}
+                    onClose={integrationsSidebar.close}
+                    onNavigateToProvider={
+                      integrationsSidebar.navigateToProvider
+                    }
+                    onNavigateToList={integrationsSidebar.navigateToList}
+                    onConnectProvider={onConnectProvider}
+                    onDisconnectProvider={onDisconnectProvider}
+                    onToggleImportEnabled={onToggleImportEnabled}
+                    onToggleCalendarImport={onToggleCalendarImport}
+                    onToggleMeetingsOnly={onToggleMeetingsOnly}
+                    onToggleCalendarExport={onToggleCalendarExport}
+                    onToggleExportEnabled={onToggleExportEnabled}
+                    onSetExportScope={onSetExportScope}
+                    onSetExportParticipation={onSetExportParticipation}
+                    onSetExportGoalFilter={onSetExportGoalFilter}
+                    onSetExportDefaultAppearance={onSetExportDefaultAppearance}
                     className="h-full w-[380px] max-w-none overflow-y-auto"
                   />
-                )
-              ) : null}
-            </div>
-          </div>
+                ) : renderedContent === "block" && sidebarDataToRender ? (
+                  <BlockSidebar
+                    block={sidebarDataToRender.block}
+                    availableGoalTasks={sidebarDataToRender.availableGoalTasks}
+                    availableGoals={availableGoals}
+                    onClose={handleCloseSidebar}
+                    {...sidebarHandlers}
+                    isFocused={isSidebarBlockFocused}
+                    focusIsRunning={focusIsRunning}
+                    focusElapsedMs={focusElapsedMs}
+                    onStartFocus={handleStartFocus}
+                    onPauseFocus={onPauseFocus}
+                    onResumeFocus={onResumeFocus}
+                    onEndFocus={onEndFocus}
+                    focusDisabled={
+                      focusSession !== null && !isSidebarBlockFocused
+                    }
+                    totalFocusedMinutes={
+                      selectedEvent?.blockType !== "essential"
+                        ? selectedEvent?.focusedMinutes ?? 0
+                        : undefined
+                    }
+                    onFocusedMinutesChange={
+                      selectedEvent?.blockType !== "essential" && selectedEvent
+                        ? (minutes) =>
+                            onUpdateEvent(selectedEvent.id, {
+                              focusedMinutes: minutes,
+                            })
+                        : undefined
+                    }
+                    syncState={syncState}
+                    blockSyncSettings={blockSyncSettings}
+                    className="h-full w-[380px] max-w-none overflow-y-auto"
+                  />
+                ) : renderedContent === "analytics" ? (
+                  isPlanning || isOnboardingBlueprint ? (
+                    <PlanningBudget
+                      goals={planningBudgetData.goals}
+                      essentials={planningBudgetData.essentials}
+                      wakeUpMinutes={dayStartMinutes}
+                      windDownMinutes={dayEndMinutes}
+                      isSleepConfigured={dayBoundariesEnabled}
+                      weekLabel={
+                        isOnboardingBlueprint
+                          ? "Your typical week"
+                          : formatWeekRange(weekDates)
+                      }
+                      lifeAreas={lifeAreas}
+                      className="h-full w-[380px] max-w-none overflow-y-auto"
+                    />
+                  ) : (
+                    <WeeklyAnalytics
+                      goals={analyticsGoals}
+                      weekLabel={formatWeekRange(weekDates)}
+                      progressMetric={progressMetric}
+                      onProgressMetricChange={onProgressMetricChange}
+                      className="h-full w-[380px] max-w-none overflow-y-auto"
+                    />
+                  )
+                ) : null}
+              </div>
+            </motion.div>
+          </AnimatePresence>
         )}
       </Shell>
 

@@ -59,6 +59,7 @@ export interface UseShellLayoutReturn {
   onboardingStep: OnboardingStep;
   isOnboarding: boolean;
   isOnboardingBlueprint: boolean;
+  isOnboardingGoalsCentered: boolean;
   onContinueFromGoals: () => void;
   onContinueFromEssentials: () => void;
   onCompleteOnboarding: () => void;
@@ -87,7 +88,7 @@ export interface UseShellLayoutReturn {
   frozenSidebarData: UseBlockSidebarHandlersReturn["sidebarData"];
   isRightSidebarOpen: boolean;
   updateFrozenSidebarData: (
-    data: UseBlockSidebarHandlersReturn["sidebarData"],
+    data: UseBlockSidebarHandlersReturn["sidebarData"]
   ) => void;
 
   // Computed values
@@ -111,7 +112,7 @@ export interface UseShellLayoutReturn {
 // =============================================================================
 
 export function useShellLayout(
-  options: UseShellLayoutOptions = {},
+  options: UseShellLayoutOptions = {}
 ): UseShellLayoutReturn {
   const { initialGoalsCount = 0 } = options;
 
@@ -131,11 +132,12 @@ export function useShellLayout(
   // -------------------------------------------------------------------------
   // Start onboarding if user has no goals (first-time experience)
   const [onboardingStep, setOnboardingStep] = React.useState<OnboardingStep>(
-    () => (initialGoalsCount === 0 ? "goals" : null),
+    () => (initialGoalsCount === 0 ? "goals" : null)
   );
 
   const isOnboarding = onboardingStep !== null;
   const isOnboardingBlueprint = onboardingStep === "blueprint";
+  const isOnboardingGoalsCentered = onboardingStep === "goals";
 
   // Plan week prompt - shown after onboarding completes
   const [showPlanWeekPrompt, setShowPlanWeekPrompt] = React.useState(false);
@@ -151,10 +153,10 @@ export function useShellLayout(
   // Selection State
   // -------------------------------------------------------------------------
   const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
-    null,
+    null
   );
   const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
-    null,
+    null
   );
 
   // -------------------------------------------------------------------------
@@ -235,8 +237,8 @@ export function useShellLayout(
   const targetContent: "block" | "analytics" | null = selectedEventId
     ? "block"
     : showRightSidebar
-      ? "analytics"
-      : null;
+    ? "analytics"
+    : null;
 
   // Update rendered content when target changes
   React.useEffect(() => {
@@ -253,7 +255,7 @@ export function useShellLayout(
         setFrozenSidebarData(data);
       }
     },
-    [],
+    []
   );
 
   // -------------------------------------------------------------------------
@@ -314,7 +316,7 @@ export function useShellLayout(
         return prev;
       });
     },
-    [selectedGoalId],
+    [selectedGoalId]
   );
 
   // -------------------------------------------------------------------------
@@ -377,6 +379,7 @@ export function useShellLayout(
     onboardingStep,
     isOnboarding,
     isOnboardingBlueprint,
+    isOnboardingGoalsCentered,
     onContinueFromGoals,
     onContinueFromEssentials,
     onCompleteOnboarding,

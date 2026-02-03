@@ -24,6 +24,22 @@ export type {
   InlineGoalCreatorProps,
 } from "./inline-creators";
 
+// Onboarding components
+export { OnboardingGoalsCard } from "./onboarding-goals-card";
+export type { OnboardingGoalsCardProps } from "./onboarding-goals-card";
+
+export { InlineGoalEditor } from "./inline-goal-editor";
+export type {
+  InlineGoalEditorProps,
+  InlineGoalEditorData,
+} from "./inline-goal-editor";
+
+export { GoalSuggestionRow } from "./goal-suggestion-row";
+export type { GoalSuggestionRowProps } from "./goal-suggestion-row";
+
+export { AddedGoalRow } from "./added-goal-row";
+export type { AddedGoalRowProps, AddedGoal } from "./added-goal-row";
+
 // =============================================================================
 // Types
 // =============================================================================

@@ -36,6 +36,11 @@ export {
   SubtaskRow,
   InlineTaskCreator,
   InlineGoalCreator,
+  // Onboarding components
+  OnboardingGoalsCard,
+  InlineGoalEditor,
+  GoalSuggestionRow,
+  AddedGoalRow,
 } from "./goals";
 
 // Types
@@ -56,6 +61,13 @@ export type {
   TaskRowProps,
   InlineTaskCreatorProps,
   InlineGoalCreatorProps,
+  // Onboarding types
+  OnboardingGoalsCardProps,
+  InlineGoalEditorProps,
+  InlineGoalEditorData,
+  GoalSuggestionRowProps,
+  AddedGoalRowProps,
+  AddedGoal,
 } from "./goals";
 
 // Utilities
