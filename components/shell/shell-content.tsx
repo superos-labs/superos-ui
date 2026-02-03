@@ -303,7 +303,8 @@ export function ShellContentComponent({
   const [showLifeAreaCreator, setShowLifeAreaCreator] = React.useState(false);
   const [showLifeAreaManager, setShowLifeAreaManager] = React.useState(false);
   // Track goal ID to auto-assign when creating life area from goal detail
-  const [lifeAreaCreatorForGoalId, setLifeAreaCreatorForGoalId] = React.useState<string | null>(null);
+  const [lifeAreaCreatorForGoalId, setLifeAreaCreatorForGoalId] =
+    React.useState<string | null>(null);
 
   // Global ? key to open keyboard shortcuts
   React.useEffect(() => {
@@ -338,7 +339,7 @@ export function ShellContentComponent({
 
   // Scroll-to-current-time key (changes on mount and "Today" click)
   const [scrollToCurrentTimeKey, setScrollToCurrentTimeKey] = React.useState(
-    () => Date.now(),
+    () => Date.now()
   );
 
   // Handler for "Today" button that also triggers scroll to current time
@@ -354,10 +355,10 @@ export function ShellContentComponent({
       const today = new Date();
       const todayStr = today.toISOString().split("T")[0];
       const idx = weekDates.findIndex(
-        (d) => d.toISOString().split("T")[0] === todayStr,
+        (d) => d.toISOString().split("T")[0] === todayStr
       );
       return idx >= 0 ? idx : 0;
-    },
+    }
   );
 
   // Reset mobile day index when week changes
@@ -365,7 +366,7 @@ export function ShellContentComponent({
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
     const idx = weekDates.findIndex(
-      (d) => d.toISOString().split("T")[0] === todayStr,
+      (d) => d.toISOString().split("T")[0] === todayStr
     );
     setMobileSelectedDayIndex(idx >= 0 ? idx : 0);
   }, [weekDates]);
@@ -470,7 +471,7 @@ export function ShellContentComponent({
       if (planningFlowRef.current.weeklyFocusTaskIds.size > 0) {
         onSetWeeklyFocus(
           planningFlowRef.current.weeklyFocusTaskIds,
-          weekStartDate,
+          weekStartDate
         );
       }
 
@@ -528,7 +529,12 @@ export function ShellContentComponent({
     if (isOnboardingBlueprint) {
       setShowRightSidebar(true);
     }
-  }, [isPlanning, planningFlow.step, isOnboardingBlueprint, setShowRightSidebar]);
+  }, [
+    isPlanning,
+    planningFlow.step,
+    isOnboardingBlueprint,
+    setShowRightSidebar,
+  ]);
 
   // Duplicate last week's schedule from blueprint
   const handleDuplicateLastWeek = React.useCallback(() => {
@@ -603,7 +609,13 @@ export function ShellContentComponent({
     onReplaceEvents([]);
     // Complete onboarding (shows plan week prompt)
     onCompleteOnboarding();
-  }, [events, weekDates, onSaveBlueprint, onReplaceEvents, onCompleteOnboarding]);
+  }, [
+    events,
+    weekDates,
+    onSaveBlueprint,
+    onReplaceEvents,
+    onCompleteOnboarding,
+  ]);
 
   // Handler to skip blueprint creation and clear any events added during the step
   const handleSkipOnboardingBlueprint = React.useCallback(() => {
@@ -621,20 +633,26 @@ export function ShellContentComponent({
       events,
       weekDates,
       essentialTemplates,
-      allEssentials.map((e) => e.id),
+      allEssentials.map((e) => e.id)
     );
-  }, [isBlueprintEditMode, events, weekDates, essentialTemplates, allEssentials]);
+  }, [
+    isBlueprintEditMode,
+    events,
+    weekDates,
+    essentialTemplates,
+    allEssentials,
+  ]);
 
   // Handler to update essentials in blueprint edit mode
   const handleUpdateBlueprintEssentials = React.useCallback(() => {
     // Remove all existing essential events from current events (which are the blueprint events)
     const nonEssentialEvents = events.filter(
-      (e) => e.blockType !== "essential",
+      (e) => e.blockType !== "essential"
     );
 
     // Get enabled templates
     const enabledTemplates = essentialTemplates.filter((t) =>
-      allEssentials.some((e) => e.id === t.essentialId),
+      allEssentials.some((e) => e.id === t.essentialId)
     );
 
     // Map essentials to the format expected by importEssentialsToEvents
@@ -653,19 +671,13 @@ export function ShellContentComponent({
 
     // Replace events with non-essential events + new essential events
     onReplaceEvents([...nonEssentialEvents, ...newEssentialEvents]);
-  }, [
-    events,
-    essentialTemplates,
-    allEssentials,
-    weekDates,
-    onReplaceEvents,
-  ]);
+  }, [events, essentialTemplates, allEssentials, weekDates, onReplaceEvents]);
 
   // -------------------------------------------------------------------------
   // Derived Data
   // -------------------------------------------------------------------------
   const selectedEvent = selectedEventId
-    ? (events.find((e) => e.id === selectedEventId) ?? null)
+    ? events.find((e) => e.id === selectedEventId) ?? null
     : null;
 
   // -------------------------------------------------------------------------
@@ -673,13 +685,13 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   const handleZoomIn = React.useCallback(() => {
     onCalendarZoomChange(
-      Math.min(MAX_CALENDAR_ZOOM, calendarZoom + CALENDAR_ZOOM_STEP),
+      Math.min(MAX_CALENDAR_ZOOM, calendarZoom + CALENDAR_ZOOM_STEP)
     );
   }, [calendarZoom, onCalendarZoomChange]);
 
   const handleZoomOut = React.useCallback(() => {
     onCalendarZoomChange(
-      Math.max(MIN_CALENDAR_ZOOM, calendarZoom - CALENDAR_ZOOM_STEP),
+      Math.max(MIN_CALENDAR_ZOOM, calendarZoom - CALENDAR_ZOOM_STEP)
     );
   }, [calendarZoom, onCalendarZoomChange]);
 
@@ -789,7 +801,7 @@ export function ShellContentComponent({
       toAnalyticsItems(goals, getGoalStats, {
         useFocusedHours,
       }),
-    [goals, getGoalStats, useFocusedHours],
+    [goals, getGoalStats, useFocusedHours]
   );
 
   // Planning budget data (for time budget mode during weekly planning)
@@ -801,7 +813,7 @@ export function ShellContentComponent({
         getGoalStats,
         getEssentialStats,
       }),
-    [goals, essentials, getGoalStats, getEssentialStats],
+    [goals, essentials, getGoalStats, getEssentialStats]
   );
 
   // -------------------------------------------------------------------------
@@ -818,7 +830,12 @@ export function ShellContentComponent({
       // Set rendered content immediately so it persists during close animation
       setRenderedContent("integrations");
     }
-  }, [integrationsSidebar, setSelectedEventId, setShowRightSidebar, setRenderedContent]);
+  }, [
+    integrationsSidebar,
+    setSelectedEventId,
+    setShowRightSidebar,
+    setRenderedContent,
+  ]);
 
   // Close integrations sidebar when block or analytics sidebar opens
   React.useEffect(() => {
@@ -843,7 +860,7 @@ export function ShellContentComponent({
         onDayBoundariesEnabledChange(true);
       }
     },
-    [onDayBoundariesChange, onDayBoundariesEnabledChange, dayBoundariesEnabled],
+    [onDayBoundariesChange, onDayBoundariesEnabledChange, dayBoundariesEnabled]
   );
 
   // -------------------------------------------------------------------------
@@ -864,7 +881,7 @@ export function ShellContentComponent({
         setSelectedGoalId(newGoalId);
       }
     },
-    [onAddGoal, backlogMode, setSelectedGoalId],
+    [onAddGoal, backlogMode, setSelectedGoalId]
   );
 
   const handleCreateAndSelectGoal = React.useCallback(() => {
@@ -885,7 +902,14 @@ export function ShellContentComponent({
     handleCloseInspiration();
     setBacklogMode("goal-detail");
     setSelectedGoalId(newGoalId);
-  }, [onAddGoal, goalIcons, lifeAreas, handleCloseInspiration, setBacklogMode, setSelectedGoalId]);
+  }, [
+    onAddGoal,
+    goalIcons,
+    lifeAreas,
+    handleCloseInspiration,
+    setBacklogMode,
+    setSelectedGoalId,
+  ]);
 
   // -------------------------------------------------------------------------
   // Goal Deletion Handler
@@ -920,7 +944,7 @@ export function ShellContentComponent({
     (event: CalendarEvent) => {
       setSelectedEventId(event.id);
     },
-    [setSelectedEventId],
+    [setSelectedEventId]
   );
 
   // Close bottom sheet handler for mobile
@@ -936,11 +960,12 @@ export function ShellContentComponent({
       // Find the current event status and toggle it
       const currentEvent = externalEvents.find((e) => e.id === eventId);
       if (currentEvent) {
-        const newStatus = currentEvent.status === "completed" ? "planned" : "completed";
+        const newStatus =
+          currentEvent.status === "completed" ? "planned" : "completed";
         onUpdateExternalEvent(eventId, { status: newStatus });
       }
     },
-    [externalEvents, onUpdateExternalEvent],
+    [externalEvents, onUpdateExternalEvent]
   );
 
   // Format date for mobile toolbar
@@ -1093,7 +1118,7 @@ export function ShellContentComponent({
           <button
             className={cn(
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-              showSidebar ? "text-foreground" : "text-muted-foreground",
+              showSidebar ? "text-foreground" : "text-muted-foreground"
             )}
             onClick={() => setShowSidebar(!showSidebar)}
           >
@@ -1166,7 +1191,7 @@ export function ShellContentComponent({
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
               showIntegrationsSidebar
                 ? "text-foreground"
-                : "text-muted-foreground",
+                : "text-muted-foreground"
             )}
             onClick={handleIntegrationsToggle}
             title="Integrations"
@@ -1180,7 +1205,7 @@ export function ShellContentComponent({
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
               showRightSidebar || selectedEvent
                 ? "text-foreground"
-                : "text-muted-foreground",
+                : "text-muted-foreground"
             )}
             onClick={handleAnalyticsToggle}
             title="Toggle analytics"
@@ -1271,7 +1296,7 @@ export function ShellContentComponent({
         <button
           className={cn(
             "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-            showSidebar ? "text-foreground" : "text-muted-foreground",
+            showSidebar ? "text-foreground" : "text-muted-foreground"
           )}
           onClick={() => setShowSidebar(!showSidebar)}
         >
@@ -1329,10 +1354,10 @@ export function ShellContentComponent({
         {useMobileLayout
           ? renderMobileToolbar()
           : isOnboardingBlueprint
-            ? renderOnboardingBlueprintToolbar()
-            : isBlueprintEditMode
-              ? renderBlueprintEditToolbar()
-              : renderDesktopToolbar()}
+          ? renderOnboardingBlueprintToolbar()
+          : isBlueprintEditMode
+          ? renderBlueprintEditToolbar()
+          : renderDesktopToolbar()}
 
         {/* Main Content Area - responsive layout */}
         {useMobileLayout ? (
@@ -1366,7 +1391,16 @@ export function ShellContentComponent({
         ) : (
           // Desktop: Three-panel layout
           <div
-            className={`flex min-h-0 flex-1 ${showSidebar || isRightSidebarOpen || isPlanning || isBlueprintEditMode || isOnboardingBlueprint ? "gap-4" : "gap-0"}`}
+            className={`flex min-h-0 flex-1 ${
+              showSidebar ||
+              isRightSidebarOpen ||
+              showIntegrationsSidebar ||
+              isPlanning ||
+              isBlueprintEditMode ||
+              isOnboardingBlueprint
+                ? "gap-4"
+                : "gap-0"
+            }`}
           >
             {/* Left Sidebar - Backlog, Planning Panel, or Blueprint Backlog */}
             <div
@@ -1375,8 +1409,8 @@ export function ShellContentComponent({
                 isPlanning
                   ? "w-[420px] opacity-100"
                   : showSidebar || isBlueprintEditMode || isOnboardingBlueprint
-                    ? "w-[360px] opacity-100"
-                    : "w-0 opacity-0",
+                  ? "w-[360px] opacity-100"
+                  : "w-0 opacity-0"
               )}
             >
               {isOnboardingBlueprint ? (
@@ -1593,7 +1627,7 @@ export function ShellContentComponent({
                 "shrink-0 overflow-hidden transition-all duration-300 ease-out",
                 isRightSidebarOpen || showIntegrationsSidebar
                   ? "w-[380px] opacity-100"
-                  : "w-0 opacity-0",
+                  : "w-0 opacity-0"
               )}
             >
               {/* Use renderedContent for content persistence during close animation */}
@@ -1631,7 +1665,7 @@ export function ShellContentComponent({
                   }
                   totalFocusedMinutes={
                     selectedEvent?.blockType !== "essential"
-                      ? (selectedEvent?.focusedMinutes ?? 0)
+                      ? selectedEvent?.focusedMinutes ?? 0
                       : undefined
                   }
                   onFocusedMinutesChange={
@@ -1652,7 +1686,11 @@ export function ShellContentComponent({
                     wakeUpMinutes={dayStartMinutes}
                     windDownMinutes={dayEndMinutes}
                     isSleepConfigured={dayBoundariesEnabled}
-                    weekLabel={isOnboardingBlueprint ? "Your typical week" : formatWeekRange(weekDates)}
+                    weekLabel={
+                      isOnboardingBlueprint
+                        ? "Your typical week"
+                        : formatWeekRange(weekDates)
+                    }
                     lifeAreas={lifeAreas}
                     className="h-full w-[380px] max-w-none overflow-y-auto"
                   />
@@ -1740,7 +1778,7 @@ export function ShellContentComponent({
             focusDisabled={focusSession !== null && !isSidebarBlockFocused}
             totalFocusedMinutes={
               selectedEvent?.blockType !== "essential"
-                ? (selectedEvent?.focusedMinutes ?? 0)
+                ? selectedEvent?.focusedMinutes ?? 0
                 : undefined
             }
             className="border-0 rounded-none shadow-none max-w-none w-full"
@@ -1775,7 +1813,9 @@ export function ShellContentComponent({
           const newLifeAreaId = onAddLifeArea(data);
           // If opened from a goal detail, auto-assign the new life area to that goal
           if (newLifeAreaId && lifeAreaCreatorForGoalId) {
-            onUpdateGoal(lifeAreaCreatorForGoalId, { lifeAreaId: newLifeAreaId });
+            onUpdateGoal(lifeAreaCreatorForGoalId, {
+              lifeAreaId: newLifeAreaId,
+            });
           }
           setLifeAreaCreatorForGoalId(null);
         }}

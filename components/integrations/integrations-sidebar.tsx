@@ -31,19 +31,19 @@ interface IntegrationsSidebarProps {
   /** Toggle importing events from a calendar */
   onToggleCalendarImport?: (
     provider: CalendarProvider,
-    calendarId: string,
+    calendarId: string
   ) => void;
   /** Toggle exporting blueprint to a calendar */
   onToggleCalendarExport?: (
     provider: CalendarProvider,
-    calendarId: string,
+    calendarId: string
   ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly?: (provider: CalendarProvider) => void;
   /** Set block visibility for exports */
   onSetExportBlockVisibility?: (
     provider: CalendarProvider,
-    visibility: ExportBlockVisibility,
+    visibility: ExportBlockVisibility
   ) => void;
   /** Optional class name */
   className?: string;
@@ -81,7 +81,7 @@ function IntegrationsSidebar({
   };
 
   const getIntegrationState = (
-    provider: CalendarProvider,
+    provider: CalendarProvider
   ): CalendarIntegrationState => {
     return (
       integrationStates.get(provider) ?? {
@@ -105,7 +105,7 @@ function IntegrationsSidebar({
     <div
       className={cn(
         "flex h-full flex-col rounded-xl border border-border bg-card shadow-sm",
-        className,
+        className
       )}
     >
       {/* Header */}
@@ -119,7 +119,7 @@ function IntegrationsSidebar({
                   "flex size-7 items-center justify-center rounded-lg",
                   "text-muted-foreground transition-colors duration-150",
                   "hover:bg-muted hover:text-foreground",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 )}
                 aria-label="Back to integrations"
               >
@@ -129,7 +129,9 @@ function IntegrationsSidebar({
                 <div
                   className="flex size-6 items-center justify-center rounded-full ring-1 ring-inset ring-black/[0.08] dark:ring-white/[0.08]"
                   style={{
-                    backgroundColor: `${CALENDAR_PROVIDERS[currentView.provider].brandColor}12`,
+                    backgroundColor: `${
+                      CALENDAR_PROVIDERS[currentView.provider].brandColor
+                    }12`,
                     color: CALENDAR_PROVIDERS[currentView.provider].brandColor,
                   }}
                 >
@@ -154,7 +156,7 @@ function IntegrationsSidebar({
             "flex size-7 items-center justify-center rounded-lg",
             "text-muted-foreground transition-colors duration-150",
             "hover:bg-muted hover:text-foreground",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
           aria-label="Close"
         >
