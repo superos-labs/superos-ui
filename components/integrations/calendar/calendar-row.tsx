@@ -31,19 +31,18 @@ function CalendarRow({ calendar, type, onToggle }: CalendarRowProps) {
       aria-checked={isChecked}
       onClick={onToggle}
       className={cn(
-        "group flex w-full cursor-pointer items-center gap-3 rounded-lg px-2 py-2.5 text-left",
+        "group flex w-full cursor-pointer items-center gap-2.5 rounded-lg py-1.5 text-left",
         "transition-colors duration-150",
-        "hover:bg-muted/60",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       )}
     >
       {/* Custom checkbox */}
       <div
         className={cn(
-          "flex size-[18px] shrink-0 items-center justify-center rounded-md transition-all duration-150",
+          "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
           isChecked
             ? "bg-foreground text-background"
-            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
+            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
         )}
       >
         {isChecked && <RiCheckLine className="size-3" />}
@@ -60,7 +59,7 @@ function CalendarRow({ calendar, type, onToggle }: CalendarRowProps) {
       <span
         className={cn(
           "truncate text-sm transition-colors",
-          isChecked ? "text-foreground" : "text-muted-foreground",
+          isChecked ? "text-foreground" : "text-muted-foreground"
         )}
       >
         {calendar.name}

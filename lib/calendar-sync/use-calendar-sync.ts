@@ -81,11 +81,12 @@ export function useCalendarSync(
 
   // Derived: filter events by enabled calendars and meetings-only setting
   const externalEvents = React.useMemo(() => {
-    // Build a map of enabled calendar IDs to their provider's meetings-only setting
+    // Build a map of enabled calendar IDs to their provider's settings
     const enabledCalendars = new Map<string, { importMeetingsOnly: boolean }>();
 
     statesMap.forEach((state) => {
-      if (state.status === "connected") {
+      // Only include if connected AND import is enabled at provider level
+      if (state.status === "connected" && state.importEnabled) {
         state.calendars.forEach((cal) => {
           if (cal.importEnabled) {
             enabledCalendars.set(cal.id, {
@@ -118,8 +119,10 @@ export function useCalendarSync(
         status: "connected",
         accountEmail: MOCK_EMAILS[provider],
         calendars: MOCK_CALENDARS[provider],
-        importMeetingsOnly: true,
         lastSyncAt: new Date(),
+        // Import settings - defaults
+        importEnabled: true,
+        importMeetingsOnly: true,
         // Export settings - defaults
         exportEnabled: false,
         exportScope: "scheduled_and_blueprint",
@@ -141,8 +144,10 @@ export function useCalendarSync(
         status: "not_connected",
         accountEmail: null,
         calendars: [],
-        importMeetingsOnly: true,
         lastSyncAt: null,
+        // Reset all import settings on disconnect
+        importEnabled: true,
+        importMeetingsOnly: true,
         // Reset all export settings on disconnect
         exportEnabled: false,
         exportScope: "scheduled_and_blueprint",
@@ -154,6 +159,32 @@ export function useCalendarSync(
       return next;
     });
   }, []);
+
+  // Toggle import enabled for a provider
+  const toggleImportEnabled = React.useCallback(
+    (provider: CalendarProvider) => {
+      setStatesMap((prev) => {
+        const next = new Map(prev);
+        const state = next.get(provider);
+        if (state) {
+          const wasEnabled = state.importEnabled;
+          next.set(provider, {
+            ...state,
+            importEnabled: !wasEnabled,
+            // When enabling, auto-enable first calendar if none enabled
+            calendars:
+              !wasEnabled && !state.calendars.some((c) => c.importEnabled)
+                ? state.calendars.map((cal, i) =>
+                    i === 0 ? { ...cal, importEnabled: true } : cal
+                  )
+                : state.calendars,
+          });
+        }
+        return next;
+      });
+    },
+    []
+  );
 
   // Toggle calendar import
   const toggleCalendarImport = React.useCallback(
@@ -348,8 +379,9 @@ export function useCalendarSync(
           status: "not_connected",
           accountEmail: null,
           calendars: [],
-          importMeetingsOnly: true,
           lastSyncAt: null,
+          importEnabled: true,
+          importMeetingsOnly: true,
           exportEnabled: false,
           exportScope: "scheduled_and_blueprint",
           exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
@@ -384,10 +416,12 @@ export function useCalendarSync(
     externalEvents,
     connectProvider,
     disconnectProvider,
+    // Import settings
+    toggleImportEnabled,
     toggleCalendarImport,
-    toggleCalendarExport,
     toggleMeetingsOnly,
     // Export settings
+    toggleCalendarExport,
     toggleExportEnabled,
     setExportScope,
     setExportParticipation,

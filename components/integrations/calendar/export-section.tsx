@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiUploadLine, RiCheckLine } from "@remixicon/react";
+import { RiCheckLine, RiArrowRightSLine } from "@remixicon/react";
+import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
 import type {
   ProviderCalendar,
   CalendarProvider,
@@ -148,17 +149,17 @@ function RadioButton({ checked, onChange, label, disabled }: RadioButtonProps) {
 }
 
 // =============================================================================
-// Visibility Options
+// Options Configuration
 // =============================================================================
 
-/** Display labels for visibility options */
-const VISIBILITY_OPTIONS: {
+/** Display labels for visibility/appearance options */
+const APPEARANCE_OPTIONS: {
   value: ExportBlockVisibility;
   label: string;
 }[] = [
-  { value: "block_title", label: "Block title" },
-  { value: "goal_title", label: "Goal name" },
   { value: "busy", label: "Busy" },
+  { value: "goal_title", label: "Goal name" },
+  { value: "block_title", label: "Block title" },
 ];
 
 /** Display labels for sync scope options */
@@ -167,8 +168,8 @@ const SCOPE_OPTIONS: {
   label: string;
 }[] = [
   { value: "scheduled", label: "Scheduled blocks" },
-  { value: "blueprint", label: "Blueprint blocks" },
-  { value: "scheduled_and_blueprint", label: "Scheduled + Blueprint" },
+  { value: "blueprint", label: "Blueprint" },
+  { value: "scheduled_and_blueprint", label: "Weekly plan + Blueprint" },
 ];
 
 // =============================================================================
@@ -207,13 +208,12 @@ interface ExportSectionProps {
 /**
  * Comprehensive section for configuring external calendar sync.
  *
- * Includes:
- * 1. Master toggle for sync
- * 2. Sync scope (scheduled, blueprint, or both)
- * 3. What participates (essentials, goals, tasks)
- * 4. Goal filter (all or selected)
- * 5. Default appearance selector
- * 6. Target calendar selector
+ * Reorganized into three clear stacked questions:
+ * 1. Are we syncing? (Master toggle)
+ * 2. What time is shared? (Sync scope)
+ * 3. How shared time appears? (Appearance)
+ * 4. Target calendar selection
+ * 5. Customize what's shared (collapsible)
  */
 function ExportSection({
   calendars,
@@ -232,12 +232,15 @@ function ExportSection({
   onDefaultAppearanceChange,
   onToggleCalendarExport,
 }: ExportSectionProps) {
+  const [customizeOpen, setCustomizeOpen] = React.useState(false);
+
   if (calendars.length === 0) {
     return null;
   }
 
   // Find the currently enabled export calendar
   const enabledCalendar = calendars.find((c) => c.exportBlueprintEnabled);
+  const providerConfig = CALENDAR_PROVIDERS[provider];
 
   // Handle calendar selection (single select - deselects current, selects new)
   const handleSelectCalendar = (calendarId: string) => {
@@ -256,33 +259,26 @@ function ExportSection({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Section 1: Master Toggle */}
-      <div className="flex items-start justify-between gap-3 px-2">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            <RiUploadLine className="size-3.5" />
-            <span>Sync to External Calendar</span>
-          </div>
-          <p className="text-xs text-muted-foreground/70">
-            Share your planning with external calendars.
-          </p>
-        </div>
+      {/* Question 1: Are we syncing? */}
+      <div className="flex items-center justify-between gap-3 px-2">
+        <span className="text-sm text-foreground">
+          Show SuperOS blocks on {providerConfig.name}
+        </span>
         <ToggleSwitch
           checked={exportEnabled}
           onChange={onToggleExportEnabled}
-          className="mt-0.5"
         />
       </div>
 
       {/* Rest of settings - only shown when enabled */}
       {exportEnabled && (
         <div className="flex flex-col gap-5 px-2">
-          {/* Section 2: Sync Scope */}
+          {/* Question 2: What time is shared? */}
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground">
-              Which planning layers should appear?
+              Shared time
             </p>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-0.5" role="radiogroup">
               {SCOPE_OPTIONS.map((option) => (
                 <RadioButton
                   key={option.value}
@@ -292,174 +288,31 @@ function ExportSection({
                 />
               ))}
             </div>
-            <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
-              Scheduled blocks reflect planned time. Blueprint reflects your
-              typical week in upcoming weeks to block future time.
-            </p>
           </div>
 
-          {/* Section 3: What Participates */}
+          {/* Question 3: How shared time appears? */}
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground">
-              What gets shared?
+              Appearance
             </p>
-            <div className="flex flex-col gap-0.5">
-              <Checkbox
-                checked={exportParticipation.essentials}
-                onChange={() =>
-                  onParticipationChange({
-                    essentials: !exportParticipation.essentials,
-                  })
-                }
-                label="Essentials"
-              />
-              <Checkbox
-                checked={exportParticipation.goals}
-                onChange={() =>
-                  onParticipationChange({
-                    goals: !exportParticipation.goals,
-                  })
-                }
-                label="Goals"
-              />
-              <Checkbox
-                checked={exportParticipation.standaloneTaskBlocks}
-                onChange={() =>
-                  onParticipationChange({
-                    standaloneTaskBlocks:
-                      !exportParticipation.standaloneTaskBlocks,
-                  })
-                }
-                label="Tasks as standalone blocks"
-              />
+            <div className="flex flex-col gap-0.5" role="radiogroup">
+              {APPEARANCE_OPTIONS.map((option) => (
+                <RadioButton
+                  key={option.value}
+                  checked={exportDefaultAppearance === option.value}
+                  onChange={() => onDefaultAppearanceChange(option.value)}
+                  label={option.label}
+                />
+              ))}
             </div>
-
-            {/* Goal Selection - inline list with checkboxes */}
-            {exportParticipation.goals && availableGoals.length > 0 && (
-              <div className="mt-2 flex flex-col gap-1">
-                <p className="text-xs text-muted-foreground mb-1">
-                  Which goals to sync:
-                </p>
-                {availableGoals.map((goal) => {
-                  const isSelected =
-                    exportGoalFilter === "all" ||
-                    exportSelectedGoalIds.has(goal.id);
-                  const GoalIcon = goal.icon;
-
-                  const handleToggle = () => {
-                    if (exportGoalFilter === "all") {
-                      // Switch to selected mode, with all goals except this one
-                      const newSelected = new Set(
-                        availableGoals
-                          .filter((g) => g.id !== goal.id)
-                          .map((g) => g.id)
-                      );
-                      onGoalFilterChange("selected", newSelected);
-                    } else {
-                      // Toggle this goal in the selected set
-                      const newSelected = new Set(exportSelectedGoalIds);
-                      if (newSelected.has(goal.id)) {
-                        newSelected.delete(goal.id);
-                      } else {
-                        newSelected.add(goal.id);
-                      }
-                      // If all goals are now selected, switch back to "all" mode
-                      if (newSelected.size === availableGoals.length) {
-                        onGoalFilterChange("all");
-                      } else {
-                        onGoalFilterChange("selected", newSelected);
-                      }
-                    }
-                  };
-
-                  return (
-                    <button
-                      key={goal.id}
-                      type="button"
-                      role="checkbox"
-                      aria-checked={isSelected}
-                      onClick={handleToggle}
-                      className={cn(
-                        "group flex items-center gap-2.5 rounded-lg py-1.5 px-2 text-left",
-                        "transition-colors duration-150 hover:bg-muted/60",
-                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
-                          isSelected
-                            ? "bg-foreground text-background"
-                            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
-                        )}
-                      >
-                        {isSelected && <RiCheckLine className="size-3" />}
-                      </div>
-                      <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
-                        <GoalIcon
-                          className={cn("size-3", `text-${goal.color}-500`)}
-                        />
-                      </div>
-                      <span
-                        className={cn(
-                          "truncate text-sm transition-colors",
-                          isSelected
-                            ? "text-foreground"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        {goal.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
-          {/* Section 4: Default Appearance */}
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              Default block appearance
-            </p>
-            <div
-              className="inline-flex rounded-lg bg-muted p-0.5"
-              role="radiogroup"
-              aria-label="Block appearance"
-            >
-              {VISIBILITY_OPTIONS.map((option) => {
-                const isSelected = exportDefaultAppearance === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    onClick={() => onDefaultAppearanceChange(option.value)}
-                    className={cn(
-                      "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-150",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-                      isSelected
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[11px] text-muted-foreground/60">
-              You can override this per goal or per block.
-            </p>
-          </div>
-
-          {/* Calendar Selector */}
+          {/* Target calendar */}
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground">
               Target calendar
             </p>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-0.5" role="radiogroup">
               {calendars.map((calendar) => {
                 const isSelected = calendar.exportBlueprintEnabled;
                 return (
@@ -470,10 +323,10 @@ function ExportSection({
                     aria-checked={isSelected}
                     onClick={() => handleSelectCalendar(calendar.id)}
                     className={cn(
-                      "group flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left",
+                      "group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left",
                       "transition-colors duration-150",
                       "hover:bg-muted/60",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     )}
                   >
                     {/* Radio button */}
@@ -510,6 +363,155 @@ function ExportSection({
                 );
               })}
             </div>
+          </div>
+
+          {/* Customize Accordion */}
+          <div className="flex flex-col">
+            <button
+              type="button"
+              onClick={() => setCustomizeOpen(!customizeOpen)}
+              className={cn(
+                "group flex w-full items-center gap-1.5 py-1 text-left",
+                "transition-colors duration-150",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded"
+              )}
+            >
+              <RiArrowRightSLine
+                className={cn(
+                  "size-4 text-muted-foreground transition-transform duration-200",
+                  customizeOpen && "rotate-90"
+                )}
+              />
+              <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                Customize what&apos;s shared
+              </span>
+            </button>
+
+            {/* Customize Panel */}
+            {customizeOpen && (
+              <div className="mt-3 flex flex-col gap-2 pl-1">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Include
+                </p>
+                <div className="flex flex-col gap-0.5">
+                  <Checkbox
+                    checked={exportParticipation.essentials}
+                    onChange={() =>
+                      onParticipationChange({
+                        essentials: !exportParticipation.essentials,
+                      })
+                    }
+                    label="Essentials"
+                  />
+                  <Checkbox
+                    checked={exportParticipation.goals}
+                    onChange={() =>
+                      onParticipationChange({
+                        goals: !exportParticipation.goals,
+                      })
+                    }
+                    label="Goals"
+                  />
+                  <Checkbox
+                    checked={exportParticipation.standaloneTaskBlocks}
+                    onChange={() =>
+                      onParticipationChange({
+                        standaloneTaskBlocks:
+                          !exportParticipation.standaloneTaskBlocks,
+                      })
+                    }
+                    label="Tasks as standalone blocks"
+                  />
+                </div>
+
+                {/* Goal Selection - shown when Goals is selected */}
+                {exportParticipation.goals && availableGoals.length > 0 && (
+                  <div className="mt-3 flex flex-col gap-2">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Select goals
+                    </p>
+                    <div className="flex flex-col gap-0.5">
+                      {availableGoals.map((goal) => {
+                        const isSelected =
+                          exportGoalFilter === "all" ||
+                          exportSelectedGoalIds.has(goal.id);
+                        const GoalIcon = goal.icon;
+
+                        const handleToggle = () => {
+                          if (exportGoalFilter === "all") {
+                            // Switch to selected mode, with all goals except this one
+                            const newSelected = new Set(
+                              availableGoals
+                                .filter((g) => g.id !== goal.id)
+                                .map((g) => g.id)
+                            );
+                            onGoalFilterChange("selected", newSelected);
+                          } else {
+                            // Toggle this goal in the selected set
+                            const newSelected = new Set(exportSelectedGoalIds);
+                            if (newSelected.has(goal.id)) {
+                              newSelected.delete(goal.id);
+                            } else {
+                              newSelected.add(goal.id);
+                            }
+                            // If all goals are now selected, switch back to "all" mode
+                            if (newSelected.size === availableGoals.length) {
+                              onGoalFilterChange("all");
+                            } else {
+                              onGoalFilterChange("selected", newSelected);
+                            }
+                          }
+                        };
+
+                        return (
+                          <button
+                            key={goal.id}
+                            type="button"
+                            role="checkbox"
+                            aria-checked={isSelected}
+                            onClick={handleToggle}
+                            className={cn(
+                              "group flex items-center gap-2.5 rounded-lg py-1.5 px-2 text-left",
+                              "transition-colors duration-150 hover:bg-muted/60",
+                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
+                                isSelected
+                                  ? "bg-foreground text-background"
+                                  : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                              )}
+                            >
+                              {isSelected && <RiCheckLine className="size-3" />}
+                            </div>
+                            <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
+                              <GoalIcon
+                                className={cn(
+                                  "size-3",
+                                  `text-${goal.color}-500`
+                                )}
+                              />
+                            </div>
+                            <span
+                              className={cn(
+                                "truncate text-sm transition-colors",
+                                isSelected
+                                  ? "text-foreground"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              {goal.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

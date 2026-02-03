@@ -7,7 +7,6 @@ import { ConnectPrompt } from "./connect-prompt";
 import { CalendarList } from "./calendar-list";
 import { ExportSection } from "./export-section";
 import { Separator } from "@/components/ui/separator";
-import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
 import type {
   CalendarProvider,
   CalendarIntegrationState,
@@ -29,13 +28,16 @@ interface ProviderSettingsViewProps {
   onConnect: () => void;
   /** Callback to disconnect the provider */
   onDisconnect: () => void;
+  // Import settings callbacks
+  /** Toggle import enabled */
+  onToggleImportEnabled: () => void;
   /** Callback when a calendar's import toggle is clicked */
   onToggleCalendarImport: (calendarId: string) => void;
-  /** Callback when a calendar's export toggle is clicked */
-  onToggleCalendarExport: (calendarId: string) => void;
   /** Callback to toggle meetings-only filter for this integration */
   onToggleMeetingsOnly: () => void;
   // Export settings callbacks
+  /** Callback when a calendar's export toggle is clicked */
+  onToggleCalendarExport: (calendarId: string) => void;
   /** Toggle export enabled */
   onToggleExportEnabled: () => void;
   /** Set sync scope */
@@ -54,7 +56,7 @@ interface ProviderSettingsViewProps {
  * Features:
  * - Shows connect prompt if not connected
  * - Account info with disconnect button when connected
- * - Calendar import toggles
+ * - Calendar import section with master toggle
  * - Comprehensive export settings
  */
 function ProviderSettingsView({
@@ -63,16 +65,16 @@ function ProviderSettingsView({
   availableGoals = [],
   onConnect,
   onDisconnect,
+  onToggleImportEnabled,
   onToggleCalendarImport,
-  onToggleCalendarExport,
   onToggleMeetingsOnly,
+  onToggleCalendarExport,
   onToggleExportEnabled,
   onScopeChange,
   onParticipationChange,
   onGoalFilterChange,
   onDefaultAppearanceChange,
 }: ProviderSettingsViewProps) {
-  const config = CALENDAR_PROVIDERS[provider];
   const isConnected = state.status === "connected";
 
   // Show connect prompt if not connected
@@ -108,43 +110,16 @@ function ProviderSettingsView({
         </div>
       </div>
 
-      {/* Calendar Import List */}
+      {/* Calendar Import Section */}
       <CalendarList
         calendars={state.calendars}
         provider={provider}
+        importEnabled={state.importEnabled}
+        importMeetingsOnly={state.importMeetingsOnly}
+        onToggleImportEnabled={onToggleImportEnabled}
         onToggleImport={onToggleCalendarImport}
+        onToggleMeetingsOnly={onToggleMeetingsOnly}
       />
-
-      {/* Meetings-only toggle for this integration */}
-      <div className="flex items-center justify-between gap-3 px-2">
-        <span className="text-sm text-muted-foreground">
-          Only show meetings
-        </span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={state.importMeetingsOnly}
-          onClick={onToggleMeetingsOnly}
-          className={cn(
-            "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full",
-            "transition-colors duration-150",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-            state.importMeetingsOnly
-              ? "bg-foreground"
-              : "bg-muted-foreground/30"
-          )}
-        >
-          <span
-            className={cn(
-              "pointer-events-none block size-4 rounded-full bg-background shadow-sm ring-0",
-              "transition-transform duration-150",
-              state.importMeetingsOnly
-                ? "translate-x-[18px]"
-                : "translate-x-0.5"
-            )}
-          />
-        </button>
-      </div>
 
       {/* Soft Divider */}
       <div className="px-2">

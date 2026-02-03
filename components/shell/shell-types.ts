@@ -378,19 +378,22 @@ export interface ShellContentProps {
   onConnectProvider: (provider: CalendarProvider) => void;
   /** Disconnect a calendar provider */
   onDisconnectProvider: (provider: CalendarProvider) => void;
+  // Import settings callbacks
+  /** Toggle import enabled for a provider */
+  onToggleImportEnabled: (provider: CalendarProvider) => void;
   /** Toggle importing events from a calendar */
   onToggleCalendarImport: (
-    provider: CalendarProvider,
-    calendarId: string
-  ) => void;
-  /** Toggle exporting blueprint to a calendar */
-  onToggleCalendarExport: (
     provider: CalendarProvider,
     calendarId: string
   ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly: (provider: CalendarProvider) => void;
   // Export settings callbacks
+  /** Toggle exporting blueprint to a calendar */
+  onToggleCalendarExport: (
+    provider: CalendarProvider,
+    calendarId: string
+  ) => void;
   /** Toggle export enabled for a provider */
   onToggleExportEnabled: (provider: CalendarProvider) => void;
   /** Set sync scope for a provider */

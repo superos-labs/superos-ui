@@ -579,10 +579,12 @@ export function useShellState(
     integrationsSidebar,
     onConnectProvider: calendarSync.connectProvider,
     onDisconnectProvider: calendarSync.disconnectProvider,
+    // Import settings
+    onToggleImportEnabled: calendarSync.toggleImportEnabled,
     onToggleCalendarImport: calendarSync.toggleCalendarImport,
-    onToggleCalendarExport: calendarSync.toggleCalendarExport,
     onToggleMeetingsOnly: calendarSync.toggleMeetingsOnly,
     // Export settings
+    onToggleCalendarExport: calendarSync.toggleCalendarExport,
     onToggleExportEnabled: calendarSync.toggleExportEnabled,
     onSetExportScope: calendarSync.setExportScope,
     onSetExportParticipation: calendarSync.setExportParticipation,

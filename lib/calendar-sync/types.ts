@@ -89,10 +89,14 @@ export interface CalendarIntegrationState {
   accountEmail: string | null;
   /** Calendars available from this provider */
   calendars: ProviderCalendar[];
-  /** When true, only import events that have attendees (meetings). Defaults to true. */
-  importMeetingsOnly: boolean;
   /** Last successful sync timestamp */
   lastSyncAt: Date | null;
+
+  // --- Import Settings ---
+  /** Master toggle: whether to import calendar events to SuperOS */
+  importEnabled: boolean;
+  /** When true, only import events that have attendees (meetings). Defaults to true. */
+  importMeetingsOnly: boolean;
 
   // --- Export Settings ---
   /** Master toggle: whether sync to external calendar is enabled */
@@ -188,19 +192,23 @@ export interface UseCalendarSyncReturn {
   /** Disconnect a provider */
   disconnectProvider: (provider: CalendarProvider) => void;
 
-  // --- Calendar Settings ---
+  // --- Import Settings ---
+  /** Toggle import enabled for a provider */
+  toggleImportEnabled: (provider: CalendarProvider) => void;
   /** Toggle importing events from a calendar */
   toggleCalendarImport: (
     provider: CalendarProvider,
     calendarId: string
   ) => void;
+  /** Toggle "Only show meetings" filter for an integration */
+  toggleMeetingsOnly: (provider: CalendarProvider) => void;
+
+  // --- Export Settings (Calendar Selection) ---
   /** Toggle exporting blueprint to a calendar */
   toggleCalendarExport: (
     provider: CalendarProvider,
     calendarId: string
   ) => void;
-  /** Toggle "Only show meetings" filter for an integration */
-  toggleMeetingsOnly: (provider: CalendarProvider) => void;
 
   // --- Export Settings ---
   /** Toggle export enabled for a provider */

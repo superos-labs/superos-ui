@@ -34,19 +34,22 @@ interface IntegrationsSidebarProps {
   onConnectProvider?: (provider: CalendarProvider) => void;
   /** Disconnect a provider */
   onDisconnectProvider?: (provider: CalendarProvider) => void;
+  // Import settings callbacks
+  /** Toggle import enabled for a provider */
+  onToggleImportEnabled?: (provider: CalendarProvider) => void;
   /** Toggle importing events from a calendar */
   onToggleCalendarImport?: (
-    provider: CalendarProvider,
-    calendarId: string
-  ) => void;
-  /** Toggle exporting blueprint to a calendar */
-  onToggleCalendarExport?: (
     provider: CalendarProvider,
     calendarId: string
   ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly?: (provider: CalendarProvider) => void;
   // Export settings callbacks
+  /** Toggle exporting blueprint to a calendar */
+  onToggleCalendarExport?: (
+    provider: CalendarProvider,
+    calendarId: string
+  ) => void;
   /** Toggle export enabled for a provider */
   onToggleExportEnabled?: (provider: CalendarProvider) => void;
   /** Set sync scope for a provider */
@@ -87,9 +90,10 @@ function IntegrationsSidebar({
   onNavigateToList,
   onConnectProvider,
   onDisconnectProvider,
+  onToggleImportEnabled,
   onToggleCalendarImport,
-  onToggleCalendarExport,
   onToggleMeetingsOnly,
+  onToggleCalendarExport,
   onToggleExportEnabled,
   onSetExportScope,
   onSetExportParticipation,
@@ -116,8 +120,9 @@ function IntegrationsSidebar({
         status: "not_connected",
         accountEmail: null,
         calendars: [],
-        importMeetingsOnly: true,
         lastSyncAt: null,
+        importEnabled: true,
+        importMeetingsOnly: true,
         exportEnabled: false,
         exportScope: "scheduled_and_blueprint",
         exportParticipation: {
@@ -214,14 +219,17 @@ function IntegrationsSidebar({
             availableGoals={availableGoals}
             onConnect={() => onConnectProvider?.(currentView.provider)}
             onDisconnect={() => onDisconnectProvider?.(currentView.provider)}
+            onToggleImportEnabled={() =>
+              onToggleImportEnabled?.(currentView.provider)
+            }
             onToggleCalendarImport={(calendarId) =>
               onToggleCalendarImport?.(currentView.provider, calendarId)
             }
-            onToggleCalendarExport={(calendarId) =>
-              onToggleCalendarExport?.(currentView.provider, calendarId)
-            }
             onToggleMeetingsOnly={() =>
               onToggleMeetingsOnly?.(currentView.provider)
+            }
+            onToggleCalendarExport={(calendarId) =>
+              onToggleCalendarExport?.(currentView.provider, calendarId)
             }
             onToggleExportEnabled={() =>
               onToggleExportEnabled?.(currentView.provider)

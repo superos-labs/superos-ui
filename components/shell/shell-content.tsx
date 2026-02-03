@@ -253,10 +253,12 @@ export function ShellContentComponent({
   integrationsSidebar,
   onConnectProvider,
   onDisconnectProvider,
+  // Import settings callbacks
+  onToggleImportEnabled,
   onToggleCalendarImport,
-  onToggleCalendarExport,
   onToggleMeetingsOnly,
   // Export settings callbacks
+  onToggleCalendarExport,
   onToggleExportEnabled,
   onSetExportScope,
   onSetExportParticipation,
@@ -1666,9 +1668,10 @@ export function ShellContentComponent({
                   onNavigateToList={integrationsSidebar.navigateToList}
                   onConnectProvider={onConnectProvider}
                   onDisconnectProvider={onDisconnectProvider}
+                  onToggleImportEnabled={onToggleImportEnabled}
                   onToggleCalendarImport={onToggleCalendarImport}
-                  onToggleCalendarExport={onToggleCalendarExport}
                   onToggleMeetingsOnly={onToggleMeetingsOnly}
+                  onToggleCalendarExport={onToggleCalendarExport}
                   onToggleExportEnabled={onToggleExportEnabled}
                   onSetExportScope={onSetExportScope}
                   onSetExportParticipation={onSetExportParticipation}

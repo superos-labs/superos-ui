@@ -1,55 +1,137 @@
 "use client";
 
 import * as React from "react";
-import { RiDownloadLine } from "@remixicon/react";
+import { cn } from "@/lib/utils";
 import { CalendarRow } from "./calendar-row";
 import type { ProviderCalendar, CalendarProvider } from "@/lib/calendar-sync";
+
+// =============================================================================
+// Helper Components
+// =============================================================================
+
+/** Toggle switch component */
+interface ToggleSwitchProps {
+  checked: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+  className?: string;
+}
+
+function ToggleSwitch({
+  checked,
+  onChange,
+  disabled,
+  className,
+}: ToggleSwitchProps) {
+  return (
+    <button
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+      disabled={disabled}
+      className={cn(
+        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full",
+        "transition-colors duration-150",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        checked ? "bg-foreground" : "bg-muted-foreground/30",
+        disabled && "cursor-not-allowed opacity-50",
+        className
+      )}
+    >
+      <span
+        className={cn(
+          "pointer-events-none block size-4 rounded-full bg-background shadow-sm ring-0",
+          "transition-transform duration-150",
+          checked ? "translate-x-[18px]" : "translate-x-0.5"
+        )}
+      />
+    </button>
+  );
+}
+
+// =============================================================================
+// Main CalendarList Component
+// =============================================================================
 
 interface CalendarListProps {
   /** List of calendars to display */
   calendars: ProviderCalendar[];
   /** The provider these calendars belong to */
   provider: CalendarProvider;
+  /** Whether import is enabled at the provider level */
+  importEnabled: boolean;
+  /** Whether to only show meetings */
+  importMeetingsOnly: boolean;
+  /** Callback to toggle the master import switch */
+  onToggleImportEnabled: () => void;
   /** Callback when a calendar's import toggle is clicked */
   onToggleImport: (calendarId: string) => void;
+  /** Callback to toggle meetings-only filter */
+  onToggleMeetingsOnly: () => void;
 }
 
 /**
  * List of calendars with import toggles.
  * Shows which calendars will have their events imported into SuperOS.
+ * Includes master toggle and meetings-only filter.
  */
 function CalendarList({
   calendars,
-  provider,
+  importEnabled,
+  importMeetingsOnly,
+  onToggleImportEnabled,
   onToggleImport,
+  onToggleMeetingsOnly,
 }: CalendarListProps) {
   if (calendars.length === 0) {
-    return (
-      <p className="px-2 py-4 text-center text-sm text-muted-foreground">
-        No calendars available
-      </p>
-    );
+    return null;
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* Section Label with Icon */}
-      <div className="flex items-center gap-2 px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        <RiDownloadLine className="size-3.5" />
-        <span>Import to SuperOS</span>
+    <div className="flex flex-col gap-4">
+      {/* Master Toggle */}
+      <div className="flex items-center justify-between gap-3 px-2">
+        <span className="text-sm text-foreground">
+          Import calendar events to SuperOS
+        </span>
+        <ToggleSwitch
+          checked={importEnabled}
+          onChange={onToggleImportEnabled}
+        />
       </div>
 
-      {/* Calendar Toggles */}
-      <div className="flex flex-col">
-        {calendars.map((calendar) => (
-          <CalendarRow
-            key={calendar.id}
-            calendar={calendar}
-            type="import"
-            onToggle={() => onToggleImport(calendar.id)}
-          />
-        ))}
-      </div>
+      {/* Rest of settings - only shown when enabled */}
+      {importEnabled && (
+        <div className="flex flex-col gap-4 px-2">
+          {/* Calendar selection */}
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              Calendars
+            </p>
+            <div className="flex flex-col gap-0.5">
+              {calendars.map((calendar) => (
+                <CalendarRow
+                  key={calendar.id}
+                  calendar={calendar}
+                  type="import"
+                  onToggle={() => onToggleImport(calendar.id)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Meetings-only toggle */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm text-muted-foreground">
+              Only show meetings
+            </span>
+            <ToggleSwitch
+              checked={importMeetingsOnly}
+              onChange={onToggleMeetingsOnly}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
