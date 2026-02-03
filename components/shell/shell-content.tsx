@@ -1465,7 +1465,7 @@ export function ShellContentComponent({
           </ShellContentPrimitive>
         ) : isOnboardingGoalsCentered ? (
           // Desktop: Centered goals card for onboarding first step
-          <ShellContentPrimitive className="flex items-center justify-center bg-muted">
+          <ShellContentPrimitive className="flex items-center justify-center bg-muted shadow-none ring-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key="onboarding-goals"

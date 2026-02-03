@@ -13,7 +13,6 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import {
   RiCloseLine,
   RiDeleteBinLine,
@@ -160,13 +159,7 @@ export function InlineGoalEditor({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-      className={cn("overflow-hidden", className)}
-    >
+    <div className={cn("", className)}>
       <div className="flex flex-col gap-3 rounded-xl bg-muted/30 p-3">
         {/* Header with icon button and label input */}
         <div className="flex items-center gap-2">
@@ -353,6 +346,6 @@ export function InlineGoalEditor({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

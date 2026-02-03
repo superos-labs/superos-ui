@@ -149,6 +149,28 @@ export function OnboardingGoalsCard({
 
       {/* Content - scrollable */}
       <div className="scrollbar-hidden flex max-h-[400px] flex-1 flex-col overflow-y-auto px-3 py-3">
+        {/* Custom goal creator - at top for visibility */}
+        {editingId === "custom" ? (
+          <InlineGoalEditor
+            initialData={getDefaultCustomData()}
+            lifeAreas={lifeAreas}
+            goalIcons={goalIcons}
+            onSave={handleAddCustom}
+            onCancel={() => setEditingId(null)}
+            mode="add"
+          />
+        ) : (
+          <button
+            onClick={handleStartCustom}
+            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
+          >
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+              <RiAddLine className="size-4 text-muted-foreground" />
+            </div>
+            <span className="text-sm text-muted-foreground">Add your own</span>
+          </button>
+        )}
+
         {/* Added goals */}
         <AnimatePresence mode="sync">
           {goals.map((goal) => (
@@ -199,28 +221,6 @@ export function OnboardingGoalsCard({
             </motion.div>
           ))}
         </AnimatePresence>
-
-        {/* Custom goal creator */}
-        {editingId === "custom" ? (
-          <InlineGoalEditor
-            initialData={getDefaultCustomData()}
-            lifeAreas={lifeAreas}
-            goalIcons={goalIcons}
-            onSave={handleAddCustom}
-            onCancel={() => setEditingId(null)}
-            mode="add"
-          />
-        ) : (
-          <button
-            onClick={handleStartCustom}
-            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-muted/60"
-          >
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
-              <RiAddLine className="size-4 text-muted-foreground" />
-            </div>
-            <span className="text-sm text-muted-foreground">Add your own</span>
-          </button>
-        )}
       </div>
 
       {/* Footer with Continue button */}
