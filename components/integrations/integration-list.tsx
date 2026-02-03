@@ -29,9 +29,19 @@ function IntegrationList({
           status: "not_connected" as const,
           accountEmail: null,
           calendars: [],
-          importMeetingsOnly: true,
-          exportBlockVisibility: "busy" as const,
           lastSyncAt: null,
+          importEnabled: true,
+          importMeetingsOnly: true,
+          exportEnabled: false,
+          exportScope: "scheduled_and_blueprint" as const,
+          exportParticipation: {
+            essentials: true,
+            goals: true,
+            standaloneTaskBlocks: false,
+          },
+          exportGoalFilter: "all" as const,
+          exportSelectedGoalIds: new Set<string>(),
+          exportDefaultAppearance: "busy" as const,
         };
 
         return (
