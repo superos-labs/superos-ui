@@ -14,6 +14,7 @@ import { RiCalendarLine } from "@remixicon/react";
 import { RiMoonLine } from "@remixicon/react";
 import { BlueprintEssentialsSection } from "./blueprint-essentials-section";
 import { PlanningScheduleView } from "./planning-schedule-view";
+import { InlineVideoTutorial } from "./inline-video-tutorial";
 import type {
   ScheduleGoal,
   ScheduleEssential,
@@ -127,6 +128,14 @@ export function BlueprintBacklog({
               Define your routine essentials and drag goals to design your ideal typical week.
             </p>
           </div>
+
+          {/* Inline Video Tutorial */}
+          <InlineVideoTutorial
+            videoUrl="https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4"
+            thumbnailSrc="/onboarding-thumbnail.png"
+            caption="Here's how Ali uses SuperOS"
+            thumbnailAlt="SuperOS tutorial video"
+          />
         </div>
       </div>
 
