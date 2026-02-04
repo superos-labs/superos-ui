@@ -113,7 +113,7 @@ export type { LifeArea, GoalIconOption } from "@/lib/types";
 // Data Set Types
 // =============================================================================
 
-export type DataSetId = "sample" | "empty" | "demo";
+export type DataSetId = "sample" | "empty" | "complete";
 
 export interface DataSet {
   essentials: ScheduleEssential[];
@@ -682,22 +682,227 @@ export const EMPTY_GOALS: ScheduleGoal[] = [];
 export const EMPTY_CALENDAR_EVENTS: CalendarEvent[] = [];
 
 // =============================================================================
-// Demo Data Set (goals without tasks, for quick demo setup)
+// Complete Data Set (for dev skip onboarding - goals without tasks, with events)
 // =============================================================================
 
-/** Demo goals - same as sample goals but without tasks/milestones */
-export const DEMO_GOALS: ScheduleGoal[] = SHELL_GOALS.map((goal) => ({
-  ...goal,
-  tasks: [],
-  milestones: [],
-}));
+/** Complete goals - clean goals without tasks/milestones for skip onboarding */
+export const COMPLETE_GOALS: ScheduleGoal[] = [
+  {
+    id: "superos",
+    label: "Get SuperOS to $1M ARR",
+    icon: RiRocketLine,
+    color: "violet",
+    lifeAreaId: "career",
+    tasks: [],
+  },
+  {
+    id: "marathon",
+    label: "Run a marathon",
+    icon: RiMedalLine,
+    color: "rose",
+    lifeAreaId: "health",
+    tasks: [],
+  },
+  {
+    id: "book",
+    label: "Write a book",
+    icon: RiPenNibLine,
+    color: "teal",
+    lifeAreaId: "creativity",
+    tasks: [],
+  },
+  {
+    id: "spanish",
+    label: "Become fluent in Spanish",
+    icon: RiGlobeLine,
+    color: "lime",
+    lifeAreaId: "personal-growth",
+    tasks: [],
+  },
+];
 
-/** Default enabled essentials for demo mode (common ones) */
-export const DEMO_ENABLED_ESSENTIAL_IDS: string[] = [
+/** Default enabled essentials for complete mode */
+export const COMPLETE_ENABLED_ESSENTIAL_IDS: string[] = [
   "eat",
   "exercise",
   "downtime",
 ];
+
+/**
+ * Generate calendar events for the complete data set.
+ * Creates a realistic week with goal blocks scheduled.
+ */
+function createCompleteEvents(): CalendarEvent[] {
+  const weekDates = getWeekDates(new Date());
+  const getDate = (dayIndex: number) =>
+    weekDates[dayIndex].toISOString().split("T")[0];
+
+  return [
+    // SuperOS - weekday mornings (9am-12pm)
+    {
+      id: "complete-superos-1",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: 9 * 60,
+      durationMinutes: 180,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "complete-superos-2",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(2),
+      dayIndex: 2,
+      startMinutes: 9 * 60,
+      durationMinutes: 180,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "complete-superos-3",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: 9 * 60,
+      durationMinutes: 180,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "complete-superos-4",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(4),
+      dayIndex: 4,
+      startMinutes: 9 * 60,
+      durationMinutes: 180,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+    {
+      id: "complete-superos-5",
+      title: "Get SuperOS to $1M ARR",
+      date: getDate(5),
+      dayIndex: 5,
+      startMinutes: 9 * 60,
+      durationMinutes: 120,
+      color: "violet",
+      blockType: "goal",
+      sourceGoalId: "superos",
+    },
+
+    // Marathon - morning runs (6:30am-7:30am on Tu/Th/Sat)
+    {
+      id: "complete-marathon-1",
+      title: "Run a marathon",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: 6 * 60 + 30,
+      durationMinutes: 60,
+      color: "rose",
+      blockType: "goal",
+      sourceGoalId: "marathon",
+    },
+    {
+      id: "complete-marathon-3",
+      title: "Run a marathon",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: 6 * 60 + 30,
+      durationMinutes: 60,
+      color: "rose",
+      blockType: "goal",
+      sourceGoalId: "marathon",
+    },
+    {
+      id: "complete-marathon-5",
+      title: "Run a marathon",
+      date: getDate(5),
+      dayIndex: 5,
+      startMinutes: 7 * 60,
+      durationMinutes: 90,
+      color: "rose",
+      blockType: "goal",
+      sourceGoalId: "marathon",
+    },
+
+    // Write a book - evening sessions (7pm-9pm on Mon/Wed/Sun)
+    {
+      id: "complete-book-0",
+      title: "Write a book",
+      date: getDate(0),
+      dayIndex: 0,
+      startMinutes: 19 * 60,
+      durationMinutes: 120,
+      color: "teal",
+      blockType: "goal",
+      sourceGoalId: "book",
+    },
+    {
+      id: "complete-book-2",
+      title: "Write a book",
+      date: getDate(2),
+      dayIndex: 2,
+      startMinutes: 19 * 60,
+      durationMinutes: 120,
+      color: "teal",
+      blockType: "goal",
+      sourceGoalId: "book",
+    },
+    {
+      id: "complete-book-6",
+      title: "Write a book",
+      date: getDate(6),
+      dayIndex: 6,
+      startMinutes: 19 * 60,
+      durationMinutes: 120,
+      color: "teal",
+      blockType: "goal",
+      sourceGoalId: "book",
+    },
+
+    // Spanish - lunch breaks and weekend
+    {
+      id: "complete-spanish-1",
+      title: "Become fluent in Spanish",
+      date: getDate(1),
+      dayIndex: 1,
+      startMinutes: 13 * 60,
+      durationMinutes: 30,
+      color: "lime",
+      blockType: "goal",
+      sourceGoalId: "spanish",
+    },
+    {
+      id: "complete-spanish-3",
+      title: "Become fluent in Spanish",
+      date: getDate(3),
+      dayIndex: 3,
+      startMinutes: 13 * 60,
+      durationMinutes: 30,
+      color: "lime",
+      blockType: "goal",
+      sourceGoalId: "spanish",
+    },
+    {
+      id: "complete-spanish-5",
+      title: "Become fluent in Spanish",
+      date: getDate(5),
+      dayIndex: 5,
+      startMinutes: 11 * 60,
+      durationMinutes: 60,
+      color: "lime",
+      blockType: "goal",
+      sourceGoalId: "spanish",
+    },
+  ];
+}
+
+export const COMPLETE_CALENDAR_EVENTS: CalendarEvent[] = createCompleteEvents();
 
 // =============================================================================
 // Data Set Configuration
@@ -714,9 +919,9 @@ export const DATA_SETS: Record<DataSetId, DataSet> = {
     goals: EMPTY_GOALS,
     events: EMPTY_CALENDAR_EVENTS,
   },
-  demo: {
+  complete: {
     essentials: ALL_ESSENTIALS,
-    goals: DEMO_GOALS,
-    events: EMPTY_CALENDAR_EVENTS,
+    goals: COMPLETE_GOALS,
+    events: COMPLETE_CALENDAR_EVENTS,
   },
 };

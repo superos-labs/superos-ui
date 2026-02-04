@@ -10,28 +10,28 @@ import {
   ALL_ESSENTIALS,
   LIFE_AREAS,
   GOAL_ICONS,
-  DEMO_ENABLED_ESSENTIAL_IDS,
+  COMPLETE_ENABLED_ESSENTIAL_IDS,
   type DataSetId,
 } from "@/lib/fixtures/shell-data";
 import { INSPIRATION_CATEGORIES } from "@/lib/fixtures/goal-inspiration-data";
 
-interface ShellContentProps {
+interface ShellContentInnerProps {
   dataSetId: DataSetId;
-  onLoadSampleData: () => void;
+  onSkipOnboarding: () => void;
 }
 
-function ShellContent({
+function ShellContentInner({
   dataSetId,
-  onLoadSampleData,
-}: ShellContentProps) {
-  const dataSet = DATA_SETS[dataSetId];
+  onSkipOnboarding,
+}: ShellContentInnerProps) {
+  const dataSet = DATA_SETS[dataSetId] ?? DATA_SETS.empty;
 
   // Determine initial enabled essential IDs based on data set
   const initialEnabledEssentialIds =
     dataSetId === "empty"
       ? []
-      : dataSetId === "demo"
-        ? DEMO_ENABLED_ESSENTIAL_IDS
+      : dataSetId === "complete"
+        ? COMPLETE_ENABLED_ESSENTIAL_IDS
         : undefined;
 
   const state = useShellState({
@@ -41,13 +41,15 @@ function ShellContent({
     initialEvents: dataSet.events,
     lifeAreas: LIFE_AREAS,
     goalIcons: GOAL_ICONS,
+    // When complete data set is loaded, skip onboarding and mark week planned
+    skipOnboarding: dataSetId === "complete",
   });
 
   return (
     <ShellContentComponent
       {...state}
       inspirationCategories={INSPIRATION_CATEGORIES}
-      onLoadSampleData={onLoadSampleData}
+      onSkipOnboarding={onSkipOnboarding}
     />
   );
 }
@@ -55,17 +57,17 @@ function ShellContent({
 export default function Page() {
   const [dataSetId, setDataSetId] = React.useState<DataSetId>("empty");
 
-  const handleLoadSampleData = React.useCallback(() => {
-    setDataSetId("demo");
+  const handleSkipOnboarding = React.useCallback(() => {
+    setDataSetId("complete");
   }, []);
 
   return (
     <PreferencesProvider>
       <DragProvider>
-        <ShellContent
+        <ShellContentInner
           key={dataSetId}
           dataSetId={dataSetId}
-          onLoadSampleData={handleLoadSampleData}
+          onSkipOnboarding={handleSkipOnboarding}
         />
       </DragProvider>
     </PreferencesProvider>

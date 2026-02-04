@@ -97,9 +97,7 @@ import {
   RiMenuLine,
   RiKeyboardLine,
   RiCalendarCheckLine,
-  RiDeleteBin2Line,
   RiEditLine,
-  RiMagicLine,
   RiShapesLine,
   RiLayoutGridLine,
   RiApps2Line,
@@ -252,8 +250,8 @@ export function ShellContentComponent({
   // UI-specific props
   inspirationCategories,
   onLayoutChange,
-  // Demo/Development
-  onLoadSampleData,
+  // Development
+  onSkipOnboarding,
   // Calendar integrations
   calendarIntegrations,
   externalEvents,
@@ -1323,15 +1321,6 @@ export function ShellContentComponent({
               <RiPlayCircleLine className="size-4" />
               Watch Ali&apos;s onboarding
             </DropdownMenuItem>
-            {onLoadSampleData && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onLoadSampleData}>
-                  <RiMagicLine className="size-4" />
-                  Load demo data
-                </DropdownMenuItem>
-              </>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -1514,15 +1503,6 @@ export function ShellContentComponent({
               <RiPlayCircleLine className="size-4" />
               Watch Ali&apos;s onboarding
             </DropdownMenuItem>
-            {onLoadSampleData && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onLoadSampleData}>
-                  <RiMagicLine className="size-4" />
-                  Load demo data
-                </DropdownMenuItem>
-              </>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -1586,6 +1566,18 @@ export function ShellContentComponent({
   return (
     <>
       <Shell>
+        {/* Dev skip button - top-right during onboarding goals step */}
+        {isOnboardingGoalsCentered &&
+          process.env.NODE_ENV === "development" &&
+          onSkipOnboarding && (
+            <button
+              onClick={onSkipOnboarding}
+              className="absolute right-6 top-6 z-50 rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            >
+              Skip onboarding (Dev)
+            </button>
+          )}
+
         {/* Render appropriate toolbar based on breakpoint and mode */}
         {/* Hide toolbar during centered goals onboarding step for cleaner focus */}
         {!isOnboardingGoalsCentered &&

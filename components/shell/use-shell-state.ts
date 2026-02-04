@@ -65,6 +65,7 @@ export function useShellState(
     initialEvents,
     lifeAreas: defaultLifeAreas,
     goalIcons,
+    skipOnboarding,
   } = options;
 
   // -------------------------------------------------------------------------
@@ -299,6 +300,35 @@ export function useShellState(
   const weekStartDate = weekDates[0]?.toISOString().split("T")[0] ?? "";
   const { getWeeklyPlan, saveWeeklyPlan, hasWeeklyPlan } = useWeeklyPlan();
   const currentWeekPlan = getWeeklyPlan(weekStartDate);
+
+  // -------------------------------------------------------------------------
+  // Skip Onboarding Setup (dev only)
+  // -------------------------------------------------------------------------
+  // When skipOnboarding is true, immediately save weekly plan and blueprint
+  const skipOnboardingRef = React.useRef(false);
+  React.useEffect(() => {
+    if (skipOnboarding && !skipOnboardingRef.current) {
+      skipOnboardingRef.current = true;
+      // Save weekly plan for current week
+      saveWeeklyPlan({
+        weekStartDate,
+        plannedAt: new Date().toISOString(),
+      });
+      // Save blueprint from initial events
+      const blueprintBlocks = eventsToBlueprint(initialEvents, weekDates);
+      saveBlueprint({
+        blocks: blueprintBlocks,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  }, [
+    skipOnboarding,
+    weekStartDate,
+    saveWeeklyPlan,
+    initialEvents,
+    weekDates,
+    saveBlueprint,
+  ]);
 
   // -------------------------------------------------------------------------
   // Week Deadlines

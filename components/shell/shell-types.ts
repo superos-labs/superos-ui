@@ -360,10 +360,10 @@ export interface ShellContentProps {
   onRemoveLifeArea: (id: string) => void;
 
   // -------------------------------------------------------------------------
-  // Demo/Development (optional)
+  // Development (optional)
   // -------------------------------------------------------------------------
-  /** Load demo data (goals without tasks, skips onboarding) */
-  onLoadSampleData?: () => void;
+  /** Dev-only: Skip entire onboarding and load complete state */
+  onSkipOnboarding?: () => void;
 
   // -------------------------------------------------------------------------
   // Calendar Integrations
@@ -443,6 +443,8 @@ export interface UseShellStateOptions {
   lifeAreas: LifeArea[];
   /** Goal icons for goal creation */
   goalIcons: GoalIconOption[];
+  /** Dev-only: Skip onboarding and mark week as planned */
+  skipOnboarding?: boolean;
 }
 
 /**
