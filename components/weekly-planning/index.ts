@@ -15,5 +15,8 @@ export type { PlanWeekPromptCardProps } from "./plan-week-prompt-card";
 export { BlueprintBacklog } from "./blueprint-backlog";
 export type { BlueprintBacklogProps } from "./blueprint-backlog";
 
+export { BlueprintEssentialsSection } from "./blueprint-essentials-section";
+export type { BlueprintEssentialsSectionProps } from "./blueprint-essentials-section";
+
 // Re-export types from lib/weekly-planning for convenience
 export type { PlanningStep } from "@/lib/weekly-planning";

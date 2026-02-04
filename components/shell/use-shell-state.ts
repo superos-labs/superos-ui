@@ -391,7 +391,7 @@ export function useShellState(
   // Create/Delete Essential Handlers
   // -------------------------------------------------------------------------
   const handleCreateEssential = React.useCallback(
-    (data: NewEssentialData, slots: EssentialSlot[]) => {
+    (data: NewEssentialData, slots: EssentialSlot[]): string => {
       // Generate a unique ID for the new essential
       const id = `essential-${Date.now()}-${Math.random()
         .toString(36)
@@ -420,6 +420,8 @@ export function useShellState(
       setTimeout(() => {
         essentialConfig.setSlots(id, slots);
       }, 0);
+
+      return id;
     },
     [essentialConfig, schedule.toggleEssentialEnabled]
   );

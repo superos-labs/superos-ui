@@ -103,7 +103,7 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
 
   // Onboarding props
   /** Current onboarding step (null if not in onboarding) */
-  onboardingStep?: "goals" | "essentials" | "blueprint" | null;
+  onboardingStep?: "goals" | "blueprint" | null;
   /** Callback when user clicks Continue during goals onboarding step */
   onOnboardingContinue?: () => void;
   /** Callback when onboarding is completed (essentials Continue/Skip clicked) */
@@ -165,9 +165,8 @@ export function Backlog({
   const [isEssentialsCollapsed, setIsEssentialsCollapsed] =
     React.useState(false);
 
-  // Onboarding: hide essentials during goals step, show during essentials step
+  // Onboarding: hide essentials during goals step
   const isOnboardingGoalsStep = onboardingStep === "goals";
-  const isOnboardingEssentialsStep = onboardingStep === "essentials";
   const showEssentialsCard = !isEssentialsHidden && onboardingStep !== "goals";
 
   // Wrap essentials Done/Skip to also trigger onboarding completion
@@ -208,7 +207,6 @@ export function Backlog({
               isHidden={isEssentialsHidden}
               onHide={onEssentialsHide}
               onOnboardingComplete={handleEssentialsHide}
-              isOnboarding={isOnboardingEssentialsStep}
             />
           </motion.div>
         )}
@@ -216,10 +214,7 @@ export function Backlog({
 
       {/* Goals Card */}
       <div
-        className={cn(
-          "flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm transition-opacity duration-300",
-          isOnboardingEssentialsStep && "pointer-events-none opacity-40",
-        )}
+        className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm"
       >
         <div className="scrollbar-hidden flex-1 overflow-y-auto">
           <GoalSection

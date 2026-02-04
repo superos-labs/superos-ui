@@ -18,7 +18,7 @@ import type { UseBlockSidebarHandlersReturn } from "@/components/block";
 // =============================================================================
 
 /** Onboarding step for first-time user experience */
-export type OnboardingStep = "goals" | "essentials" | "blueprint" | null;
+export type OnboardingStep = "goals" | "blueprint" | null;
 
 export interface UseShellLayoutOptions {
   /** Callback when an event is created (to auto-select it) */
@@ -61,7 +61,6 @@ export interface UseShellLayoutReturn {
   isOnboardingBlueprint: boolean;
   isOnboardingGoalsCentered: boolean;
   onContinueFromGoals: () => void;
-  onContinueFromEssentials: () => void;
   onCompleteOnboarding: () => void;
   onSkipBlueprintCreation: () => void;
 
@@ -162,19 +161,14 @@ export function useShellLayout(
   // -------------------------------------------------------------------------
   // Onboarding Handlers (defined after state they depend on)
   // -------------------------------------------------------------------------
-  // Handler to advance from goals step to essentials step
+  // Handler to advance from goals step directly to blueprint creation
   const onContinueFromGoals = React.useCallback(() => {
-    setOnboardingStep("essentials");
+    setOnboardingStep("blueprint");
     // Close inspiration gallery if open
     setShowInspirationGallery(false);
     // Close goal detail view if open
     setSelectedGoalId(null);
     setBacklogMode("view");
-  }, []);
-
-  // Handler to advance from essentials step to blueprint creation
-  const onContinueFromEssentials = React.useCallback(() => {
-    setOnboardingStep("blueprint");
   }, []);
 
   // Handler to complete onboarding (called after blueprint creation or skip)
@@ -381,7 +375,6 @@ export function useShellLayout(
     isOnboardingBlueprint,
     isOnboardingGoalsCentered,
     onContinueFromGoals,
-    onContinueFromEssentials,
     onCompleteOnboarding,
     onSkipBlueprintCreation,
 

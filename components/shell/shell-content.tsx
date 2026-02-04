@@ -454,7 +454,6 @@ export function ShellContentComponent({
     isOnboardingBlueprint,
     isOnboardingGoalsCentered,
     onContinueFromGoals,
-    onContinueFromEssentials,
     onCompleteOnboarding,
     onSkipBlueprintCreation,
     // Plan week prompt
@@ -535,6 +534,46 @@ export function ShellContentComponent({
     onImportEssentialsToWeek();
     setHasAddedEssentialsThisSession(true);
   }, [onImportEssentialsToWeek]);
+
+  // Handler for adding an essential during blueprint creation (auto-imports to calendar)
+  const handleAddEssentialWithImport = React.useCallback(
+    (
+      data: { label: string; icon: import("@/lib/types").IconComponent; color: import("@/lib/colors").GoalColor },
+      slots: import("@/lib/essentials").EssentialSlot[]
+    ) => {
+      // Create the essential and get the generated ID
+      const essentialId = onCreateEssential(data, slots);
+
+      // Auto-import the new essential to the calendar using the same ID
+      const newEvents = importEssentialsToEvents({
+        templates: [{ essentialId, slots }],
+        weekDates,
+        essentials: [{ id: essentialId, label: data.label, color: data.color }],
+      });
+
+      newEvents.forEach((event) => {
+        onAddEvent(event);
+      });
+    },
+    [onCreateEssential, weekDates, onAddEvent]
+  );
+
+  // Handler for deleting an essential during blueprint creation (also removes calendar events)
+  const handleDeleteEssentialWithCleanup = React.useCallback(
+    (essentialId: string) => {
+      // Delete the essential
+      onDeleteEssential(essentialId);
+
+      // Remove all calendar events for this essential
+      const eventsToRemove = events.filter(
+        (e) => e.blockType === "essential" && e.sourceEssentialId === essentialId
+      );
+      eventsToRemove.forEach((event) => {
+        calendarHandlers.onEventDelete(event.id);
+      });
+    },
+    [onDeleteEssential, events, calendarHandlers]
+  );
 
   // Auto-open planning budget sidebar when entering schedule step or blueprint creation
   React.useEffect(() => {
@@ -1524,10 +1563,18 @@ export function ShellContentComponent({
                     goals={goals}
                     essentials={essentials}
                     onSave={handleSaveOnboardingBlueprint}
-                    showAddEssentialsButton={!hasAddedEssentialsThisSession}
-                    onAddEssentialsToCalendar={handleAddEssentialsToCalendar}
                     getTaskSchedule={getTaskSchedule}
                     getTaskDeadline={getTaskDeadline}
+                    // Essentials creation props
+                    wakeUpMinutes={dayStartMinutes}
+                    windDownMinutes={dayEndMinutes}
+                    onSleepTimesChange={handleSleepTimesChange}
+                    isSleepConfigured={dayBoundariesEnabled}
+                    onAddEssential={handleAddEssentialWithImport}
+                    essentialTemplates={essentialTemplates}
+                    onSaveSchedule={onSaveEssentialSchedule}
+                    onDeleteEssential={handleDeleteEssentialWithCleanup}
+                    essentialIcons={goalIcons}
                     className="h-full w-[360px] max-w-none"
                   />
                 ) : isPlanning ? (
@@ -1597,7 +1644,6 @@ export function ShellContentComponent({
                     // Onboarding props
                     onboardingStep={onboardingStep}
                     onOnboardingContinue={onContinueFromGoals}
-                    onOnboardingComplete={onContinueFromEssentials}
                     // Weekly focus
                     currentWeekStart={weekStartDate}
                   />

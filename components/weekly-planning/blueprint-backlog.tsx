@@ -3,13 +3,16 @@
 /**
  * BlueprintBacklog - Backlog panel for blueprint creation during onboarding.
  *
- * Shows essentials and goals that can be dragged to the calendar to build
- * the user's ideal typical week template.
+ * Shows essentials creation and goals that can be dragged to the calendar to build
+ * the user's ideal typical week template. Essentials are created directly here
+ * and auto-imported to the calendar.
  */
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiCalendarLine } from "@remixicon/react";
+import { RiMoonLine } from "@remixicon/react";
+import { BlueprintEssentialsSection } from "./blueprint-essentials-section";
 import { PlanningScheduleView } from "./planning-schedule-view";
 import type {
   ScheduleGoal,
@@ -17,6 +20,9 @@ import type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
 } from "@/lib/unified-schedule";
+import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
+import type { NewEssentialData } from "@/components/backlog/essentials";
+import type { GoalIconOption } from "@/lib/types";
 
 // =============================================================================
 // Types
@@ -29,14 +35,30 @@ export interface BlueprintBacklogProps extends React.HTMLAttributes<HTMLDivEleme
   essentials: ScheduleEssential[];
   /** Callback to save blueprint and continue */
   onSave: () => void;
-  /** Whether to show the "Add essentials to calendar" button */
-  showAddEssentialsButton?: boolean;
-  /** Callback when user clicks "Add essentials to calendar" */
-  onAddEssentialsToCalendar?: () => void;
   /** Function to get schedule info for a task */
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   /** Function to get deadline info for a task */
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
+
+  // Essentials creation props
+  /** Sleep wake up time in minutes */
+  wakeUpMinutes?: number;
+  /** Sleep wind down time in minutes */
+  windDownMinutes?: number;
+  /** Handler for sleep times change */
+  onSleepTimesChange?: (wakeUp: number, windDown: number) => void;
+  /** Whether sleep is configured */
+  isSleepConfigured?: boolean;
+  /** Handler for adding a new essential (should auto-import to calendar) */
+  onAddEssential?: (data: NewEssentialData, slots: EssentialSlot[]) => void;
+  /** Essential templates for schedule display */
+  essentialTemplates?: EssentialTemplate[];
+  /** Handler to save schedule for an essential */
+  onSaveSchedule?: (essentialId: string, slots: EssentialSlot[]) => void;
+  /** Handler to delete an essential (should also delete calendar events) */
+  onDeleteEssential?: (essentialId: string) => void;
+  /** Available icons for custom essential creation */
+  essentialIcons?: GoalIconOption[];
 }
 
 // =============================================================================
@@ -47,13 +69,40 @@ export function BlueprintBacklog({
   goals,
   essentials,
   onSave,
-  showAddEssentialsButton = false,
-  onAddEssentialsToCalendar,
   getTaskSchedule,
   getTaskDeadline,
+  // Essentials creation props
+  wakeUpMinutes = 420, // 7:00 AM default
+  windDownMinutes = 1380, // 11:00 PM default
+  onSleepTimesChange,
+  isSleepConfigured = false,
+  onAddEssential,
+  essentialTemplates = [],
+  onSaveSchedule,
+  onDeleteEssential,
+  essentialIcons = [],
   className,
   ...props
 }: BlueprintBacklogProps) {
+  // State for sleep row expansion
+  const [isSleepExpanded, setIsSleepExpanded] = React.useState(false);
+
+  // Create sleep essential item for display
+  const sleepEssential = {
+    id: "sleep",
+    label: "Sleep",
+    icon: RiMoonLine,
+    color: "indigo" as const,
+  };
+
+  // Handler for sleep times that also collapses the row
+  const handleSleepTimesChange = (wakeUp: number, windDown: number) => {
+    onSleepTimesChange?.(wakeUp, windDown);
+  };
+
+  // Check if essentials creation is available (all required props provided)
+  const hasEssentialsCreation = onAddEssential && onSaveSchedule && onDeleteEssential;
+
   return (
     <div
       className={cn(
@@ -75,7 +124,7 @@ export function BlueprintBacklog({
               Create your blueprint
             </h2>
             <p className="text-sm text-muted-foreground">
-              Design your ideal typical week by dragging essentials and goals to the calendar.
+              Define your routine essentials and drag goals to design your ideal typical week.
             </p>
           </div>
         </div>
@@ -83,15 +132,52 @@ export function BlueprintBacklog({
 
       {/* Content Area */}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <PlanningScheduleView
-          essentials={essentials}
-          goals={goals}
-          draggable={true}
-          showAddEssentialsButton={showAddEssentialsButton}
-          onAddEssentialsToCalendar={onAddEssentialsToCalendar}
-          getTaskSchedule={getTaskSchedule}
-          getTaskDeadline={getTaskDeadline}
-        />
+        <div className="flex flex-col gap-4 py-3">
+          {/* Essentials Section - with inline creation */}
+          {hasEssentialsCreation ? (
+            <BlueprintEssentialsSection
+              sleepEssential={sleepEssential}
+              isSleepExpanded={isSleepExpanded}
+              onToggleSleepExpand={() => setIsSleepExpanded(!isSleepExpanded)}
+              wakeUpMinutes={wakeUpMinutes}
+              windDownMinutes={windDownMinutes}
+              onSleepTimesChange={handleSleepTimesChange}
+              isSleepConfigured={isSleepConfigured}
+              essentials={essentials}
+              essentialTemplates={essentialTemplates}
+              onAddEssential={onAddEssential}
+              onSaveSchedule={onSaveSchedule}
+              onDeleteEssential={onDeleteEssential}
+              essentialIcons={essentialIcons}
+            />
+          ) : (
+            /* Fallback to simple essentials display if creation props not provided */
+            <PlanningScheduleView
+              essentials={essentials}
+              goals={[]}
+              draggable={true}
+              getTaskSchedule={getTaskSchedule}
+              getTaskDeadline={getTaskDeadline}
+            />
+          )}
+
+          {/* Goals Section */}
+          {goals.length > 0 && (
+            <div className="flex flex-col">
+              <div className="px-4 pb-1">
+                <h4 className="text-xs font-medium text-muted-foreground">Goals</h4>
+              </div>
+              <PlanningScheduleView
+                essentials={[]}
+                goals={goals}
+                draggable={true}
+                getTaskSchedule={getTaskSchedule}
+                getTaskDeadline={getTaskDeadline}
+                className="py-0"
+              />
+            </div>
+          )}
+        </div>
 
         {/* Action Button - Full width, inside the scrollable content area */}
         <div className="sticky bottom-0 flex flex-col gap-3 bg-background px-4 py-4">

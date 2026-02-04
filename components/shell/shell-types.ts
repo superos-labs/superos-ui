@@ -103,8 +103,8 @@ export interface ShellContentProps {
   onSaveEssentialChanges: () => void;
   /** Cancel essential changes */
   onCancelEssentialChanges: () => void;
-  /** Create a new essential */
-  onCreateEssential: (data: NewEssentialData, slots: EssentialSlot[]) => void;
+  /** Create a new essential (returns the generated ID) */
+  onCreateEssential: (data: NewEssentialData, slots: EssentialSlot[]) => string;
   /** Delete an essential */
   onDeleteEssential: (essentialId: string) => void;
 
