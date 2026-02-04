@@ -122,6 +122,12 @@ const SUGGESTED_ESSENTIALS: SuggestedEssential[] = [
 // Inline Suggestion Editor
 // =============================================================================
 
+interface TimeRange {
+  id: string;
+  startMinutes: number;
+  durationMinutes: number;
+}
+
 interface SuggestionEditorProps {
   suggestion: SuggestedEssential;
   onSave: (data: NewEssentialData, slots: EssentialSlot[]) => void;
@@ -136,12 +142,13 @@ function SuggestionEditor({
   const [selectedDays, setSelectedDays] = React.useState<number[]>(
     suggestion.defaultDays,
   );
-  const [startMinutes, setStartMinutes] = React.useState(
-    suggestion.defaultStartMinutes,
-  );
-  const [durationMinutes, setDurationMinutes] = React.useState(
-    suggestion.defaultDurationMinutes,
-  );
+  const [timeRanges, setTimeRanges] = React.useState<TimeRange[]>([
+    {
+      id: `range-${Date.now()}`,
+      startMinutes: suggestion.defaultStartMinutes,
+      durationMinutes: suggestion.defaultDurationMinutes,
+    },
+  ]);
 
   const IconComponent = suggestion.icon;
 
@@ -153,24 +160,48 @@ function SuggestionEditor({
     }
   };
 
-  const handleEndChange = (newEnd: number) => {
-    const newDuration = newEnd - startMinutes;
-    if (newDuration > 0) {
-      setDurationMinutes(newDuration);
-    }
+  const updateTimeRange = (
+    id: string,
+    updates: { startMinutes?: number; durationMinutes?: number },
+  ) => {
+    setTimeRanges((prev) =>
+      prev.map((range) => (range.id === id ? { ...range, ...updates } : range)),
+    );
+  };
+
+  const addTimeRange = () => {
+    // Find the latest end time from existing ranges
+    const latestEndMinutes = timeRanges.reduce((max, range) => {
+      const endMinutes = range.startMinutes + range.durationMinutes;
+      return Math.max(max, endMinutes);
+    }, 0);
+
+    // Default: 2 hours after the latest end time
+    const defaultStart = latestEndMinutes + 120;
+
+    setTimeRanges((prev) => [
+      ...prev,
+      {
+        id: `range-${Date.now()}`,
+        startMinutes: defaultStart,
+        durationMinutes: 60,
+      },
+    ]);
+  };
+
+  const deleteTimeRange = (id: string) => {
+    setTimeRanges((prev) => prev.filter((range) => range.id !== id));
   };
 
   const handleSave = () => {
     if (selectedDays.length === 0) return;
 
-    const slots: EssentialSlot[] = [
-      {
-        id: `slot-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        days: selectedDays,
-        startMinutes,
-        durationMinutes,
-      },
-    ];
+    const slots: EssentialSlot[] = timeRanges.map((range) => ({
+      id: `slot-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      days: selectedDays,
+      startMinutes: range.startMinutes,
+      durationMinutes: range.durationMinutes,
+    }));
 
     onSave(
       {
@@ -237,23 +268,57 @@ function SuggestionEditor({
           </div>
         </div>
 
-        {/* Time range */}
+        {/* Time ranges - supports multiple */}
         <div className="flex flex-col gap-1.5">
           <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
             Time
           </span>
-          <div className="flex items-center gap-2">
-            <TimeInput
-              value={startMinutes}
-              onChange={setStartMinutes}
-              className="bg-background"
-            />
-            <span className="text-muted-foreground/70">–</span>
-            <TimeInput
-              value={startMinutes + durationMinutes}
-              onChange={handleEndChange}
-              className="bg-background"
-            />
+          <div className="flex flex-col gap-2">
+            {timeRanges.map((range) => {
+              const canDelete = timeRanges.length > 1;
+              return (
+                <div key={range.id} className="flex items-center gap-2">
+                  <TimeInput
+                    value={range.startMinutes}
+                    onChange={(minutes) =>
+                      updateTimeRange(range.id, { startMinutes: minutes })
+                    }
+                    className="bg-background"
+                  />
+                  <span className="text-muted-foreground/70">–</span>
+                  <TimeInput
+                    value={range.startMinutes + range.durationMinutes}
+                    onChange={(newEnd) => {
+                      const newDuration = newEnd - range.startMinutes;
+                      if (newDuration > 0) {
+                        updateTimeRange(range.id, {
+                          durationMinutes: newDuration,
+                        });
+                      }
+                    }}
+                    className="bg-background"
+                  />
+                  {canDelete && (
+                    <button
+                      onClick={() => deleteTimeRange(range.id)}
+                      className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                      title="Remove time range"
+                    >
+                      <RiCloseLine className="size-4" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+            {timeRanges.length < 3 && (
+              <button
+                onClick={addTimeRange}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <RiAddLine className="size-3.5" />
+                Add time range
+              </button>
+            )}
           </div>
         </div>
 
@@ -395,6 +460,11 @@ export function BlueprintEssentialsSection({
     .filter((e) => e.id !== "sleep")
     .map((e) => e.id);
 
+  // Also track labels for filtering suggestions (since IDs are generated)
+  const addedEssentialLabels = essentials
+    .filter((e) => e.id !== "sleep")
+    .map((e) => e.label.toLowerCase());
+
   // Convert ScheduleEssential to EssentialItem for display
   const essentialItems: EssentialItem[] = essentials
     .filter((e) => e.id !== "sleep")
@@ -414,9 +484,10 @@ export function BlueprintEssentialsSection({
     return aStart - bStart;
   });
 
-  // Filter out already-added suggestions and sort by time (earliest first)
+  // Filter out already-added suggestions by matching labels (case-insensitive)
+  // and sort by time (earliest first)
   const availableSuggestions = SUGGESTED_ESSENTIALS.filter(
-    (s) => !addedEssentialIds.includes(s.id),
+    (s) => !addedEssentialLabels.includes(s.label.toLowerCase()),
   ).sort((a, b) => a.defaultStartMinutes - b.defaultStartMinutes);
 
   const handleToggleEssentialExpand = (id: string) => {

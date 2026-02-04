@@ -8,6 +8,7 @@ import {
   RiSunLine,
   RiCloseLine,
   RiArrowDownSLine,
+  RiAddLine,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import {
@@ -187,47 +188,60 @@ export function EssentialRow({
               </div>
             </div>
 
-            {/* Time range - single range only */}
+            {/* Time ranges - supports multiple */}
             <div className="flex flex-col gap-1.5">
               <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
                 Time
               </span>
-              {scheduleState.timeRanges[0] && (
-                <div className="flex items-center gap-2">
-                  <TimeInput
-                    value={scheduleState.timeRanges[0].startMinutes}
-                    onChange={(minutes) =>
-                      scheduleState.updateTimeRange(
-                        scheduleState.timeRanges[0].id,
-                        {
-                          startMinutes: minutes,
-                        },
-                      )
-                    }
-                    className="bg-background"
-                  />
-                  <span className="text-muted-foreground/70">–</span>
-                  <TimeInput
-                    value={
-                      scheduleState.timeRanges[0].startMinutes +
-                      scheduleState.timeRanges[0].durationMinutes
-                    }
-                    onChange={(newEnd) => {
-                      const newDuration =
-                        newEnd - scheduleState.timeRanges[0].startMinutes;
-                      if (newDuration > 0) {
-                        scheduleState.updateTimeRange(
-                          scheduleState.timeRanges[0].id,
-                          {
-                            durationMinutes: newDuration,
-                          },
-                        );
-                      }
-                    }}
-                    className="bg-background"
-                  />
-                </div>
-              )}
+              <div className="flex flex-col gap-2">
+                {scheduleState.timeRanges.map((range) => {
+                  const canDelete = scheduleState.timeRanges.length > 1;
+                  return (
+                    <div key={range.id} className="flex items-center gap-2">
+                      <TimeInput
+                        value={range.startMinutes}
+                        onChange={(minutes) =>
+                          scheduleState.updateTimeRange(range.id, {
+                            startMinutes: minutes,
+                          })
+                        }
+                        className="bg-background"
+                      />
+                      <span className="text-muted-foreground/70">–</span>
+                      <TimeInput
+                        value={range.startMinutes + range.durationMinutes}
+                        onChange={(newEnd) => {
+                          const newDuration = newEnd - range.startMinutes;
+                          if (newDuration > 0) {
+                            scheduleState.updateTimeRange(range.id, {
+                              durationMinutes: newDuration,
+                            });
+                          }
+                        }}
+                        className="bg-background"
+                      />
+                      {canDelete && (
+                        <button
+                          onClick={() => scheduleState.deleteTimeRange(range.id)}
+                          className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                          title="Remove time range"
+                        >
+                          <RiCloseLine className="size-4" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+                {scheduleState.timeRanges.length < 3 && (
+                  <button
+                    onClick={() => scheduleState.addTimeRange()}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <RiAddLine className="size-3.5" />
+                    Add time range
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Delete button when expanded */}

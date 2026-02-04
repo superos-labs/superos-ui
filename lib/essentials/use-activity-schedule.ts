@@ -84,10 +84,25 @@ export function useActivitySchedule({
   );
 
   const addTimeRange = React.useCallback(() => {
-    setTimeRanges((prev) => [
-      ...prev,
-      { id: `range-${Date.now()}`, startMinutes: 720, durationMinutes: 60 },
-    ]);
+    setTimeRanges((prev) => {
+      // Find the latest end time from existing ranges
+      const latestEndMinutes = prev.reduce((max, range) => {
+        const endMinutes = range.startMinutes + range.durationMinutes;
+        return Math.max(max, endMinutes);
+      }, 0);
+
+      // Default: 2 hours after the latest end time, or noon if no ranges
+      const defaultStart = latestEndMinutes > 0 ? latestEndMinutes + 120 : 720;
+
+      return [
+        ...prev,
+        {
+          id: `range-${Date.now()}`,
+          startMinutes: defaultStart,
+          durationMinutes: 60,
+        },
+      ];
+    });
   }, []);
 
   const updateTimeRange = React.useCallback(
