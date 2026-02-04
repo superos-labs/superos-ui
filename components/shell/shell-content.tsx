@@ -457,6 +457,7 @@ export function ShellContentComponent({
     isOnboardingGoalsCentered,
     onContinueFromGoals,
     onCompleteOnboarding,
+    onCompleteOnboardingIntoPlanning,
     onSkipBlueprintCreation,
     // Plan week prompt
     showPlanWeekPrompt,
@@ -728,15 +729,15 @@ export function ShellContentComponent({
       onAddEvent(event);
     });
 
-    // Complete onboarding (no prompt since calendar is populated)
-    onCompleteOnboarding();
+    // Complete onboarding and go straight into weekly planning
+    onCompleteOnboardingIntoPlanning();
   }, [
     events,
     weekDates,
     onSaveBlueprint,
     hasWeeklyPlan,
     onAddEvent,
-    onCompleteOnboarding,
+    onCompleteOnboardingIntoPlanning,
   ]);
 
   // Handler to skip blueprint creation and clear any events added during the step

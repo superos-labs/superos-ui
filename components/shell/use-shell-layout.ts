@@ -62,6 +62,7 @@ export interface UseShellLayoutReturn {
   isOnboardingGoalsCentered: boolean;
   onContinueFromGoals: () => void;
   onCompleteOnboarding: () => void;
+  onCompleteOnboardingIntoPlanning: () => void;
   onSkipBlueprintCreation: () => void;
 
   // Plan week prompt (shown after onboarding completes)
@@ -177,6 +178,13 @@ export function useShellLayout(
     // Always show plan week prompt to nudge users into weekly planning
     // The prompt now focuses on prioritizing tasks, not scheduling blocks
     setShowPlanWeekPrompt(true);
+  }, []);
+
+  // Handler to complete onboarding and go directly into weekly planning
+  const onCompleteOnboardingIntoPlanning = React.useCallback(() => {
+    setOnboardingStep(null);
+    // Skip the prompt and go straight into planning mode
+    setIsPlanningMode(true);
   }, []);
 
   // Handler to skip blueprint creation during onboarding
@@ -377,6 +385,7 @@ export function useShellLayout(
     isOnboardingGoalsCentered,
     onContinueFromGoals,
     onCompleteOnboarding,
+    onCompleteOnboardingIntoPlanning,
     onSkipBlueprintCreation,
 
     // Plan week prompt
