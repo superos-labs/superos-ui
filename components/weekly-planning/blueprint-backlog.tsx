@@ -163,19 +163,13 @@ export function BlueprintBacklog({
 
           {/* Goals Section */}
           {goals.length > 0 && (
-            <div className="flex flex-col">
-              <div className="px-4 pb-1">
-                <h4 className="text-xs font-medium text-muted-foreground">Goals</h4>
-              </div>
-              <PlanningScheduleView
-                essentials={[]}
-                goals={goals}
-                draggable={true}
-                getTaskSchedule={getTaskSchedule}
-                getTaskDeadline={getTaskDeadline}
-                className="py-0"
-              />
-            </div>
+            <PlanningScheduleView
+              essentials={[]}
+              goals={goals}
+              draggable={true}
+              getTaskSchedule={getTaskSchedule}
+              getTaskDeadline={getTaskDeadline}
+            />
           )}
         </div>
 

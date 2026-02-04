@@ -13,6 +13,7 @@ import {
   RiTimeLine,
   RiFlagLine,
   RiStarFill,
+  RiDraggable,
 } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
@@ -98,6 +99,9 @@ function EssentialRow({ essential, draggable = false }: EssentialRowProps) {
       <span className="truncate text-sm text-foreground">
         {essential.label}
       </span>
+      {canDrag && (
+        <RiDraggable className="ml-auto size-4 shrink-0 text-muted-foreground/40" />
+      )}
     </div>
   );
 }
@@ -295,6 +299,9 @@ function GoalRow({
             </span>
           )}
         </div>
+        {canDrag && (
+          <RiDraggable className="size-4 shrink-0 text-muted-foreground/40" />
+        )}
       </div>
 
       {/* Tasks - only show visible tasks */}
