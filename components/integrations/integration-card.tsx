@@ -52,8 +52,9 @@ function IntegrationCard({ provider, state, onClick }: IntegrationCardProps) {
       onClick={onClick}
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl p-3 text-left",
-        "ring-1 ring-inset ring-transparent transition-all duration-150",
-        "hover:bg-muted/60 hover:ring-border/50",
+        "bg-gradient-to-r from-transparent to-transparent",
+        "transition-all duration-200",
+        "hover:from-muted/60 hover:to-muted/20",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       )}
     >

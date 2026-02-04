@@ -25,6 +25,9 @@ export type { IntegrationListProps } from "./integration-list";
 export { IntegrationCard } from "./integration-card";
 export type { IntegrationCardProps } from "./integration-card";
 
+export { AppCard, APP_ORDER } from "./app-card";
+export type { AppCardProps, AppType } from "./app-card";
+
 // Calendar settings components
 export {
   ProviderSettingsView,

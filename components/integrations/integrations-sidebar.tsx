@@ -187,7 +187,7 @@ function IntegrationsSidebar({
           )}
           <h2 className="text-sm font-semibold text-foreground">
             {isListView
-              ? "Integrations"
+              ? "Apps & Integrations"
               : getProviderTitle(currentView.provider)}
           </h2>
         </div>
