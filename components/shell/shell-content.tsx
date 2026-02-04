@@ -29,13 +29,14 @@ import {
 } from "@/components/ui";
 import {
   Calendar,
-  KeyboardToast,
   useCalendarKeyboard,
   useDeadlineKeyboard,
   formatWeekRange,
   type CalendarEvent,
   type ExternalDragPreview,
 } from "@/components/calendar";
+import { UndoToast, SimpleToast } from "@/components/ui";
+import { useUndoOptional, useUndoKeyboard } from "@/lib/undo";
 import {
   Backlog,
   GoalInspirationGallery,
@@ -119,6 +120,7 @@ import { useShellLayout } from "./use-shell-layout";
 import { useShellFocus } from "./use-shell-focus";
 import { useExternalDragPreview } from "./use-external-drag-preview";
 import { useToastAggregator } from "./use-toast-aggregator";
+import { useUndoableHandlers } from "./use-undoable-handlers";
 
 // Re-export for consumers
 export type { ShellContentProps };
@@ -399,6 +401,67 @@ export function ShellContentComponent({
 
   // Determine if we should use mobile/tablet layout (overlays instead of sidebars)
   const useMobileLayout = isMobile || isTablet;
+
+  // -------------------------------------------------------------------------
+  // Undo System Integration
+  // -------------------------------------------------------------------------
+  const undoContext = useUndoOptional();
+
+  // Helper functions to get data for undo captures
+  const getTask = React.useCallback(
+    (goalId: string, taskId: string) => {
+      const goal = goals.find((g) => g.id === goalId);
+      return goal?.tasks?.find((t) => t.id === taskId);
+    },
+    [goals]
+  );
+
+  const getEvent = React.useCallback(
+    (eventId: string) => events.find((e) => e.id === eventId),
+    [events]
+  );
+
+  const getEventsForDay = React.useCallback(
+    (dayIndex: number) => events.filter((e) => e.dayIndex === dayIndex),
+    [events]
+  );
+
+  const getDeadlineTasksForDay = React.useCallback(
+    (dayIndex: number) => {
+      const dateStr = weekDates[dayIndex]?.toISOString().split("T")[0];
+      if (!dateStr) return [];
+      const deadlines = weekDeadlines.get(dateStr) ?? [];
+      return deadlines.map((d) => ({
+        goalId: d.goalId,
+        taskId: d.taskId,
+        completed: d.completed,
+      }));
+    },
+    [weekDates, weekDeadlines]
+  );
+
+  // Wrap handlers with undo recording
+  const undoableHandlers = useUndoableHandlers({
+    onToggleTaskComplete,
+    onDeleteTask,
+    onUnassignTaskFromBlock,
+    onAssignTaskToBlock,
+    onAddTask,
+    onUpdateTask,
+    onUpdateEvent,
+    onAddEvent,
+    calendarHandlers,
+    getTask,
+    getEvent,
+    getEventsForDay,
+    getDeadlineTasksForDay,
+  });
+
+  // Use enhanced handlers that record undo commands
+  const enhancedCalendarHandlers = undoableHandlers.calendarHandlers;
+  const enhancedToggleTaskComplete = undoableHandlers.onToggleTaskComplete;
+  const enhancedDeleteTask = undoableHandlers.onDeleteTask;
+  const enhancedUnassignTaskFromBlock = undoableHandlers.onUnassignTaskFromBlock;
 
   // Determine calendar view based on breakpoint
   // Mobile/Tablet Portrait → Day view, Tablet Landscape/Desktop → Week view
@@ -983,34 +1046,45 @@ export function ShellContentComponent({
   // -------------------------------------------------------------------------
   // Keyboard Shortcuts & Toast Aggregation
   // -------------------------------------------------------------------------
+  // Note: We use enhanced handlers for delete/complete so they record undo commands
   const { toastMessage: calendarToastMessage } = useCalendarKeyboard({
     hoveredEvent,
     hoverPosition,
-    hasClipboardContent: calendarHandlers.hasClipboardContent,
+    hasClipboardContent: enhancedCalendarHandlers.hasClipboardContent,
     hoveredDayIndex,
-    onCopy: calendarHandlers.onEventCopy,
-    onPaste: calendarHandlers.onEventPaste,
+    onCopy: enhancedCalendarHandlers.onEventCopy,
+    onPaste: enhancedCalendarHandlers.onEventPaste,
     onDuplicate: (eventId, newDayIndex, newStartMinutes) =>
-      calendarHandlers.onEventDuplicate(eventId, newDayIndex, newStartMinutes),
-    onDelete: (eventId) => calendarHandlers.onEventDelete(eventId),
+      enhancedCalendarHandlers.onEventDuplicate(eventId, newDayIndex, newStartMinutes),
+    onDelete: (eventId) => enhancedCalendarHandlers.onEventDelete(eventId),
     onToggleComplete: (eventId, currentStatus) => {
       const newStatus = currentStatus === "completed" ? "planned" : "completed";
-      calendarHandlers.onEventStatusChange(eventId, newStatus);
+      enhancedCalendarHandlers.onEventStatusChange(eventId, newStatus);
     },
-    onMarkDayComplete: calendarHandlers.onMarkDayComplete,
+    onMarkDayComplete: enhancedCalendarHandlers.onMarkDayComplete,
     onZoomIn: handleZoomIn,
     onZoomOut: handleZoomOut,
   });
 
   const toasts = useToastAggregator(calendarToastMessage);
-  const { toastMessage } = toasts;
 
+  // Use enhanced toggle for deadlines
   useDeadlineKeyboard({
     hoveredDeadline,
-    onToggleComplete: onToggleTaskComplete,
+    onToggleComplete: enhancedToggleTaskComplete,
     onUnassign: onClearTaskDeadline,
     showToast: toasts.setDeadlineToast,
   });
+
+  // Undo keyboard shortcut (CMD+Z)
+  useUndoKeyboard({
+    enabled: !useMobileLayout,
+  });
+
+  // Determine which toast to show (priority: undo action > calendar/deadline toast)
+  const undoLastCommand = undoContext?.lastCommand;
+  const showUndoActionToast = undoLastCommand !== null;
+  const simpleToastMessage = toasts.toastMessage;
 
   // -------------------------------------------------------------------------
   // Focus Mode Computed Values
@@ -1060,16 +1134,16 @@ export function ShellContentComponent({
     schedule: {
       updateEvent: onUpdateEvent,
       updateTask: onUpdateTask,
-      toggleTaskComplete: onToggleTaskComplete,
+      toggleTaskComplete: enhancedToggleTaskComplete, // Use enhanced handler for undo
       addTask: onAddTask,
       addSubtask: onAddSubtask,
       toggleSubtaskComplete: onToggleSubtaskComplete,
       updateSubtask: onUpdateSubtask,
       deleteSubtask: onDeleteSubtask,
       assignTaskToBlock: onAssignTaskToBlock,
-      unassignTaskFromBlock: onUnassignTaskFromBlock,
+      unassignTaskFromBlock: enhancedUnassignTaskFromBlock, // Use enhanced handler for undo
       updateBlockSyncSettings: onUpdateBlockSyncSettings,
-      calendarHandlers,
+      calendarHandlers: enhancedCalendarHandlers, // Use enhanced handlers for undo
     },
     calendarIntegrations,
     onToast: toasts.setSidebarToast,
@@ -1815,14 +1889,14 @@ export function ShellContentComponent({
                     goals={goals as BacklogItem[]}
                     className="h-full w-[360px] max-w-none"
                     showTasks={showTasks && !isBlueprintEditMode}
-                    onToggleGoalTask={onToggleTaskComplete}
+                    onToggleGoalTask={enhancedToggleTaskComplete}
                     onAddTask={onAddTask}
                     onUpdateTask={onUpdateTask}
                     onAddSubtask={onAddSubtask}
                     onToggleSubtask={onToggleSubtaskComplete}
                     onUpdateSubtask={onUpdateSubtask}
                     onDeleteSubtask={onDeleteSubtask}
-                    onDeleteTask={onDeleteTask}
+                    onDeleteTask={enhancedDeleteTask}
                     getGoalStats={getGoalStats}
                     getTaskSchedule={getTaskSchedule}
                     getTaskDeadline={getTaskDeadline}
@@ -1888,7 +1962,7 @@ export function ShellContentComponent({
                     getTaskSchedule={getTaskSchedule}
                     getTaskDeadline={getTaskDeadline}
                     onToggleTask={(taskId) =>
-                      onToggleTaskComplete(selectedGoal.id, taskId)
+                      enhancedToggleTaskComplete(selectedGoal.id, taskId)
                     }
                     onAddTask={(label, milestoneId) =>
                       onAddTask(selectedGoal.id, label, milestoneId)
@@ -1897,7 +1971,7 @@ export function ShellContentComponent({
                       onUpdateTask(selectedGoal.id, taskId, updates)
                     }
                     onDeleteTask={(taskId) =>
-                      onDeleteTask(selectedGoal.id, taskId)
+                      enhancedDeleteTask(selectedGoal.id, taskId)
                     }
                     onAddSubtask={(taskId, label) =>
                       onAddSubtask(selectedGoal.id, taskId, label)
@@ -2199,10 +2273,21 @@ export function ShellContentComponent({
         </BottomSheet>
       )}
 
-      {/* Only show keyboard toast and drag ghost on desktop */}
+      {/* Only show toast and drag ghost on desktop */}
       {!useMobileLayout && (
         <React.Fragment key="desktop-extras">
-          <KeyboardToast message={toastMessage} />
+          {/* Show undo toast for undoable actions, simple toast for other feedback */}
+          {showUndoActionToast && undoLastCommand ? (
+            <UndoToast
+              message={undoLastCommand.description}
+              onUndo={() => {
+                undoContext?.undo();
+              }}
+              onDismiss={() => undoContext?.clearLastCommand()}
+            />
+          ) : (
+            <SimpleToast message={simpleToastMessage} />
+          )}
           <DragGhost />
         </React.Fragment>
       )}

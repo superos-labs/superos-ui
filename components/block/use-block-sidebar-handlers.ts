@@ -372,24 +372,24 @@ export function useBlockSidebarHandlers({
     // End focus session if this block is being focused
     onEndFocus?.();
     calendarHandlers.onEventStatusChange(selectedEvent.id, "completed");
-    onToast?.("Marked complete");
-  }, [selectedEvent, calendarHandlers, onToast, onEndFocus]);
+    // Note: Toast is now handled by the undo system
+  }, [selectedEvent, calendarHandlers, onEndFocus]);
 
   const handleMarkIncomplete = React.useCallback(() => {
     if (!selectedEvent) return;
     calendarHandlers.onEventStatusChange(selectedEvent.id, "planned");
-    onToast?.("Marked incomplete");
-  }, [selectedEvent, calendarHandlers, onToast]);
+    // Note: Toast is now handled by the undo system
+  }, [selectedEvent, calendarHandlers]);
 
   const handleDelete = React.useCallback(() => {
     if (!selectedEvent) return;
     // End focus session if this block is being focused
     onEndFocus?.();
     calendarHandlers.onEventDelete(selectedEvent.id);
-    onToast?.("Block deleted");
+    // Note: Toast is now handled by the undo system
     // Close the sidebar after deletion
     onClose?.();
-  }, [selectedEvent, calendarHandlers, onToast, onEndFocus, onClose]);
+  }, [selectedEvent, calendarHandlers, onEndFocus, onClose]);
 
   // -------------------------------------------------------------------------
   // Goal Task Context Handlers (for expanding tasks in goal blocks)

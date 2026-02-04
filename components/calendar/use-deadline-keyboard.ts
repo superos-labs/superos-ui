@@ -49,8 +49,7 @@ export function useDeadlineKeyboard({
       if (isMeta && e.key === "Enter" && onToggleComplete) {
         e.preventDefault();
         onToggleComplete(hoveredDeadline.goalId, hoveredDeadline.taskId);
-        const isCompleted = hoveredDeadline.completed;
-        showToast?.(isCompleted ? "Marked incomplete" : "Marked complete");
+        // Note: Toast is now handled by the undo system
         return;
       }
 

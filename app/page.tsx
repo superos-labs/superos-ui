@@ -3,6 +3,7 @@
 import * as React from "react";
 import { DragProvider } from "@/components/drag";
 import { PreferencesProvider } from "@/lib/preferences";
+import { UndoProvider } from "@/lib/undo";
 import { ShellContentComponent } from "@/components/shell/shell-content";
 import { useShellState } from "@/components/shell/use-shell-state";
 import {
@@ -63,13 +64,15 @@ export default function Page() {
 
   return (
     <PreferencesProvider>
-      <DragProvider>
-        <ShellContentInner
-          key={dataSetId}
-          dataSetId={dataSetId}
-          onSkipOnboarding={handleSkipOnboarding}
-        />
-      </DragProvider>
+      <UndoProvider>
+        <DragProvider>
+          <ShellContentInner
+            key={dataSetId}
+            dataSetId={dataSetId}
+            onSkipOnboarding={handleSkipOnboarding}
+          />
+        </DragProvider>
+      </UndoProvider>
     </PreferencesProvider>
   );
 }

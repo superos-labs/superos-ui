@@ -125,16 +125,15 @@ export function useCalendarKeyboard({
       if (isMeta && e.key === "Enter" && !isHoveringBlock && hoveredDayIndex !== null && hoveredDayIndex !== undefined && onMarkDayComplete) {
         e.preventDefault();
         onMarkDayComplete(hoveredDayIndex);
-        showToast("Day completed");
+        // Note: Toast is now handled by the undo system
         return;
       }
 
       // ⌘Enter - Toggle complete
       if (isMeta && e.key === "Enter" && isHoveringBlock && onToggleComplete) {
         e.preventDefault();
-        const isCompleted = hoveredEvent.status === "completed";
         onToggleComplete(hoveredEvent.id, hoveredEvent.status);
-        showToast(isCompleted ? "Marked incomplete" : "Marked complete");
+        // Note: Toast is now handled by the undo system
         return;
       }
 
@@ -142,7 +141,7 @@ export function useCalendarKeyboard({
       if ((e.key === "Delete" || e.key === "Backspace") && isHoveringBlock && onDelete) {
         e.preventDefault();
         onDelete(hoveredEvent.id);
-        showToast("Block deleted");
+        // Note: Toast is now handled by the undo system
         return;
       }
 

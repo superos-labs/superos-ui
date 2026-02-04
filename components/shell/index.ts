@@ -33,6 +33,8 @@ export type {
 export { useToastAggregator } from "./use-toast-aggregator";
 export type { UseToastAggregatorReturn } from "./use-toast-aggregator";
 
+export { useUndoableHandlers } from "./use-undoable-handlers";
+
 // Types
 export type {
   ShellContentProps,

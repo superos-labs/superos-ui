@@ -164,6 +164,7 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
   {
     title: "General",
     shortcuts: [
+      { keys: ["⌘", "Z"], description: "Undo last action" },
       { keys: ["?"], description: "Show keyboard shortcuts" },
     ],
   },
