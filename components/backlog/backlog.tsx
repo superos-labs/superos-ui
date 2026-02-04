@@ -80,6 +80,8 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   isEssentialsHidden?: boolean;
   /** Callback when user clicks Skip to hide essentials */
   onEssentialsHide?: () => void;
+  /** Whether the user is in blueprint edit mode (only show Essentials in this mode) */
+  isBlueprintEditMode?: boolean;
 
   // Goal creation props
   /** Callback for creating a new goal */
@@ -142,6 +144,7 @@ export function Backlog({
   isSleepConfigured = false,
   isEssentialsHidden = false,
   onEssentialsHide,
+  isBlueprintEditMode = false,
   // Goal creation props
   onCreateGoal,
   lifeAreas,
@@ -167,7 +170,9 @@ export function Backlog({
 
   // Onboarding: hide essentials during goals step
   const isOnboardingGoalsStep = onboardingStep === "goals";
-  const showEssentialsCard = !isEssentialsHidden && onboardingStep !== "goals";
+  // Only show essentials card when in blueprint edit mode (and not hidden/in goals onboarding)
+  const showEssentialsCard =
+    isBlueprintEditMode && !isEssentialsHidden && onboardingStep !== "goals";
 
   // Wrap essentials Done/Skip to also trigger onboarding completion
   const handleEssentialsHide = () => {

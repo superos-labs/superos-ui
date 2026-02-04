@@ -579,6 +579,41 @@ export function ShellContentComponent({
     [onDeleteEssential, events, calendarHandlers]
   );
 
+  // Handler for saving essential schedule that syncs to calendar in blueprint edit mode
+  const handleSaveEssentialScheduleWithSync = React.useCallback(
+    (essentialId: string, slots: import("@/lib/essentials").EssentialSlot[]) => {
+      // Save the schedule template
+      onSaveEssentialSchedule(essentialId, slots);
+
+      // In blueprint edit mode, update the calendar events for this essential
+      if (isBlueprintEditMode) {
+        // Find the essential data
+        const essential = allEssentials.find((e) => e.id === essentialId);
+        if (!essential) return;
+
+        // Remove existing calendar events for this essential
+        const eventsToRemove = events.filter(
+          (e) => e.blockType === "essential" && e.sourceEssentialId === essentialId
+        );
+        eventsToRemove.forEach((event) => {
+          calendarHandlers.onEventDelete(event.id);
+        });
+
+        // Import new events with the updated schedule
+        const newEvents = importEssentialsToEvents({
+          templates: [{ essentialId, slots }],
+          weekDates,
+          essentials: [{ id: essentialId, label: essential.label, color: essential.color }],
+        });
+
+        newEvents.forEach((event) => {
+          onAddEvent(event);
+        });
+      }
+    },
+    [onSaveEssentialSchedule, isBlueprintEditMode, allEssentials, events, calendarHandlers, weekDates, onAddEvent]
+  );
+
   // Auto-open planning budget sidebar when entering schedule step or blueprint creation
   React.useEffect(() => {
     if (isPlanning && planningFlow.step === "schedule") {
@@ -1713,15 +1748,28 @@ export function ShellContentComponent({
                     getTaskDeadline={getTaskDeadline}
                     draggable={!isOnboarding}
                     essentialTemplates={essentialTemplates}
-                    onSaveEssentialSchedule={onSaveEssentialSchedule}
-                    onCreateEssential={onCreateEssential}
-                    onDeleteEssential={onDeleteEssential}
+                    onSaveEssentialSchedule={
+                      isBlueprintEditMode
+                        ? handleSaveEssentialScheduleWithSync
+                        : onSaveEssentialSchedule
+                    }
+                    onCreateEssential={
+                      isBlueprintEditMode
+                        ? handleAddEssentialWithImport
+                        : onCreateEssential
+                    }
+                    onDeleteEssential={
+                      isBlueprintEditMode
+                        ? handleDeleteEssentialWithCleanup
+                        : onDeleteEssential
+                    }
                     wakeUpMinutes={dayStartMinutes}
                     windDownMinutes={dayEndMinutes}
                     onSleepTimesChange={handleSleepTimesChange}
                     isSleepConfigured={dayBoundariesEnabled}
                     isEssentialsHidden={isEssentialsHidden}
                     onEssentialsHide={() => setIsEssentialsHidden(true)}
+                    isBlueprintEditMode={isBlueprintEditMode}
                     onCreateGoal={handleCreateGoal}
                     lifeAreas={lifeAreas}
                     goalIcons={goalIcons}
@@ -1997,15 +2045,28 @@ export function ShellContentComponent({
             getTaskDeadline={getTaskDeadline}
             draggable={false}
             essentialTemplates={essentialTemplates}
-            onSaveEssentialSchedule={onSaveEssentialSchedule}
-            onCreateEssential={onCreateEssential}
-            onDeleteEssential={onDeleteEssential}
+            onSaveEssentialSchedule={
+              isBlueprintEditMode
+                ? handleSaveEssentialScheduleWithSync
+                : onSaveEssentialSchedule
+            }
+            onCreateEssential={
+              isBlueprintEditMode
+                ? handleAddEssentialWithImport
+                : onCreateEssential
+            }
+            onDeleteEssential={
+              isBlueprintEditMode
+                ? handleDeleteEssentialWithCleanup
+                : onDeleteEssential
+            }
             wakeUpMinutes={dayStartMinutes}
             windDownMinutes={dayEndMinutes}
             onSleepTimesChange={handleSleepTimesChange}
             isSleepConfigured={dayBoundariesEnabled}
             isEssentialsHidden={isEssentialsHidden}
             onEssentialsHide={() => setIsEssentialsHidden(true)}
+            isBlueprintEditMode={isBlueprintEditMode}
             goalIcons={goalIcons}
             currentWeekStart={weekStartDate}
           />
