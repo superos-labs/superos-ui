@@ -102,6 +102,8 @@ import {
   RiLayoutGridLine,
   RiApps2Line,
   RiPlayCircleLine,
+  RiQuestionLine,
+  RiLifebuoyLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -118,6 +120,59 @@ import { useToastAggregator } from "./use-toast-aggregator";
 
 // Re-export for consumers
 export type { ShellContentProps };
+
+// =============================================================================
+// Feedback Button Component
+// =============================================================================
+
+const FEEDBACK_FORM_URL =
+  "https://super-os.notion.site/2f1dc01c453d80e3a60edfa768c067bc";
+const ONBOARDING_VIDEO_URL =
+  "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4";
+
+function FeedbackButton() {
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  return (
+    <div className="absolute bottom-4 right-4 z-30">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <motion.button
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="flex size-10 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm ring-1 ring-border/50 backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground hover:shadow-md data-[state=open]:bg-background data-[state=open]:text-foreground data-[state=open]:shadow-md"
+            aria-label="Help and feedback"
+          >
+            <motion.div
+              animate={{ rotate: isHovered ? 15 : 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <RiLifebuoyLine className="size-5" />
+            </motion.div>
+          </motion.button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" side="top" className="w-48">
+          <DropdownMenuItem
+            onClick={() =>
+              window.open(FEEDBACK_FORM_URL, "_blank", "noopener,noreferrer")
+            }
+          >
+            <RiQuestionLine className="size-4" />
+            Share feedback
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              window.open(ONBOARDING_VIDEO_URL, "_blank", "noopener,noreferrer")
+            }
+          >
+            <RiPlayCircleLine className="size-4" />
+            Watch Ali&apos;s onboarding
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
 
 // =============================================================================
 // Component Props (extending the core props with UI-specific options)
@@ -1309,18 +1364,6 @@ export function ShellContentComponent({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                window.open(
-                  "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4",
-                  "_blank",
-                  "noopener,noreferrer"
-                )
-              }
-            >
-              <RiPlayCircleLine className="size-4" />
-              Watch Ali&apos;s onboarding
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -1491,18 +1534,6 @@ export function ShellContentComponent({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                window.open(
-                  "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4",
-                  "_blank",
-                  "noopener,noreferrer"
-                )
-              }
-            >
-              <RiPlayCircleLine className="size-4" />
-              Watch Ali&apos;s onboarding
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -1593,30 +1624,33 @@ export function ShellContentComponent({
         {useMobileLayout ? (
           // Mobile/Tablet: Full-width calendar only
           <ShellContentPrimitive className="overflow-hidden">
-            <Calendar
-              view={shouldShowWeekView ? "week" : "day"}
-              selectedDate={
-                shouldShowWeekView ? selectedDate : mobileSelectedDate
-              }
-              events={events}
-              weekStartsOn={weekStartsOn}
-              zoom={calendarZoom}
-              scrollToCurrentTimeKey={scrollToCurrentTimeKey}
-              // On mobile, only allow viewing - disable creation/editing handlers
-              onEventClick={handleMobileEventClick}
-              // Disable drag & drop on mobile/tablet
-              enableExternalDrop={false}
-              // Disable deadlines on mobile for simplicity
-              onDeadlineToggleComplete={onToggleTaskComplete}
-              onDeadlineUnassign={onClearTaskDeadline}
-              deadlines={weekDeadlines}
-              allDayEvents={allDayEvents}
-              onToggleAllDayEvent={handleToggleAllDayEvent}
-              dayStartMinutes={dayStartMinutes}
-              dayEndMinutes={dayEndMinutes}
-              dayBoundariesEnabled={dayBoundariesEnabled}
-              dayBoundariesDisplay={dayBoundariesDisplay}
-            />
+            <div className="relative h-full">
+              <Calendar
+                view={shouldShowWeekView ? "week" : "day"}
+                selectedDate={
+                  shouldShowWeekView ? selectedDate : mobileSelectedDate
+                }
+                events={events}
+                weekStartsOn={weekStartsOn}
+                zoom={calendarZoom}
+                scrollToCurrentTimeKey={scrollToCurrentTimeKey}
+                // On mobile, only allow viewing - disable creation/editing handlers
+                onEventClick={handleMobileEventClick}
+                // Disable drag & drop on mobile/tablet
+                enableExternalDrop={false}
+                // Disable deadlines on mobile for simplicity
+                onDeadlineToggleComplete={onToggleTaskComplete}
+                onDeadlineUnassign={onClearTaskDeadline}
+                deadlines={weekDeadlines}
+                allDayEvents={allDayEvents}
+                onToggleAllDayEvent={handleToggleAllDayEvent}
+                dayStartMinutes={dayStartMinutes}
+                dayEndMinutes={dayEndMinutes}
+                dayBoundariesEnabled={dayBoundariesEnabled}
+                dayBoundariesDisplay={dayBoundariesDisplay}
+              />
+              <FeedbackButton />
+            </div>
           </ShellContentPrimitive>
         ) : isOnboardingGoalsCentered ? (
           // Desktop: Centered goals card for onboarding first step
@@ -1907,6 +1941,9 @@ export function ShellContentComponent({
                         />
                       </div>
                     )}
+
+                    {/* Feedback button - always visible in bottom-right corner */}
+                    <FeedbackButton />
                   </div>
                 ) : null}
               </ShellContentPrimitive>
