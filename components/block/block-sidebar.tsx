@@ -624,6 +624,10 @@ interface ExternalCalendarSyncSectionProps {
   onSyncAppearanceChange?: (appearance: AppearanceOverride) => void;
   /** Callback to update block sync custom label */
   onSyncCustomLabelChange?: (label: string) => void;
+  /** Goal name (for showing in "Goal name" option) */
+  goalName?: string;
+  /** Block title (for showing in "Block title" option) */
+  blockTitle?: string;
 }
 
 function ExternalCalendarSyncSection({
@@ -631,6 +635,8 @@ function ExternalCalendarSyncSection({
   blockSyncSettings,
   onSyncAppearanceChange,
   onSyncCustomLabelChange,
+  goalName,
+  blockTitle,
 }: ExternalCalendarSyncSectionProps) {
   // Track which destination is being edited (by index)
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
@@ -685,11 +691,9 @@ function ExternalCalendarSyncSection({
       case "busy":
         return "Busy";
       case "goal_title":
-        // Use the original displayText if it was computed for goal_title,
-        // otherwise fall back to a generic label
-        return dest.syncedAs === "goal_title" ? dest.displayText : "Goal name";
+        return goalName || dest.displayText;
       case "block_title":
-        return dest.syncedAs === "block_title" ? dest.displayText : "Block title";
+        return blockTitle || dest.displayText;
       case "custom":
         return pendingCustomLabel || currentCustomLabel || "Custom";
       case "use_default":
@@ -797,6 +801,15 @@ function ExternalCalendarSyncSection({
                 <div className="mt-2 ml-7 flex flex-col gap-0.5">
                   {APPEARANCE_OVERRIDE_OPTIONS.map((option) => {
                     const isSelected = pendingOverride === option.value;
+                    
+                    // Get the actual label to display
+                    let displayLabel = option.label;
+                    if (option.value === "goal_title" && goalName) {
+                      displayLabel = goalName;
+                    } else if (option.value === "block_title" && blockTitle) {
+                      displayLabel = blockTitle;
+                    }
+                    
                     return (
                       <button
                         key={option.value}
@@ -830,7 +843,7 @@ function ExternalCalendarSyncSection({
                               : "text-muted-foreground"
                           )}
                         >
-                          {option.label}
+                          {displayLabel}
                         </span>
                       </button>
                     );
@@ -1665,6 +1678,8 @@ function BlockSidebar({
               blockSyncSettings={blockSyncSettings}
               onSyncAppearanceChange={onSyncAppearanceChange}
               onSyncCustomLabelChange={onSyncCustomLabelChange}
+              goalName={block.goal?.label}
+              blockTitle={block.title}
             />
           )}
       </div>
