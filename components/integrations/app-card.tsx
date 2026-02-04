@@ -155,7 +155,9 @@ function AppCard({ appType }: AppCardProps) {
         {config.useCustomIcon ? (
           <ChromeIcon className="size-7" />
         ) : Icon ? (
-          <Icon className="size-5" style={{ color: config.iconColor }} />
+          <span style={{ color: config.iconColor }}>
+            <Icon className="size-5" />
+          </span>
         ) : null}
       </div>
 
