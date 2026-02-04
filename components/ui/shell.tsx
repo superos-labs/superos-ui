@@ -20,7 +20,7 @@ function ShellToolbar({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="shell-toolbar"
       className={cn(
-        "relative flex items-center justify-between px-1 py-2",
+        "relative flex min-h-12 items-center justify-between px-1 py-2",
         className
       )}
       {...props}

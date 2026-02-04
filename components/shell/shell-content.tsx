@@ -103,6 +103,7 @@ import {
   RiShapesLine,
   RiLayoutGridLine,
   RiApps2Line,
+  RiPlayCircleLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -1275,6 +1276,18 @@ export function ShellContentComponent({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                window.open(
+                  "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
+            >
+              <RiPlayCircleLine className="size-4" />
+              Watch Ali&apos;s onboarding
+            </DropdownMenuItem>
             {onLoadSampleData && (
               <>
                 <DropdownMenuSeparator />
@@ -1454,6 +1467,18 @@ export function ShellContentComponent({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                window.open(
+                  "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
+            >
+              <RiPlayCircleLine className="size-4" />
+              Watch Ali&apos;s onboarding
+            </DropdownMenuItem>
             {onLoadSampleData && (
               <>
                 <DropdownMenuSeparator />
@@ -1518,12 +1543,7 @@ export function ShellContentComponent({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <button
-          onClick={handleSkipOnboardingBlueprint}
-          className="flex h-8 items-center rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-        >
-          Skip
-        </button>
+        {/* Empty right section for balance */}
       </div>
     </ShellToolbar>
   );

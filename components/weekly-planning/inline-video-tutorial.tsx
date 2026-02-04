@@ -10,7 +10,6 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { RiCloseLine } from "@remixicon/react";
 import Image from "next/image";
 
 // Custom play icon with proper visual weight
@@ -130,15 +129,14 @@ export function InlineVideoTutorial({
             </div>
           </div>
 
-          {/* Caption with Dismiss Button */}
+          {/* Caption with Maybe Later Button */}
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">{caption}</span>
+            <span className="text-xs text-foreground">{caption}</span>
             <button
               onClick={handleDismiss}
-              className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Dismiss video"
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
-              <RiCloseLine className="size-4" />
+              Maybe later
             </button>
           </div>
         </motion.div>
