@@ -8,7 +8,6 @@ import type {
   ProviderCalendar,
   CalendarProvider,
   ExportBlockVisibility,
-  SyncScope,
   SyncParticipation,
   GoalFilterMode,
 } from "@/lib/calendar-sync";
@@ -152,24 +151,16 @@ function RadioButton({ checked, onChange, label, disabled }: RadioButtonProps) {
 // Options Configuration
 // =============================================================================
 
-/** Display labels for visibility/appearance options */
+/** Display labels for event title appearance options */
 const APPEARANCE_OPTIONS: {
   value: ExportBlockVisibility;
   label: string;
 }[] = [
+  { value: "blocked_superos", label: "Blocked with SuperOS" },
   { value: "busy", label: "Busy" },
   { value: "goal_title", label: "Goal name" },
   { value: "block_title", label: "Block title" },
-];
-
-/** Display labels for sync scope options */
-const SCOPE_OPTIONS: {
-  value: SyncScope;
-  label: string;
-}[] = [
-  { value: "scheduled", label: "Scheduled blocks" },
-  { value: "blueprint", label: "Blueprint" },
-  { value: "scheduled_and_blueprint", label: "Scheduled + Blueprint" },
+  { value: "custom", label: "Custom" },
 ];
 
 // =============================================================================
@@ -183,8 +174,6 @@ interface ExportSectionProps {
   provider: CalendarProvider;
   /** Whether export is enabled */
   exportEnabled: boolean;
-  /** Current sync scope */
-  exportScope: SyncScope;
   /** Current participation settings */
   exportParticipation: SyncParticipation;
   /** Current goal filter mode */
@@ -193,15 +182,17 @@ interface ExportSectionProps {
   exportSelectedGoalIds: Set<string>;
   /** Default appearance for exported blocks */
   exportDefaultAppearance: ExportBlockVisibility;
+  /** Custom label for exported events when appearance is "custom" */
+  exportCustomLabel: string;
   /** All available goals for the goal filter */
   availableGoals?: ScheduleGoal[];
 
   // Callbacks
   onToggleExportEnabled: () => void;
-  onScopeChange: (scope: SyncScope) => void;
   onParticipationChange: (participation: Partial<SyncParticipation>) => void;
   onGoalFilterChange: (mode: GoalFilterMode, selectedIds?: Set<string>) => void;
   onDefaultAppearanceChange: (appearance: ExportBlockVisibility) => void;
+  onCustomLabelChange: (label: string) => void;
   onToggleCalendarExport: (calendarId: string) => void;
 }
 
@@ -219,17 +210,17 @@ function ExportSection({
   calendars,
   provider,
   exportEnabled,
-  exportScope,
   exportParticipation,
   exportGoalFilter,
   exportSelectedGoalIds,
   exportDefaultAppearance,
+  exportCustomLabel,
   availableGoals = [],
   onToggleExportEnabled,
-  onScopeChange,
   onParticipationChange,
   onGoalFilterChange,
   onDefaultAppearanceChange,
+  onCustomLabelChange,
   onToggleCalendarExport,
 }: ExportSectionProps) {
   const [customizeOpen, setCustomizeOpen] = React.useState(false);
@@ -273,27 +264,10 @@ function ExportSection({
       {/* Rest of settings - only shown when enabled */}
       {exportEnabled && (
         <div className="flex flex-col gap-5 px-2">
-          {/* Question 2: What time is shared? */}
+          {/* Event title appearance */}
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium text-muted-foreground">
-              Shared time
-            </p>
-            <div className="flex flex-col gap-0.5" role="radiogroup">
-              {SCOPE_OPTIONS.map((option) => (
-                <RadioButton
-                  key={option.value}
-                  checked={exportScope === option.value}
-                  onChange={() => onScopeChange(option.value)}
-                  label={option.label}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Question 3: How shared time appears? */}
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              Appearance
+              Event title
             </p>
             <div className="flex flex-col gap-0.5" role="radiogroup">
               {APPEARANCE_OPTIONS.map((option) => (
@@ -305,6 +279,20 @@ function ExportSection({
                 />
               ))}
             </div>
+            {/* Custom label input - shown when custom is selected */}
+            {exportDefaultAppearance === "custom" && (
+              <input
+                type="text"
+                value={exportCustomLabel}
+                onChange={(e) => onCustomLabelChange(e.target.value)}
+                placeholder="Enter custom label..."
+                className={cn(
+                  "mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm",
+                  "placeholder:text-muted-foreground/60",
+                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                )}
+              />
+            )}
           </div>
 
           {/* Target calendar */}

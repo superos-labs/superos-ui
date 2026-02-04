@@ -132,12 +132,22 @@ const APPEARANCE_OPTIONS: {
     label: "Use default",
     description: "Follow the global setting",
   },
+  {
+    value: "blocked_superos",
+    label: "Blocked with SuperOS",
+    description: "Show as 'Blocked with SuperOS'",
+  },
   { value: "busy", label: "Busy", description: "Show as 'Busy'" },
-  { value: "goal_name", label: "Goal name", description: "Show goal name" },
+  { value: "goal_title", label: "Goal name", description: "Show goal name" },
   {
     value: "block_title",
     label: "Block title",
     description: "Show block title",
+  },
+  {
+    value: "custom",
+    label: "Custom",
+    description: "Use a custom label",
   },
 ];
 
@@ -262,6 +272,22 @@ function GoalSyncSettingsDialog({
                   );
                 })}
               </div>
+              {/* Custom label input - shown when custom is selected */}
+              {appearanceOverride === "custom" && (
+                <input
+                  type="text"
+                  value={syncSettings?.customLabel ?? ""}
+                  onChange={(e) =>
+                    onSyncSettingsChange?.({ customLabel: e.target.value })
+                  }
+                  placeholder="Enter custom label..."
+                  className={cn(
+                    "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm",
+                    "placeholder:text-muted-foreground/60",
+                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  )}
+                />
+              )}
             </div>
           )}
         </div>
@@ -330,6 +356,8 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   // Sync settings callbacks
   /** Callback to update goal sync settings */
   onSyncSettingsChange?: (settings: Partial<GoalSyncSettings>) => void;
+  /** Whether sync settings should be shown (only when calendar integrations are enabled) */
+  hasSyncAvailable?: boolean;
 }
 
 export function GoalDetail({
@@ -362,6 +390,7 @@ export function GoalDetail({
   onDelete,
   onBack,
   onSyncSettingsChange,
+  hasSyncAvailable = false,
   className,
   ...props
 }: GoalDetailProps) {
@@ -433,12 +462,12 @@ export function GoalDetail({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[160px]">
-                  {onSyncSettingsChange && (
+                  {onSyncSettingsChange && hasSyncAvailable && (
                     <DropdownMenuItem onClick={() => setSyncSettingsOpen(true)}>
                       Sync settings
                     </DropdownMenuItem>
                   )}
-                  {onSyncSettingsChange && onToggleMilestones && (
+                  {onSyncSettingsChange && hasSyncAvailable && onToggleMilestones && (
                     <DropdownMenuSeparator />
                   )}
                   {onToggleMilestones && (
@@ -448,7 +477,7 @@ export function GoalDetail({
                         : "Enable milestones"}
                     </DropdownMenuItem>
                   )}
-                  {(onSyncSettingsChange || onToggleMilestones) && onDelete && (
+                  {((onSyncSettingsChange && hasSyncAvailable) || onToggleMilestones) && onDelete && (
                     <DropdownMenuSeparator />
                   )}
                   {onDelete && (

@@ -319,16 +319,52 @@ export function getBlockSyncState(
       );
 
       if (targetCalendar) {
+        // Map ExportBlockVisibility to SyncDestination.syncedAs
+        const syncedAs =
+          resolution.appearance === "blocked_superos"
+            ? "blocked_superos"
+            : resolution.appearance === "busy"
+            ? "busy"
+            : resolution.appearance === "goal_title"
+            ? "goal_title"
+            : resolution.appearance === "custom"
+            ? "custom"
+            : "block_title";
+
+        // Compute the actual display text based on appearance mode
+        let displayText: string;
+        switch (resolution.appearance) {
+          case "blocked_superos":
+            displayText = "Blocked with SuperOS";
+            break;
+          case "busy":
+            displayText = "Busy";
+            break;
+          case "goal_title":
+            displayText = goal?.label ?? block.title ?? "Goal";
+            break;
+          case "block_title":
+            displayText = block.title ?? goal?.label ?? "Block";
+            break;
+          case "custom":
+            // Custom label precedence: block > goal > global
+            displayText =
+              block.syncSettings?.customLabel ||
+              goal?.syncSettings?.customLabel ||
+              state.exportCustomLabel ||
+              "Custom";
+            break;
+          default:
+            displayText = "Blocked with SuperOS";
+        }
+
         destinations.push({
+          provider: state.provider,
           providerName: providerConfig?.name ?? state.provider,
           calendarName: targetCalendar.name,
           calendarColor: targetCalendar.color,
-          syncedAs:
-            resolution.appearance === "busy"
-              ? "busy"
-              : resolution.appearance === "goal_title"
-              ? "goal_name"
-              : "block_title",
+          syncedAs,
+          displayText,
         });
       }
     }

@@ -11,7 +11,6 @@ import type {
   CalendarProvider,
   CalendarIntegrationState,
   ExportBlockVisibility,
-  SyncScope,
   SyncParticipation,
   GoalFilterMode,
 } from "@/lib/calendar-sync";
@@ -40,14 +39,14 @@ interface ProviderSettingsViewProps {
   onToggleCalendarExport: (calendarId: string) => void;
   /** Toggle export enabled */
   onToggleExportEnabled: () => void;
-  /** Set sync scope */
-  onScopeChange: (scope: SyncScope) => void;
   /** Update participation settings */
   onParticipationChange: (participation: Partial<SyncParticipation>) => void;
   /** Set goal filter */
   onGoalFilterChange: (mode: GoalFilterMode, selectedIds?: Set<string>) => void;
   /** Set default appearance */
   onDefaultAppearanceChange: (appearance: ExportBlockVisibility) => void;
+  /** Set custom label for exported events */
+  onCustomLabelChange: (label: string) => void;
 }
 
 /**
@@ -70,10 +69,10 @@ function ProviderSettingsView({
   onToggleMeetingsOnly,
   onToggleCalendarExport,
   onToggleExportEnabled,
-  onScopeChange,
   onParticipationChange,
   onGoalFilterChange,
   onDefaultAppearanceChange,
+  onCustomLabelChange,
 }: ProviderSettingsViewProps) {
   const isConnected = state.status === "connected";
 
@@ -131,17 +130,17 @@ function ProviderSettingsView({
         calendars={state.calendars}
         provider={provider}
         exportEnabled={state.exportEnabled}
-        exportScope={state.exportScope}
         exportParticipation={state.exportParticipation}
         exportGoalFilter={state.exportGoalFilter}
         exportSelectedGoalIds={state.exportSelectedGoalIds}
         exportDefaultAppearance={state.exportDefaultAppearance}
+        exportCustomLabel={state.exportCustomLabel}
         availableGoals={availableGoals}
         onToggleExportEnabled={onToggleExportEnabled}
-        onScopeChange={onScopeChange}
         onParticipationChange={onParticipationChange}
         onGoalFilterChange={onGoalFilterChange}
         onDefaultAppearanceChange={onDefaultAppearanceChange}
+        onCustomLabelChange={onCustomLabelChange}
         onToggleCalendarExport={onToggleCalendarExport}
       />
     </div>

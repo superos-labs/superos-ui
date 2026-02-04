@@ -106,6 +106,7 @@ export interface UseBlockSidebarHandlersReturn {
     onDeleteGoalTaskSubtask: (taskId: string, subtaskId: string) => void;
     // External calendar sync
     onSyncAppearanceChange: (appearance: AppearanceOverride) => void;
+    onSyncCustomLabelChange: (label: string) => void;
   };
 }
 
@@ -451,6 +452,16 @@ export function useBlockSidebarHandlers({
     [selectedEvent, updateBlockSyncSettings]
   );
 
+  const handleSyncCustomLabelChange = React.useCallback(
+    (label: string) => {
+      if (!selectedEvent) return;
+      updateBlockSyncSettings(selectedEvent.id, {
+        customLabel: label,
+      });
+    },
+    [selectedEvent, updateBlockSyncSettings]
+  );
+
   // -------------------------------------------------------------------------
   // Return bundled handlers
   // -------------------------------------------------------------------------
@@ -480,6 +491,7 @@ export function useBlockSidebarHandlers({
       onUpdateGoalTaskSubtask: handleUpdateGoalTaskSubtask,
       onDeleteGoalTaskSubtask: handleDeleteGoalTaskSubtask,
       onSyncAppearanceChange: handleSyncAppearanceChange,
+      onSyncCustomLabelChange: handleSyncCustomLabelChange,
     }),
     [
       handleTitleChange,
@@ -505,6 +517,7 @@ export function useBlockSidebarHandlers({
       handleUpdateGoalTaskSubtask,
       handleDeleteGoalTaskSubtask,
       handleSyncAppearanceChange,
+      handleSyncCustomLabelChange,
     ]
   );
 

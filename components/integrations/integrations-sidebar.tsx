@@ -11,7 +11,6 @@ import type {
   CalendarIntegrationState,
   IntegrationsSidebarView,
   ExportBlockVisibility,
-  SyncScope,
   SyncParticipation,
   GoalFilterMode,
 } from "@/lib/calendar-sync";
@@ -52,8 +51,6 @@ interface IntegrationsSidebarProps {
   ) => void;
   /** Toggle export enabled for a provider */
   onToggleExportEnabled?: (provider: CalendarProvider) => void;
-  /** Set sync scope for a provider */
-  onSetExportScope?: (provider: CalendarProvider, scope: SyncScope) => void;
   /** Update participation settings for a provider */
   onSetExportParticipation?: (
     provider: CalendarProvider,
@@ -70,6 +67,8 @@ interface IntegrationsSidebarProps {
     provider: CalendarProvider,
     appearance: ExportBlockVisibility
   ) => void;
+  /** Set custom label for exported events */
+  onSetExportCustomLabel?: (provider: CalendarProvider, label: string) => void;
   /** Optional class name */
   className?: string;
 }
@@ -95,10 +94,10 @@ function IntegrationsSidebar({
   onToggleMeetingsOnly,
   onToggleCalendarExport,
   onToggleExportEnabled,
-  onSetExportScope,
   onSetExportParticipation,
   onSetExportGoalFilter,
   onSetExportDefaultAppearance,
+  onSetExportCustomLabel,
   className,
 }: IntegrationsSidebarProps) {
   const isListView = currentView.type === "list";
@@ -132,7 +131,8 @@ function IntegrationsSidebar({
         },
         exportGoalFilter: "all",
         exportSelectedGoalIds: new Set(),
-        exportDefaultAppearance: "busy",
+        exportDefaultAppearance: "blocked_superos",
+        exportCustomLabel: "",
       }
     );
   };
@@ -234,9 +234,6 @@ function IntegrationsSidebar({
             onToggleExportEnabled={() =>
               onToggleExportEnabled?.(currentView.provider)
             }
-            onScopeChange={(scope) =>
-              onSetExportScope?.(currentView.provider, scope)
-            }
             onParticipationChange={(participation) =>
               onSetExportParticipation?.(currentView.provider, participation)
             }
@@ -245,6 +242,9 @@ function IntegrationsSidebar({
             }
             onDefaultAppearanceChange={(appearance) =>
               onSetExportDefaultAppearance?.(currentView.provider, appearance)
+            }
+            onCustomLabelChange={(label) =>
+              onSetExportCustomLabel?.(currentView.provider, label)
             }
           />
         )}

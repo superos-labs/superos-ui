@@ -619,10 +619,10 @@ export function useShellState(
     // Export settings
     onToggleCalendarExport: calendarSync.toggleCalendarExport,
     onToggleExportEnabled: calendarSync.toggleExportEnabled,
-    onSetExportScope: calendarSync.setExportScope,
     onSetExportParticipation: calendarSync.setExportParticipation,
     onSetExportGoalFilter: calendarSync.setExportGoalFilter,
     onSetExportDefaultAppearance: calendarSync.setExportDefaultAppearance,
+    onSetExportCustomLabel: calendarSync.setExportCustomLabel,
     onUpdateExternalEvent: calendarSync.updateExternalEvent,
   };
 }

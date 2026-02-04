@@ -252,7 +252,8 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
     exportGoalFilter: "all",
     exportSelectedGoalIds: new Set(),
-    exportDefaultAppearance: "busy",
+    exportDefaultAppearance: "blocked_superos",
+    exportCustomLabel: "",
   },
   {
     provider: "apple",
@@ -267,7 +268,8 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
     exportGoalFilter: "all",
     exportSelectedGoalIds: new Set(),
-    exportDefaultAppearance: "busy",
+    exportDefaultAppearance: "blocked_superos",
+    exportCustomLabel: "",
   },
   {
     provider: "outlook",
@@ -282,6 +284,7 @@ export const DEMO_INITIAL_STATES: CalendarIntegrationState[] = [
     exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
     exportGoalFilter: "all",
     exportSelectedGoalIds: new Set(),
-    exportDefaultAppearance: "busy",
+    exportDefaultAppearance: "blocked_superos",
+    exportCustomLabel: "",
   },
 ];

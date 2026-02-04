@@ -60,7 +60,8 @@ function IntegrationList({
             },
             exportGoalFilter: "all" as const,
             exportSelectedGoalIds: new Set<string>(),
-            exportDefaultAppearance: "busy" as const,
+            exportDefaultAppearance: "blocked_superos" as const,
+            exportCustomLabel: "",
           };
 
           return (

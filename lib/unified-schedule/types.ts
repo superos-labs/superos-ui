@@ -95,6 +95,8 @@ export interface GoalSyncSettings {
   syncEnabled: boolean;
   /** How blocks from this goal appear (use_default falls back to global) */
   appearanceOverride: AppearanceOverride;
+  /** Custom label when appearanceOverride is "custom" */
+  customLabel?: string;
 }
 
 /**
@@ -104,20 +106,26 @@ export interface GoalSyncSettings {
 export interface BlockSyncSettings {
   /** How this specific block appears (use_default falls back to goal setting) */
   appearanceOverride: AppearanceOverride;
+  /** Custom label when appearanceOverride is "custom" */
+  customLabel?: string;
 }
 
 /**
  * Sync destination info for a single provider.
  */
 export interface SyncDestination {
+  /** Provider key (e.g., "google", "apple", "outlook") */
+  provider: "google" | "apple" | "outlook";
   /** Provider name for display (e.g., "Google Calendar") */
   providerName: string;
   /** Target calendar name for display */
   calendarName: string;
   /** Target calendar color (hex) for display */
   calendarColor: string;
-  /** How this block appears in the external calendar */
-  syncedAs: "busy" | "goal_name" | "block_title";
+  /** How this block appears in the external calendar (appearance mode) */
+  syncedAs: "blocked_superos" | "busy" | "goal_title" | "block_title" | "custom";
+  /** The actual display text that will appear in the external calendar */
+  displayText: string;
 }
 
 /**

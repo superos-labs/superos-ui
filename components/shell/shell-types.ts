@@ -42,7 +42,6 @@ import type {
   CalendarIntegrationState,
   ExternalEvent,
   ExportBlockVisibility,
-  SyncScope,
   SyncParticipation,
   GoalFilterMode,
   UseIntegrationsSidebarReturn,
@@ -398,8 +397,6 @@ export interface ShellContentProps {
   ) => void;
   /** Toggle export enabled for a provider */
   onToggleExportEnabled: (provider: CalendarProvider) => void;
-  /** Set sync scope for a provider */
-  onSetExportScope: (provider: CalendarProvider, scope: SyncScope) => void;
   /** Update participation settings for a provider */
   onSetExportParticipation: (
     provider: CalendarProvider,
@@ -416,6 +413,8 @@ export interface ShellContentProps {
     provider: CalendarProvider,
     appearance: ExportBlockVisibility
   ) => void;
+  /** Set custom label for exported events */
+  onSetExportCustomLabel: (provider: CalendarProvider, label: string) => void;
   /** Update an external event's local state (notes, status, focus time) */
   onUpdateExternalEvent: (
     eventId: string,

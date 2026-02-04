@@ -368,10 +368,10 @@ export function ShellContentComponent({
   // Export settings callbacks
   onToggleCalendarExport,
   onToggleExportEnabled,
-  onSetExportScope,
   onSetExportParticipation,
   onSetExportGoalFilter,
   onSetExportDefaultAppearance,
+  onSetExportCustomLabel,
   onUpdateExternalEvent,
 }: ShellContentComponentProps) {
   // -------------------------------------------------------------------------
@@ -576,6 +576,21 @@ export function ShellContentComponent({
   // Planning Flow
   // -------------------------------------------------------------------------
   const weekStartDate = weekDates[0]?.toISOString().split("T")[0] ?? "";
+
+  // -------------------------------------------------------------------------
+  // Calendar Integrations
+  // -------------------------------------------------------------------------
+  // Check if any calendar integration is connected and has export enabled
+  const hasSyncAvailable = React.useMemo(() => {
+    if (!calendarIntegrations) return false;
+    
+    for (const [_, state] of calendarIntegrations) {
+      if (state.status === "connected" && state.exportEnabled) {
+        return true;
+      }
+    }
+    return false;
+  }, [calendarIntegrations]);
 
   const planningFlowRef = React.useRef<{
     weeklyFocusTaskIds: Set<string>;
@@ -1924,6 +1939,7 @@ export function ShellContentComponent({
                     onSyncSettingsChange={(settings) =>
                       onUpdateGoalSyncSettings(selectedGoal.id, settings)
                     }
+                    hasSyncAvailable={hasSyncAvailable}
                     className="h-full"
                   />
                 ) : showCalendar ? (
@@ -2007,10 +2023,10 @@ export function ShellContentComponent({
                     onToggleMeetingsOnly={onToggleMeetingsOnly}
                     onToggleCalendarExport={onToggleCalendarExport}
                     onToggleExportEnabled={onToggleExportEnabled}
-                    onSetExportScope={onSetExportScope}
                     onSetExportParticipation={onSetExportParticipation}
                     onSetExportGoalFilter={onSetExportGoalFilter}
                     onSetExportDefaultAppearance={onSetExportDefaultAppearance}
+                    onSetExportCustomLabel={onSetExportCustomLabel}
                     className="h-full w-[380px] max-w-none overflow-y-auto"
                   />
                 ) : renderedContent === "block" && sidebarDataToRender ? (

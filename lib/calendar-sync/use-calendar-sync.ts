@@ -129,7 +129,8 @@ export function useCalendarSync(
         exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
         exportGoalFilter: "all",
         exportSelectedGoalIds: new Set(),
-        exportDefaultAppearance: "busy",
+        exportDefaultAppearance: "blocked_superos",
+        exportCustomLabel: "",
       });
       return next;
     });
@@ -154,7 +155,8 @@ export function useCalendarSync(
         exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
         exportGoalFilter: "all",
         exportSelectedGoalIds: new Set(),
-        exportDefaultAppearance: "busy",
+        exportDefaultAppearance: "blocked_superos",
+        exportCustomLabel: "",
       });
       return next;
     });
@@ -358,6 +360,24 @@ export function useCalendarSync(
     []
   );
 
+  // Set the custom label for exported events
+  const setExportCustomLabel = React.useCallback(
+    (provider: CalendarProvider, label: string) => {
+      setStatesMap((prev) => {
+        const next = new Map(prev);
+        const state = next.get(provider);
+        if (state) {
+          next.set(provider, {
+            ...state,
+            exportCustomLabel: label,
+          });
+        }
+        return next;
+      });
+    },
+    []
+  );
+
   // Update external event (local state only)
   const updateExternalEvent = React.useCallback(
     (eventId: string, updates: Partial<ExternalEvent>) => {
@@ -387,7 +407,8 @@ export function useCalendarSync(
           exportParticipation: { ...DEFAULT_EXPORT_PARTICIPATION },
           exportGoalFilter: "all",
           exportSelectedGoalIds: new Set(),
-          exportDefaultAppearance: "busy",
+          exportDefaultAppearance: "blocked_superos",
+          exportCustomLabel: "",
         }
       );
     },
@@ -427,6 +448,7 @@ export function useCalendarSync(
     setExportParticipation,
     setExportGoalFilter,
     setExportDefaultAppearance,
+    setExportCustomLabel,
     // External event actions
     updateExternalEvent,
     // Helpers

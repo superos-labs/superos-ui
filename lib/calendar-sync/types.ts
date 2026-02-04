@@ -23,7 +23,12 @@ export type CalendarProvider = "google" | "apple" | "outlook";
 export type IntegrationStatus = "connected" | "not_connected" | "coming_soon";
 
 /** How exported blocks appear in external calendars */
-export type ExportBlockVisibility = "block_title" | "goal_title" | "busy";
+export type ExportBlockVisibility =
+  | "blocked_superos"
+  | "busy"
+  | "goal_title"
+  | "block_title"
+  | "custom";
 
 // =============================================================================
 // Export Sync Types
@@ -59,13 +64,15 @@ export type GoalFilterMode = "all" | "selected";
 /**
  * Appearance override options for goals and blocks.
  * - use_default: Falls back to the next level in hierarchy
- * - busy/goal_name/block_title: Explicit appearance setting
+ * - blocked_superos/busy/goal_title/block_title/custom: Explicit appearance setting
  */
 export type AppearanceOverride =
   | "use_default"
+  | "blocked_superos"
   | "busy"
-  | "goal_name"
-  | "block_title";
+  | "goal_title"
+  | "block_title"
+  | "custom";
 
 // =============================================================================
 // Integration Types
@@ -111,6 +118,8 @@ export interface CalendarIntegrationState {
   exportSelectedGoalIds: Set<string>;
   /** How exported blocks appear by default (can be overridden per goal/block) */
   exportDefaultAppearance: ExportBlockVisibility;
+  /** Custom label for exported events when appearance is "custom" */
+  exportCustomLabel: string;
 }
 
 /** A calendar within a provider account */
@@ -231,6 +240,8 @@ export interface UseCalendarSyncReturn {
     provider: CalendarProvider,
     appearance: ExportBlockVisibility
   ) => void;
+  /** Set the custom label for exported events */
+  setExportCustomLabel: (provider: CalendarProvider, label: string) => void;
 
   // --- External Event Actions (local state) ---
   /** Update local state of an external event */
