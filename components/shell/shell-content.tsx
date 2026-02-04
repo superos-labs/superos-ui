@@ -104,6 +104,7 @@ import {
   RiPlayCircleLine,
   RiQuestionLine,
   RiLifebuoyLine,
+  RiZoomInLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -130,11 +131,57 @@ const FEEDBACK_FORM_URL =
 const ONBOARDING_VIDEO_URL =
   "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4";
 
-function FeedbackButton() {
+function FeedbackButton({
+  calendarZoom,
+  handleZoomIn,
+  handleZoomOut,
+}: {
+  calendarZoom: number;
+  handleZoomIn: () => void;
+  handleZoomOut: () => void;
+}) {
   const [isHovered, setIsHovered] = React.useState(false);
 
   return (
-    <div className="absolute bottom-4 right-4 z-30">
+    <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2">
+      {/* Zoom controls button */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <motion.button
+            className="flex size-10 items-center justify-center rounded-full bg-background/80 text-muted-foreground shadow-sm ring-1 ring-border/50 backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground hover:shadow-md data-[state=open]:bg-background data-[state=open]:text-foreground data-[state=open]:shadow-md"
+            aria-label="Zoom controls"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
+            <RiZoomInLine className="size-5" />
+          </motion.button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" side="top" className="w-36">
+          <div className="flex items-center justify-between gap-2 px-2 py-1.5">
+            <button
+              onClick={handleZoomOut}
+              disabled={calendarZoom <= MIN_CALENDAR_ZOOM}
+              className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:pointer-events-none"
+              title="Zoom out"
+            >
+              <RiSubtractLine className="size-4" />
+            </button>
+            <span className="text-sm font-medium tabular-nums text-foreground">
+              {calendarZoom}%
+            </span>
+            <button
+              onClick={handleZoomIn}
+              disabled={calendarZoom >= MAX_CALENDAR_ZOOM}
+              className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:pointer-events-none"
+              title="Zoom in"
+            >
+              <RiAddLine className="size-4" />
+            </button>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Help and feedback button */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <motion.button
@@ -1492,29 +1539,6 @@ export function ShellContentComponent({
               <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Zoom</DropdownMenuLabel>
-            <div className="flex items-center gap-1.5 px-2 py-1.5">
-              <button
-                onClick={handleZoomOut}
-                disabled={calendarZoom <= MIN_CALENDAR_ZOOM}
-                className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:pointer-events-none"
-                title="Zoom out (- key when hovering)"
-              >
-                <RiSubtractLine className="size-3.5" />
-              </button>
-              <span className="w-12 text-center text-xs tabular-nums">
-                {calendarZoom}%
-              </span>
-              <button
-                onClick={handleZoomIn}
-                disabled={calendarZoom >= MAX_CALENDAR_ZOOM}
-                className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:pointer-events-none"
-                title="Zoom in (+ key when hovering)"
-              >
-                <RiAddLine className="size-3.5" />
-              </button>
-            </div>
             {/* Show "Edit blueprint" when blueprint exists */}
             {hasBlueprint && (
               <>
@@ -1649,7 +1673,11 @@ export function ShellContentComponent({
                 dayBoundariesEnabled={dayBoundariesEnabled}
                 dayBoundariesDisplay={dayBoundariesDisplay}
               />
-              <FeedbackButton />
+              <FeedbackButton
+                calendarZoom={calendarZoom}
+                handleZoomIn={handleZoomIn}
+                handleZoomOut={handleZoomOut}
+              />
             </div>
           </ShellContentPrimitive>
         ) : isOnboardingGoalsCentered ? (
@@ -1943,7 +1971,11 @@ export function ShellContentComponent({
                     )}
 
                     {/* Feedback button - always visible in bottom-right corner */}
-                    <FeedbackButton />
+                    <FeedbackButton
+                      calendarZoom={calendarZoom}
+                      handleZoomIn={handleZoomIn}
+                      handleZoomOut={handleZoomOut}
+                    />
                   </div>
                 ) : null}
               </ShellContentPrimitive>
