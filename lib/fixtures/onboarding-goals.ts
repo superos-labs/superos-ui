@@ -5,13 +5,13 @@
 
 import {
   RiRunLine,
-  RiMentalHealthLine,
-  RiFocusLine,
-  RiBookLine,
-  RiCodeLine,
-  RiBookOpenLine,
-  RiQuillPenLine,
   RiHeart2Line,
+  RiMedalLine,
+  RiMoneyDollarCircleLine,
+  RiGlobeLine,
+  RiRocketLine,
+  RiHandHeartLine,
+  RiCompass3Line,
 } from "@remixicon/react";
 import type { IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
@@ -45,65 +45,73 @@ export interface OnboardingGoalSuggestion {
 export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   // Health (color: rose)
   {
-    id: "workout",
-    label: "Workout",
+    id: "train-5k",
+    label: "Train for a 5K race",
     icon: RiRunLine,
-    color: "rose",
-    lifeAreaId: "health",
-  },
-  {
-    id: "meditation",
-    label: "Meditate",
-    icon: RiMentalHealthLine,
     color: "rose",
     lifeAreaId: "health",
   },
 
   // Career (color: violet)
   {
-    id: "deep-work",
-    label: "Deep work",
-    icon: RiFocusLine,
+    id: "certification",
+    label: "Complete a certification",
+    icon: RiMedalLine,
     color: "violet",
     lifeAreaId: "career",
-  },
-  {
-    id: "learn-skill",
-    label: "Learn a skill",
-    icon: RiBookLine,
-    color: "violet",
-    lifeAreaId: "career",
-  },
-  {
-    id: "side-project",
-    label: "Side project",
-    icon: RiCodeLine,
-    color: "violet",
-    lifeAreaId: "career",
-  },
-
-  // Personal Growth (color: lime)
-  {
-    id: "reading",
-    label: "Read",
-    icon: RiBookOpenLine,
-    color: "lime",
-    lifeAreaId: "personal-growth",
-  },
-  {
-    id: "journaling",
-    label: "Journal",
-    icon: RiQuillPenLine,
-    color: "lime",
-    lifeAreaId: "personal-growth",
   },
 
   // Relationships (color: pink)
   {
     id: "quality-time",
-    label: "Quality time",
+    label: "Prioritize quality time",
     icon: RiHeart2Line,
     color: "pink",
     lifeAreaId: "relationships",
+  },
+
+  // Finance (color: emerald)
+  {
+    id: "budget",
+    label: "Master my personal budget",
+    icon: RiMoneyDollarCircleLine,
+    color: "emerald",
+    lifeAreaId: "finance",
+  },
+
+  // Personal Growth (color: lime)
+  {
+    id: "learn-language",
+    label: "Learn a new language",
+    icon: RiGlobeLine,
+    color: "lime",
+    lifeAreaId: "personal-growth",
+  },
+
+  // Creativity (color: teal)
+  {
+    id: "passion-project",
+    label: "Launch a passion project",
+    icon: RiRocketLine,
+    color: "teal",
+    lifeAreaId: "creativity",
+  },
+
+  // Community (color: amber)
+  {
+    id: "volunteer",
+    label: "Volunteer locally",
+    icon: RiHandHeartLine,
+    color: "amber",
+    lifeAreaId: "community",
+  },
+
+  // Recreation (color: cyan)
+  {
+    id: "explore-local",
+    label: "Explore local hidden gems",
+    icon: RiCompass3Line,
+    color: "cyan",
+    lifeAreaId: "recreation",
   },
 ];
