@@ -105,6 +105,7 @@ import {
   RiQuestionLine,
   RiLifebuoyLine,
   RiZoomInLine,
+  RiSlackLine,
 } from "@remixicon/react";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay, ProgressMetric } from "@/lib/preferences";
@@ -130,6 +131,8 @@ const FEEDBACK_FORM_URL =
   "https://super-os.notion.site/2f1dc01c453d80e3a60edfa768c067bc";
 const ONBOARDING_VIDEO_URL =
   "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4";
+const SLACK_COMMUNITY_URL =
+  "https://superoscommunity.slack.com";
 
 function FeedbackButton({
   calendarZoom,
@@ -214,6 +217,14 @@ function FeedbackButton({
           >
             <RiPlayCircleLine className="size-4" />
             Watch Ali&apos;s onboarding
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              window.open(SLACK_COMMUNITY_URL, "_blank", "noopener,noreferrer")
+            }
+          >
+            <RiSlackLine className="size-4" />
+            Slack community
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
