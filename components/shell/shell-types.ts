@@ -295,6 +295,8 @@ export interface ShellContentProps {
   currentWeekPlan: WeeklyPlan | null;
   /** Save weekly plan */
   onSaveWeeklyPlan: (plan: WeeklyPlan) => void;
+  /** Check if a week has been planned */
+  hasWeeklyPlan: (weekStartDate: string) => boolean;
   /** Set weekly focus on multiple tasks (persists weeklyFocusWeek) */
   onSetWeeklyFocus: (taskIds: Set<string>, weekStartDate: string) => void;
 

@@ -297,7 +297,7 @@ export function useShellState(
   const { blueprint, hasBlueprint, saveBlueprint } = useBlueprint();
 
   const weekStartDate = weekDates[0]?.toISOString().split("T")[0] ?? "";
-  const { getWeeklyPlan, saveWeeklyPlan } = useWeeklyPlan();
+  const { getWeeklyPlan, saveWeeklyPlan, hasWeeklyPlan } = useWeeklyPlan();
   const currentWeekPlan = getWeeklyPlan(weekStartDate);
 
   // -------------------------------------------------------------------------
@@ -548,6 +548,7 @@ export function useShellState(
     onSaveBlueprint: saveBlueprint,
     currentWeekPlan,
     onSaveWeeklyPlan: saveWeeklyPlan,
+    hasWeeklyPlan,
     onSetWeeklyFocus: schedule.setWeeklyFocus,
 
     // Preferences

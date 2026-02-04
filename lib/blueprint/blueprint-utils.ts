@@ -124,6 +124,96 @@ export function getBlueprintBlocksForEssential(
   );
 }
 
+/**
+ * Get the week start date string (ISO format) for a given date.
+ * @param date - The date to get the week start for
+ * @param weekStartsOn - Which day the week starts on (0 = Sunday, 1 = Monday)
+ */
+export function getWeekStartDateString(
+  date: Date,
+  weekStartsOn: 0 | 1 = 0,
+): string {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day - weekStartsOn + 7) % 7;
+  d.setDate(d.getDate() - diff);
+  return d.toISOString().split("T")[0];
+}
+
+/**
+ * Generate week dates array for a given week offset from a base date.
+ * @param baseWeekDates - The base week's dates array
+ * @param weekOffset - Number of weeks to offset (0 = current, 1 = next week, etc.)
+ */
+export function getWeekDatesWithOffset(
+  baseWeekDates: Date[],
+  weekOffset: number,
+): Date[] {
+  return baseWeekDates.map((date) => {
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() + weekOffset * 7);
+    return newDate;
+  });
+}
+
+/**
+ * Generate blueprint events for multiple weeks ahead.
+ * Only generates for weeks that haven't been planned yet.
+ *
+ * @param blueprint - The blueprint to apply
+ * @param currentWeekDates - The current week's dates array
+ * @param weeksAhead - Number of weeks ahead to populate (default: 4, meaning current + 4 = 5 weeks total)
+ * @param hasWeeklyPlan - Function to check if a week has been planned
+ * @param existingEvents - Existing events to check for duplicates
+ * @returns Array of CalendarEvent objects for all unplanned weeks
+ */
+export function generateBlueprintEventsForWeeks(
+  blueprint: Blueprint,
+  currentWeekDates: Date[],
+  weeksAhead: number = 4,
+  hasWeeklyPlan: (weekStartDate: string) => boolean,
+  existingEvents: CalendarEvent[],
+): CalendarEvent[] {
+  const allNewEvents: CalendarEvent[] = [];
+
+  // Create a Set of existing event keys for quick lookup
+  // Key format: date:startMinutes:durationMinutes:title
+  const existingEventKeys = new Set(
+    existingEvents.map(
+      (e) => `${e.date}:${e.startMinutes}:${e.durationMinutes}:${e.title}`,
+    ),
+  );
+
+  // Generate for current week (offset 0) through weeksAhead
+  for (let offset = 0; offset <= weeksAhead; offset++) {
+    const weekDates = getWeekDatesWithOffset(currentWeekDates, offset);
+    const weekStartDate = weekDates[0].toISOString().split("T")[0];
+
+    // Skip if this week has already been planned through weekly planning
+    if (hasWeeklyPlan(weekStartDate)) {
+      continue;
+    }
+
+    // Generate events for this week
+    const weekEvents = blueprintToEvents(blueprint, weekDates);
+
+    // Filter out events that already exist (to avoid duplicates)
+    const newEvents = weekEvents.filter((event) => {
+      const key = `${event.date}:${event.startMinutes}:${event.durationMinutes}:${event.title}`;
+      return !existingEventKeys.has(key);
+    });
+
+    // Add new events and update the lookup set
+    newEvents.forEach((event) => {
+      allNewEvents.push(event);
+      const key = `${event.date}:${event.startMinutes}:${event.durationMinutes}:${event.title}`;
+      existingEventKeys.add(key);
+    });
+  }
+
+  return allNewEvents;
+}
+
 // ============================================================================
 // Essential Sync Detection
 // ============================================================================

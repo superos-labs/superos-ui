@@ -174,14 +174,15 @@ export function useShellLayout(
   // Handler to complete onboarding (called after blueprint creation or skip)
   const onCompleteOnboarding = React.useCallback(() => {
     setOnboardingStep(null);
-    // Show plan week prompt after onboarding completes
+    // Always show plan week prompt to nudge users into weekly planning
+    // The prompt now focuses on prioritizing tasks, not scheduling blocks
     setShowPlanWeekPrompt(true);
   }, []);
 
   // Handler to skip blueprint creation during onboarding
   const onSkipBlueprintCreation = React.useCallback(() => {
     setOnboardingStep(null);
-    // Show plan week prompt (same as completing onboarding)
+    // Show plan week prompt when skipping (calendar is empty)
     setShowPlanWeekPrompt(true);
   }, []);
 

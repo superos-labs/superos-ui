@@ -12,6 +12,8 @@ export {
   getBlueprintBlocksForEssential,
   blueprintEssentialsNeedUpdate,
   eventsEssentialsNeedUpdate,
+  generateBlueprintEventsForWeeks,
+  getWeekDatesWithOffset,
 } from "./blueprint-utils";
 
 // Types

@@ -69,6 +69,7 @@ import {
   blueprintToEvents,
   eventsToBlueprint,
   eventsEssentialsNeedUpdate,
+  generateBlueprintEventsForWeeks,
 } from "@/lib/blueprint";
 import { importEssentialsToEvents } from "@/lib/essentials";
 import { usePlanningFlow } from "@/lib/weekly-planning";
@@ -225,6 +226,7 @@ export function ShellContentComponent({
   onSaveBlueprint,
   currentWeekPlan,
   onSaveWeeklyPlan,
+  hasWeeklyPlan,
   onSetWeeklyFocus,
   // Preferences
   weekStartsOn,
@@ -629,22 +631,73 @@ export function ShellContentComponent({
   const handleSaveBlueprintEdit = React.useCallback(() => {
     // Convert current events to blueprint and save
     const newBlueprintBlocks = eventsToBlueprint(events, weekDates);
-    onSaveBlueprint({
+    const newBlueprint = {
       blocks: newBlueprintBlocks,
       updatedAt: new Date().toISOString(),
-    });
-    // Restore original events (we saved the blueprint, not the week)
+    };
+    onSaveBlueprint(newBlueprint);
+
+    // Restore original events for the current week
+    // Then update future unplanned weeks with the new blueprint
     if (originalEventsSnapshot) {
-      onReplaceEvents(originalEventsSnapshot);
+      // Get current week's date range
+      const currentWeekStartDate = weekDates[0].toISOString().split("T")[0];
+      const currentWeekEndDate = weekDates[6].toISOString().split("T")[0];
+
+      // Separate original events into:
+      // 1. Current week events (restore these)
+      // 2. Planned week events (restore these)
+      // 3. Unplanned future week events (will be replaced with new blueprint)
+      const eventsToRestore: typeof events = [];
+      const unplannedWeekStartDates = new Set<string>();
+
+      originalEventsSnapshot.forEach((event) => {
+        const eventDate = event.date;
+        // Check if event is in current week
+        if (eventDate >= currentWeekStartDate && eventDate <= currentWeekEndDate) {
+          eventsToRestore.push(event);
+        } else {
+          // For future weeks, check if they're planned
+          // Find the week start for this event using weekStartsOn preference
+          const eventDateObj = new Date(eventDate);
+          const dayOfWeek = eventDateObj.getDay();
+          const weekStartOffset = (dayOfWeek - weekStartsOn + 7) % 7;
+          const weekStartDate = new Date(eventDateObj);
+          weekStartDate.setDate(weekStartDate.getDate() - weekStartOffset);
+          const weekStartStr = weekStartDate.toISOString().split("T")[0];
+
+          if (hasWeeklyPlan(weekStartStr)) {
+            // This week has been planned, keep the event
+            eventsToRestore.push(event);
+          } else {
+            // Track this as an unplanned week that needs blueprint refresh
+            unplannedWeekStartDates.add(weekStartStr);
+          }
+        }
+      });
+
+      // Generate new blueprint events for unplanned weeks
+      const futureEvents = generateBlueprintEventsForWeeks(
+        newBlueprint,
+        weekDates,
+        4, // 4 weeks ahead
+        hasWeeklyPlan,
+        eventsToRestore, // Use restored events as base to avoid duplicates
+      );
+
+      // Combine restored events with new blueprint events for future weeks
+      onReplaceEvents([...eventsToRestore, ...futureEvents]);
       setOriginalEventsSnapshot(null);
     }
     exitBlueprintEditMode();
   }, [
     events,
     weekDates,
+    weekStartsOn,
     onSaveBlueprint,
     originalEventsSnapshot,
     onReplaceEvents,
+    hasWeeklyPlan,
     exitBlueprintEditMode,
   ]);
 
@@ -654,20 +707,35 @@ export function ShellContentComponent({
   const handleSaveOnboardingBlueprint = React.useCallback(() => {
     // Convert current events to blueprint and save
     const blueprintBlocks = eventsToBlueprint(events, weekDates);
-    onSaveBlueprint({
+    const newBlueprint = {
       blocks: blueprintBlocks,
       updatedAt: new Date().toISOString(),
+    };
+    onSaveBlueprint(newBlueprint);
+
+    // Keep events in calendar - they become the user's actual schedule
+    // Also populate future weeks (1-4 weeks ahead) with blueprint blocks
+    const futureEvents = generateBlueprintEventsForWeeks(
+      newBlueprint,
+      weekDates,
+      4, // 4 weeks ahead
+      hasWeeklyPlan,
+      events, // Pass current events to avoid duplicates
+    );
+
+    // Add all future events
+    futureEvents.forEach((event) => {
+      onAddEvent(event);
     });
-    // Clear the calendar - blueprint creation is just setting the starting point,
-    // not planning the actual week
-    onReplaceEvents([]);
-    // Complete onboarding (shows plan week prompt)
+
+    // Complete onboarding (no prompt since calendar is populated)
     onCompleteOnboarding();
   }, [
     events,
     weekDates,
     onSaveBlueprint,
-    onReplaceEvents,
+    hasWeeklyPlan,
+    onAddEvent,
     onCompleteOnboarding,
   ]);
 

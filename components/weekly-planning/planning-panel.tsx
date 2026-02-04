@@ -23,11 +23,11 @@ export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement>
   goals: ScheduleGoal[];
   /** Essentials for scheduling */
   essentials?: ScheduleEssential[];
-  /** Blueprint template (if exists, enables "Start from blueprint" button) */
+  /** Blueprint template (kept for API compatibility) */
   blueprint: Blueprint | null;
   /** Current week dates */
   weekDates: Date[];
-  /** Callback to apply blueprint to the current week */
+  /** Callback to apply blueprint to the current week (no longer used) */
   onDuplicateLastWeek?: () => void;
   /** Callback when planning is cancelled */
   onCancel: () => void;
@@ -73,8 +73,8 @@ export function PlanningPanel({
   goals,
   essentials = [],
   blueprint,
-  weekDates,
-  onDuplicateLastWeek,
+  weekDates: _weekDates,
+  onDuplicateLastWeek: _onDuplicateLastWeek,
   onCancel,
   isFirstPlan = false,
   // Two-step planning flow
@@ -102,14 +102,11 @@ export function PlanningPanel({
   // Blueprint save preference (default on, only shown when no blueprint exists)
   const [saveAsBlueprint, setSaveAsBlueprint] = React.useState(true);
 
-  // Track if "Start from blueprint" has been clicked (hides button after click)
-  const [blueprintApplied, setBlueprintApplied] = React.useState(false);
-
   // Header content based on step
-  const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Plan your week";
+  const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Review & schedule";
   const headerDescription = isPrioritizeStep
     ? "Select 2-3 tasks for each goal that move it forward this week."
-    : "Drag your goals and tasks to the calendar to make time for them throughout the week.";
+    : "Adjust your schedule as needed and drag tasks to blocks to make time for them.";
 
   return (
     <div
@@ -144,21 +141,6 @@ export function PlanningPanel({
 
       {/* Content Area */}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {/* Start from blueprint button - shown when blueprint exists (only in schedule step, hidden after click) */}
-        {isScheduleStep && hasBlueprint && onDuplicateLastWeek && !blueprintApplied && (
-          <div className="border-b border-border px-4 py-3">
-            <button
-              onClick={() => {
-                onDuplicateLastWeek();
-                setBlueprintApplied(true);
-              }}
-              className="flex w-full items-center justify-center rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:bg-muted/50 hover:text-foreground"
-            >
-              Start from blueprint
-            </button>
-          </div>
-        )}
-
         {/* Step 1: Prioritize - Show goals with task subsections */}
         {isPrioritizeStep && (
           <PlanningPrioritizeView
@@ -192,10 +174,10 @@ export function PlanningPanel({
             <div className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium text-foreground">
-                  Reuse this week?
+                  Save as template?
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  Save this plan as a starting point for future weeks.
+                  Create a blueprint from this week for future planning.
                 </span>
               </div>
               <button

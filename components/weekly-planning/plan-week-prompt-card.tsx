@@ -61,11 +61,11 @@ export function PlanWeekPromptCard({
         {/* Text content */}
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">
-            Make space for what matters
+            Focus on what matters
           </h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            You&apos;ve set your goals and essentials. Now place them into a
-            real week so they actually have room to happen.
+            Your schedule is ready. Pick 2-3 priority tasks for each goal
+            to focus on this week.
           </p>
         </div>
 

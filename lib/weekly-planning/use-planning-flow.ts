@@ -5,7 +5,10 @@
  *
  * Two-step planning flow:
  * 1. Prioritize: Select 2-3 important tasks per goal (calendar dimmed)
- * 2. Schedule: Drag prioritized tasks to calendar (calendar active)
+ * 2. Schedule: Drag prioritized tasks to calendar blocks (calendar active)
+ *
+ * The calendar is already populated with blueprint blocks, so users
+ * just need to assign their prioritized tasks to existing or new blocks.
  *
  * Weekly focus tracking is session-only (lost on page refresh).
  */
