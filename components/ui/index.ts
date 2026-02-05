@@ -12,6 +12,7 @@ export {
   AlertDialogTrigger,
 } from "./alert-dialog";
 export { Badge, badgeVariants } from "./badge";
+export { DatePicker, type DatePickerProps } from "./date-picker";
 export { Button, buttonVariants } from "./button";
 export {
   Card,

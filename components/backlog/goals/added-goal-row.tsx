@@ -12,10 +12,22 @@ import { cn } from "@/lib/utils";
 import { getIconColorClass, getIconBgSoftClass } from "@/lib/colors";
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
+import { format, parse, isValid } from "date-fns";
+import { RiCalendarLine } from "@remixicon/react";
 import {
   InlineGoalEditor,
   type InlineGoalEditorData,
 } from "./inline-goal-editor";
+
+/**
+ * Format an ISO date string for display.
+ * e.g., "2026-01-15" -> "Jan 15, 2026"
+ */
+function formatDateDisplay(isoDate: string): string {
+  const date = parse(isoDate, "yyyy-MM-dd", new Date());
+  if (!isValid(date)) return isoDate;
+  return format(date, "MMM d, yyyy");
+}
 
 // =============================================================================
 // Types
@@ -27,6 +39,8 @@ export interface AddedGoal {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
+  /** Optional target completion date (ISO date string) */
+  deadline?: string;
 }
 
 export interface AddedGoalRowProps {
@@ -73,6 +87,7 @@ export function AddedGoalRow({
           icon: goal.icon,
           color: goal.color,
           lifeAreaId: goal.lifeAreaId,
+          deadline: goal.deadline,
         }}
         lifeAreas={lifeAreas}
         goalIcons={goalIcons}
@@ -104,16 +119,23 @@ export function AddedGoalRow({
         />
       </div>
 
-      {/* Label and life area */}
+      {/* Label and metadata */}
       <div className="flex flex-1 flex-col gap-0.5">
         <span className="text-sm font-medium text-foreground">
           {goal.label}
         </span>
-        {lifeArea && (
-          <span className="text-xs text-muted-foreground">
-            {lifeArea.label}
-          </span>
-        )}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {lifeArea && <span>{lifeArea.label}</span>}
+          {lifeArea && goal.deadline && (
+            <span className="text-muted-foreground/40">·</span>
+          )}
+          {goal.deadline && (
+            <span className="flex items-center gap-1">
+              <RiCalendarLine className="size-3" />
+              {formatDateDisplay(goal.deadline)}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   );

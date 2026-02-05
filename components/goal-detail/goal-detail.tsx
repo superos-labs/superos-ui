@@ -305,12 +305,16 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   goal: ScheduleGoal;
   /** Associated life area (looked up from goal's lifeAreaId) */
   lifeArea?: LifeArea;
+  /** Optional target completion date (ISO date string) */
+  deadline?: string;
   /** Local notes state (demo only, not persisted) */
   notes?: string;
   /** Callback when notes change */
   onNotesChange?: (notes: string) => void;
   /** Callback when title is edited */
   onTitleChange?: (title: string) => void;
+  /** Callback when deadline is changed (undefined to clear) */
+  onDeadlineChange?: (deadline: string | undefined) => void;
   /** Available life areas for editing */
   lifeAreas?: LifeArea[];
   /** Available icons for editing */
@@ -363,9 +367,11 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
 export function GoalDetail({
   goal,
   lifeArea,
+  deadline,
   notes = "",
   onNotesChange,
   onTitleChange,
+  onDeadlineChange,
   lifeAreas,
   goalIcons,
   onIconChange,
@@ -498,9 +504,11 @@ export function GoalDetail({
               title={goal.label}
               color={goal.color}
               lifeArea={lifeArea}
+              deadline={deadline}
               lifeAreas={lifeAreas}
               goalIcons={goalIcons}
               onTitleChange={onTitleChange}
+              onDeadlineChange={onDeadlineChange}
               onIconChange={onIconChange}
               onColorChange={onColorChange}
               onLifeAreaChange={onLifeAreaChange}

@@ -28,6 +28,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   getIconColorClass,
   getIconBgClass,
@@ -45,6 +46,8 @@ export interface InlineGoalEditorData {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
+  /** Optional target completion date (ISO date string) */
+  deadline?: string;
 }
 
 export interface InlineGoalEditorProps {
@@ -117,6 +120,9 @@ export function InlineGoalEditor({
   const [lifeAreaId, setLifeAreaId] = React.useState(
     initialData?.lifeAreaId ?? fallbackLifeAreaId
   );
+  const [deadline, setDeadline] = React.useState<string | undefined>(
+    initialData?.deadline
+  );
 
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -137,6 +143,7 @@ export function InlineGoalEditor({
       icon,
       color,
       lifeAreaId,
+      deadline,
     });
   };
 
@@ -302,6 +309,18 @@ export function InlineGoalEditor({
               })}
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+
+        {/* Target date picker (optional) */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+            Target date (optional)
+          </span>
+          <DatePicker
+            value={deadline}
+            onChange={setDeadline}
+            placeholder="Set target date"
+          />
         </div>
 
         {/* Action buttons */}

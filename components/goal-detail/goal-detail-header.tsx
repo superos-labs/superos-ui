@@ -12,6 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 
@@ -24,6 +25,8 @@ export interface GoalDetailHeaderProps {
   color: GoalColor;
   /** Associated life area */
   lifeArea?: LifeArea;
+  /** Optional target completion date (ISO date string) */
+  deadline?: string;
   /** Available life areas for editing */
   lifeAreas?: LifeArea[];
   /** Available icons for editing */
@@ -36,6 +39,8 @@ export interface GoalDetailHeaderProps {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
+  /** Callback when deadline is changed (undefined to clear) */
+  onDeadlineChange?: (deadline: string | undefined) => void;
   /** Callback to open the add life area modal */
   onAddLifeArea?: () => void;
   className?: string;
@@ -63,12 +68,14 @@ export function GoalDetailHeader({
   title,
   color,
   lifeArea,
+  deadline,
   lifeAreas,
   goalIcons,
   onTitleChange,
   onIconChange,
   onColorChange,
   onLifeAreaChange,
+  onDeadlineChange,
   onAddLifeArea,
   className,
 }: GoalDetailHeaderProps) {
@@ -265,6 +272,23 @@ export function GoalDetailHeader({
             })()}
             <span>{lifeArea.label}</span>
           </div>
+        ) : null}
+
+        {/* Deadline pill */}
+        {onDeadlineChange ? (
+          <DatePicker
+            value={deadline}
+            onChange={onDeadlineChange}
+            placeholder="Set target date"
+            className="bg-muted hover:bg-muted/80"
+          />
+        ) : deadline ? (
+          <DatePicker
+            value={deadline}
+            placeholder="Target date"
+            className="bg-muted pointer-events-none"
+            disabled
+          />
         ) : null}
       </div>
     </div>

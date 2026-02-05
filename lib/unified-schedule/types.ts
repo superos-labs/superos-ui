@@ -185,6 +185,8 @@ export interface ScheduleGoal {
   color: GoalColor;
   /** Life area this goal belongs to */
   lifeAreaId: string;
+  /** Optional target completion date (ISO date string, e.g., "2026-03-15") */
+  deadline?: string;
   /** Ordered milestones (sequential steps toward the goal) */
   milestones?: Milestone[];
   /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
