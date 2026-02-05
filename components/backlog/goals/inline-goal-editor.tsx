@@ -167,7 +167,7 @@ export function InlineGoalEditor({
 
   return (
     <div className={cn("", className)}>
-      <div className="flex flex-col gap-3 rounded-xl bg-muted/30 p-3">
+      <div className="flex flex-col gap-3 rounded-xl bg-muted/50 p-3">
         {/* Header with icon button and label input */}
         <div className="flex items-center gap-2">
           {/* Icon/Color picker button */}
@@ -257,14 +257,12 @@ export function InlineGoalEditor({
           </button>
         </div>
 
-        {/* Life area picker */}
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-            Life area
-          </span>
+        {/* Life area and target date - side by side */}
+        <div className="flex items-center gap-2">
+          {/* Life area picker */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex w-fit items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs transition-colors hover:bg-background/80">
+              <button className="flex items-center gap-1.5 rounded-full bg-background px-3 py-1.5 text-xs transition-colors hover:bg-background/80">
                 {currentLifeArea ? (
                   <>
                     {(() => {
@@ -281,7 +279,7 @@ export function InlineGoalEditor({
                     <span>{currentLifeArea.label}</span>
                   </>
                 ) : (
-                  <span className="text-muted-foreground">Select...</span>
+                  <span className="text-muted-foreground">Life area...</span>
                 )}
                 <RiArrowDownSLine className="size-3 text-muted-foreground/50" />
               </button>
@@ -309,17 +307,13 @@ export function InlineGoalEditor({
               })}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
 
-        {/* Target date picker (optional) */}
-        <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
-            Target date (optional)
-          </span>
+          {/* Target date picker */}
           <DatePicker
             value={deadline}
             onChange={setDeadline}
-            placeholder="Set target date"
+            placeholder="Target date"
+            className="bg-background hover:bg-background/80"
           />
         </div>
 

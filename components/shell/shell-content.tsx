@@ -1300,6 +1300,7 @@ export function ShellContentComponent({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
+        deadline: data.deadline,
         tasks: [],
       });
     },
@@ -1313,6 +1314,7 @@ export function ShellContentComponent({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
+        deadline: data.deadline,
       });
     },
     [onUpdateGoal]
@@ -1334,6 +1336,7 @@ export function ShellContentComponent({
         icon: g.icon,
         color: g.color,
         lifeAreaId: g.lifeAreaId ?? "",
+        deadline: g.deadline,
       })),
     [goals]
   );
