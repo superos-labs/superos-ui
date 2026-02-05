@@ -161,29 +161,35 @@ export function UpcomingDeadlinesSection({
 }: UpcomingDeadlinesSectionProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
-  // Filter to next 30 days when collapsed
+  // Get deadlines within the 30-day limit
+  const deadlinesWithinLimit = React.useMemo(
+    () => filterDeadlinesWithinDays(deadlines, DEFAULT_DAYS_LIMIT),
+    [deadlines]
+  );
+
+  // Check if there are deadlines beyond the 30-day limit
+  const hasDeadlinesBeyondLimit = deadlines.length > deadlinesWithinLimit.length;
+
+  // Check if there are any deadlines within the limit
+  const hasDeadlinesWithinLimit = deadlinesWithinLimit.length > 0;
+
+  // Determine which deadlines to show:
+  // - If no deadlines within limit, show all (no point in limiting)
+  // - If expanded, show all
+  // - Otherwise, show only within limit
   const filteredDeadlines = React.useMemo(() => {
-    if (isExpanded) {
+    if (!hasDeadlinesWithinLimit || isExpanded) {
       return deadlines;
     }
-    return filterDeadlinesWithinDays(deadlines, DEFAULT_DAYS_LIMIT);
-  }, [deadlines, isExpanded]);
-
-  // Check if there are more deadlines beyond the 30-day limit
-  const hasMoreDeadlines = React.useMemo(() => {
-    const limitedCount = filterDeadlinesWithinDays(
-      deadlines,
-      DEFAULT_DAYS_LIMIT
-    ).length;
-    return deadlines.length > limitedCount;
-  }, [deadlines]);
+    return deadlinesWithinLimit;
+  }, [deadlines, deadlinesWithinLimit, hasDeadlinesWithinLimit, isExpanded]);
 
   if (deadlines.length === 0) {
     return null;
   }
 
-  // If all deadlines are within 30 days, don't show toggle
-  const showToggle = hasMoreDeadlines;
+  // Only show toggle when there are BOTH deadlines within limit AND beyond
+  const showToggle = hasDeadlinesWithinLimit && hasDeadlinesBeyondLimit;
 
   return (
     <div className={cn("flex flex-col", className)}>

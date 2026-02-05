@@ -2185,13 +2185,6 @@ export function ShellContentComponent({
                 ) : renderedContent === "analytics" ? (
                   isPlanning || isOnboardingBlueprint ? (
                     <div className="flex h-full w-[380px] max-w-none flex-col gap-4 overflow-y-auto">
-                      {/* Upcoming deadlines card (only during planning, not onboarding blueprint) */}
-                      {isPlanning && quarterDeadlines.length > 0 && (
-                        <UpcomingDeadlinesCard
-                          deadlines={quarterDeadlines}
-                          weekStartDate={weekDates[0]}
-                        />
-                      )}
                       {/* Time availability budget */}
                       <PlanningBudget
                         goals={planningBudgetData.goals}
@@ -2206,6 +2199,13 @@ export function ShellContentComponent({
                         }
                         lifeAreas={lifeAreas}
                       />
+                      {/* Upcoming deadlines card (only during planning, not onboarding blueprint) */}
+                      {isPlanning && !isOnboardingBlueprint && quarterDeadlines.length > 0 && (
+                        <UpcomingDeadlinesCard
+                          deadlines={quarterDeadlines}
+                          weekStartDate={weekDates[0]}
+                        />
+                      )}
                     </div>
                   ) : (
                     <WeeklyAnalytics
