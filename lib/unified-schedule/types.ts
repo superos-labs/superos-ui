@@ -264,6 +264,26 @@ export interface DeadlineMilestone {
   completed: boolean;
 }
 
+/** Unified deadline item for quarter view (goals, milestones, and tasks) */
+export interface QuarterDeadlineItem {
+  /** Type of deadline (goal, milestone, or task) */
+  type: "goal" | "milestone" | "task";
+  /** Unique identifier (goalId, milestoneId, or taskId depending on type) */
+  id: string;
+  /** Display label */
+  label: string;
+  /** ISO date string for the deadline */
+  deadline: string;
+  /** Parent goal ID */
+  goalId: string;
+  /** Parent goal label */
+  goalLabel: string;
+  /** Parent goal color */
+  goalColor: GoalColor;
+  /** Parent goal icon */
+  goalIcon: IconComponent;
+}
+
 // ============================================================================
 // Hook Options & Return Types
 // ============================================================================
@@ -321,6 +341,8 @@ export interface UseUnifiedScheduleReturn {
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
   getWeekGoalDeadlines: (weekDates: Date[]) => Map<string, DeadlineGoal[]>;
   getWeekMilestoneDeadlines: (weekDates: Date[]) => Map<string, DeadlineMilestone[]>;
+  /** Get all incomplete deadlines for the current calendar quarter */
+  getQuarterDeadlines: (currentDate: Date) => QuarterDeadlineItem[];
 
   // Goal sync settings
   /** Update sync settings for a goal */

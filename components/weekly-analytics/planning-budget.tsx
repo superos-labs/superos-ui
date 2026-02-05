@@ -191,7 +191,7 @@ function BudgetHeader({
     <div className="flex flex-col gap-4 px-4 py-4">
       {/* Title */}
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold text-foreground">{weekLabel}</h2>
+        <h2 className="text-sm font-semibold text-foreground">Your time availability</h2>
         <span className="text-xs text-muted-foreground">
           {formatHours(TOTAL_WEEKLY_HOURS)}h total
         </span>

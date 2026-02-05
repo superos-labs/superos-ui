@@ -123,6 +123,7 @@ export function useUnifiedSchedule({
     getWeekDeadlines,
     getWeekGoalDeadlines,
     getWeekMilestoneDeadlines,
+    getQuarterDeadlines,
     filteredEvents,
   } = useScheduleStats({
     goals,
@@ -487,6 +488,7 @@ export function useUnifiedSchedule({
     getWeekDeadlines,
     getWeekGoalDeadlines,
     getWeekMilestoneDeadlines,
+    getQuarterDeadlines,
     // Goal sync settings
     updateGoalSyncSettings,
     // Block sync settings

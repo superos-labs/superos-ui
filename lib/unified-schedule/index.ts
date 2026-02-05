@@ -88,6 +88,7 @@ export type {
   DeadlineTask,
   DeadlineGoal,
   DeadlineMilestone,
+  QuarterDeadlineItem,
   // Sync settings types
   GoalSyncSettings,
   BlockSyncSettings,

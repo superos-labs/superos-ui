@@ -59,6 +59,7 @@ import {
   PlanningPanel,
   PlanWeekPromptCard,
   BlueprintBacklog,
+  UpcomingDeadlinesCard,
 } from "@/components/weekly-planning";
 import {
   LifeAreaCreatorModal,
@@ -262,6 +263,7 @@ export function ShellContentComponent({
   weekDeadlines,
   weekGoalDeadlines,
   weekMilestoneDeadlines,
+  quarterDeadlines,
   // Selection (passed in for coordination)
   selectedEventId: selectedEventIdProp,
   selectedGoalId: selectedGoalIdProp,
@@ -2182,20 +2184,29 @@ export function ShellContentComponent({
                   />
                 ) : renderedContent === "analytics" ? (
                   isPlanning || isOnboardingBlueprint ? (
-                    <PlanningBudget
-                      goals={planningBudgetData.goals}
-                      essentials={planningBudgetData.essentials}
-                      wakeUpMinutes={dayStartMinutes}
-                      windDownMinutes={dayEndMinutes}
-                      isSleepConfigured={dayBoundariesEnabled}
-                      weekLabel={
-                        isOnboardingBlueprint
-                          ? "Your typical week"
-                          : formatWeekRange(weekDates)
-                      }
-                      lifeAreas={lifeAreas}
-                      className="h-full w-[380px] max-w-none overflow-y-auto"
-                    />
+                    <div className="flex h-full w-[380px] max-w-none flex-col gap-4 overflow-y-auto">
+                      {/* Upcoming deadlines card (only during planning, not onboarding blueprint) */}
+                      {isPlanning && quarterDeadlines.length > 0 && (
+                        <UpcomingDeadlinesCard
+                          deadlines={quarterDeadlines}
+                          weekStartDate={weekDates[0]}
+                        />
+                      )}
+                      {/* Time availability budget */}
+                      <PlanningBudget
+                        goals={planningBudgetData.goals}
+                        essentials={planningBudgetData.essentials}
+                        wakeUpMinutes={dayStartMinutes}
+                        windDownMinutes={dayEndMinutes}
+                        isSleepConfigured={dayBoundariesEnabled}
+                        weekLabel={
+                          isOnboardingBlueprint
+                            ? "Your typical week"
+                            : formatWeekRange(weekDates)
+                        }
+                        lifeAreas={lifeAreas}
+                      />
+                    </div>
                   ) : (
                     <WeeklyAnalytics
                       goals={analyticsGoals}

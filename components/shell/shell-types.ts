@@ -25,6 +25,7 @@ import type {
   DeadlineTask,
   DeadlineGoal,
   DeadlineMilestone,
+  QuarterDeadlineItem,
   UseUnifiedScheduleReturn,
 } from "@/lib/unified-schedule";
 import type { Blueprint } from "@/lib/blueprint";
@@ -78,6 +79,8 @@ export interface ShellContentProps {
   weekGoalDeadlines: Map<string, DeadlineGoal[]>;
   /** Milestone deadlines for the current week (Map of date string to deadline milestones) */
   weekMilestoneDeadlines: Map<string, DeadlineMilestone[]>;
+  /** Incomplete deadlines within the current calendar quarter */
+  quarterDeadlines: QuarterDeadlineItem[];
 
   // -------------------------------------------------------------------------
   // Selection State

@@ -353,6 +353,13 @@ export function useShellState(
     [schedule.getWeekMilestoneDeadlines, weekDates]
   ) as Map<string, DeadlineMilestone[]>;
 
+  // Quarter deadlines for planning panel
+  const quarterDeadlines = React.useMemo(
+    () => schedule.getQuarterDeadlines(new Date()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [schedule.getQuarterDeadlines]
+  );
+
   // -------------------------------------------------------------------------
   // Calendar Integrations
   // -------------------------------------------------------------------------
@@ -497,6 +504,7 @@ export function useShellState(
     weekDeadlines,
     weekGoalDeadlines,
     weekMilestoneDeadlines,
+    quarterDeadlines,
 
     // Selection state
     selectedEventId,

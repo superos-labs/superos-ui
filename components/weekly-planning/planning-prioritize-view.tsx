@@ -285,7 +285,7 @@ export function PlanningPrioritizeView({
       {goals.length > 0 ? (
         <div className="flex flex-col">
           <div className="px-4 pb-1">
-            <h4 className="text-xs font-medium text-muted-foreground">Goals</h4>
+            <h4 className="text-xs font-medium text-muted-foreground">Your goals</h4>
           </div>
           <div className="flex flex-col gap-3 px-2">
             {goals.map((goal) => (

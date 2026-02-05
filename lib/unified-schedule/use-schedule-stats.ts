@@ -11,6 +11,7 @@ import type {
   DeadlineTask,
   DeadlineGoal,
   DeadlineMilestone,
+  QuarterDeadlineItem,
 } from "./types";
 
 // ============================================================================
@@ -39,6 +40,8 @@ export interface UseScheduleStatsReturn {
   getWeekGoalDeadlines: (weekDates: Date[]) => Map<string, DeadlineGoal[]>;
   /** Get all milestone deadlines for a week */
   getWeekMilestoneDeadlines: (weekDates: Date[]) => Map<string, DeadlineMilestone[]>;
+  /** Get all incomplete deadlines for the current calendar quarter */
+  getQuarterDeadlines: (currentDate: Date) => QuarterDeadlineItem[];
   /** Events filtered by week and essential visibility */
   filteredEvents: CalendarEvent[];
 }
@@ -287,6 +290,101 @@ export function useScheduleStats({
     [goals],
   );
 
+  /**
+   * Get all incomplete deadlines within the current calendar quarter.
+   * Returns items sorted by deadline date (ascending).
+   */
+  const getQuarterDeadlines = React.useCallback(
+    (currentDate: Date): QuarterDeadlineItem[] => {
+      const result: QuarterDeadlineItem[] = [];
+
+      // Calculate quarter boundaries
+      const currentMonth = currentDate.getMonth();
+      const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+      const quarterEndMonth = quarterStartMonth + 2;
+
+      const year = currentDate.getFullYear();
+      const quarterStart = new Date(year, quarterStartMonth, 1);
+      const quarterEnd = new Date(year, quarterEndMonth + 1, 0); // Last day of quarter
+
+      const quarterStartISO = quarterStart.toISOString().split("T")[0];
+      const quarterEndISO = quarterEnd.toISOString().split("T")[0];
+
+      for (const goal of goals) {
+        // Check goal deadline
+        if (goal.deadline) {
+          const isInQuarter =
+            goal.deadline >= quarterStartISO && goal.deadline <= quarterEndISO;
+          // Goals don't have a "completed" field, so always include them
+          if (isInQuarter) {
+            result.push({
+              type: "goal",
+              id: goal.id,
+              label: goal.label,
+              deadline: goal.deadline,
+              goalId: goal.id,
+              goalLabel: goal.label,
+              goalColor: goal.color,
+              goalIcon: goal.icon,
+            });
+          }
+        }
+
+        // Check milestone deadlines
+        if (goal.milestones) {
+          for (const milestone of goal.milestones) {
+            if (milestone.deadline && !milestone.completed) {
+              const isInQuarter =
+                milestone.deadline >= quarterStartISO &&
+                milestone.deadline <= quarterEndISO;
+              if (isInQuarter) {
+                result.push({
+                  type: "milestone",
+                  id: milestone.id,
+                  label: milestone.label,
+                  deadline: milestone.deadline,
+                  goalId: goal.id,
+                  goalLabel: goal.label,
+                  goalColor: goal.color,
+                  goalIcon: goal.icon,
+                });
+              }
+            }
+          }
+        }
+
+        // Check task deadlines
+        if (goal.tasks) {
+          for (const task of goal.tasks) {
+            if (task.deadline && !task.completed) {
+              const isInQuarter =
+                task.deadline >= quarterStartISO &&
+                task.deadline <= quarterEndISO;
+              if (isInQuarter) {
+                result.push({
+                  type: "task",
+                  id: task.id,
+                  label: task.label,
+                  deadline: task.deadline,
+                  goalId: goal.id,
+                  goalLabel: goal.label,
+                  goalColor: goal.color,
+                  goalIcon: goal.icon,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // Sort by deadline date (ascending)
+      result.sort((a, b) => a.deadline.localeCompare(b.deadline));
+
+      return result;
+    },
+    [goals],
+  );
+
   return {
     getGoalStats,
     getEssentialStats,
@@ -295,6 +393,7 @@ export function useScheduleStats({
     getWeekDeadlines,
     getWeekGoalDeadlines,
     getWeekMilestoneDeadlines,
+    getQuarterDeadlines,
     filteredEvents,
   };
 }

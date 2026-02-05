@@ -18,5 +18,11 @@ export type { BlueprintBacklogProps } from "./blueprint-backlog";
 export { BlueprintEssentialsSection } from "./blueprint-essentials-section";
 export type { BlueprintEssentialsSectionProps } from "./blueprint-essentials-section";
 
+export { UpcomingDeadlinesSection } from "./upcoming-deadlines-section";
+export type { UpcomingDeadlinesSectionProps } from "./upcoming-deadlines-section";
+
+export { UpcomingDeadlinesCard } from "./upcoming-deadlines-card";
+export type { UpcomingDeadlinesCardProps } from "./upcoming-deadlines-card";
+
 // Re-export types from lib/weekly-planning for convenience
 export type { PlanningStep } from "@/lib/weekly-planning";
