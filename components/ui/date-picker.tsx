@@ -18,6 +18,7 @@ import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
 } from "@remixicon/react";
+import { usePreferencesOptional } from "@/lib/preferences";
 
 // =============================================================================
 // Types
@@ -34,6 +35,8 @@ export interface DatePickerProps {
   className?: string;
   /** Whether the picker is disabled */
   disabled?: boolean;
+  /** Which day the week starts on (0 = Sunday, 1 = Monday). Falls back to user preference from context. */
+  weekStartsOn?: 0 | 1;
 }
 
 // =============================================================================
@@ -76,8 +79,13 @@ export function DatePicker({
   placeholder = "Set deadline",
   className,
   disabled = false,
+  weekStartsOn: weekStartsOnProp,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
+  
+  // Get week start preference from context, fallback to Monday (1)
+  const preferences = usePreferencesOptional();
+  const weekStartsOn = weekStartsOnProp ?? preferences?.weekStartsOn ?? 1;
 
   // Parse value to Date for DayPicker
   const selectedDate = value ? parseISODate(value) : undefined;
@@ -149,6 +157,7 @@ export function DatePicker({
             mode="single"
             selected={selectedDate}
             onSelect={handleSelect}
+            weekStartsOn={weekStartsOn}
             showOutsideDays
             className="p-0"
             classNames={{

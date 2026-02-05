@@ -246,6 +246,24 @@ export interface DeadlineTask {
   completed: boolean;
 }
 
+/** Goal with deadline info for display in the deadline tray */
+export interface DeadlineGoal {
+  goalId: string;
+  label: string;
+  color: GoalColor;
+  icon: IconComponent;
+}
+
+/** Milestone with deadline info for display in the deadline tray */
+export interface DeadlineMilestone {
+  milestoneId: string;
+  goalId: string;
+  label: string;
+  goalLabel: string;
+  goalColor: GoalColor;
+  completed: boolean;
+}
+
 // ============================================================================
 // Hook Options & Return Types
 // ============================================================================
@@ -301,6 +319,8 @@ export interface UseUnifiedScheduleReturn {
   getTaskSchedule: (taskId: string) => TaskScheduleInfo | null;
   getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
+  getWeekGoalDeadlines: (weekDates: Date[]) => Map<string, DeadlineGoal[]>;
+  getWeekMilestoneDeadlines: (weekDates: Date[]) => Map<string, DeadlineMilestone[]>;
 
   // Goal sync settings
   /** Update sync settings for a goal */

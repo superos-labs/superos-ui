@@ -23,6 +23,8 @@ import type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
   DeadlineTask,
+  DeadlineGoal,
+  DeadlineMilestone,
   UseUnifiedScheduleReturn,
 } from "@/lib/unified-schedule";
 import type { Blueprint } from "@/lib/blueprint";
@@ -72,6 +74,10 @@ export interface ShellContentProps {
   weekDates: Date[];
   /** Deadlines for the current week (Map of date string to deadline tasks) */
   weekDeadlines: Map<string, DeadlineTask[]>;
+  /** Goal deadlines for the current week (Map of date string to deadline goals) */
+  weekGoalDeadlines: Map<string, DeadlineGoal[]>;
+  /** Milestone deadlines for the current week (Map of date string to deadline milestones) */
+  weekMilestoneDeadlines: Map<string, DeadlineMilestone[]>;
 
   // -------------------------------------------------------------------------
   // Selection State

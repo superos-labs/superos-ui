@@ -23,6 +23,8 @@ import type {
   ScheduleGoal,
   ScheduleEssential,
   DeadlineTask,
+  DeadlineGoal,
+  DeadlineMilestone,
 } from "@/lib/unified-schedule";
 import {
   useEssentialConfig,
@@ -337,7 +339,19 @@ export function useShellState(
     () => schedule.getWeekDeadlines(weekDates),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [schedule.getWeekDeadlines, weekDates]
-  ) as Map<string, import("@/lib/unified-schedule").DeadlineTask[]>;
+  ) as Map<string, DeadlineTask[]>;
+
+  const weekGoalDeadlines = React.useMemo(
+    () => schedule.getWeekGoalDeadlines(weekDates),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [schedule.getWeekGoalDeadlines, weekDates]
+  ) as Map<string, DeadlineGoal[]>;
+
+  const weekMilestoneDeadlines = React.useMemo(
+    () => schedule.getWeekMilestoneDeadlines(weekDates),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [schedule.getWeekMilestoneDeadlines, weekDates]
+  ) as Map<string, DeadlineMilestone[]>;
 
   // -------------------------------------------------------------------------
   // Calendar Integrations
@@ -481,6 +495,8 @@ export function useShellState(
     events: mergedEvents, // Includes external events
     weekDates,
     weekDeadlines,
+    weekGoalDeadlines,
+    weekMilestoneDeadlines,
 
     // Selection state
     selectedEventId,

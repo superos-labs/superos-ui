@@ -9,6 +9,8 @@ import type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
   DeadlineTask,
+  DeadlineGoal,
+  DeadlineMilestone,
 } from "./types";
 
 // ============================================================================
@@ -31,8 +33,12 @@ export interface UseScheduleStatsReturn {
   getTaskSchedule: (taskId: string) => TaskScheduleInfo | null;
   /** Get deadline info for a task */
   getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
-  /** Get all deadlines for a week */
+  /** Get all task deadlines for a week */
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
+  /** Get all goal deadlines for a week */
+  getWeekGoalDeadlines: (weekDates: Date[]) => Map<string, DeadlineGoal[]>;
+  /** Get all milestone deadlines for a week */
+  getWeekMilestoneDeadlines: (weekDates: Date[]) => Map<string, DeadlineMilestone[]>;
   /** Events filtered by week and essential visibility */
   filteredEvents: CalendarEvent[];
 }
@@ -225,12 +231,70 @@ export function useScheduleStats({
     [goals],
   );
 
+  const getWeekGoalDeadlines = React.useCallback(
+    (weekDates: Date[]): Map<string, DeadlineGoal[]> => {
+      const result = new Map<string, DeadlineGoal[]>();
+
+      // Get ISO dates for the week
+      const weekISODates = weekDates.map((d) => d.toISOString().split("T")[0]);
+
+      for (const goal of goals) {
+        if (goal.deadline && weekISODates.includes(goal.deadline)) {
+          const existing = result.get(goal.deadline) ?? [];
+          existing.push({
+            goalId: goal.id,
+            label: goal.label,
+            color: goal.color,
+            icon: goal.icon,
+          });
+          result.set(goal.deadline, existing);
+        }
+      }
+
+      return result;
+    },
+    [goals],
+  );
+
+  const getWeekMilestoneDeadlines = React.useCallback(
+    (weekDates: Date[]): Map<string, DeadlineMilestone[]> => {
+      const result = new Map<string, DeadlineMilestone[]>();
+
+      // Get ISO dates for the week
+      const weekISODates = weekDates.map((d) => d.toISOString().split("T")[0]);
+
+      for (const goal of goals) {
+        if (!goal.milestones) continue;
+
+        for (const milestone of goal.milestones) {
+          if (milestone.deadline && weekISODates.includes(milestone.deadline)) {
+            const existing = result.get(milestone.deadline) ?? [];
+            existing.push({
+              milestoneId: milestone.id,
+              goalId: goal.id,
+              label: milestone.label,
+              goalLabel: goal.label,
+              goalColor: goal.color,
+              completed: milestone.completed,
+            });
+            result.set(milestone.deadline, existing);
+          }
+        }
+      }
+
+      return result;
+    },
+    [goals],
+  );
+
   return {
     getGoalStats,
     getEssentialStats,
     getTaskSchedule,
     getTaskDeadline,
     getWeekDeadlines,
+    getWeekGoalDeadlines,
+    getWeekMilestoneDeadlines,
     filteredEvents,
   };
 }

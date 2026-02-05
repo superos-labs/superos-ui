@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiFlagLine, RiCheckLine, RiDeleteBinLine } from "@remixicon/react";
-import { getIconColorClass } from "@/lib/colors";
+import { RiFlagLine, RiCheckLine, RiDeleteBinLine, RiPokerDiamondsLine } from "@remixicon/react";
+import { getIconColorClass, getIconBgClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import {
   ContextMenu,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/context-menu";
 import { ProviderBadge } from "@/components/integrations";
 import type { DragItem } from "@/lib/drag-types";
-import type { DeadlineTask } from "@/lib/unified-schedule";
+import type { DeadlineTask, DeadlineGoal, DeadlineMilestone } from "@/lib/unified-schedule";
 import type { CalendarProvider, ExternalEvent } from "@/lib/calendar-sync";
 
 // ============================================================================
@@ -39,6 +39,10 @@ interface DeadlineTrayProps {
   weekDates: Date[];
   /** Map of ISO date string to array of deadline tasks for that day */
   deadlines: Map<string, DeadlineTask[]>;
+  /** Map of ISO date string to array of goal deadlines for that day */
+  goalDeadlines?: Map<string, DeadlineGoal[]>;
+  /** Map of ISO date string to array of milestone deadlines for that day */
+  milestoneDeadlines?: Map<string, DeadlineMilestone[]>;
   /** Map of ISO date string to array of all-day external events for that day */
   allDayEvents?: Map<string, AllDayEvent[]>;
   /** Called when a deadline is moved (dragged to a different header) */
@@ -57,6 +61,10 @@ interface DeadlineTrayProps {
   onToggleAllDayEvent?: (eventId: string) => void;
   /** Called when mouse enters/leaves an all-day event pill */
   onAllDayEventHover?: (event: AllDayEvent | null) => void;
+  /** Called when a goal deadline pill is clicked (to open goal detail) */
+  onGoalClick?: (goalId: string) => void;
+  /** Called when a milestone's completion status is toggled */
+  onToggleMilestoneComplete?: (goalId: string, milestoneId: string) => void;
 }
 
 interface DeadlinePillProps {
@@ -71,6 +79,16 @@ interface AllDayEventPillProps {
   event: AllDayEvent;
   onToggleComplete?: () => void;
   onHover?: (event: AllDayEvent | null) => void;
+}
+
+interface GoalDeadlinePillProps {
+  goal: DeadlineGoal;
+  onClick?: () => void;
+}
+
+interface MilestoneDeadlinePillProps {
+  milestone: DeadlineMilestone;
+  onToggleComplete?: () => void;
 }
 
 // ============================================================================
@@ -101,7 +119,7 @@ function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }:
       className={cn(
         "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-all",
         "bg-muted/60 hover:bg-muted",
-        "min-w-0 max-w-full",  // Allow shrinking, don't exceed container
+        "w-full min-w-0",  // Take full width of container
         deadline.completed && "opacity-50 line-through",
         isDragging && "opacity-30",
         canDrag && "cursor-grab active:cursor-grabbing",
@@ -146,6 +164,75 @@ function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }:
             <ContextMenuShortcut>⌫</ContextMenuShortcut>
           </ContextMenuItem>
         )}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+
+/**
+ * Goal deadline pill for goals with target completion dates.
+ * Shows the goal's icon and label, clicking opens the goal detail.
+ */
+function GoalDeadlinePill({ goal, onClick }: GoalDeadlinePillProps) {
+  const GoalIcon = goal.icon;
+  
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-all",
+        "w-full min-w-0",  // Take full width of container
+        getIconBgClass(goal.color),
+        "text-white",
+        onClick && "cursor-pointer hover:opacity-90",
+      )}
+      onClick={onClick}
+    >
+      <GoalIcon className="size-3 shrink-0" />
+      <span className="truncate">{goal.label}</span>
+    </div>
+  );
+}
+
+/**
+ * Milestone deadline pill for milestones with target completion dates.
+ * Shows a star icon and the milestone label, supports marking complete.
+ */
+function MilestoneDeadlinePill({ milestone, onToggleComplete }: MilestoneDeadlinePillProps) {
+  const pillContent = (
+    <div
+      className={cn(
+        "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-all",
+        "bg-muted/60 hover:bg-muted",
+        "w-full min-w-0",  // Take full width of container
+        milestone.completed && "opacity-50 line-through",
+      )}
+    >
+      <RiPokerDiamondsLine
+        className={cn(
+          "size-3 shrink-0",
+          getIconColorClass(milestone.goalColor)
+        )}
+      />
+      <span className="truncate">{milestone.label}</span>
+    </div>
+  );
+
+  // If no toggle callback, just return the pill without context menu
+  if (!onToggleComplete) {
+    return pillContent;
+  }
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        {pillContent}
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-48">
+        <ContextMenuItem onClick={onToggleComplete}>
+          <RiCheckLine className="size-4" />
+          {milestone.completed ? "Mark incomplete" : "Mark complete"}
+          <ContextMenuShortcut>⌘⏎</ContextMenuShortcut>
+        </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   );
@@ -217,6 +304,8 @@ function AllDayEventPill({ event, onToggleComplete, onHover }: AllDayEventPillPr
 export function DeadlineTray({
   weekDates,
   deadlines,
+  goalDeadlines,
+  milestoneDeadlines,
   allDayEvents,
   visible = true,
   showHourLabels = true,
@@ -225,9 +314,15 @@ export function DeadlineTray({
   onDeadlineHover,
   onToggleAllDayEvent,
   onAllDayEventHover,
+  onGoalClick,
+  onToggleMilestoneComplete,
 }: DeadlineTrayProps) {
-  // Don't render if no deadlines and no all-day events
-  const hasContent = deadlines.size > 0 || (allDayEvents?.size ?? 0) > 0;
+  // Don't render if no deadlines, goal deadlines, milestone deadlines, or all-day events
+  const hasContent = 
+    deadlines.size > 0 || 
+    (goalDeadlines?.size ?? 0) > 0 ||
+    (milestoneDeadlines?.size ?? 0) > 0 ||
+    (allDayEvents?.size ?? 0) > 0;
   if (!visible || !hasContent) {
     return null;
   }
@@ -250,13 +345,15 @@ export function DeadlineTray({
       {weekDates.map((date, index) => {
         const isoDate = date.toISOString().split("T")[0];
         const dayDeadlines = deadlines.get(isoDate) ?? [];
+        const dayGoalDeadlines = goalDeadlines?.get(isoDate) ?? [];
+        const dayMilestoneDeadlines = milestoneDeadlines?.get(isoDate) ?? [];
         const dayAllDayEvents = allDayEvents?.get(isoDate) ?? [];
         
         return (
           <div
             key={index}
             className={cn(
-              "flex flex-wrap gap-1 px-1.5 py-1.5",
+              "flex flex-col gap-1 px-1.5 py-1.5",
               "border-border/40 border-r last:border-r-0",
               "min-h-[28px]", // Minimum height for visual consistency
               "overflow-hidden", // Prevent content from expanding column
@@ -273,6 +370,26 @@ export function DeadlineTray({
                     : undefined
                 }
                 onHover={onAllDayEventHover}
+              />
+            ))}
+            {/* Goal deadlines */}
+            {dayGoalDeadlines.map((goal) => (
+              <GoalDeadlinePill
+                key={goal.goalId}
+                goal={goal}
+                onClick={onGoalClick ? () => onGoalClick(goal.goalId) : undefined}
+              />
+            ))}
+            {/* Milestone deadlines */}
+            {dayMilestoneDeadlines.map((milestone) => (
+              <MilestoneDeadlinePill
+                key={milestone.milestoneId}
+                milestone={milestone}
+                onToggleComplete={
+                  onToggleMilestoneComplete
+                    ? () => onToggleMilestoneComplete(milestone.goalId, milestone.milestoneId)
+                    : undefined
+                }
               />
             ))}
             {/* Deadline tasks */}

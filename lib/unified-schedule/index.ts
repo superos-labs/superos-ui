@@ -86,6 +86,8 @@ export type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
   DeadlineTask,
+  DeadlineGoal,
+  DeadlineMilestone,
   // Sync settings types
   GoalSyncSettings,
   BlockSyncSettings,

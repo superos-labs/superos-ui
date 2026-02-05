@@ -53,12 +53,16 @@ export function WeekView({
   externalDragPreview,
   onDeadlineDrop,
   deadlines,
+  goalDeadlines,
+  milestoneDeadlines,
   allDayEvents,
   onDeadlineToggleComplete,
   onDeadlineUnassign,
   onDeadlineHover,
   onToggleAllDayEvent,
   onAllDayEventHover,
+  onGoalDeadlineClick,
+  onToggleMilestoneComplete,
   onDayHeaderHover,
   onMarkDayComplete,
   dayStartMinutes,
@@ -148,6 +152,8 @@ export function WeekView({
       <DeadlineTray
         weekDates={weekDates}
         deadlines={deadlines ?? new Map()}
+        goalDeadlines={goalDeadlines}
+        milestoneDeadlines={milestoneDeadlines}
         allDayEvents={allDayEvents}
         showHourLabels={showHourLabels}
         onToggleComplete={onDeadlineToggleComplete}
@@ -155,6 +161,8 @@ export function WeekView({
         onDeadlineHover={onDeadlineHover}
         onToggleAllDayEvent={onToggleAllDayEvent}
         onAllDayEventHover={onAllDayEventHover}
+        onGoalClick={onGoalDeadlineClick}
+        onToggleMilestoneComplete={onToggleMilestoneComplete}
       />
 
       {/* Time Grid */}

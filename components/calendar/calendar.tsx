@@ -36,12 +36,16 @@ export function Calendar({
   externalDragPreview,
   onDeadlineDrop,
   deadlines,
+  goalDeadlines,
+  milestoneDeadlines,
   allDayEvents,
   onDeadlineToggleComplete,
   onDeadlineUnassign,
   onDeadlineHover,
   onToggleAllDayEvent,
   onAllDayEventHover,
+  onGoalDeadlineClick,
+  onToggleMilestoneComplete,
   onDayHeaderHover,
   onMarkDayComplete,
   dayStartMinutes,
@@ -123,12 +127,16 @@ export function Calendar({
       externalDragPreview={externalDragPreview}
       onDeadlineDrop={onDeadlineDrop}
       deadlines={deadlines}
+      goalDeadlines={goalDeadlines}
+      milestoneDeadlines={milestoneDeadlines}
       allDayEvents={allDayEvents}
       onDeadlineToggleComplete={onDeadlineToggleComplete}
       onDeadlineUnassign={onDeadlineUnassign}
       onDeadlineHover={onDeadlineHover}
       onToggleAllDayEvent={onToggleAllDayEvent}
       onAllDayEventHover={onAllDayEventHover}
+      onGoalDeadlineClick={onGoalDeadlineClick}
+      onToggleMilestoneComplete={onToggleMilestoneComplete}
       onDayHeaderHover={onDayHeaderHover}
       onMarkDayComplete={onMarkDayComplete}
       dayStartMinutes={dayStartMinutes}

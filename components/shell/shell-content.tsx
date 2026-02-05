@@ -260,6 +260,8 @@ export function ShellContentComponent({
   events,
   weekDates,
   weekDeadlines,
+  weekGoalDeadlines,
+  weekMilestoneDeadlines,
   // Selection (passed in for coordination)
   selectedEventId: selectedEventIdProp,
   selectedGoalId: selectedGoalIdProp,
@@ -1368,6 +1370,17 @@ export function ShellContentComponent({
     [setSelectedEventId]
   );
 
+  // -------------------------------------------------------------------------
+  // Goal Deadline Click Handler (opens goal detail)
+  // -------------------------------------------------------------------------
+  const handleGoalDeadlineClick = React.useCallback(
+    (goalId: string) => {
+      setSelectedGoalId(goalId);
+      setBacklogMode("goal-detail");
+    },
+    [setSelectedGoalId, setBacklogMode]
+  );
+
   // Close bottom sheet handler for mobile
   const handleCloseBottomSheet = React.useCallback(() => {
     setSelectedEventId(null);
@@ -1766,12 +1779,16 @@ export function ShellContentComponent({
                 onEventClick={handleMobileEventClick}
                 // Disable drag & drop on mobile/tablet
                 enableExternalDrop={false}
-                // Disable deadlines on mobile for simplicity
+                // Deadline handling
                 onDeadlineToggleComplete={onToggleTaskComplete}
                 onDeadlineUnassign={onClearTaskDeadline}
                 deadlines={weekDeadlines}
+                goalDeadlines={weekGoalDeadlines}
+                milestoneDeadlines={weekMilestoneDeadlines}
                 allDayEvents={allDayEvents}
                 onToggleAllDayEvent={handleToggleAllDayEvent}
+                onGoalDeadlineClick={handleGoalDeadlineClick}
+                onToggleMilestoneComplete={onToggleMilestoneComplete}
                 dayStartMinutes={dayStartMinutes}
                 dayEndMinutes={dayEndMinutes}
                 dayBoundariesEnabled={dayBoundariesEnabled}
@@ -2055,11 +2072,15 @@ export function ShellContentComponent({
                       externalDragPreview={externalDragPreview}
                       onDeadlineDrop={handleDeadlineDrop}
                       deadlines={weekDeadlines}
+                      goalDeadlines={weekGoalDeadlines}
+                      milestoneDeadlines={weekMilestoneDeadlines}
                       allDayEvents={allDayEvents}
                       onDeadlineToggleComplete={onToggleTaskComplete}
                       onDeadlineUnassign={onClearTaskDeadline}
                       onDeadlineHover={setHoveredDeadline}
                       onToggleAllDayEvent={handleToggleAllDayEvent}
+                      onGoalDeadlineClick={handleGoalDeadlineClick}
+                      onToggleMilestoneComplete={onToggleMilestoneComplete}
                       dayStartMinutes={dayStartMinutes}
                       dayEndMinutes={dayEndMinutes}
                       dayBoundariesEnabled={dayBoundariesEnabled}
