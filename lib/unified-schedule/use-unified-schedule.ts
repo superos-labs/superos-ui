@@ -62,6 +62,7 @@ export function useUnifiedSchedule({
     // Milestone CRUD
     addMilestone,
     updateMilestone,
+    updateMilestoneDeadline,
     toggleMilestoneComplete,
     deleteMilestone,
     toggleMilestonesEnabled,
@@ -502,6 +503,7 @@ export function useUnifiedSchedule({
     // Milestone CRUD
     addMilestone,
     updateMilestone,
+    updateMilestoneDeadline,
     toggleMilestoneComplete,
     deleteMilestone,
     toggleMilestonesEnabled,

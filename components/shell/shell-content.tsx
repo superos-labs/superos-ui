@@ -305,6 +305,7 @@ export function ShellContentComponent({
   onAddMilestone,
   onToggleMilestoneComplete,
   onUpdateMilestone,
+  onUpdateMilestoneDeadline,
   onDeleteMilestone,
   onToggleMilestonesEnabled,
   // Deadline management
@@ -2004,6 +2005,9 @@ export function ShellContentComponent({
                     }
                     onUpdateMilestone={(milestoneId, label) =>
                       onUpdateMilestone(selectedGoal.id, milestoneId, label)
+                    }
+                    onUpdateMilestoneDeadline={(milestoneId, deadline) =>
+                      onUpdateMilestoneDeadline(selectedGoal.id, milestoneId, deadline)
                     }
                     onDeleteMilestone={(milestoneId) =>
                       onDeleteMilestone(selectedGoal.id, milestoneId)

@@ -67,6 +67,7 @@ export interface UseGoalStateReturn {
   // Milestone CRUD
   addMilestone: (goalId: string, label: string) => string;
   updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
+  updateMilestoneDeadline: (goalId: string, milestoneId: string, deadline: string | undefined) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */
@@ -286,6 +287,18 @@ export function useGoalState({
     [],
   );
 
+  const updateMilestoneDeadline = React.useCallback(
+    (goalId: string, milestoneId: string, deadline: string | undefined) => {
+      setGoals((prev) =>
+        updateMilestoneInGoals(prev, goalId, milestoneId, (milestone) => ({
+          ...milestone,
+          deadline,
+        })),
+      );
+    },
+    [],
+  );
+
   const toggleMilestoneComplete = React.useCallback(
     (goalId: string, milestoneId: string) => {
       setGoals((prev) =>
@@ -411,6 +424,7 @@ export function useGoalState({
     // Milestone CRUD
     addMilestone,
     updateMilestone,
+    updateMilestoneDeadline,
     toggleMilestoneComplete,
     deleteMilestone,
     toggleMilestonesEnabled,

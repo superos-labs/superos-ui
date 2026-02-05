@@ -7,7 +7,9 @@ import {
   RiCheckLine,
   RiDeleteBinLine,
   RiArrowRightSLine,
+  RiCalendarLine,
 } from "@remixicon/react";
+import { format, parse, isValid } from "date-fns";
 import type {
   Milestone,
   ScheduleTask,
@@ -16,6 +18,17 @@ import type {
 } from "@/lib/unified-schedule";
 import type { GoalItem } from "@/components/backlog";
 import { TaskRow } from "@/components/backlog";
+import { DatePicker } from "@/components/ui/date-picker";
+
+/**
+ * Format an ISO date string for compact display.
+ * e.g., "2026-01-15" -> "Jan 15"
+ */
+function formatDeadlineCompact(isoDate: string): string {
+  const date = parse(isoDate, "yyyy-MM-dd", new Date());
+  if (!isValid(date)) return isoDate;
+  return format(date, "MMM d");
+}
 
 // =============================================================================
 // Inline Milestone Creator
@@ -63,11 +76,11 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
         onClick={() => setIsEditing(true)}
         className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 text-left transition-all hover:bg-muted/60"
       >
-        <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground/40 transition-colors group-hover:bg-muted/60 group-hover:text-muted-foreground/60">
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-transparent text-muted-foreground/40 transition-colors group-hover:border-muted-foreground/50 group-hover:bg-muted/60">
           <RiAddLine className="size-3" />
         </div>
         <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
-          Add milestone...
+          Milestone
         </span>
       </button>
     );
@@ -75,7 +88,7 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
 
   return (
     <div className="flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3">
-      <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/60 text-muted-foreground/50">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-muted/60 text-muted-foreground/50">
         <RiAddLine className="size-3" />
       </div>
       <input
@@ -183,6 +196,7 @@ interface MilestoneSectionProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   onToggleMilestone?: () => void;
   onUpdateMilestone?: (label: string) => void;
+  onUpdateMilestoneDeadline?: (deadline: string | undefined) => void;
   onDeleteMilestone?: () => void;
   onToggleTask?: (taskId: string) => void;
   onAddTask?: (label: string, milestoneId: string) => void;
@@ -205,6 +219,7 @@ function MilestoneSection({
   getTaskDeadline,
   onToggleMilestone,
   onUpdateMilestone,
+  onUpdateMilestoneDeadline,
   onDeleteMilestone,
   onToggleTask,
   onAddTask,
@@ -265,24 +280,11 @@ function MilestoneSection({
       {/* Milestone header */}
       <div
         className={cn(
-          "group flex items-center gap-2 rounded-lg py-1.5 pl-1 pr-2 transition-all",
+          "group flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all",
           isCurrent && !milestone.completed && "bg-muted/40",
           !isCurrent && !milestone.completed && "opacity-70",
         )}
       >
-        {/* Expand/collapse chevron */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:text-muted-foreground"
-        >
-          <RiArrowRightSLine
-            className={cn(
-              "size-4 transition-transform",
-              isOpen && "rotate-90",
-            )}
-          />
-        </button>
-
         {/* Checkbox */}
         <button
           onClick={onToggleMilestone}
@@ -302,20 +304,26 @@ function MilestoneSection({
 
         {/* Label */}
         {isEditing ? (
-          <input
-            ref={inputRef}
-            type="text"
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            className="h-5 min-w-0 flex-1 bg-transparent text-xs font-medium text-foreground focus:outline-none"
-          />
+          <div className="relative h-5 min-w-[2ch]">
+            {/* Hidden span to measure text width */}
+            <span className="invisible whitespace-pre text-xs font-medium leading-5">
+              {editValue || " "}
+            </span>
+            <input
+              ref={inputRef}
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              className="absolute inset-0 h-5 w-full bg-transparent text-xs font-medium leading-5 text-foreground focus:outline-none"
+            />
+          </div>
         ) : (
           <span
             onDoubleClick={handleDoubleClick}
             className={cn(
-              "min-w-0 flex-1 truncate text-xs",
+              "min-w-0 truncate text-xs",
               milestone.completed
                 ? "text-muted-foreground line-through"
                 : isCurrent
@@ -328,15 +336,39 @@ function MilestoneSection({
           </span>
         )}
 
-        {/* Task count */}
-        {totalCount > 0 && !isEditing && (
-          <span className="text-xs text-muted-foreground/50">
-            {completedCount}/{totalCount}
+        {/* Expand/collapse chevron */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+        >
+          <RiArrowRightSLine
+            className={cn(
+              "size-4 transition-transform",
+              isOpen && "rotate-90",
+            )}
+          />
+        </button>
+
+        {/* Spacer to push deadline and delete to the right */}
+        <div className="flex-1" />
+
+        {/* Deadline pill */}
+        {onUpdateMilestoneDeadline ? (
+          <DatePicker
+            value={milestone.deadline}
+            onChange={onUpdateMilestoneDeadline}
+            placeholder="Target"
+            className="bg-transparent hover:bg-muted/60 text-muted-foreground/60 hover:text-muted-foreground py-1 px-2"
+          />
+        ) : milestone.deadline ? (
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
+            <RiCalendarLine className="size-3" />
+            {formatDeadlineCompact(milestone.deadline)}
           </span>
-        )}
+        ) : null}
 
         {/* Delete button */}
-        {onDeleteMilestone && !isEditing && (
+        {onDeleteMilestone && (
           <button
             onClick={onDeleteMilestone}
             className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/40 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
@@ -348,7 +380,7 @@ function MilestoneSection({
 
       {/* Tasks */}
       {isOpen && (
-        <div className="flex flex-col gap-0.5 pl-[14px]">
+        <div className="flex w-full flex-col gap-0.5">
           {tasks.map((task) => (
             <TaskRow
               key={task.id}
@@ -425,6 +457,8 @@ export interface GoalDetailMilestonesProps {
   onToggleMilestone?: (milestoneId: string) => void;
   /** Callback to update a milestone's label */
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
+  /** Callback to update a milestone's deadline */
+  onUpdateMilestoneDeadline?: (milestoneId: string, deadline: string | undefined) => void;
   /** Callback to delete a milestone */
   onDeleteMilestone?: (milestoneId: string) => void;
   /** Callback when a task is toggled */
@@ -455,6 +489,7 @@ export function GoalDetailMilestones({
   onAddMilestone,
   onToggleMilestone,
   onUpdateMilestone,
+  onUpdateMilestoneDeadline,
   onDeleteMilestone,
   onToggleTask,
   onAddTask,
@@ -518,6 +553,11 @@ export function GoalDetailMilestones({
           onUpdateMilestone={
             onUpdateMilestone
               ? (label) => onUpdateMilestone(milestone.id, label)
+              : undefined
+          }
+          onUpdateMilestoneDeadline={
+            onUpdateMilestoneDeadline
+              ? (deadline) => onUpdateMilestoneDeadline(milestone.id, deadline)
               : undefined
           }
           onDeleteMilestone={

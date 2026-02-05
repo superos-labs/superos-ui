@@ -200,6 +200,12 @@ export interface ShellContentProps {
     milestoneId: string,
     label: string
   ) => void;
+  /** Update a milestone's deadline */
+  onUpdateMilestoneDeadline: (
+    goalId: string,
+    milestoneId: string,
+    deadline: string | undefined
+  ) => void;
   /** Delete a milestone */
   onDeleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */

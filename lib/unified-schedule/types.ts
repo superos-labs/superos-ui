@@ -156,6 +156,8 @@ export interface Milestone {
   id: string;
   label: string;
   completed: boolean;
+  /** Optional target completion date (ISO date string, e.g., "2026-03-15") */
+  deadline?: string;
 }
 
 /** Task within a goal */
@@ -347,6 +349,7 @@ export interface UseUnifiedScheduleReturn {
   // Milestone CRUD actions
   addMilestone: (goalId: string, label: string) => string;
   updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
+  updateMilestoneDeadline: (goalId: string, milestoneId: string, deadline: string | undefined) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */

@@ -113,7 +113,7 @@ export function DatePicker({
         >
           <RiCalendarLine className="size-3.5" />
           <span>{value ? formatDateDisplay(value) : placeholder}</span>
-          {value && (
+          {value && open && (
             <span
               role="button"
               tabIndex={0}
