@@ -1,3 +1,37 @@
+/**
+ * =============================================================================
+ * File: use-event-state.ts
+ * =============================================================================
+ *
+ * React hook for managing calendar event state and interactions.
+ *
+ * Owns in-memory event collection and exposes a set of CRUD operations and
+ * standard calendar interaction handlers (drag, resize, duplicate, paste,
+ * hover, status changes).
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store and update the array of CalendarEvent objects.
+ * - Provide CRUD helpers for events.
+ * - Track hover state (event, grid position, day header).
+ * - Translate calendar UI interactions into state updates.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - UI-agnostic; does not render calendar components.
+ * - Designed to be composed by higher-level orchestration hooks.
+ * - Delegates clipboard behavior to caller via onCopy / onPaste.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useEventState
+ * - UseEventStateOptions
+ * - UseEventStateReturn
+ */
+
 "use client";
 
 import * as React from "react";

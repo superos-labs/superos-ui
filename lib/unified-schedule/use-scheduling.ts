@@ -1,12 +1,44 @@
+/**
+ * =============================================================================
+ * File: use-scheduling.ts
+ * =============================================================================
+ *
+ * React hook responsible for translating user scheduling intents into
+ * goal/task/essential blocks and deadline updates.
+ *
+ * Encapsulates all logic for creating calendar events, assigning tasks to
+ * blocks, converting between task and goal blocks, and handling drag-drop
+ * scheduling interactions.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Schedule goals, tasks, and essentials onto the calendar.
+ * - Set and clear task deadlines (mutually exclusive with scheduled blocks).
+ * - Assign and unassign tasks to goal blocks.
+ * - Convert task blocks into goal blocks when combining tasks.
+ * - Interpret drag-and-drop operations from the calendar.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Coordinates updates across both goals and events state.
+ * - Uses defaults for block durations (goals: 60m, tasks: 30m, essentials: 60m).
+ * - No persistence; caller owns saving.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useScheduling
+ * - UseSchedulingOptions
+ * - UseSchedulingReturn
+ */
+
 "use client";
 
 import * as React from "react";
 import type { DragItem, DropPosition } from "@/lib/drag-types";
-import type {
-  CalendarEvent,
-  ScheduleGoal,
-  ScheduleEssential,
-} from "./types";
+import type { CalendarEvent, ScheduleGoal, ScheduleEssential } from "./types";
 
 // ============================================================================
 // Types

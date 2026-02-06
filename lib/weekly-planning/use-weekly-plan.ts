@@ -1,9 +1,35 @@
-"use client";
-
 /**
- * Hook for managing weekly plans.
- * Session-only (in-memory) - plans are not persisted across page refreshes.
+ * =============================================================================
+ * File: lib/weekly-planning/use-weekly-plan.ts
+ * =============================================================================
+ *
+ * Client-side hook for managing WeeklyPlan records in memory.
+ *
+ * Stores and retrieves weekly planning completion metadata
+ * keyed by week start date.
+ *
+ * Intended as a lightweight, session-only store that can later
+ * be replaced or augmented with persistence.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Hold weekly plans in an in-memory map.
+ * - Provide get, save, and existence checks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - No persistence across page refreshes.
+ * - plannedAt is set at save time.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useWeeklyPlan
  */
+
+"use client";
 
 import * as React from "react";
 import type {

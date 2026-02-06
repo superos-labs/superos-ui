@@ -1,3 +1,34 @@
+/**
+ * =============================================================================
+ * File: use-week-navigation.ts
+ * =============================================================================
+ *
+ * React hook that enables keyboard shortcuts for navigating between weeks.
+ *
+ * Listens for global keydown events and triggers caller-provided callbacks
+ * for previous, next, and today navigation.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Map ArrowLeft → previous week.
+ * - Map ArrowRight → next week.
+ * - Map T → jump to current week (optional).
+ * - Ignore shortcuts while typing in inputs, textareas, or contenteditable.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Global listener is registered on mount and cleaned up on unmount.
+ * - No state; purely side-effectful.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useWeekNavigation
+ * - UseWeekNavigationOptions
+ */
+
 "use client";
 
 import * as React from "react";

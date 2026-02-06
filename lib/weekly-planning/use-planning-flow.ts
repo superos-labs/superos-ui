@@ -1,17 +1,39 @@
-"use client";
-
 /**
- * Hook for managing the weekly planning flow state.
+ * =============================================================================
+ * File: lib/weekly-planning/use-planning-flow.ts
+ * =============================================================================
  *
- * Two-step planning flow:
- * 1. Prioritize: Select 2-3 important tasks per goal (calendar dimmed)
- * 2. Schedule: Drag prioritized tasks to calendar blocks (calendar active)
+ * Client-side hook that manages the state machine for the Weekly Planning flow.
  *
- * The calendar is already populated with blueprint blocks, so users
- * just need to assign their prioritized tasks to existing or new blocks.
+ * Orchestrates a two-step experience:
+ * 1) Prioritize important tasks.
+ * 2) Schedule prioritized tasks onto calendar blocks.
  *
- * Weekly focus tracking is session-only (lost on page refresh).
+ * Provides step navigation, confirm/cancel handling, and session-only
+ * tracking of weekly focus tasks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Track current planning step.
+ * - Reset flow when planning mode becomes active.
+ * - Manage weekly focus task IDs (session-only).
+ * - Expose navigation and action handlers.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Does not persist any data.
+ * - Assumes calendar already contains blueprint blocks.
+ * - Confirm is only valid in the "schedule" step.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - usePlanningFlow
  */
+
+"use client";
 
 import * as React from "react";
 import type {

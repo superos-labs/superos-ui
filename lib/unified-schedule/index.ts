@@ -1,4 +1,37 @@
-// Public API for the unified schedule system
+/**
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public entry point for the unified schedule domain.
+ *
+ * Aggregates and re-exports the primary orchestration hook, composable sub-hooks,
+ * immutable state utilities, and shared types that make up the unified schedule
+ * system.
+ *
+ * Intended to provide a single, stable import surface for consumers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Expose the main `useUnifiedSchedule` orchestration hook.
+ * - Expose composable sub-hooks for advanced or partial integrations.
+ * - Re-export immutable goal/task/milestone state utilities.
+ * - Re-export core domain and derived types.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Avoid exporting internal-only modules directly.
+ * - Prefer adding new public APIs here rather than importing deep paths.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - Hooks (useUnifiedSchedule, useGoalState, useScheduling, etc.)
+ * - State utilities from goal-state-utils
+ * - Unified schedule types
+ */
 
 // Main orchestration hook
 export { useUnifiedSchedule } from "./use-unified-schedule";

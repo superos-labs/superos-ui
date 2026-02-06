@@ -1,3 +1,38 @@
+/**
+ * =============================================================================
+ * File: use-unified-schedule.ts
+ * =============================================================================
+ *
+ * High-level orchestration hook for the unified schedule system.
+ *
+ * Composes specialized hooks for goal state, essential visibility, event state,
+ * scheduling actions, and derived statistics into a single cohesive API used
+ * by the application shell and major views.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compose and wire together domain-specific hooks.
+ * - Provide a unified surface area for schedule data and actions.
+ * - Maintain bidirectional sync between tasks and calendar events.
+ * - Layer cross-cutting behaviors (sync counts, completion propagation,
+ *   enhanced calendar handlers).
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Acts as the "facade" for the unified schedule domain.
+ * - Lower-level hooks remain independently testable.
+ * - No persistence; callers decide when and how to save.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useUnifiedSchedule
+ * - UseUnifiedScheduleOptions
+ * - UseUnifiedScheduleReturn
+ */
+
 "use client";
 
 import * as React from "react";
@@ -168,7 +203,7 @@ export function useUnifiedSchedule({
         .map((e) => `${e.id}:${e.assignedTaskIds?.slice().sort().join(",")}`)
         .sort()
         .join("|"),
-    [allEvents]
+    [allEvents],
   );
 
   // Keep event.pendingTaskCount and event.completedTaskCount in sync with goals
@@ -198,7 +233,7 @@ export function useUnifiedSchedule({
 
         // Compute counts from assigned tasks
         const assignedTasks = goal.tasks.filter((t) =>
-          event.assignedTaskIds!.includes(t.id)
+          event.assignedTaskIds!.includes(t.id),
         );
         const pendingCount = assignedTasks.filter((t) => !t.completed).length;
         const completedCount = assignedTasks.filter((t) => t.completed).length;
@@ -247,7 +282,7 @@ export function useUnifiedSchedule({
         updateEvent(blockId, { status: newStatus });
       }
     },
-    [findTask, baseToggleTaskComplete, updateEvent]
+    [findTask, baseToggleTaskComplete, updateEvent],
   );
 
   // Update task with event sync
@@ -275,7 +310,7 @@ export function useUnifiedSchedule({
         }
       }
     },
-    [findTask, baseUpdateTask, updateEvent]
+    [findTask, baseUpdateTask, updateEvent],
   );
 
   // Delete task with event cleanup
@@ -291,7 +326,7 @@ export function useUnifiedSchedule({
 
       baseDeleteTask(goalId, taskId);
     },
-    [findTask, baseDeleteTask, baseDeleteEvent]
+    [findTask, baseDeleteTask, baseDeleteEvent],
   );
 
   // Delete event with goal sync
@@ -312,7 +347,7 @@ export function useUnifiedSchedule({
 
       baseDeleteEvent(eventId);
     },
-    [allEvents, baseUpdateTask, baseDeleteEvent]
+    [allEvents, baseUpdateTask, baseDeleteEvent],
   );
 
   // Mark event complete with goal sync
@@ -345,7 +380,7 @@ export function useUnifiedSchedule({
 
       baseMarkEventComplete(eventId);
     },
-    [allEvents, baseUpdateTask, baseMarkEventComplete]
+    [allEvents, baseUpdateTask, baseMarkEventComplete],
   );
 
   // Mark event incomplete with goal sync
@@ -367,7 +402,7 @@ export function useUnifiedSchedule({
 
       baseMarkEventIncomplete(eventId);
     },
-    [allEvents, baseUpdateTask, baseMarkEventIncomplete]
+    [allEvents, baseUpdateTask, baseMarkEventIncomplete],
   );
 
   // -------------------------------------------------------------------------
@@ -393,7 +428,7 @@ export function useUnifiedSchedule({
         }
       }
     },
-    [weekDates, baseCalendarHandlers, goals, baseUpdateTask]
+    [weekDates, baseCalendarHandlers, goals, baseUpdateTask],
   );
 
   const calendarHandlers = React.useMemo(
@@ -423,7 +458,7 @@ export function useUnifiedSchedule({
       markEventIncomplete,
       updateEvent,
       handleMarkDayComplete,
-    ]
+    ],
   );
 
   // -------------------------------------------------------------------------
@@ -441,7 +476,7 @@ export function useUnifiedSchedule({
         },
       });
     },
-    [goals, updateGoal]
+    [goals, updateGoal],
   );
 
   // -------------------------------------------------------------------------
@@ -461,7 +496,7 @@ export function useUnifiedSchedule({
         },
       });
     },
-    [allEvents, updateEvent]
+    [allEvents, updateEvent],
   );
 
   // -------------------------------------------------------------------------

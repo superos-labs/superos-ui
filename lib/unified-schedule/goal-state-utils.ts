@@ -1,11 +1,40 @@
 /**
- * Pure utility functions for immutable nested state updates.
+ * =============================================================================
+ * File: goal-state-utils.ts
+ * =============================================================================
  *
- * These utilities handle the repetitive pattern of updating deeply nested
- * entities (goals → tasks → subtasks/milestones) in an immutable way.
+ * Pure immutable update helpers for goal, task, subtask, and milestone state.
  *
- * All functions are pure and side-effect free, making them easy to test
- * and compose together for complex updates.
+ * Centralizes common nested-update patterns for the unified schedule data model
+ * (goals → tasks → subtasks / milestones) to avoid repetitive and error-prone
+ * spread logic throughout hooks and reducers.
+ *
+ * All functions:
+ * - Are pure and side-effect free.
+ * - Return new object/array references.
+ * - Preserve original inputs when no matching entity is found.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Update, add, remove, and find goals, tasks, subtasks, and milestones.
+ * - Provide composed helpers for multi-level updates (e.g. subtask inside task
+ *   inside goal).
+ * - Support milestone-task associations and milestone-based batch operations.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - No knowledge of React, hooks, or persistence layers.
+ * - Safe to use inside reducers, Zustand stores, or React state setters.
+ * - Prefer composing these utilities rather than introducing new ad-hoc
+ *   immutable update logic elsewhere.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - Goal-level, task-level, subtask-level, and milestone-level update helpers.
+ * - Cross-goal finders and batch update utilities.
  */
 
 import type { ScheduleGoal, ScheduleTask, Subtask, Milestone } from "./types";

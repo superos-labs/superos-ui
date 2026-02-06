@@ -1,3 +1,36 @@
+/**
+ * =============================================================================
+ * File: use-essential-auto-complete.ts
+ * =============================================================================
+ *
+ * React hook that automatically marks essential calendar blocks as completed
+ * once their scheduled end time has passed.
+ *
+ * Intended to support "set and forget" essentials (e.g. meals, commute, sleep)
+ * so users do not need to manually complete them.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Detect essential blocks whose end time is in the past.
+ * - Exclude blocks already marked as completed.
+ * - Invoke a caller-provided completion callback for eligible blocks.
+ * - Re-check on mount, when events change, and on a polling interval.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Polling-based (default: every 60s) to avoid heavy timers per event.
+ * - Handles overnight blocks that extend past midnight.
+ * - Does not mutate state directly; delegates completion to caller.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useEssentialAutoComplete
+ * - UseEssentialAutoCompleteOptions
+ */
+
 "use client";
 
 import * as React from "react";

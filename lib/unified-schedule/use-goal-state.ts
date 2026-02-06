@@ -1,3 +1,38 @@
+/**
+ * =============================================================================
+ * File: use-goal-state.ts
+ * =============================================================================
+ *
+ * React hook for managing backlog goal, task, subtask, and milestone state.
+ *
+ * Owns in-memory goal hierarchy and exposes high-level CRUD operations and
+ * behaviors (completion toggles, milestone enablement, weekly focus, etc.).
+ * Built on top of pure immutable helpers from goal-state-utils.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store and update ScheduleGoal[] state.
+ * - Provide CRUD for goals, tasks, subtasks, and milestones.
+ * - Handle milestone enable/disable semantics and task reassignment.
+ * - Expose weekly focus batch updates.
+ * - Provide cross-goal task lookup.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - No persistence or side effects; caller owns saving.
+ * - All updates are immutable and functional.
+ * - Encapsulates domain behavior, not UI concerns.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useGoalState
+ * - UseGoalStateOptions
+ * - UseGoalStateReturn
+ */
+
 "use client";
 
 import * as React from "react";
@@ -65,7 +100,11 @@ export interface UseGoalStateReturn {
   // Milestone CRUD
   addMilestone: (goalId: string, label: string) => string;
   updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
-  updateMilestoneDeadline: (goalId: string, milestoneId: string, deadline: string | undefined) => void;
+  updateMilestoneDeadline: (
+    goalId: string,
+    milestoneId: string,
+    deadline: string | undefined,
+  ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */
@@ -351,7 +390,10 @@ export function useGoalState({
           if (hasExistingMilestones) {
             // Use first milestone to assign tasks
             const firstMilestoneId = goal.milestones![0].id;
-            const updatedGoal = assignAllTasksToMilestone(goal, firstMilestoneId);
+            const updatedGoal = assignAllTasksToMilestone(
+              goal,
+              firstMilestoneId,
+            );
             return { ...updatedGoal, milestonesEnabled: true };
           } else {
             // Create "Phase 1" milestone and assign all tasks to it

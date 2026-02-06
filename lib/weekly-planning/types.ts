@@ -1,8 +1,38 @@
 /**
- * Types for the weekly planning system.
- * Manages weekly planning flow with two steps:
- * 1. Prioritize: Select important tasks for the week
- * 2. Schedule: Drag prioritized tasks to the calendar
+ * =============================================================================
+ * File: lib/weekly-planning/types.ts
+ * =============================================================================
+ *
+ * Shared types for the Weekly Planning domain.
+ *
+ * Defines the data model and hook contracts that support the
+ * two-step weekly planning flow:
+ * 1) Prioritize important tasks.
+ * 2) Schedule prioritized tasks onto the calendar.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Describe persisted weekly plan records.
+ * - Define planning flow step semantics.
+ * - Specify input/output types for weekly planning hooks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Weekly focus state is session-only and not persisted.
+ * - APIs are intentionally minimal to allow future expansion.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * Types:
+ * - WeeklyPlan
+ * - PlanningStep
+ * - UseWeeklyPlanOptions
+ * - UseWeeklyPlanReturn
+ * - UsePlanningFlowOptions
+ * - UsePlanningFlowReturn
  */
 
 // ============================================================================

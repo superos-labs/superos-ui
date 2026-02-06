@@ -1,3 +1,39 @@
+/**
+ * =============================================================================
+ * File: use-schedule-stats.ts
+ * =============================================================================
+ *
+ * React hook for deriving computed statistics and deadline views from
+ * goals and calendar events.
+ *
+ * Provides read-only selectors for planned/completed/focused time, task
+ * scheduling info, deadline groupings, quarter-level deadline aggregation,
+ * and week-scoped event filtering.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compute GoalStats for goals and essentials.
+ * - Resolve task schedule locations from events.
+ * - Resolve task, goal, and milestone deadlines.
+ * - Aggregate deadlines by week and by quarter.
+ * - Filter events by current week and essential visibility.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Purely derived data; does not own or mutate state.
+ * - Optimized with memoization and callbacks.
+ * - Designed to be composed by higher-level orchestration hooks.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useScheduleStats
+ * - UseScheduleStatsOptions
+ * - UseScheduleStatsReturn
+ */
+
 "use client";
 
 import * as React from "react";
@@ -39,7 +75,9 @@ export interface UseScheduleStatsReturn {
   /** Get all goal deadlines for a week */
   getWeekGoalDeadlines: (weekDates: Date[]) => Map<string, DeadlineGoal[]>;
   /** Get all milestone deadlines for a week */
-  getWeekMilestoneDeadlines: (weekDates: Date[]) => Map<string, DeadlineMilestone[]>;
+  getWeekMilestoneDeadlines: (
+    weekDates: Date[],
+  ) => Map<string, DeadlineMilestone[]>;
   /** Get all incomplete deadlines for the current calendar quarter */
   getQuarterDeadlines: (currentDate: Date) => QuarterDeadlineItem[];
   /** Events filtered by week and essential visibility */

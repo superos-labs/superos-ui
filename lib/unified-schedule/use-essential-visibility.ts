@@ -1,3 +1,35 @@
+/**
+ * =============================================================================
+ * File: use-essential-visibility.ts
+ * =============================================================================
+ *
+ * React hook for managing which essentials are visible / enabled in the schedule.
+ *
+ * Provides committed state, draft editing state, and helpers for toggling,
+ * saving, and discarding changes when users customize their tracked essentials.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Track the set of enabled essential IDs.
+ * - Expose a draft editing mode for bulk changes.
+ * - Derive the list of enabled essentials from all available essentials.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Defaults to opt-in (no essentials enabled unless specified).
+ * - Uses Set for efficient membership checks and updates.
+ * - Does not persist state; caller owns persistence.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useEssentialVisibility
+ * - UseEssentialVisibilityOptions
+ * - UseEssentialVisibilityReturn
+ */
+
 "use client";
 
 import * as React from "react";

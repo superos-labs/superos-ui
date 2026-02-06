@@ -1,13 +1,36 @@
 /**
- * Types for the unified schedule system.
- * Single source of truth for schedule-related type definitions.
+ * =============================================================================
+ * File: types.ts
+ * =============================================================================
  *
- * This file is the canonical location for domain types used across the app:
- * - CalendarEvent: The core calendar block data structure
- * - HoverPosition: Grid position for hover state
- * - BlockStatus: Completion state of blocks (re-exported from lib/types)
+ * Canonical type definitions for the unified schedule system.
  *
- * Components re-export these types for convenience but this is the source of truth.
+ * Serves as the single source of truth for all schedule-related domain,
+ * derived, and hook interface types used across the app.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define core calendar event and hover/grid positioning types.
+ * - Define goal, task, subtask, milestone, and essential domain models.
+ * - Define external calendar sync configuration and computed sync state.
+ * - Define computed/derived data shapes (stats, deadlines, schedule info).
+ * - Define option and return types for unified schedule hooks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Other modules may re-export these types, but this file is authoritative.
+ * - Types are intentionally UI-agnostic and persistence-agnostic.
+ * - Prefer extending types here rather than redefining them elsewhere.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - CalendarEvent, HoverPosition, BlockStatus
+ * - ScheduleGoal, ScheduleTask, Subtask, Milestone, ScheduleEssential
+ * - Sync-related types (GoalSyncSettings, BlockSyncSettings, BlockSyncState)
+ * - Computed/derived types and hook option/return types
  */
 
 import type { GoalColor } from "@/lib/colors";
@@ -123,7 +146,12 @@ export interface SyncDestination {
   /** Target calendar color (hex) for display */
   calendarColor: string;
   /** How this block appears in the external calendar (appearance mode) */
-  syncedAs: "blocked_superos" | "busy" | "goal_title" | "block_title" | "custom";
+  syncedAs:
+    | "blocked_superos"
+    | "busy"
+    | "goal_title"
+    | "block_title"
+    | "custom";
   /** The actual display text that will appear in the external calendar */
   displayText: string;
 }
@@ -340,7 +368,9 @@ export interface UseUnifiedScheduleReturn {
   getTaskDeadline: (taskId: string) => TaskDeadlineInfo | null;
   getWeekDeadlines: (weekDates: Date[]) => Map<string, DeadlineTask[]>;
   getWeekGoalDeadlines: (weekDates: Date[]) => Map<string, DeadlineGoal[]>;
-  getWeekMilestoneDeadlines: (weekDates: Date[]) => Map<string, DeadlineMilestone[]>;
+  getWeekMilestoneDeadlines: (
+    weekDates: Date[],
+  ) => Map<string, DeadlineMilestone[]>;
   /** Get all incomplete deadlines for the current calendar quarter */
   getQuarterDeadlines: (currentDate: Date) => QuarterDeadlineItem[];
 
@@ -348,14 +378,14 @@ export interface UseUnifiedScheduleReturn {
   /** Update sync settings for a goal */
   updateGoalSyncSettings: (
     goalId: string,
-    settings: Partial<GoalSyncSettings>
+    settings: Partial<GoalSyncSettings>,
   ) => void;
 
   // Block sync settings
   /** Update sync settings for a block */
   updateBlockSyncSettings: (
     blockId: string,
-    settings: Partial<BlockSyncSettings>
+    settings: Partial<BlockSyncSettings>,
   ) => void;
 
   // Backlog actions
@@ -369,7 +399,7 @@ export interface UseUnifiedScheduleReturn {
   updateTask: (
     goalId: string,
     taskId: string,
-    updates: Partial<ScheduleTask>
+    updates: Partial<ScheduleTask>,
   ) => void;
   deleteTask: (goalId: string, taskId: string) => void;
 
@@ -379,19 +409,23 @@ export interface UseUnifiedScheduleReturn {
     goalId: string,
     taskId: string,
     subtaskId: string,
-    label: string
+    label: string,
   ) => void;
   toggleSubtaskComplete: (
     goalId: string,
     taskId: string,
-    subtaskId: string
+    subtaskId: string,
   ) => void;
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
   // Milestone CRUD actions
   addMilestone: (goalId: string, label: string) => string;
   updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
-  updateMilestoneDeadline: (goalId: string, milestoneId: string, deadline: string | undefined) => void;
+  updateMilestoneDeadline: (
+    goalId: string,
+    milestoneId: string,
+    deadline: string | undefined,
+  ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */
@@ -405,18 +439,18 @@ export interface UseUnifiedScheduleReturn {
   scheduleGoal: (
     goalId: string,
     dayIndex: number,
-    startMinutes: number
+    startMinutes: number,
   ) => void;
   scheduleTask: (
     goalId: string,
     taskId: string,
     dayIndex: number,
-    startMinutes: number
+    startMinutes: number,
   ) => void;
   scheduleEssential: (
     essentialId: string,
     dayIndex: number,
-    startMinutes: number
+    startMinutes: number,
   ) => void;
 
   // Deadline actions
@@ -441,7 +475,7 @@ export interface UseUnifiedScheduleReturn {
   assignTaskToGoalBlock: (
     blockId: string,
     goalId: string,
-    taskId: string
+    taskId: string,
   ) => void;
   /** Convert a task block into a goal block containing both tasks */
   convertTaskBlockToGoalBlock: (blockId: string, droppedTaskId: string) => void;
@@ -450,7 +484,7 @@ export interface UseUnifiedScheduleReturn {
   handleDrop: (
     item: DragItem,
     position: DropPosition,
-    weekDates: Date[]
+    weekDates: Date[],
   ) => void;
 
   // Hover state (for keyboard shortcuts)
@@ -463,24 +497,24 @@ export interface UseUnifiedScheduleReturn {
     onEventResize: (
       eventId: string,
       newStartMinutes: number,
-      newDurationMinutes: number
+      newDurationMinutes: number,
     ) => void;
     onEventResizeEnd: () => void;
     onEventDragEnd: (
       eventId: string,
       newDayIndex: number,
-      newStartMinutes: number
+      newStartMinutes: number,
     ) => void;
     onEventDuplicate: (
       sourceEventId: string,
       newDayIndex: number,
-      newStartMinutes: number
+      newStartMinutes: number,
     ) => void;
     onGridDoubleClick: (dayIndex: number, startMinutes: number) => void;
     onGridDragCreate: (
       dayIndex: number,
       startMinutes: number,
-      durationMinutes: number
+      durationMinutes: number,
     ) => void;
     onEventCopy: (event: CalendarEvent) => void;
     onEventDelete: (eventId: string) => void;
