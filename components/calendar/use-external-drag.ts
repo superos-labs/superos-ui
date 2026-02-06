@@ -1,3 +1,43 @@
+/**
+ * =============================================================================
+ * File: use-external-drag.ts
+ * =============================================================================
+ *
+ * External drag-and-drop controller for calendar time columns.
+ *
+ * Supports dragging items from outside the calendar (backlog, lists, etc.)
+ * into a specific day column, with live preview, gap-fitting, and block
+ * hit-detection.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Track pointer movement during external drags.
+ * - Detect drops over existing blocks vs empty grid.
+ * - Compute raw minutes from pointer Y position.
+ * - Apply adaptive drop algorithm or overlap placement.
+ * - Update shared drag preview state.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Creating events.
+ * - Persisting changes.
+ * - Rendering previews.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses drag context as the single source of truth.
+ * - Shift enables overlap mode (bypass adaptive fitting).
+ * - Existing-block drops are routed upward via preview state.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useExternalDrag
+ */
+
 "use client";
 
 import * as React from "react";
@@ -189,9 +229,9 @@ export function useExternalDrag({
   // Check if external drag is over this column (time-grid only, not header)
   const isExternalDragOver = Boolean(
     enableExternalDrop &&
-      dragContext?.state.isDragging &&
-      dragContext?.state.previewPosition?.dayIndex === dayIndex &&
-      dragContext?.state.previewPosition?.dropTarget === "time-grid",
+    dragContext?.state.isDragging &&
+    dragContext?.state.previewPosition?.dayIndex === dayIndex &&
+    dragContext?.state.previewPosition?.dropTarget === "time-grid",
   );
 
   return {

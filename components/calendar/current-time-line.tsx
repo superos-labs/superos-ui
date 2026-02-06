@@ -1,3 +1,43 @@
+/**
+ * =============================================================================
+ * File: current-time-line.tsx
+ * =============================================================================
+ *
+ * Visual indicator for the current time within the calendar grid.
+ *
+ * Renders a horizontal line and dot positioned at the current minute.
+ * In week view, the indicator is constrained to today's column.
+ * In day view, it spans the active day column.
+ *
+ * Updates automatically once per minute.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Track current time.
+ * - Calculate vertical position from minutes since midnight.
+ * - Determine today's column based on week start preference.
+ * - Render appropriate indicator for day and week views.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Scrolling the calendar.
+ * - Managing timezones.
+ * - Handling interactions.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses pointer-events-none to avoid intercepting interactions.
+ * - Gutter width is derived from showHourLabels.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - CurrentTimeLine
+ */
+
 "use client";
 
 import * as React from "react";
@@ -30,9 +70,12 @@ export function CurrentTimeLine({
 
   // Calculate day index based on week start preference
   const today = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  const dayIndex = weekStartsOn === 1
-    ? (today === 0 ? 6 : today - 1) // Monday start: Mon=0, Tue=1, ..., Sun=6
-    : today; // Sunday start: Sun=0, Mon=1, ..., Sat=6
+  const dayIndex =
+    weekStartsOn === 1
+      ? today === 0
+        ? 6
+        : today - 1 // Monday start: Mon=0, Tue=1, ..., Sun=6
+      : today; // Sunday start: Sun=0, Mon=1, ..., Sat=6
 
   const timeLabel = now.toLocaleTimeString("en-US", {
     hour: "numeric",

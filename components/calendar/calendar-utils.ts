@@ -1,3 +1,64 @@
+/**
+ * =============================================================================
+ * File: calendar-utils.ts
+ * =============================================================================
+ *
+ * Core utility functions for calendar behavior and layout.
+ *
+ * Contains:
+ * - Date and week helpers.
+ * - Formatting utilities for hours, dates, and times.
+ * - Overlap layout calculation for concurrent events.
+ * - Adaptive drop positioning logic for drag-and-drop.
+ * - Shared animation presets for block transitions.
+ *
+ * All helpers are pure and framework-agnostic.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Derive week structures and day indices.
+ * - Format human-readable date and time strings.
+ * - Snap and normalize minute-based positions.
+ * - Calculate overlap column layout for event segments.
+ * - Compute adaptive drop placement within available gaps.
+ * - Provide shared motion configuration for blocks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering UI.
+ * - Managing state.
+ * - Fetching or persisting data.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Monday-start weeks are the default.
+ * - Touching time ranges are not considered overlapping.
+ * - Adaptive drop is the default drag behavior; Shift bypasses it.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - blockAnimations
+ * - getWeekDates
+ * - getDateForDayIndex
+ * - getDayIndexFromDate
+ * - isDateInWeek
+ * - formatWeekRange
+ * - formatHour
+ * - formatFullDate
+ * - isToday
+ * - isCurrentHour
+ * - snapToGrid
+ * - formatEventTime
+ * - formatTimeFromMinutes
+ * - calculateOverlapLayout
+ * - calculateAdaptiveDrop
+ * - AdaptiveDropInfo
+ */
+
 import type { Transition } from "framer-motion";
 import type { WeekStartDay } from "@/lib/preferences";
 import { ADAPTIVE_DROP_MIN_GAP } from "@/lib/drag-types";

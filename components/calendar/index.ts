@@ -1,4 +1,42 @@
-// Public API for the Calendar component family
+/**
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public API surface for the Calendar component family.
+ *
+ * Re-exports all primary components, sub-components, hooks, types,
+ * constants, and utilities needed to integrate and extend the calendar.
+ *
+ * Intended to be the single import entry point for consumers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define the public export surface of the calendar package.
+ * - Group exports by category (components, hooks, types, constants, utilities).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Implementing behavior.
+ * - Declaring internal-only modules.
+ * - Performing side effects.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Most advanced helpers are exported but not required for basic usage.
+ * - Zoom-based sizing helpers are preferred over density-based ones.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - Calendar and sub-components
+ * - Calendar hooks
+ * - Calendar types and callback interfaces
+ * - Constants and helpers
+ */
 
 // Main component
 export { Calendar } from "./calendar";
@@ -82,7 +120,10 @@ export {
 export { getGridHeight, getPixelsPerMinute } from "./calendar-types";
 
 // Zoom helpers (preferred)
-export { getGridHeightFromZoom, getPixelsPerMinuteFromZoom } from "./calendar-types";
+export {
+  getGridHeightFromZoom,
+  getPixelsPerMinuteFromZoom,
+} from "./calendar-types";
 
 // Status helpers (for advanced use cases)
 export {

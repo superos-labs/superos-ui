@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: calendar-context-menu.tsx
+ * =============================================================================
+ *
+ * Context menu primitives for calendar interactions.
+ *
+ * Provides two lightweight wrappers:
+ * - BlockContextMenu for existing calendar blocks.
+ * - EmptySpaceContextMenu for empty grid regions.
+ *
+ * These components are thin UI shells that delegate all behavior
+ * through callbacks supplied by the parent.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render contextual actions for blocks and empty calendar space.
+ * - Expose copy, duplicate, paste, create, delete, and toggle-complete actions.
+ * - Conditionally show mark complete/incomplete based on provided callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing clipboard state.
+ * - Executing mutations.
+ * - Determining permissions or business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Keyboard shortcuts are displayed but not bound here.
+ * - Uses shared ContextMenu UI primitives.
+ * - Visibility of some actions is driven entirely by prop presence.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - BlockContextMenu
+ * - EmptySpaceContextMenu
+ * - BlockContextMenuProps
+ * - EmptySpaceContextMenuProps
+ */
+
 "use client";
 
 import * as React from "react";

@@ -1,3 +1,38 @@
+/**
+ * =============================================================================
+ * File: keyboard-toast.tsx
+ * =============================================================================
+ *
+ * Lightweight toast for keyboard shortcut feedback.
+ *
+ * Displays a transient message near the bottom center of the screen
+ * to acknowledge successful keyboard-driven actions.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Animate toast enter/exit.
+ * - Render message when provided.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing message state.
+ * - Timing or auto-dismiss logic.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses AnimatePresence and motion for subtle transitions.
+ * - Pointer events are disabled to avoid blocking interactions.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - KeyboardToast
+ * - KeyboardToastProps
+ */
+
 "use client";
 
 import * as React from "react";

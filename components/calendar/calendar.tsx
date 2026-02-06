@@ -1,3 +1,42 @@
+/**
+ * =============================================================================
+ * File: calendar.tsx
+ * =============================================================================
+ *
+ * Calendar view router and composition root.
+ *
+ * Selects between DayView and WeekView based on the requested view
+ * and forwards all configuration, data, and interaction callbacks.
+ *
+ * This component contains no calendar logic itself.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Resolve active date and week range.
+ * - Choose the correct view (day or week).
+ * - Pass through all props to the active view.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering individual blocks.
+ * - Managing interactions.
+ * - Mutating events.
+ * - Computing layout.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - selectedDate falls back to today.
+ * - Week ranges are derived via getWeekDates.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - Calendar
+ */
+
 "use client";
 
 import * as React from "react";

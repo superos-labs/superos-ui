@@ -1,11 +1,44 @@
-// =============================================================================
-// Barrel re-export — all consumers continue importing from "./calendar-types"
-//
-// The actual definitions now live in focused modules:
-//   calendar-constants.ts — constants, density/zoom config, simple types, status helpers
-//   calendar-segments.ts  — overnight helpers, segment types, getSegmentsForDay
-//   calendar-props.ts     — callback interfaces, component prop interfaces
-// =============================================================================
+/**
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public barrel file for the calendar module.
+ *
+ * Re-exports all shared calendar constants, helpers, types, and prop
+ * interfaces from a single entry point to simplify imports and keep
+ * consumer code consistent.
+ *
+ * No runtime logic lives in this file.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Aggregate and re-export calendar submodule APIs.
+ * - Define the public surface area of the calendar package.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Implementing logic.
+ * - Declaring new types.
+ * - Performing side effects.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Organized into three sections:
+ *   1) Constants and helpers.
+ *   2) Segments and overnight utilities.
+ *   3) Props and callback interfaces.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - All exports from calendar-constants
+ * - All exports from calendar-segments
+ * - All exports from calendar-props
+ */
 
 // --- Constants, config, simple types, status helpers -------------------------
 export {

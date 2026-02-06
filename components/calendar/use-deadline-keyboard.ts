@@ -1,3 +1,41 @@
+/**
+ * =============================================================================
+ * File: use-deadline-keyboard.ts
+ * =============================================================================
+ *
+ * Keyboard shortcut handler for deadline pills in the calendar deadline tray.
+ *
+ * Enables quick actions on hovered deadlines without requiring
+ * context menus or mouse interaction.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Listen for keyboard shortcuts when a deadline pill is hovered.
+ * - Invoke toggle-complete and unassign callbacks.
+ * - Optionally trigger toast feedback.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing hover state.
+ * - Rendering UI.
+ * - Persisting changes.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Ignores input/textarea/contenteditable elements.
+ * - Uses Meta/Ctrl interchangeably.
+ * - Toast for completion is delegated to undo/feedback systems.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useDeadlineKeyboard
+ * - UseDeadlineKeyboardOptions
+ */
+
 "use client";
 
 import * as React from "react";

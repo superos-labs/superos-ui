@@ -1,3 +1,42 @@
+/**
+ * =============================================================================
+ * File: use-calendar-clipboard.ts
+ * =============================================================================
+ *
+ * In-memory clipboard for calendar events.
+ *
+ * Enables copy and paste of CalendarEvent objects within the calendar
+ * without touching the system clipboard.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store a copied event.
+ * - Produce a new event instance on paste.
+ * - Normalize status when pasting.
+ * - Expose clipboard state and helpers.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting pasted events.
+ * - Generating business-level defaults.
+ * - Interacting with the system clipboard.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses crypto.randomUUID for new IDs.
+ * - Pasted events do not carry task assignment metadata.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useCalendarClipboard
+ * - UseCalendarClipboardReturn
+ * - CalendarClipboard
+ */
+
 "use client";
 
 import * as React from "react";

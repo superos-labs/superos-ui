@@ -1,7 +1,53 @@
+/**
+ * =============================================================================
+ * File: use-calendar-keyboard.ts
+ * =============================================================================
+ *
+ * Keyboard shortcut handler for calendar interactions.
+ *
+ * Listens globally for key presses and triggers calendar actions
+ * when the user is hovering within the calendar grid, blocks,
+ * or day headers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Detect keyboard shortcuts.
+ * - Gate shortcuts based on hover context.
+ * - Invoke provided callbacks.
+ * - Emit lightweight toast feedback.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing hover state.
+ * - Persisting changes.
+ * - Rendering UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Ignores input/textarea/contenteditable elements.
+ * - Uses Meta/Ctrl interchangeably.
+ * - Some actions delegate toast handling to higher-level systems.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useCalendarKeyboard
+ * - UseCalendarKeyboardOptions
+ * - UseCalendarKeyboardReturn
+ * - HoverPosition (re-export)
+ */
+
 "use client";
 
 import * as React from "react";
-import { canMarkComplete, type CalendarEvent, type HoverPosition } from "./calendar-types";
+import {
+  canMarkComplete,
+  type CalendarEvent,
+  type HoverPosition,
+} from "./calendar-types";
 
 // Re-export HoverPosition for backward compatibility
 export type { HoverPosition };
@@ -18,9 +64,16 @@ export interface UseCalendarKeyboardOptions {
   /** Callbacks */
   onCopy?: (event: CalendarEvent) => void;
   onPaste?: (dayIndex: number, startMinutes: number) => void;
-  onDuplicate?: (eventId: string, dayIndex: number, startMinutes: number) => void;
+  onDuplicate?: (
+    eventId: string,
+    dayIndex: number,
+    startMinutes: number,
+  ) => void;
   onDelete?: (eventId: string) => void;
-  onToggleComplete?: (eventId: string, currentStatus: CalendarEvent["status"]) => void;
+  onToggleComplete?: (
+    eventId: string,
+    currentStatus: CalendarEvent["status"],
+  ) => void;
   /** Called when ⌘Enter is pressed while hovering a day header */
   onMarkDayComplete?: (dayIndex: number) => void;
   /** Called when user zooms in (⌘=) */
@@ -90,7 +143,8 @@ export function useCalendarKeyboard({
       // Only act when hovering within the calendar grid or day header
       const isHoveringBlock = hoveredEvent !== null;
       const isHoveringGrid = hoverPosition !== null;
-      const isHoveringDayHeader = hoveredDayIndex !== null && hoveredDayIndex !== undefined;
+      const isHoveringDayHeader =
+        hoveredDayIndex !== null && hoveredDayIndex !== undefined;
       if (!isHoveringBlock && !isHoveringGrid && !isHoveringDayHeader) return;
 
       const isMeta = e.metaKey || e.ctrlKey;
@@ -104,7 +158,13 @@ export function useCalendarKeyboard({
       }
 
       // ⌘V - Paste
-      if (isMeta && e.key === "v" && isHoveringGrid && hasClipboardContent && onPaste) {
+      if (
+        isMeta &&
+        e.key === "v" &&
+        isHoveringGrid &&
+        hasClipboardContent &&
+        onPaste
+      ) {
         e.preventDefault();
         onPaste(hoverPosition.dayIndex, hoverPosition.startMinutes);
         showToast("Block pasted");
@@ -122,7 +182,14 @@ export function useCalendarKeyboard({
       }
 
       // ⌘Enter on day header - Mark all blocks and deadlines on that day complete
-      if (isMeta && e.key === "Enter" && !isHoveringBlock && hoveredDayIndex !== null && hoveredDayIndex !== undefined && onMarkDayComplete) {
+      if (
+        isMeta &&
+        e.key === "Enter" &&
+        !isHoveringBlock &&
+        hoveredDayIndex !== null &&
+        hoveredDayIndex !== undefined &&
+        onMarkDayComplete
+      ) {
         e.preventDefault();
         onMarkDayComplete(hoveredDayIndex);
         // Note: Toast is now handled by the undo system
@@ -138,7 +205,11 @@ export function useCalendarKeyboard({
       }
 
       // Delete/Backspace - Delete
-      if ((e.key === "Delete" || e.key === "Backspace") && isHoveringBlock && onDelete) {
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        isHoveringBlock &&
+        onDelete
+      ) {
         e.preventDefault();
         onDelete(hoveredEvent.id);
         // Note: Toast is now handled by the undo system

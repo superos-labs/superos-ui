@@ -1,8 +1,59 @@
+/**
+ * =============================================================================
+ * File: deadline-tray.tsx
+ * =============================================================================
+ *
+ * Week-level deadline and all-day event tray rendered above the time grid.
+ *
+ * Displays, per day:
+ * - Deadline tasks.
+ * - Goal-level deadlines.
+ * - Milestone deadlines.
+ * - External all-day calendar events.
+ *
+ * Supports lightweight interactions such as completion toggling, unassigning,
+ * hover signaling for keyboard shortcuts, and dragging items into the time grid
+ * to create timed blocks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render per-day stacks of deadline-related pills.
+ * - Provide draggable pills for tasks and all-day external events.
+ * - Expose context menu actions for completion and removal.
+ * - Forward hover and click signals upward.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting deadline changes.
+ * - Computing deadline grouping.
+ * - Managing drag state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Does not render if there is no content.
+ * - All pills are compact and width-constrained to avoid column expansion.
+ * - Visual ordering: all-day events → goals → milestones → tasks.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DeadlineTray
+ * - AllDayEvent
+ */
+
 "use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiFlagLine, RiCheckLine, RiDeleteBinLine, RiPokerDiamondsLine } from "@remixicon/react";
+import {
+  RiFlagLine,
+  RiCheckLine,
+  RiDeleteBinLine,
+  RiPokerDiamondsLine,
+} from "@remixicon/react";
 import { getIconColorClass, getIconBgClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import {
@@ -15,7 +66,11 @@ import {
 } from "@/components/ui/context-menu";
 import { ProviderBadge } from "@/components/integrations";
 import type { DragItem } from "@/lib/drag-types";
-import type { DeadlineTask, DeadlineGoal, DeadlineMilestone } from "@/lib/unified-schedule";
+import type {
+  DeadlineTask,
+  DeadlineGoal,
+  DeadlineMilestone,
+} from "@/lib/unified-schedule";
 import type { CalendarProvider, ExternalEvent } from "@/lib/calendar-sync";
 
 // ============================================================================
@@ -95,10 +150,16 @@ interface MilestoneDeadlinePillProps {
 // Components
 // ============================================================================
 
-function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }: DeadlinePillProps) {
+function DeadlinePill({
+  deadline,
+  date,
+  onToggleComplete,
+  onUnassign,
+  onHover,
+}: DeadlinePillProps) {
   const dragContext = useDragContextOptional();
   const canDrag = !!dragContext && !deadline.completed;
-  
+
   const dragItem: DragItem = {
     type: "task",
     goalId: deadline.goalId,
@@ -108,7 +169,7 @@ function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }:
     taskLabel: deadline.label,
     sourceDeadline: date,
   };
-  
+
   const { draggableProps, isDragging } = useDraggable({
     item: dragItem,
     disabled: !canDrag,
@@ -119,7 +180,7 @@ function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }:
       className={cn(
         "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-all",
         "bg-muted/60 hover:bg-muted",
-        "w-full min-w-0",  // Take full width of container
+        "w-full min-w-0", // Take full width of container
         deadline.completed && "opacity-50 line-through",
         isDragging && "opacity-30",
         canDrag && "cursor-grab active:cursor-grabbing",
@@ -128,11 +189,8 @@ function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }:
       onMouseLeave={() => onHover?.(null)}
       {...(canDrag ? draggableProps : {})}
     >
-      <RiFlagLine 
-        className={cn(
-          "size-3 shrink-0",
-          getIconColorClass(deadline.goalColor)
-        )} 
+      <RiFlagLine
+        className={cn("size-3 shrink-0", getIconColorClass(deadline.goalColor))}
       />
       <span className="truncate">{deadline.label}</span>
     </div>
@@ -145,9 +203,7 @@ function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }:
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild>
-        {pillContent}
-      </ContextMenuTrigger>
+      <ContextMenuTrigger asChild>{pillContent}</ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {onToggleComplete && (
           <ContextMenuItem onClick={onToggleComplete}>
@@ -175,12 +231,12 @@ function DeadlinePill({ deadline, date, onToggleComplete, onUnassign, onHover }:
  */
 function GoalDeadlinePill({ goal, onClick }: GoalDeadlinePillProps) {
   const GoalIcon = goal.icon;
-  
+
   return (
     <div
       className={cn(
         "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-all",
-        "w-full min-w-0",  // Take full width of container
+        "w-full min-w-0", // Take full width of container
         getIconBgClass(goal.color),
         "text-white",
         onClick && "cursor-pointer hover:opacity-90",
@@ -197,20 +253,23 @@ function GoalDeadlinePill({ goal, onClick }: GoalDeadlinePillProps) {
  * Milestone deadline pill for milestones with target completion dates.
  * Shows a star icon and the milestone label, supports marking complete.
  */
-function MilestoneDeadlinePill({ milestone, onToggleComplete }: MilestoneDeadlinePillProps) {
+function MilestoneDeadlinePill({
+  milestone,
+  onToggleComplete,
+}: MilestoneDeadlinePillProps) {
   const pillContent = (
     <div
       className={cn(
         "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-all",
         "bg-muted/60 hover:bg-muted",
-        "w-full min-w-0",  // Take full width of container
+        "w-full min-w-0", // Take full width of container
         milestone.completed && "opacity-50 line-through",
       )}
     >
       <RiPokerDiamondsLine
         className={cn(
           "size-3 shrink-0",
-          getIconColorClass(milestone.goalColor)
+          getIconColorClass(milestone.goalColor),
         )}
       />
       <span className="truncate">{milestone.label}</span>
@@ -224,9 +283,7 @@ function MilestoneDeadlinePill({ milestone, onToggleComplete }: MilestoneDeadlin
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild>
-        {pillContent}
-      </ContextMenuTrigger>
+      <ContextMenuTrigger asChild>{pillContent}</ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         <ContextMenuItem onClick={onToggleComplete}>
           <RiCheckLine className="size-4" />
@@ -242,7 +299,11 @@ function MilestoneDeadlinePill({ milestone, onToggleComplete }: MilestoneDeadlin
  * All-day event pill for external calendar events.
  * Shows provider badge, title, and supports dragging to create timed blocks.
  */
-function AllDayEventPill({ event, onToggleComplete, onHover }: AllDayEventPillProps) {
+function AllDayEventPill({
+  event,
+  onToggleComplete,
+  onHover,
+}: AllDayEventPillProps) {
   const dragContext = useDragContextOptional();
   const canDrag = !!dragContext && !event.completed;
 
@@ -287,9 +348,7 @@ function AllDayEventPill({ event, onToggleComplete, onHover }: AllDayEventPillPr
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild>
-        {pillContent}
-      </ContextMenuTrigger>
+      <ContextMenuTrigger asChild>{pillContent}</ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         <ContextMenuItem onClick={onToggleComplete}>
           <RiCheckLine className="size-4" />
@@ -318,8 +377,8 @@ export function DeadlineTray({
   onToggleMilestoneComplete,
 }: DeadlineTrayProps) {
   // Don't render if no deadlines, goal deadlines, milestone deadlines, or all-day events
-  const hasContent = 
-    deadlines.size > 0 || 
+  const hasContent =
+    deadlines.size > 0 ||
     (goalDeadlines?.size ?? 0) > 0 ||
     (milestoneDeadlines?.size ?? 0) > 0 ||
     (allDayEvents?.size ?? 0) > 0;
@@ -335,12 +394,12 @@ export function DeadlineTray({
     <div
       className={cn(
         "border-border/40 grid shrink-0 border-b bg-muted/20",
-        headerCols
+        headerCols,
       )}
     >
       {/* Time gutter spacer */}
       {showHourLabels && <div className="border-border/40 border-r" />}
-      
+
       {/* Day columns */}
       {weekDates.map((date, index) => {
         const isoDate = date.toISOString().split("T")[0];
@@ -348,7 +407,7 @@ export function DeadlineTray({
         const dayGoalDeadlines = goalDeadlines?.get(isoDate) ?? [];
         const dayMilestoneDeadlines = milestoneDeadlines?.get(isoDate) ?? [];
         const dayAllDayEvents = allDayEvents?.get(isoDate) ?? [];
-        
+
         return (
           <div
             key={index}
@@ -377,7 +436,9 @@ export function DeadlineTray({
               <GoalDeadlinePill
                 key={goal.goalId}
                 goal={goal}
-                onClick={onGoalClick ? () => onGoalClick(goal.goalId) : undefined}
+                onClick={
+                  onGoalClick ? () => onGoalClick(goal.goalId) : undefined
+                }
               />
             ))}
             {/* Milestone deadlines */}
@@ -387,7 +448,11 @@ export function DeadlineTray({
                 milestone={milestone}
                 onToggleComplete={
                   onToggleMilestoneComplete
-                    ? () => onToggleMilestoneComplete(milestone.goalId, milestone.milestoneId)
+                    ? () =>
+                        onToggleMilestoneComplete(
+                          milestone.goalId,
+                          milestone.milestoneId,
+                        )
                     : undefined
                 }
               />
@@ -399,7 +464,7 @@ export function DeadlineTray({
                 deadline={deadline}
                 date={isoDate}
                 onToggleComplete={
-                  onToggleComplete 
+                  onToggleComplete
                     ? () => onToggleComplete(deadline.goalId, deadline.taskId)
                     : undefined
                 }

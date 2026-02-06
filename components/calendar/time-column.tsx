@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: time-column.tsx
+ * =============================================================================
+ *
+ * Shared day column renderer for both DayView and WeekView.
+ *
+ * Renders:
+ * - Hour grid cells.
+ * - Event segments.
+ * - Drag-to-create previews.
+ * - External drag previews.
+ *
+ * Acts as the primary interaction surface for time-based placement.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render hour cells and handle empty-space interactions.
+ * - Render TimeColumnBlock instances for event segments.
+ * - Coordinate drag-to-create behavior.
+ * - Integrate external drag-and-drop.
+ * - Forward hover and click signals upward.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Computing event segments.
+ * - Computing overlap layout.
+ * - Persisting changes.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses absolute positioning with percentage-based layout.
+ * - Preview blocks use pointer-events-none.
+ * - Day boundaries can visually dim hours.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - TimeColumn
+ */
+
 "use client";
 
 import * as React from "react";

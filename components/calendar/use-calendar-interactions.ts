@@ -1,10 +1,57 @@
+/**
+ * =============================================================================
+ * File: use-calendar-interactions.ts
+ * =============================================================================
+ *
+ * Unified interaction controller for the calendar.
+ *
+ * Bundles event state, clipboard integration, keyboard shortcuts,
+ * and all interaction handlers into a single hook that can be
+ * spread directly onto the Calendar component.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Own in-memory CalendarEvent state.
+ * - Wire clipboard copy/paste behavior.
+ * - Integrate keyboard shortcuts.
+ * - Implement handlers for resize, drag, duplicate, create, delete,
+ *   paste, and status changes.
+ * - Provide hover state for keyboard-driven actions.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting events.
+ * - Rendering UI.
+ * - Computing layout or segments.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses weekDates to resolve ISO dates from day indices.
+ * - Completed blocks become planned when duplicated or pasted.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useCalendarInteractions
+ * - UseCalendarInteractionsOptions
+ * - UseCalendarInteractionsReturn
+ */
+
 "use client";
 
 import * as React from "react";
 import { useCalendarClipboard } from "./use-calendar-clipboard";
 import { useCalendarKeyboard } from "./use-calendar-keyboard";
 import { getWeekDates } from "./calendar-utils";
-import { statusOnPaste, type CalendarEvent, type BlockStatus, type HoverPosition } from "./calendar-types";
+import {
+  statusOnPaste,
+  type CalendarEvent,
+  type BlockStatus,
+  type HoverPosition,
+} from "./calendar-types";
 
 export interface UseCalendarInteractionsOptions {
   /** Initial events to populate the calendar */
@@ -24,12 +71,28 @@ export interface UseCalendarInteractionsReturn {
   toastMessage: string | null;
   /** All calendar event handlers - spread these onto the Calendar component */
   handlers: {
-    onEventResize: (eventId: string, newStartMinutes: number, newDurationMinutes: number) => void;
+    onEventResize: (
+      eventId: string,
+      newStartMinutes: number,
+      newDurationMinutes: number,
+    ) => void;
     onEventResizeEnd: () => void;
-    onEventDragEnd: (eventId: string, newDayIndex: number, newStartMinutes: number) => void;
-    onEventDuplicate: (sourceEventId: string, newDayIndex: number, newStartMinutes: number) => void;
+    onEventDragEnd: (
+      eventId: string,
+      newDayIndex: number,
+      newStartMinutes: number,
+    ) => void;
+    onEventDuplicate: (
+      sourceEventId: string,
+      newDayIndex: number,
+      newStartMinutes: number,
+    ) => void;
     onGridDoubleClick: (dayIndex: number, startMinutes: number) => void;
-    onGridDragCreate: (dayIndex: number, startMinutes: number, durationMinutes: number) => void;
+    onGridDragCreate: (
+      dayIndex: number,
+      startMinutes: number,
+      durationMinutes: number,
+    ) => void;
     onEventCopy: (event: CalendarEvent) => void;
     onEventDelete: (eventId: string) => void;
     onEventStatusChange: (eventId: string, status: BlockStatus) => void;
@@ -44,7 +107,7 @@ export interface UseCalendarInteractionsReturn {
 
 /**
  * Hook that bundles all calendar interaction state and handlers.
- * 
+ *
  * Provides full interactive functionality including:
  * - Resize events
  * - Drag and drop events
@@ -55,13 +118,13 @@ export interface UseCalendarInteractionsReturn {
  * - Delete events
  * - Toggle event status (complete/incomplete)
  * - Keyboard shortcuts
- * 
+ *
  * @example
  * ```tsx
  * const { events, handlers, toastMessage } = useCalendarInteractions({
  *   initialEvents: SAMPLE_EVENTS,
  * });
- * 
+ *
  * return (
  *   <>
  *     <Calendar events={events} {...handlers} />
@@ -79,16 +142,25 @@ export function useCalendarInteractions({
   // Default to current week if not provided
   const weekDates = React.useMemo(
     () => weekDatesInput ?? getWeekDates(new Date()),
-    [weekDatesInput]
+    [weekDatesInput],
   );
 
   // Clipboard for copy/paste functionality
-  const { copy, paste, hasContent: hasClipboardContent } = useCalendarClipboard();
+  const {
+    copy,
+    paste,
+    hasContent: hasClipboardContent,
+  } = useCalendarClipboard();
 
   // Hover state for keyboard shortcuts
-  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(null);
-  const [hoverPosition, setHoverPosition] = React.useState<HoverPosition | null>(null);
-  const [hoveredDayIndex, setHoveredDayIndex] = React.useState<number | null>(null);
+  const [hoveredEvent, setHoveredEvent] = React.useState<CalendarEvent | null>(
+    null,
+  );
+  const [hoverPosition, setHoverPosition] =
+    React.useState<HoverPosition | null>(null);
+  const [hoveredDayIndex, setHoveredDayIndex] = React.useState<number | null>(
+    null,
+  );
 
   // Handle marking all blocks on a day as complete
   const handleMarkDayComplete = React.useCallback(
@@ -97,17 +169,19 @@ export function useCalendarInteractions({
       setEvents((prev) => {
         // Check if there are any incomplete blocks on this day
         const hasIncomplete = prev.some(
-          (event) => event.date === targetDate && event.status !== "completed"
+          (event) => event.date === targetDate && event.status !== "completed",
         );
         if (!hasIncomplete) return prev;
-        
+
         // Mark all blocks on this day as complete
         return prev.map((event) =>
-          event.date === targetDate ? { ...event, status: "completed" as const } : event
+          event.date === targetDate
+            ? { ...event, status: "completed" as const }
+            : event,
         );
       });
     },
-    [weekDates]
+    [weekDates],
   );
 
   // Keyboard shortcuts hook
@@ -147,7 +221,7 @@ export function useCalendarInteractions({
     onToggleComplete: (eventId, currentStatus) => {
       const newStatus = currentStatus === "completed" ? "planned" : "completed";
       setEvents((prev) =>
-        prev.map((e) => (e.id === eventId ? { ...e, status: newStatus } : e))
+        prev.map((e) => (e.id === eventId ? { ...e, status: newStatus } : e)),
       );
     },
     onMarkDayComplete: handleMarkDayComplete,
@@ -164,11 +238,11 @@ export function useCalendarInteractions({
                 startMinutes: newStartMinutes,
                 durationMinutes: newDurationMinutes,
               }
-            : event
-        )
+            : event,
+        ),
       );
     },
-    []
+    [],
   );
 
   // Handle event resize end - no-op for now, but available for persistence
@@ -188,11 +262,11 @@ export function useCalendarInteractions({
                 dayIndex: newDayIndex,
                 startMinutes: newStartMinutes,
               }
-            : event
-        )
+            : event,
+        ),
       );
     },
-    [weekDates]
+    [weekDates],
   );
 
   // Handle event duplicate - creates a copy of the event at the new position (Option+drag)
@@ -218,7 +292,7 @@ export function useCalendarInteractions({
         return [...prev, duplicate];
       });
     },
-    [weekDates]
+    [weekDates],
   );
 
   // Handle double-click on empty grid area - creates a new 1-hour block
@@ -235,7 +309,7 @@ export function useCalendarInteractions({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [weekDates]
+    [weekDates],
   );
 
   // Handle drag-to-create on empty grid area - creates a block with dragged duration
@@ -252,7 +326,7 @@ export function useCalendarInteractions({
       };
       setEvents((prev) => [...prev, newEvent]);
     },
-    [weekDates]
+    [weekDates],
   );
 
   // Handle event copy - copies event to clipboard
@@ -260,7 +334,7 @@ export function useCalendarInteractions({
     (event: CalendarEvent) => {
       copy(event);
     },
-    [copy]
+    [copy],
   );
 
   // Handle event delete - removes the event
@@ -272,10 +346,10 @@ export function useCalendarInteractions({
   const handleEventStatusChange = React.useCallback(
     (eventId: string, status: BlockStatus) => {
       setEvents((prev) =>
-        prev.map((e) => (e.id === eventId ? { ...e, status } : e))
+        prev.map((e) => (e.id === eventId ? { ...e, status } : e)),
       );
     },
-    []
+    [],
   );
 
   // Handle event paste - creates a new event from clipboard at specified position
@@ -291,7 +365,7 @@ export function useCalendarInteractions({
         setEvents((prev) => [...prev, eventWithDate]);
       }
     },
-    [paste, weekDates]
+    [paste, weekDates],
   );
 
   return {

@@ -1,3 +1,54 @@
+/**
+ * =============================================================================
+ * File: calendar-types.ts
+ * =============================================================================
+ *
+ * Shared type definitions and prop contracts for the calendar system.
+ *
+ * This file centralizes all cross-cutting interfaces used by Calendar,
+ * DayView, WeekView, TimeColumn, and related subcomponents in order to:
+ * - Reduce duplication.
+ * - Keep interaction contracts consistent.
+ * - Make data flow explicit.
+ *
+ * Contains no runtime logic.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define event interaction callback interfaces.
+ * - Define external drag-and-drop integration contracts.
+ * - Define public props for major calendar components.
+ * - Export small supporting interfaces and aliases.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Implementing behavior.
+ * - Rendering UI.
+ * - Owning state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Callback interfaces are shared across views to enforce parity.
+ * - Density-based sizing is deprecated in favor of zoom.
+ * - Maps are used for deadline and all-day groupings to preserve ordering
+ *   and enable efficient lookup.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ExternalDragPreview
+ * - CalendarEventCallbacks
+ * - ExternalDropCallbacks
+ * - CalendarProps
+ * - CalendarDayHeaderProps
+ * - DayViewProps
+ * - WeekViewProps
+ * - TimeColumnProps
+ */
+
 import type { BlockColor } from "@/components/block";
 import type { WeekStartDay } from "@/lib/preferences";
 import type { CalendarEvent, HoverPosition } from "@/lib/unified-schedule";
@@ -120,7 +171,10 @@ export interface CalendarProps
   /** Map of ISO date string to array of goal deadlines for that day */
   goalDeadlines?: Map<string, import("@/lib/unified-schedule").DeadlineGoal[]>;
   /** Map of ISO date string to array of milestone deadlines for that day */
-  milestoneDeadlines?: Map<string, import("@/lib/unified-schedule").DeadlineMilestone[]>;
+  milestoneDeadlines?: Map<
+    string,
+    import("@/lib/unified-schedule").DeadlineMilestone[]
+  >;
   /** Map of ISO date string to array of all-day external events for that day */
   allDayEvents?: Map<string, import("./deadline-tray").AllDayEvent[]>;
   /** Called when a deadline task's completion status is toggled */
@@ -134,7 +188,9 @@ export interface CalendarProps
   /** Called when an all-day event's completion status is toggled */
   onToggleAllDayEvent?: (eventId: string) => void;
   /** Called when mouse enters/leaves an all-day event pill */
-  onAllDayEventHover?: (event: import("./deadline-tray").AllDayEvent | null) => void;
+  onAllDayEventHover?: (
+    event: import("./deadline-tray").AllDayEvent | null,
+  ) => void;
   /** Called when a goal deadline pill is clicked (to open goal detail) */
   onGoalDeadlineClick?: (goalId: string) => void;
   /** Called when a milestone's completion status is toggled */
@@ -223,7 +279,10 @@ export interface WeekViewProps
   /** Map of ISO date string to array of goal deadlines for that day */
   goalDeadlines?: Map<string, import("@/lib/unified-schedule").DeadlineGoal[]>;
   /** Map of ISO date string to array of milestone deadlines for that day */
-  milestoneDeadlines?: Map<string, import("@/lib/unified-schedule").DeadlineMilestone[]>;
+  milestoneDeadlines?: Map<
+    string,
+    import("@/lib/unified-schedule").DeadlineMilestone[]
+  >;
   /** Map of ISO date string to array of all-day external events for that day */
   allDayEvents?: Map<string, import("./deadline-tray").AllDayEvent[]>;
   /** Called when a deadline task's completion status is toggled */
@@ -237,7 +296,9 @@ export interface WeekViewProps
   /** Called when an all-day event's completion status is toggled */
   onToggleAllDayEvent?: (eventId: string) => void;
   /** Called when mouse enters/leaves an all-day event pill */
-  onAllDayEventHover?: (event: import("./deadline-tray").AllDayEvent | null) => void;
+  onAllDayEventHover?: (
+    event: import("./deadline-tray").AllDayEvent | null,
+  ) => void;
   /** Called when a goal deadline pill is clicked (to open goal detail) */
   onGoalDeadlineClick?: (goalId: string) => void;
   /** Called when a milestone's completion status is toggled */

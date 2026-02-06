@@ -1,3 +1,60 @@
+/**
+ * =============================================================================
+ * File: calendar-constants.ts
+ * =============================================================================
+ *
+ * Centralized constants, simple types, and lightweight helpers for the calendar
+ * system.
+ *
+ * This file defines:
+ * - Day/hour labels and time snapping configuration.
+ * - Layout constants for block spacing, nesting, and overlap handling.
+ * - Legacy density-based sizing (deprecated).
+ * - Modern zoom-based sizing utilities.
+ * - Small calendar-specific type aliases.
+ * - Status and style conversion helpers.
+ *
+ * This file intentionally contains no React components and no side effects.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Provide canonical day and hour constants.
+ * - Define layout spacing and overlap limits.
+ * - Expose sizing helpers for grid height and pixels-per-minute.
+ * - Re-export shared block and event-related types for convenience.
+ * - Offer small status/style normalization helpers.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering UI.
+ * - Managing state.
+ * - Fetching or persisting data.
+ * - Enforcing complex business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Density-based sizing is deprecated in favor of zoom-based sizing.
+ * - Legacy exports are preserved for backward compatibility.
+ * - Helpers are pure and deterministic.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - Day/hour constants and layout constants.
+ * - getDayLabels
+ * - getGridHeightFromZoom
+ * - getPixelsPerMinuteFromZoom
+ * - Legacy density helpers and constants (deprecated)
+ * - CalendarView, BlockStyle
+ * - blockStyleToStatus
+ * - canMarkComplete
+ * - statusOnPaste
+ * - Re-exported types: BlockType, BlockStatus, CalendarEvent, HoverPosition
+ */
+
 import type { BlockType, BlockStatus } from "@/lib/types";
 import type { WeekStartDay } from "@/lib/preferences";
 import type { CalendarEvent, HoverPosition } from "@/lib/unified-schedule";

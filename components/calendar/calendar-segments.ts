@@ -1,3 +1,54 @@
+/**
+ * =============================================================================
+ * File: calendar-segments.ts
+ * =============================================================================
+ *
+ * Helpers and types for splitting calendar events into per-day renderable
+ * segments.
+ *
+ * Handles overnight events by producing separate "start" and "end" segments,
+ * enabling correct positioning and styling across day boundaries.
+ *
+ * Also defines shared layout metadata used by the overlap layout algorithm.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Detect overnight events.
+ * - Clamp event durations to safe bounds.
+ * - Compute event end day and end minutes.
+ * - Generate per-day event segments from raw events.
+ * - Define segment and overlap layout types.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering UI.
+ * - Managing state.
+ * - Calculating overlap layout (only defines the shape).
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - ISO date strings are used for day matching to avoid timezone drift.
+ * - Week wrapping is handled only for visual positioning.
+ * - Overnight events are limited to at most two days.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - MAX_EVENT_DURATION_MINUTES
+ * - isOvernightEvent
+ * - getEventEndDayIndex
+ * - getNextDayDate
+ * - getEventEndMinutes
+ * - clampEventDuration
+ * - SegmentPosition
+ * - OverlapLayout
+ * - EventDaySegment
+ * - getSegmentsForDay
+ */
+
 import type { CalendarEvent } from "@/lib/unified-schedule";
 
 // ============================================================================

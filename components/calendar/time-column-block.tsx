@@ -1,3 +1,48 @@
+/**
+ * =============================================================================
+ * File: time-column-block.tsx
+ * =============================================================================
+ *
+ * Renders a single calendar block segment inside a TimeColumn.
+ *
+ * Handles:
+ * - Absolute positioning within the column.
+ * - Overlap-based horizontal layout.
+ * - Dragging, duplicating, and resizing (when enabled).
+ * - Context menu actions.
+ * - Compact vs full block layout based on height.
+ *
+ * This component represents the lowest-level interactive unit of the
+ * calendar block rendering pipeline.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compute block positioning styles from overlap layout.
+ * - Render Block with correct visual mode and metadata.
+ * - Wrap block with drag, resize, and context menu behaviors.
+ * - Surface hover and click signals upward.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing global drag state.
+ * - Computing overlap layout.
+ * - Persisting event mutations.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Only "start" or "only" segments are draggable.
+ * - Overnight "end" segments are resize-only.
+ * - Zoom and density effects are resolved upstream via pixelsPerMinute.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - TimeColumnBlock
+ */
+
 "use client";
 
 import * as React from "react";
@@ -151,7 +196,11 @@ export function TimeColumnBlock({
   const heightPercent = (segmentDuration / 1440) * 100;
 
   // Get positioning style based on overlap layout
-  const positionStyle = getBlockPositionStyle(layout, topPercent, heightPercent);
+  const positionStyle = getBlockPositionStyle(
+    layout,
+    topPercent,
+    heightPercent,
+  );
 
   // Compute actual pixel height to determine layout mode
   const segmentHeightPx = segmentDuration * pixelsPerMinute;
@@ -163,16 +212,16 @@ export function TimeColumnBlock({
 
   const isValidDropTarget = Boolean(
     dragContext?.state.isDragging &&
-      dragItem?.type === "task" &&
-      (event.blockType === "goal" || event.blockType === "task") &&
-      event.sourceGoalId &&
-      dragItem.goalId === event.sourceGoalId,
+    dragItem?.type === "task" &&
+    (event.blockType === "goal" || event.blockType === "task") &&
+    event.sourceGoalId &&
+    dragItem.goalId === event.sourceGoalId,
   );
 
   const isDragOver = Boolean(
     isValidDropTarget &&
-      previewPos?.dropTarget === "existing-block" &&
-      previewPos?.targetBlockId === event.id,
+    previewPos?.dropTarget === "existing-block" &&
+    previewPos?.targetBlockId === event.id,
   );
 
   // Helper to get display times for the segment
@@ -318,8 +367,7 @@ export function TimeColumnBlock({
           maxDayIndex={maxDayIndex}
           onDragEnd={
             onEventDragEnd
-              ? (newDay, newStart) =>
-                  onEventDragEnd(event.id, newDay, newStart)
+              ? (newDay, newStart) => onEventDragEnd(event.id, newDay, newStart)
               : undefined
           }
           onDuplicate={

@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: day-view.tsx
+ * =============================================================================
+ *
+ * Single-day calendar view.
+ *
+ * Renders one day column with hour labels, event blocks, drag-to-create,
+ * resize, drag-and-drop, and a current-time indicator.
+ *
+ * Serves as the day-scoped counterpart to WeekView.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compute grid sizing from zoom or density.
+ * - Derive per-day event segments and overlap layout.
+ * - Render day header, hour labels, and time grid.
+ * - Wire interactions to TimeColumn.
+ * - Scroll to current time when appropriate.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting events.
+ * - Owning interaction state.
+ * - Calculating week ranges.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Zoom overrides density when provided.
+ * - Overnight events are split via getSegmentsForDay.
+ * - Only a single column is rendered (minDayIndex = maxDayIndex).
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DayView
+ */
+
 "use client";
 
 import * as React from "react";

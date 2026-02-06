@@ -1,3 +1,51 @@
+/**
+ * =============================================================================
+ * File: week-view.tsx
+ * =============================================================================
+ *
+ * Week-level calendar layout and orchestration.
+ *
+ * Renders:
+ * - Day headers (with dates, today highlighting, and deadline drop targets)
+ * - Optional deadline / all-day tray
+ * - Hour gutter
+ * - Seven day time columns
+ * - Current time indicator
+ *
+ * Handles:
+ * - Zoom/density-based grid sizing
+ * - Scroll-to-current-time behavior
+ * - Segment generation + overlap layout
+ * - Drag-to-create block previews
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compose week calendar UI from shared primitives.
+ * - Compute week-scoped layout measurements.
+ * - Map events → day segments → overlap layout.
+ * - Wire interaction callbacks into TimeColumn.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Business logic or persistence.
+ * - Block rendering details.
+ * - Drag/resize mechanics.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses shared TimeColumn with DayView for consistency.
+ * - Zoom-based sizing is preferred over density.
+ * - Deadline tray lives between headers and grid.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - WeekView
+ */
+
 "use client";
 
 import * as React from "react";

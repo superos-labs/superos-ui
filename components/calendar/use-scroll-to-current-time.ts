@@ -1,3 +1,39 @@
+/**
+ * =============================================================================
+ * File: use-scroll-to-current-time.ts
+ * =============================================================================
+ *
+ * Auto-scroll controller for positioning the calendar around "now".
+ *
+ * Scrolls the time grid so the current time is visible and slightly above
+ * center, giving context for upcoming and previous blocks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compute current minutes from system time.
+ * - Convert minutes to pixel offset using zoom-derived grid height.
+ * - Scroll container to bring current time into view.
+ * - Re-run when trigger key changes (e.g., Today button).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering current time indicator.
+ * - Managing zoom state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses layout effect to avoid visible jump.
+ * - Offset targets ~35% from top for comfortable scanning.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useScrollToCurrentTime
+ */
+
 "use client";
 
 import * as React from "react";
@@ -18,7 +54,11 @@ export interface UseScrollToCurrentTimeOptions {
  */
 export function useScrollToCurrentTime(
   scrollRef: React.RefObject<HTMLDivElement | null>,
-  { zoom = 100, triggerKey, enabled = true }: UseScrollToCurrentTimeOptions = {}
+  {
+    zoom = 100,
+    triggerKey,
+    enabled = true,
+  }: UseScrollToCurrentTimeOptions = {},
 ): void {
   React.useLayoutEffect(() => {
     if (!enabled || !scrollRef.current) return;

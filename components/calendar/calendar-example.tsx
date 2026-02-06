@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: calendar-example.tsx
+ * =============================================================================
+ *
+ * Interactive playground and demo harness for the Calendar component.
+ *
+ * Renders a fully wired calendar instance with sample data and exposes
+ * runtime controls (knobs) for experimenting with view mode, density,
+ * visibility flags, and block styling.
+ *
+ * Intended for internal development and visual testing only.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Generate representative sample calendar events.
+ * - Instantiate the Calendar with interaction handlers.
+ * - Provide live UI controls for toggling configuration.
+ * - Surface keyboard shortcut feedback via toast.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting data.
+ * - Validating business rules.
+ * - Production usage.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses useCalendarInteractions as the single source of behavior.
+ * - Sample events cover overlaps, completed states, and overnight spans.
+ * - Knobs are developer-only utilities.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - CalendarExample
+ */
+
 "use client";
 
 import * as React from "react";
@@ -25,7 +66,8 @@ const hoursToMinutes = (hours: number) => hours * 60;
 // Generate sample events with dates for the current week
 function createSampleEvents(): CalendarEvent[] {
   const weekDates = getWeekDates(new Date());
-  const getDate = (dayIndex: number) => weekDates[dayIndex].toISOString().split("T")[0];
+  const getDate = (dayIndex: number) =>
+    weekDates[dayIndex].toISOString().split("T")[0];
 
   return [
     {
