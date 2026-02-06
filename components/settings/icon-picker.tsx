@@ -1,3 +1,43 @@
+/**
+ * =============================================================================
+ * File: icon-picker.tsx
+ * =============================================================================
+ *
+ * Reusable icon picker grid for selecting a Goal or Life Area icon.
+ *
+ * Renders a grid of icon buttons from a provided icon set and reports the
+ * selected index to the parent.
+ *
+ * Used across goal and life-area creation / editing surfaces.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a subset of available icon options.
+ * - Display current selection state.
+ * - Emit selected icon index via callback.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting selected icon.
+ * - Defining icon catalogs or loading icons.
+ * - Mapping index to domain entities.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Selection is index-based to keep component stateless.
+ * - maxIcons allows lightweight truncation for dense UIs.
+ * - Visual selection uses foreground/background inversion.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - IconPicker
+ * - IconPickerProps
+ */
+
 "use client";
 
 /**

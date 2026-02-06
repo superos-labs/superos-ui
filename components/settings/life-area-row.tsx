@@ -1,9 +1,45 @@
-"use client";
-
 /**
- * Single life area row with display and inline editing modes.
- * Supports icon/color editing for custom life areas.
+ * =============================================================================
+ * File: life-area-row.tsx
+ * =============================================================================
+ *
+ * Editable row for displaying and managing a single Life Area.
+ *
+ * Used inside the Life Area manager modal to list both system and custom
+ * Life Areas, with inline editing and deletion for custom entries.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render Life Area icon, color, and label.
+ * - Support inline edit mode for label, icon, and color.
+ * - Emit update and remove events.
+ * - Gate editing and deletion to custom Life Areas.
+ * - Confirm deletion when Life Area is currently in use.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting Life Areas.
+ * - Resolving usage references.
+ * - Enforcing higher-level business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Edit mode is fully inline (no separate modal).
+ * - Icon and color pickers reuse shared picker components.
+ * - Enter saves, Escape cancels.
+ * - Action buttons appear on hover for visual quietness.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - LifeAreaRow
+ * - LifeAreaRowProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";

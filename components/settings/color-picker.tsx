@@ -1,3 +1,43 @@
+/**
+ * =============================================================================
+ * File: color-picker.tsx
+ * =============================================================================
+ *
+ * Reusable color picker grid for selecting a Goal color.
+ *
+ * Renders a compact grid of color swatch buttons and reports the selected
+ * value to the parent via a callback.
+ *
+ * Used across goal and life-area creation / editing surfaces.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a fixed subset of allowed Goal colors.
+ * - Display current selection state.
+ * - Emit selected color via callback.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting selected color.
+ * - Defining or validating the full color system.
+ * - Managing focus, keyboard navigation, or accessibility semantics.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses getIconBgClass for consistent color styling.
+ * - Visual selection indicated via ring styling.
+ * - Intentionally small and dense for inline forms and modals.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ColorPicker
+ * - ColorPickerProps
+ */
+
 "use client";
 
 /**

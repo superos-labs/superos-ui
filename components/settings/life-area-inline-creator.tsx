@@ -1,9 +1,44 @@
-"use client";
-
 /**
- * Inline creator form for adding a new life area.
- * Used inside the LifeAreaManagerModal footer.
+ * =============================================================================
+ * File: life-area-inline-creator.tsx
+ * =============================================================================
+ *
+ * Inline creator for adding a new Life Area.
+ *
+ * Compact form used inside the Life Area manager modal to quickly create
+ * a Life Area without opening a separate dialog.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render inline inputs for label, icon, and color.
+ * - Manage local creation form state.
+ * - Validate against duplicate Life Area labels.
+ * - Emit create event with normalized data.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting Life Areas.
+ * - Generating IDs.
+ * - Owning Life Area collections or ordering.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Auto-focuses label input on mount.
+ * - Toggles icon and color pickers inline.
+ * - Enter submits, Escape cancels.
+ * - Optimized for fast, keyboard-driven creation.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - LifeAreaInlineCreator
+ * - LifeAreaInlineCreatorProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -41,8 +76,8 @@ export function LifeAreaInlineCreator({
 }: LifeAreaInlineCreatorProps) {
   const [label, setLabel] = React.useState("");
   // Start with index 4 (star icon) or 0 as fallback
-  const [selectedIconIndex, setSelectedIconIndex] = React.useState(
-    () => (goalIcons.length > 4 ? 4 : 0),
+  const [selectedIconIndex, setSelectedIconIndex] = React.useState(() =>
+    goalIcons.length > 4 ? 4 : 0,
   );
   const [selectedColor, setSelectedColor] = React.useState<GoalColor>("violet");
   const [showIconPicker, setShowIconPicker] = React.useState(false);

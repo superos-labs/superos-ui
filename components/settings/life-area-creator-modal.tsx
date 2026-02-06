@@ -1,9 +1,46 @@
-"use client";
-
 /**
- * Modal for creating a new custom life area.
- * Uses the same icon and color pickers as goal creation.
+ * =============================================================================
+ * File: life-area-creator-modal.tsx
+ * =============================================================================
+ *
+ * Modal for creating a new custom Life Area.
+ *
+ * Provides a lightweight form for entering label, selecting icon and color,
+ * and previewing the resulting Life Area before creation.
+ *
+ * Shares icon and color pickers with goal creation surfaces.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render modal shell and backdrop.
+ * - Manage local form state (label, icon index, color).
+ * - Validate against duplicate Life Area labels.
+ * - Emit create event with normalized data.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting Life Areas.
+ * - Generating IDs.
+ * - Owning Life Area collections or ordering.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Auto-focuses label input when opened.
+ * - Resets form state on open.
+ * - Index-based icon selection to remain stateless.
+ * - Preview updates live as user edits.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - LifeAreaCreatorModal
+ * - LifeAreaCreatorModalProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
