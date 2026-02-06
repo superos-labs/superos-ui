@@ -1,3 +1,51 @@
+/**
+ * =============================================================================
+ * File: goal-detail.tsx
+ * =============================================================================
+ *
+ * Primary Goal Detail view.
+ *
+ * Provides a comprehensive, vertically-scrolled surface for viewing and
+ * editing a single goal, including:
+ * - Core identity (icon, color, title, life area, deadline).
+ * - Notes.
+ * - Tasks and subtasks.
+ * - Optional milestone-based structure.
+ * - Goal-level sync and advanced options.
+ *
+ * Acts as a composition root for multiple goal-detail subcomponents.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compose header, notes, tasks, and milestone sections.
+ * - Switch between milestone and flat-task modes.
+ * - Wire user interactions to callback props.
+ * - Host goal-level actions (back, delete, sync settings, toggle milestones).
+ * - Manage local UI state for sync settings dialog.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goal, task, or milestone changes.
+ * - Fetching data.
+ * - Computing schedule or deadline info.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Scrollable content area with fixed outer shell.
+ * - Milestones enabled when explicitly flagged or present.
+ * - Uses collapsible sections only when milestones are disabled.
+ * - Subcomponents remain mostly presentational.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalDetail
+ * - GoalDetailProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -59,7 +107,7 @@ function CollapsibleSection({
         <RiArrowRightSLine
           className={cn(
             "size-4 text-muted-foreground/50 transition-transform",
-            isOpen && "rotate-90"
+            isOpen && "rotate-90",
           )}
         />
         <span className="text-xs text-muted-foreground/70">{label}</span>
@@ -109,7 +157,7 @@ function GoalDetailNotes({ notes, onChange, className }: GoalDetailNotesProps) {
           "w-full resize-none bg-transparent text-sm text-muted-foreground leading-relaxed",
           "placeholder:text-muted-foreground/40",
           "focus:outline-none",
-          !onChange && "cursor-default"
+          !onChange && "cursor-default",
         )}
         readOnly={!onChange}
       />
@@ -207,14 +255,14 @@ function GoalSyncSettingsDialog({
                 "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full",
                 "transition-colors duration-150",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                syncEnabled ? "bg-foreground" : "bg-muted-foreground/30"
+                syncEnabled ? "bg-foreground" : "bg-muted-foreground/30",
               )}
             >
               <span
                 className={cn(
                   "pointer-events-none block size-4 rounded-full bg-background shadow-sm ring-0",
                   "transition-transform duration-150",
-                  syncEnabled ? "translate-x-[18px]" : "translate-x-0.5"
+                  syncEnabled ? "translate-x-[18px]" : "translate-x-0.5",
                 )}
               />
             </button>
@@ -241,7 +289,7 @@ function GoalSyncSettingsDialog({
                       className={cn(
                         "group flex items-center gap-2.5 rounded-lg py-2 px-3 text-left",
                         "transition-colors duration-150 hover:bg-muted/60",
-                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       )}
                     >
                       <div
@@ -249,7 +297,7 @@ function GoalSyncSettingsDialog({
                           "flex size-[18px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
                           isSelected
                             ? "bg-foreground"
-                            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
                         )}
                       >
                         {isSelected && (
@@ -262,7 +310,7 @@ function GoalSyncSettingsDialog({
                             "text-sm transition-colors",
                             isSelected
                               ? "text-foreground"
-                              : "text-muted-foreground"
+                              : "text-muted-foreground",
                           )}
                         >
                           {option.label}
@@ -284,7 +332,7 @@ function GoalSyncSettingsDialog({
                   className={cn(
                     "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm",
                     "placeholder:text-muted-foreground/60",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
                   )}
                 />
               )}
@@ -348,7 +396,10 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onAddMilestone?: (label: string) => void;
   onToggleMilestone?: (milestoneId: string) => void;
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
-  onUpdateMilestoneDeadline?: (milestoneId: string, deadline: string | undefined) => void;
+  onUpdateMilestoneDeadline?: (
+    milestoneId: string,
+    deadline: string | undefined,
+  ) => void;
   onDeleteMilestone?: (milestoneId: string) => void;
   /** Callback to toggle milestones enabled/disabled */
   onToggleMilestones?: () => void;
@@ -435,7 +486,7 @@ export function GoalDetail({
     <div
       className={cn(
         "relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className
+        className,
       )}
       {...props}
     >
@@ -475,9 +526,9 @@ export function GoalDetail({
                       Sync settings
                     </DropdownMenuItem>
                   )}
-                  {onSyncSettingsChange && hasSyncAvailable && onToggleMilestones && (
-                    <DropdownMenuSeparator />
-                  )}
+                  {onSyncSettingsChange &&
+                    hasSyncAvailable &&
+                    onToggleMilestones && <DropdownMenuSeparator />}
                   {onToggleMilestones && (
                     <DropdownMenuItem onClick={onToggleMilestones}>
                       {milestonesEnabled
@@ -485,9 +536,9 @@ export function GoalDetail({
                         : "Enable milestones"}
                     </DropdownMenuItem>
                   )}
-                  {((onSyncSettingsChange && hasSyncAvailable) || onToggleMilestones) && onDelete && (
-                    <DropdownMenuSeparator />
-                  )}
+                  {((onSyncSettingsChange && hasSyncAvailable) ||
+                    onToggleMilestones) &&
+                    onDelete && <DropdownMenuSeparator />}
                   {onDelete && (
                     <DropdownMenuItem variant="destructive" onClick={onDelete}>
                       Delete goal

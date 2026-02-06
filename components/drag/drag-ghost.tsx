@@ -1,8 +1,52 @@
+/**
+ * =============================================================================
+ * File: drag-ghost.tsx
+ * =============================================================================
+ *
+ * Cursor-following visual preview for active drag operations.
+ *
+ * Renders a lightweight Block-based "ghost" that tracks pointer position
+ * while an item is being dragged and no snapped preview is active.
+ *
+ * When the pointer enters a valid drop zone, this ghost is hidden and the
+ * target surface is responsible for rendering its own placement preview.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Subscribe to drag state from DragContext.
+ * - Position a floating preview at the current pointer coordinates.
+ * - Derive title, color, and default duration from DragItem.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Determining valid drop targets.
+ * - Snapping or layout calculations.
+ * - Performing placement or persistence.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses pointer-events-none to avoid intercepting input.
+ * - Slightly offset from cursor for visual clarity.
+ * - High z-index to ensure visibility above UI chrome.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DragGhost
+ */
+
 "use client";
 
 import * as React from "react";
 import { Block } from "@/components/block";
-import { getDefaultDuration, getDragItemTitle, getDragItemColor } from "@/lib/drag-types";
+import {
+  getDefaultDuration,
+  getDragItemTitle,
+  getDragItemColor,
+} from "@/lib/drag-types";
 import { useDragContext } from "./drag-context";
 
 // ============================================================================
@@ -12,7 +56,7 @@ import { useDragContext } from "./drag-context";
 /**
  * Visual ghost that follows the cursor during drag operations.
  * Renders a Block component preview at the current pointer position.
- * 
+ *
  * The ghost is hidden when over a valid drop zone (calendar shows its own preview).
  */
 export function DragGhost() {

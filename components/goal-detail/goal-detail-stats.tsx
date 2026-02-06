@@ -1,3 +1,42 @@
+/**
+ * =============================================================================
+ * File: goal-detail-stats.tsx
+ * =============================================================================
+ *
+ * Lightweight progress visualization for a goal.
+ *
+ * Displays:
+ * - Completed hours.
+ * - Planned hours.
+ * - A simple progress bar derived from the ratio between them.
+ *
+ * Used inside the Goal Detail view to provide quick feedback on momentum.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compute progress percentage from provided stats.
+ * - Render progress bar and formatted hour values.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Computing stats.
+ * - Persisting or mutating data.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Caps progress at 100%.
+ * - Minimal visual treatment to avoid competing with core content.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalDetailStats
+ * - GoalDetailStatsProps
+ */
+
 "use client";
 
 import * as React from "react";

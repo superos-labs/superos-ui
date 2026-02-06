@@ -1,3 +1,49 @@
+/**
+ * =============================================================================
+ * File: goal-detail-milestones.tsx
+ * =============================================================================
+ *
+ * Milestones and tasks section for the Goal Detail view.
+ *
+ * Renders a vertical list of milestones, each containing its associated tasks,
+ * with support for:
+ * - Creating, editing, completing, and deleting milestones.
+ * - Creating, editing, completing, and deleting tasks within milestones.
+ * - Managing subtasks inside individual tasks.
+ *
+ * Designed to express medium-to-large goals as phased progression.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Group tasks by milestone.
+ * - Render milestone headers with completion, label, and optional deadline.
+ * - Render TaskRow items within each milestone.
+ * - Provide inline creators for milestones and tasks.
+ * - Manage local expansion state for tasks (accordion).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting milestones, tasks, or subtasks.
+ * - Fetching goal data.
+ * - Deciding milestone sequencing or semantics.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - First incomplete milestone is treated as the "current" phase.
+ * - Milestones default to expanded when incomplete.
+ * - Inline creators are keyboard-first.
+ * - Compact typography favors dense, scannable lists.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalDetailMilestones
+ * - GoalDetailMilestonesProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -342,10 +388,7 @@ function MilestoneSection({
           className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:text-muted-foreground"
         >
           <RiArrowRightSLine
-            className={cn(
-              "size-4 transition-transform",
-              isOpen && "rotate-90",
-            )}
+            className={cn("size-4 transition-transform", isOpen && "rotate-90")}
           />
         </button>
 
@@ -408,7 +451,8 @@ function MilestoneSection({
               }
               onUpdateSubtask={
                 onUpdateSubtask
-                  ? (subtaskId, label) => onUpdateSubtask(task.id, subtaskId, label)
+                  ? (subtaskId, label) =>
+                      onUpdateSubtask(task.id, subtaskId, label)
                   : undefined
               }
               onDeleteSubtask={
@@ -425,10 +469,7 @@ function MilestoneSection({
 
           {/* Inline task creator */}
           {onAddTask && (
-            <InlineTaskCreator
-              milestoneId={milestone.id}
-              onSave={onAddTask}
-            />
+            <InlineTaskCreator milestoneId={milestone.id} onSave={onAddTask} />
           )}
         </div>
       )}
@@ -458,7 +499,10 @@ export interface GoalDetailMilestonesProps {
   /** Callback to update a milestone's label */
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
   /** Callback to update a milestone's deadline */
-  onUpdateMilestoneDeadline?: (milestoneId: string, deadline: string | undefined) => void;
+  onUpdateMilestoneDeadline?: (
+    milestoneId: string,
+    deadline: string | undefined,
+  ) => void;
   /** Callback to delete a milestone */
   onDeleteMilestone?: (milestoneId: string) => void;
   /** Callback when a task is toggled */
@@ -516,7 +560,7 @@ export function GoalDetailMilestones({
   // Group tasks by milestone
   const tasksByMilestone = React.useMemo(() => {
     const grouped = new Map<string, ScheduleTask[]>();
-    
+
     // Initialize with empty arrays for each milestone
     milestones.forEach((m) => {
       grouped.set(m.id, []);

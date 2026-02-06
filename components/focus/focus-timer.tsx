@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: focus-timer.tsx
+ * =============================================================================
+ *
+ * Focus timer primitives used inside block sidebars and focus surfaces.
+ *
+ * Provides:
+ * - A compact elapsed-time display with colored running indicator.
+ * - Pause, resume, and stop controls for an active focus session.
+ * - A standalone button to initiate focus on a block.
+ *
+ * These components are purely presentational and delegate all behavior upward.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render elapsed time in a readable HH:MM:SS format.
+ * - Visually reflect running vs paused state.
+ * - Expose pause, resume, stop, and start interactions.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Owning focus timer state.
+ * - Starting or ending focus sessions.
+ * - Persisting focus history.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses block color system for indicator consistency.
+ * - Compact layout suitable for sidebars and inline panels.
+ * - Icons communicate state to reduce textual noise.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - FocusTimer
+ * - FocusTimerProps
+ * - StartFocusButton
+ * - StartFocusButtonProps
+ */
+
 "use client";
 
 import * as React from "react";

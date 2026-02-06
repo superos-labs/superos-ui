@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: use-drop-zone.ts
+ * =============================================================================
+ *
+ * Hook for registering a time-based drop target.
+ *
+ * Translates pointer movement into snapped time positions and reports
+ * preview placement back to the global DragContext.
+ *
+ * Designed primarily for calendar day columns, but remains generic to any
+ * vertical time grid.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Attach pointer handlers for drag-over, leave, and drop.
+ * - Convert Y pointer position into start minutes.
+ * - Snap minutes to a configurable interval.
+ * - Publish preview positions to DragContext.
+ * - Invoke onDrop with resolved item and start time.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering drop previews.
+ * - Validating business rules.
+ * - Creating or updating domain entities.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses optional drag context for graceful usage.
+ * - Clamps minutes to a valid 24h range.
+ * - Clears preview when pointer leaves the zone.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useDropZone
+ */
+
 "use client";
 
 import * as React from "react";
@@ -68,7 +110,7 @@ export function useDropZone({
       const clampedMinutes = Math.max(0, Math.min(1440 - 15, rawMinutes));
       return snapToInterval(clampedMinutes, snapInterval);
     },
-    [pixelsPerMinute, snapInterval]
+    [pixelsPerMinute, snapInterval],
   );
 
   const handlePointerMove = React.useCallback(
@@ -76,9 +118,13 @@ export function useDropZone({
       if (!dragContext?.state.isDragging) return;
 
       const startMinutes = getMinutesFromY(e.clientY);
-      dragContext.setPreviewPosition({ dayIndex, startMinutes, dropTarget: "time-grid" });
+      dragContext.setPreviewPosition({
+        dayIndex,
+        startMinutes,
+        dropTarget: "time-grid",
+      });
     },
-    [dragContext, dayIndex, getMinutesFromY]
+    [dragContext, dayIndex, getMinutesFromY],
   );
 
   const handlePointerUp = React.useCallback(
@@ -89,7 +135,7 @@ export function useDropZone({
       onDrop?.(dragContext.state.item, startMinutes);
       dragContext.endDrag();
     },
-    [dragContext, getMinutesFromY, onDrop]
+    [dragContext, getMinutesFromY, onDrop],
   );
 
   const handlePointerLeave = React.useCallback(() => {
@@ -119,7 +165,7 @@ export function useDropZone({
       onPointerUp: handlePointerUp,
       onPointerLeave: handlePointerLeave,
     }),
-    [handlePointerMove, handlePointerUp, handlePointerLeave]
+    [handlePointerMove, handlePointerUp, handlePointerLeave],
   );
 
   return {

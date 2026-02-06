@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: goal-detail-tasks.tsx
+ * =============================================================================
+ *
+ * Tasks list section for the Goal Detail view (without milestones).
+ *
+ * Renders a flat list of tasks associated with a goal, with support for:
+ * - Toggling completion.
+ * - Expanding tasks to reveal subtasks.
+ * - Editing task content.
+ * - Creating and deleting tasks and subtasks.
+ *
+ * Used when milestone mode is disabled for a goal.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Sort tasks (incomplete first, completed last).
+ * - Render TaskRow instances styled for goal detail context.
+ * - Provide inline task creation.
+ * - Manage local expansion state for tasks (accordion).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting tasks or subtasks.
+ * - Fetching goal or task data.
+ * - Enforcing business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Reuses generic TaskRow with goal-specific context.
+ * - Keyboard-first inline creator.
+ * - Dense vertical spacing for scannability.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalDetailTasks
+ * - GoalDetailTasksProps
+ */
+
 "use client";
 
 import * as React from "react";

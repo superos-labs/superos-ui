@@ -1,3 +1,51 @@
+/**
+ * =============================================================================
+ * File: goal-detail-header.tsx
+ * =============================================================================
+ *
+ * Header section for the Goal Detail view.
+ *
+ * Presents and optionally allows editing of a goal’s core identity:
+ * - Icon
+ * - Color
+ * - Title
+ * - Life area
+ * - Optional target date (deadline)
+ *
+ * Designed to work in both read-only and editable modes depending on
+ * which callbacks are provided.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render goal icon, title, and metadata pills.
+ * - Provide inline editing for title.
+ * - Provide dropdown pickers for icon, color, and life area.
+ * - Provide date picker for deadline.
+ * - Surface "add life area" affordance when supported.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goal changes.
+ * - Validating business rules.
+ * - Fetching available icons or life areas.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Title editing is optimistic and commits on blur or Enter.
+ * - Icon and color are edited together via a single dropdown.
+ * - Subset of distinct colors is used for faster scanning.
+ * - Pills provide compact, glanceable metadata.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalDetailHeader
+ * - GoalDetailHeaderProps
+ */
+
 "use client";
 
 import * as React from "react";

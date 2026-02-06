@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: focus-indicator.tsx
+ * =============================================================================
+ *
+ * Compact focus status indicator shown in the application shell toolbar.
+ *
+ * Displays the currently focused block, its color, elapsed focus time,
+ * and a pause/resume control when the user is viewing a different block.
+ *
+ * Acts as a lightweight gateway back to the active focus context.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render focused block title, color dot, and elapsed time.
+ * - Visually indicate running vs paused focus state.
+ * - Expose pause and resume controls.
+ * - Notify parent when indicator is clicked (navigate to focused block).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Owning focus timer state.
+ * - Starting, stopping, or persisting focus sessions.
+ * - Fetching block data.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Optimized for small footprint inside the shell toolbar.
+ * - Title is truncated to avoid layout shifts.
+ * - Uses block color system for visual consistency.
+ * - Animated dot pulses only while running.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - FocusIndicator
+ * - FocusIndicatorProps
+ */
+
 "use client";
 
 import * as React from "react";

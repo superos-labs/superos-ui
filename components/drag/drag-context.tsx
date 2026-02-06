@@ -1,3 +1,51 @@
+/**
+ * =============================================================================
+ * File: drag-context.tsx
+ * =============================================================================
+ *
+ * Global drag-and-drop context for SuperOS.
+ *
+ * Centralizes pointer-driven drag state and exposes an imperative API for
+ * initiating, tracking, previewing, and cancelling drag interactions.
+ *
+ * This context is intentionally generic and domain-agnostic. It does not
+ * understand calendars, blocks, or tasks. It only tracks the mechanics of
+ * a drag session and the currently active DragItem.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store the currently dragged item and pointer position.
+ * - Enforce a movement threshold before activating a drag.
+ * - Track preview drop position provided by drop zones.
+ * - Track overlap mode (Shift key) during drag.
+ * - Expose startDrag, endDrag, cancelDrag, and setPreviewPosition APIs.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Computing drop targets.
+ * - Performing mutations or persistence.
+ * - Snapping logic or layout math.
+ * - Rendering drag previews or ghosts.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses a "pending drag" phase before threshold is exceeded.
+ * - Listens to global pointer and keyboard events while mounted.
+ * - Shift key enables overlap placement instead of gap-filling.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DragProvider
+ * - useDragContext
+ * - useDragContextOptional
+ * - DragState
+ * - DragContextValue
+ */
+
 "use client";
 
 import * as React from "react";

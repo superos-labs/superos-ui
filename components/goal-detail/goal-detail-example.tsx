@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: goal-detail-example.tsx
+ * =============================================================================
+ *
+ * Interactive playground demo for the GoalDetail component.
+ *
+ * Provides a local, stateful harness that simulates:
+ * - Goal selection.
+ * - Task creation, deletion, and completion.
+ * - Optional milestone workflows.
+ * - Title, life area, and notes editing.
+ *
+ * Used for design iteration, QA, and visual regression during development.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Hold mock goal state for a selected goal.
+ * - Wire GoalDetail callbacks to local state mutations.
+ * - Expose knobs to switch between fixture goals.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting data.
+ * - Fetching real goals.
+ * - Enforcing production business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses shell fixtures for realistic sample data.
+ * - Milestones can be toggled on/off to exercise both modes.
+ * - Intentionally verbose handlers for clarity.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalDetailExample
+ */
+
 "use client";
 
 import * as React from "react";
@@ -226,7 +268,9 @@ function GoalDetailDemo() {
             return {
               ...goal,
               milestonesEnabled: true,
-              milestones: [{ id: phase1Id, label: "Phase 1", completed: false }],
+              milestones: [
+                { id: phase1Id, label: "Phase 1", completed: false },
+              ],
               tasks: goal.tasks?.map((t) => ({ ...t, milestoneId: phase1Id })),
             };
           }

@@ -1,3 +1,56 @@
+/**
+ * =============================================================================
+ * File: focus-sidebar-content.tsx
+ * =============================================================================
+ *
+ * Primary sidebar content shown during an active focus session.
+ *
+ * Provides a dedicated, distraction-minimized environment to:
+ * - View and control the focus timer.
+ * - See the focused block’s title and color context.
+ * - Capture notes.
+ * - Progress tasks or subtasks related to the focused block.
+ *
+ * Adapts its content based on block type (goal block vs task block).
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render hero timer, title, and focus controls (pause, resume, end).
+ * - Display and edit notes for the focused block.
+ * - For goal blocks:
+ *   - List assigned goal tasks.
+ *   - Toggle, unassign, and expand goal tasks.
+ *   - Edit task details and manage subtasks.
+ *   - Create new tasks inline.
+ * - For task blocks:
+ *   - List and manage subtasks.
+ *   - Create new subtasks inline.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Owning focus timer state or lifecycle.
+ * - Persisting notes, tasks, or subtasks.
+ * - Fetching block or goal data.
+ * - Enforcing business rules around completion.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Desktop-first vertical layout.
+ * - Animated color dot reflects running state.
+ * - Auto-resizing notes textarea for comfortable writing.
+ * - Inline creators favor keyboard-first flows.
+ * - Goal task expansion behaves like a single-open accordion.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - FocusSidebarContent
+ * - FocusSidebarContentProps
+ */
+
 "use client";
 
 import * as React from "react";
