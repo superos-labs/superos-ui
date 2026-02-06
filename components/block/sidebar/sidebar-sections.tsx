@@ -1,0 +1,321 @@
+"use client";
+
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import {
+  RiAddLine,
+  RiArrowDownSLine,
+  RiFocusLine,
+  RiPencilLine,
+} from "@remixicon/react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import type { ScheduleTask } from "@/lib/unified-schedule";
+import type { GoalSelectorOption } from "../block-types";
+import { formatFocusTime, parseFocusTimeInput } from "./sidebar-utils";
+
+// =============================================================================
+// Section header component
+// =============================================================================
+
+export interface BlockSidebarSectionProps {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function BlockSidebarSection({
+  icon,
+  label,
+  children,
+  className,
+}: BlockSidebarSectionProps) {
+  return (
+    <div className={cn("flex flex-col gap-2", className)}>
+      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {icon}
+        <span>{label}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// =============================================================================
+// Focus Time Section (editable focus time display)
+// =============================================================================
+
+interface FocusTimeSectionProps {
+  /** Total focus time in minutes */
+  focusedMinutes: number;
+  /** Callback when focus time is edited (minutes) */
+  onFocusedMinutesChange?: (minutes: number) => void;
+}
+
+export function FocusTimeSection({
+  focusedMinutes,
+  onFocusedMinutesChange,
+}: FocusTimeSectionProps) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Focus input when entering edit mode
+  React.useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const handleStartEdit = () => {
+    if (!onFocusedMinutesChange) return;
+    setInputValue(Math.round(focusedMinutes).toString());
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    const parsed = parseFocusTimeInput(inputValue);
+    if (
+      parsed !== null &&
+      onFocusedMinutesChange &&
+      parsed !== Math.round(focusedMinutes)
+    ) {
+      onFocusedMinutesChange(parsed);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <BlockSidebarSection
+      icon={<RiFocusLine className="size-3.5" />}
+      label="Focus Time"
+    >
+      {isEditing ? (
+        <div className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleSave}
+            placeholder="e.g., 90 or 1h 30m"
+            className={cn(
+              "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
+              "outline-none focus:bg-muted"
+            )}
+          />
+          <span className="text-xs text-muted-foreground">min</span>
+        </div>
+      ) : (
+        <button
+          onClick={handleStartEdit}
+          disabled={!onFocusedMinutesChange}
+          className={cn(
+            "group flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors",
+            onFocusedMinutesChange
+              ? "hover:bg-muted/60 cursor-pointer"
+              : "cursor-default"
+          )}
+        >
+          <span className="text-sm font-medium tabular-nums text-foreground">
+            {formatFocusTime(focusedMinutes)}
+          </span>
+          {onFocusedMinutesChange && (
+            <RiPencilLine className="size-3 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" />
+          )}
+        </button>
+      )}
+    </BlockSidebarSection>
+  );
+}
+
+// =============================================================================
+// Inline task creator for goal blocks
+// =============================================================================
+
+interface InlineBlockTaskCreatorProps {
+  onSave: (label: string) => void;
+}
+
+export function InlineBlockTaskCreator({ onSave }: InlineBlockTaskCreatorProps) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+    }
+  }, [isEditing]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && value.trim()) {
+      e.preventDefault();
+      onSave(value.trim());
+      setValue("");
+      inputRef.current?.focus();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setValue("");
+      setIsEditing(false);
+    }
+  };
+
+  const handleBlur = () => {
+    if (value.trim()) {
+      onSave(value.trim());
+    }
+    setValue("");
+    setIsEditing(false);
+  };
+
+  if (!isEditing) {
+    return (
+      <button
+        onClick={() => setIsEditing(true)}
+        className="group flex w-full items-center gap-2.5 rounded-lg py-2 px-2 text-left transition-all hover:bg-muted/60"
+      >
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/30 text-muted-foreground/40 transition-colors group-hover:border-muted-foreground/50 group-hover:text-muted-foreground/60">
+          <RiAddLine className="size-3" />
+        </div>
+        <span className="text-sm text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
+          Add task...
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2.5 rounded-lg py-2 px-2">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/40 text-muted-foreground/50">
+        <RiAddLine className="size-3" />
+      </div>
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        placeholder="Task name..."
+        className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+      />
+    </div>
+  );
+}
+
+// =============================================================================
+// Collapsible list of available tasks
+// =============================================================================
+
+type BlockGoalTask = ScheduleTask;
+
+interface AvailableTasksListProps {
+  tasks: BlockGoalTask[];
+  onAssign: (taskId: string) => void;
+}
+
+export function AvailableTasksList({ tasks, onAssign }: AvailableTasksListProps) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  if (tasks.length === 0) return null;
+
+  return (
+    <div className="flex flex-col">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="group flex w-full items-center gap-2.5 rounded-lg py-2 px-2 text-left transition-all hover:bg-muted/60"
+      >
+        <div className="flex size-5 shrink-0 items-center justify-center">
+          <RiArrowDownSLine
+            className={cn(
+              "size-4 text-muted-foreground/50 transition-transform group-hover:text-muted-foreground/70",
+              isExpanded && "rotate-180"
+            )}
+          />
+        </div>
+        <span className="text-sm text-muted-foreground/60 transition-colors group-hover:text-muted-foreground/80">
+          Show available tasks ({tasks.length})
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="flex flex-col">
+          {tasks.map((task) => (
+            <button
+              key={task.id}
+              onClick={() => onAssign(task.id)}
+              className="group flex items-center gap-2.5 rounded-lg py-2 px-2 text-left transition-all hover:bg-muted/60"
+            >
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-md border border-dashed border-muted-foreground/20 text-muted-foreground/30 transition-colors group-hover:border-muted-foreground/40 group-hover:text-muted-foreground/50">
+                <RiAddLine className="size-3" />
+              </div>
+              <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+                {task.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
+// Goal Selector Dropdown (for unassigned blocks)
+// =============================================================================
+
+interface GoalSelectorProps {
+  goals: GoalSelectorOption[];
+  onSelect: (goalId: string) => void;
+}
+
+export function GoalSelector({ goals, onSelect }: GoalSelectorProps) {
+  if (goals.length === 0) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="group flex items-center gap-2 transition-colors">
+          <div className="flex size-5 shrink-0 items-center justify-center rounded border border-dashed border-muted-foreground/40 text-muted-foreground/50 transition-colors group-hover:border-muted-foreground/60 group-hover:text-muted-foreground/70">
+            <RiAddLine className="size-3" />
+          </div>
+          <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+            Select goal...
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[240px]">
+        {goals.map((goal) => (
+          <DropdownMenuItem
+            key={goal.id}
+            onClick={() => onSelect(goal.id)}
+            className="gap-2.5 py-2"
+          >
+            <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
+              <goal.icon className={cn("size-3", goal.color)} />
+            </div>
+            <span className="font-medium">{goal.label}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
