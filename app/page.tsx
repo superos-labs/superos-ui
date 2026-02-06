@@ -1,3 +1,36 @@
+/**
+ * =============================================================================
+ * File: app/page.tsx
+ * =============================================================================
+ *
+ * Main application entry page for the SuperOS prototype shell.
+ *
+ * Composes global interaction providers and boots the shell using a selected
+ * fixture data set. Supports switching from an empty state to a complete state
+ * to simulate onboarding completion.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Wrap the app with Preferences, Undo, and Drag providers.
+ * - Select and load a fixture data set.
+ * - Initialize shell state via `useShellState`.
+ * - Render the shell content component.
+ * - Allow skipping onboarding by switching to the "complete" data set.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses in-memory fixture data only (non-persistent prototype).
+ * - Changing `dataSetId` forces a full shell re-initialization.
+ * - Keeps orchestration here; behavioral logic lives in hooks and shell modules.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - default: Page
+ */
+
 "use client";
 
 import * as React from "react";

@@ -1,5 +1,35 @@
-import Link from "next/link"
-import { registry } from "@/lib/registry"
+/**
+ * =============================================================================
+ * File: app/sample-components/page.tsx
+ * =============================================================================
+ *
+ * Index page for browsing registered sample components.
+ *
+ * Renders a simple list of links derived from the internal component registry,
+ * allowing quick navigation to each component's dedicated preview page.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Read component metadata from `registry`.
+ * - Render a navigable list of component names.
+ * - Link each entry to its corresponding `[slug]` preview route.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Intentionally minimal and unopinionated.
+ * - Serves as a lightweight developer-facing entry point rather than a
+ *   user-facing experience.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - default: SampleComponentsPage
+ */
+
+import Link from "next/link";
+import { registry } from "@/lib/registry";
 
 export default function SampleComponentsPage() {
   return (
@@ -22,5 +52,5 @@ export default function SampleComponentsPage() {
         </ul>
       </nav>
     </main>
-  )
+  );
 }
