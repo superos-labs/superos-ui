@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: integrations-sidebar.tsx
+ * =============================================================================
+ *
+ * Sliding sidebar container for managing apps and calendar integrations.
+ *
+ * Provides two primary modes:
+ * - List view: browse apps and available integration providers
+ * - Provider view: configure a specific provider's settings
+ *
+ * Acts as the top-level orchestration layer for the Integrations area UI.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render header with contextual title and navigation.
+ * - Switch between list and provider views.
+ * - Compose IntegrationList and ProviderSettingsView.
+ * - Bridge provider-scoped callbacks upward.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting integration state.
+ * - Performing API calls.
+ * - Fetching provider metadata.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses a simple view state (IntegrationsSidebarView) to drive rendering.
+ * - Provides fallback default integration state when none is present.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - IntegrationsSidebar
+ * - IntegrationsSidebarProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -39,7 +80,7 @@ interface IntegrationsSidebarProps {
   /** Toggle importing events from a calendar */
   onToggleCalendarImport?: (
     provider: CalendarProvider,
-    calendarId: string
+    calendarId: string,
   ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly?: (provider: CalendarProvider) => void;
@@ -47,25 +88,25 @@ interface IntegrationsSidebarProps {
   /** Toggle exporting blueprint to a calendar */
   onToggleCalendarExport?: (
     provider: CalendarProvider,
-    calendarId: string
+    calendarId: string,
   ) => void;
   /** Toggle export enabled for a provider */
   onToggleExportEnabled?: (provider: CalendarProvider) => void;
   /** Update participation settings for a provider */
   onSetExportParticipation?: (
     provider: CalendarProvider,
-    participation: Partial<SyncParticipation>
+    participation: Partial<SyncParticipation>,
   ) => void;
   /** Set goal filter for a provider */
   onSetExportGoalFilter?: (
     provider: CalendarProvider,
     mode: GoalFilterMode,
-    selectedIds?: Set<string>
+    selectedIds?: Set<string>,
   ) => void;
   /** Set default appearance for a provider */
   onSetExportDefaultAppearance?: (
     provider: CalendarProvider,
-    appearance: ExportBlockVisibility
+    appearance: ExportBlockVisibility,
   ) => void;
   /** Set custom label for exported events */
   onSetExportCustomLabel?: (provider: CalendarProvider, label: string) => void;
@@ -111,7 +152,7 @@ function IntegrationsSidebar({
   };
 
   const getIntegrationState = (
-    provider: CalendarProvider
+    provider: CalendarProvider,
   ): CalendarIntegrationState => {
     return (
       integrationStates.get(provider) ?? {
@@ -146,7 +187,7 @@ function IntegrationsSidebar({
     <div
       className={cn(
         "flex h-full flex-col rounded-xl border border-border bg-card shadow-sm",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -160,7 +201,7 @@ function IntegrationsSidebar({
                   "flex size-7 items-center justify-center rounded-lg",
                   "text-muted-foreground transition-colors duration-150",
                   "hover:bg-muted hover:text-foreground",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 )}
                 aria-label="Back to integrations"
               >
@@ -197,7 +238,7 @@ function IntegrationsSidebar({
             "flex size-7 items-center justify-center rounded-lg",
             "text-muted-foreground transition-colors duration-150",
             "hover:bg-muted hover:text-foreground",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           )}
           aria-label="Close"
         >

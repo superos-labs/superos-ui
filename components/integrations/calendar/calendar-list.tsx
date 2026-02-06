@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: calendar-list.tsx
+ * =============================================================================
+ *
+ * Calendar import configuration list for a single provider.
+ *
+ * Renders:
+ * - A master toggle to enable/disable importing events
+ * - A list of provider calendars with per-calendar import toggles
+ * - An optional "meetings only" filter toggle
+ *
+ * This component is purely presentational.
+ * It receives state and callbacks from its parent and emits user intent upward.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render provider calendars for import selection.
+ * - Expose master import enable/disable control.
+ * - Expose meetings-only filter toggle.
+ * - Forward toggle events via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching calendars.
+ * - Persisting user preferences.
+ * - Interpreting calendar data semantics.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Hidden when no calendars are available.
+ * - Secondary controls only appear when master import is enabled.
+ * - Uses a small internal ToggleSwitch helper for consistent toggles.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - CalendarList
+ * - CalendarListProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -35,14 +79,14 @@ function ToggleSwitch({
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         checked ? "bg-foreground" : "bg-muted-foreground/30",
         disabled && "cursor-not-allowed opacity-50",
-        className
+        className,
       )}
     >
       <span
         className={cn(
           "pointer-events-none block size-4 rounded-full bg-background shadow-sm ring-0",
           "transition-transform duration-150",
-          checked ? "translate-x-[18px]" : "translate-x-0.5"
+          checked ? "translate-x-[18px]" : "translate-x-0.5",
         )}
       />
     </button>

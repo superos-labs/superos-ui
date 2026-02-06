@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: integration-list.tsx
+ * =============================================================================
+ *
+ * Composite list of SuperOS apps and calendar integrations.
+ *
+ * Renders two stacked sections:
+ * - Native / companion apps (iOS, Android, Chrome Extension)
+ * - Calendar integration providers with connection status
+ *
+ * Acts as the primary browsing surface for the Integrations area.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render ordered list of companion apps.
+ * - Render ordered list of calendar providers.
+ * - Provide a fallback default state for providers with no stored state.
+ * - Emit selected provider when a card is clicked.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching integration state.
+ * - Persisting changes.
+ * - Performing navigation.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Ordering is driven by APP_ORDER and PROVIDER_ORDER.
+ * - Uses IntegrationCard and AppCard as building blocks.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - IntegrationList
+ * - IntegrationListProps
+ */
+
 "use client";
 
 import * as React from "react";

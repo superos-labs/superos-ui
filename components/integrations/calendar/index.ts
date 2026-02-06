@@ -1,17 +1,32 @@
 /**
- * Calendar integration settings components.
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
  *
- * These components handle provider-specific settings within the
- * integrations sidebar, including calendar selection and export options.
+ * Public export surface for calendar integration UI components.
  *
- * @example
- * ```tsx
- * import {
- *   ProviderSettingsView,
- *   CalendarList,
- *   ExportSection,
- * } from "@/components/integrations/calendar";
- * ```
+ * Centralizes and re-exports all integration-related views and building blocks
+ * used by provider settings and sync configuration flows.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Provide a single import entry point for integrations UI.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Defining component behavior.
+ * - Owning business logic.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ProviderSettingsView (+ props)
+ * - ConnectPrompt (+ props)
+ * - CalendarList (+ props)
+ * - CalendarRow (+ props)
+ * - ExportSection (+ props)
  */
 
 export { ProviderSettingsView } from "./provider-settings-view";

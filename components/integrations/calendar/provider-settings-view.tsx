@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: provider-settings-view.tsx
+ * =============================================================================
+ *
+ * Top-level settings view for configuring a single calendar provider integration.
+ *
+ * Acts as the composition root for all provider-specific integration UI:
+ * - Connection / disconnection state
+ * - Calendar import configuration
+ * - External calendar export configuration
+ *
+ * Decides which subviews to render based on connection status.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Show connect prompt when provider is not connected.
+ * - Show account info and disconnect action when connected.
+ * - Compose CalendarList and ExportSection with correct state and callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Performing connection or disconnection.
+ * - Persisting integration settings.
+ * - Fetching calendars or goals.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Serves as a thin orchestration layer for integration UI.
+ * - All business state is injected via props.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ProviderSettingsView
+ * - ProviderSettingsViewProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -87,7 +128,7 @@ function ProviderSettingsView({
       <div
         className={cn(
           "flex items-center gap-3 rounded-xl px-3 py-3",
-          "ring-1 ring-inset ring-border/60"
+          "ring-1 ring-inset ring-border/60",
         )}
       >
         {/* Account icon */}

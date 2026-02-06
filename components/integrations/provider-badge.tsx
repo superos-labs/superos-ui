@@ -1,3 +1,38 @@
+/**
+ * =============================================================================
+ * File: provider-badge.tsx
+ * =============================================================================
+ *
+ * Compact visual indicator for a calendar provider.
+ *
+ * Renders the provider's icon inside a small rounded badge,
+ * typically used on external calendar blocks or event surfaces
+ * to communicate the source provider at a glance.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render provider icon with brand color.
+ * - Support small and medium size variants.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Handling interactions.
+ * - Managing provider state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses a subtle white background and shadow for legibility.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ProviderBadge
+ * - ProviderBadgeProps
+ */
+
 "use client";
 
 import * as React from "react";

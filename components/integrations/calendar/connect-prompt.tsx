@@ -1,3 +1,43 @@
+/**
+ * =============================================================================
+ * File: connect-prompt.tsx
+ * =============================================================================
+ *
+ * Connection call-to-action for an unconnected calendar provider.
+ *
+ * Displays provider branding, a short description, and a primary
+ * "Connect" button that initiates the OAuth / connection flow.
+ *
+ * This component is presentational.
+ * It receives the target provider and emits user intent upward.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render provider icon, name, and brand styling.
+ * - Communicate the value of connecting the provider.
+ * - Trigger connect callback on user action.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Performing the actual connection.
+ * - Handling OAuth or tokens.
+ * - Managing connection state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Centered, empty-state style layout.
+ * - Uses provider brand color for subtle visual identity.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ConnectPrompt
+ * - ConnectPromptProps
+ */
+
 "use client";
 
 import * as React from "react";

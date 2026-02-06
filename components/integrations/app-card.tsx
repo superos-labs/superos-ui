@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: app-card.tsx
+ * =============================================================================
+ *
+ * Card component for promoting and linking to SuperOS companion apps.
+ *
+ * Supports multiple app types (iOS, Android, Chrome Extension) via
+ * a small configuration map that defines icon, label, and install URL.
+ *
+ * Each card renders app identity, a short description, and an install CTA
+ * that opens the target store or page in a new tab.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define presentation for a single app entry.
+ * - Resolve app metadata from configuration.
+ * - Open external install link on user action.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Detecting platform or device.
+ * - Tracking installs or analytics.
+ * - Managing deep linking.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses subtle gradient background and hover affordances.
+ * - Chrome icon is implemented as an inline SVG for brand accuracy.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - AppCard
+ * - AppCardProps
+ * - AppType
+ * - APP_ORDER
+ */
+
 "use client";
 
 import * as React from "react";
@@ -141,7 +183,7 @@ function AppCard({ appType }: AppCardProps) {
         "group flex w-full items-center gap-3 rounded-xl p-3",
         "bg-gradient-to-r from-muted/30 to-transparent",
         "transition-all duration-200",
-        "hover:from-muted/60 hover:to-muted/20"
+        "hover:from-muted/60 hover:to-muted/20",
       )}
     >
       {/* App Icon - Subtle container */}
@@ -149,7 +191,7 @@ function AppCard({ appType }: AppCardProps) {
         className={cn(
           "relative flex size-10 shrink-0 items-center justify-center rounded-xl",
           "bg-muted/50 shadow-sm",
-          "transition-transform duration-200 group-hover:scale-105"
+          "transition-transform duration-200 group-hover:scale-105",
         )}
       >
         {config.useCustomIcon ? (
@@ -166,9 +208,7 @@ function AppCard({ appType }: AppCardProps) {
         <span className="text-sm font-medium text-foreground">
           {config.name}
         </span>
-        <p className="text-xs text-muted-foreground">
-          {config.description}
-        </p>
+        <p className="text-xs text-muted-foreground">{config.description}</p>
       </div>
 
       {/* Install Button - Modern pill style */}
@@ -181,7 +221,7 @@ function AppCard({ appType }: AppCardProps) {
           "transition-all duration-200",
           "hover:opacity-90 hover:shadow-md",
           "active:scale-95",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         )}
       >
         {config.installLabel}

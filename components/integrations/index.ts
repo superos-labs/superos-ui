@@ -1,16 +1,39 @@
 /**
- * Integrations module - External calendar integration components.
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
  *
- * @example
- * ```tsx
- * import {
- *   ProviderBadge,
- *   IntegrationsSidebar,
- *   IntegrationList,
- *   IntegrationCard,
- *   ProviderSettingsView,
- * } from "@/components/integrations";
- * ```
+ * Public export surface for the Integrations UI domain.
+ *
+ * Re-exports all integration-related building blocks, including:
+ * - Provider discovery and listing
+ * - Sidebar navigation
+ * - Integration cards and badges
+ * - Companion app promotion
+ * - Calendar provider settings and sync configuration
+ *
+ * Serves as the single import entry point for integrations UI.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Centralize and organize integrations-related exports.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Defining component behavior.
+ * - Owning business logic.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ProviderBadge (+ props)
+ * - IntegrationsSidebar (+ props)
+ * - IntegrationList (+ props)
+ * - IntegrationCard (+ props)
+ * - AppCard, APP_ORDER (+ props, types)
+ * - Calendar integration components (+ props)
  */
 
 export { ProviderBadge } from "./provider-badge";

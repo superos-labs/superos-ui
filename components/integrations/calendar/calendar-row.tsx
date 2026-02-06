@@ -1,3 +1,49 @@
+/**
+ * =============================================================================
+ * File: calendar-row.tsx
+ * =============================================================================
+ *
+ * Single selectable calendar row used in integration settings.
+ *
+ * Displays:
+ * - A custom checkbox indicating enabled/disabled state
+ * - Calendar color indicator
+ * - Calendar name
+ *
+ * Can operate in two modes:
+ * - "import": toggles whether events are imported from the calendar
+ * - "export": toggles whether blueprint blocks are exported to the calendar
+ *
+ * This component is presentational and stateless.
+ * All state is derived from props and changes are emitted upward.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render calendar metadata (name, color).
+ * - Derive checked state based on mode.
+ * - Emit toggle intent on user interaction.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting settings.
+ * - Fetching calendars.
+ * - Validating provider capabilities.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Implemented as a button with ARIA checkbox semantics.
+ * - Visual state is fully controlled by props.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - CalendarRow
+ * - CalendarRowProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -33,7 +79,7 @@ function CalendarRow({ calendar, type, onToggle }: CalendarRowProps) {
       className={cn(
         "group flex w-full cursor-pointer items-center gap-2.5 rounded-lg py-1.5 text-left",
         "transition-colors duration-150",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       )}
     >
       {/* Custom checkbox */}
@@ -42,7 +88,7 @@ function CalendarRow({ calendar, type, onToggle }: CalendarRowProps) {
           "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
           isChecked
             ? "bg-foreground text-background"
-            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
         )}
       >
         {isChecked && <RiCheckLine className="size-3" />}
@@ -59,7 +105,7 @@ function CalendarRow({ calendar, type, onToggle }: CalendarRowProps) {
       <span
         className={cn(
           "truncate text-sm transition-colors",
-          isChecked ? "text-foreground" : "text-muted-foreground"
+          isChecked ? "text-foreground" : "text-muted-foreground",
         )}
       >
         {calendar.name}

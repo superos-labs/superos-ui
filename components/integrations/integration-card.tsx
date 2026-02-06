@@ -1,3 +1,42 @@
+/**
+ * =============================================================================
+ * File: integration-card.tsx
+ * =============================================================================
+ *
+ * Card representation of a single calendar integration provider.
+ *
+ * Displays provider branding, connection status, number of synced calendars,
+ * and last sync time. Acts as a navigational affordance into the provider's
+ * detailed settings view.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render provider identity (icon, name).
+ * - Surface connection and sync status.
+ * - Display enabled calendar count and last sync timestamp.
+ * - Trigger navigation on click.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Performing sync.
+ * - Mutating integration state.
+ * - Managing routing.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Connected state indicated with a small green dot.
+ * - Uses subtle hover gradient for affordance.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - IntegrationCard
+ * - IntegrationCardProps
+ */
+
 "use client";
 
 import * as React from "react";

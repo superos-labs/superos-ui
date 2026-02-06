@@ -1,3 +1,50 @@
+/**
+ * =============================================================================
+ * File: export-section.tsx
+ * =============================================================================
+ *
+ * Configuration section for exporting SuperOS blocks to an external calendar.
+ *
+ * Provides a structured, progressive set of controls to define:
+ * - Whether export is enabled
+ * - How exported events are titled
+ * - Which calendar receives exported blocks
+ * - What categories of time are shared (essentials, goals, tasks)
+ * - Optional per-goal inclusion filtering
+ *
+ * This component is presentational.
+ * All state is owned by a parent and passed in via props.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render export enable/disable control.
+ * - Render appearance options for exported events.
+ * - Render single-select target calendar chooser.
+ * - Render participation and goal filtering controls.
+ * - Emit user intent through callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting sync preferences.
+ * - Performing sync or API calls.
+ * - Validating provider capabilities.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Secondary controls are hidden until export is enabled.
+ * - Advanced options are tucked behind a small accordion.
+ * - Enforces single target calendar selection at the UI layer.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ExportSection
+ * - ExportSectionProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -43,14 +90,14 @@ function ToggleSwitch({
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         checked ? "bg-foreground" : "bg-muted-foreground/30",
         disabled && "cursor-not-allowed opacity-50",
-        className
+        className,
       )}
     >
       <span
         className={cn(
           "pointer-events-none block size-4 rounded-full bg-background shadow-sm ring-0",
           "transition-transform duration-150",
-          checked ? "translate-x-[18px]" : "translate-x-0.5"
+          checked ? "translate-x-[18px]" : "translate-x-0.5",
         )}
       />
     </button>
@@ -77,7 +124,7 @@ function Checkbox({ checked, onChange, label, disabled }: CheckboxProps) {
         "group flex items-center gap-2.5 rounded-lg py-1.5 text-left",
         "transition-colors duration-150",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        disabled && "cursor-not-allowed opacity-50"
+        disabled && "cursor-not-allowed opacity-50",
       )}
     >
       <div
@@ -85,7 +132,7 @@ function Checkbox({ checked, onChange, label, disabled }: CheckboxProps) {
           "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
           checked
             ? "bg-foreground text-background"
-            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
         )}
       >
         {checked && <RiCheckLine className="size-3" />}
@@ -93,7 +140,7 @@ function Checkbox({ checked, onChange, label, disabled }: CheckboxProps) {
       <span
         className={cn(
           "text-sm transition-colors",
-          checked ? "text-foreground" : "text-muted-foreground"
+          checked ? "text-foreground" : "text-muted-foreground",
         )}
       >
         {label}
@@ -122,7 +169,7 @@ function RadioButton({ checked, onChange, label, disabled }: RadioButtonProps) {
         "group flex items-center gap-2.5 rounded-lg py-1.5 text-left",
         "transition-colors duration-150",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        disabled && "cursor-not-allowed opacity-50"
+        disabled && "cursor-not-allowed opacity-50",
       )}
     >
       <div
@@ -130,7 +177,7 @@ function RadioButton({ checked, onChange, label, disabled }: RadioButtonProps) {
           "flex size-[18px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
           checked
             ? "bg-foreground"
-            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+            : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
         )}
       >
         {checked && <span className="size-2 rounded-full bg-background" />}
@@ -138,7 +185,7 @@ function RadioButton({ checked, onChange, label, disabled }: RadioButtonProps) {
       <span
         className={cn(
           "text-sm transition-colors",
-          checked ? "text-foreground" : "text-muted-foreground"
+          checked ? "text-foreground" : "text-muted-foreground",
         )}
       >
         {label}
@@ -289,7 +336,7 @@ function ExportSection({
                 className={cn(
                   "mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm",
                   "placeholder:text-muted-foreground/60",
-                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
                 )}
               />
             )}
@@ -314,7 +361,7 @@ function ExportSection({
                       "group flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left",
                       "transition-colors duration-150",
                       "hover:bg-muted/60",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     )}
                   >
                     {/* Radio button */}
@@ -323,7 +370,7 @@ function ExportSection({
                         "flex size-[18px] shrink-0 items-center justify-center rounded-full transition-all duration-150",
                         isSelected
                           ? "bg-foreground"
-                          : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                          : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
                       )}
                     >
                       {isSelected && (
@@ -342,7 +389,9 @@ function ExportSection({
                     <span
                       className={cn(
                         "truncate text-sm transition-colors",
-                        isSelected ? "text-foreground" : "text-muted-foreground"
+                        isSelected
+                          ? "text-foreground"
+                          : "text-muted-foreground",
                       )}
                     >
                       {calendar.name}
@@ -361,13 +410,13 @@ function ExportSection({
               className={cn(
                 "group flex w-full items-center gap-1.5 py-1 text-left",
                 "transition-colors duration-150",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded"
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded",
               )}
             >
               <RiArrowRightSLine
                 className={cn(
                   "size-4 text-muted-foreground transition-transform duration-200",
-                  customizeOpen && "rotate-90"
+                  customizeOpen && "rotate-90",
                 )}
               />
               <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
@@ -417,7 +466,7 @@ function ExportSection({
                   (() => {
                     // Filter out goals that have sync disabled at the goal level
                     const syncableGoals = availableGoals.filter(
-                      (g) => g.syncSettings?.syncEnabled !== false
+                      (g) => g.syncSettings?.syncEnabled !== false,
                     );
 
                     if (syncableGoals.length === 0) return null;
@@ -440,13 +489,13 @@ function ExportSection({
                                 const newSelected = new Set(
                                   syncableGoals
                                     .filter((g) => g.id !== goal.id)
-                                    .map((g) => g.id)
+                                    .map((g) => g.id),
                                 );
                                 onGoalFilterChange("selected", newSelected);
                               } else {
                                 // Toggle this goal in the selected set
                                 const newSelected = new Set(
-                                  exportSelectedGoalIds
+                                  exportSelectedGoalIds,
                                 );
                                 if (newSelected.has(goal.id)) {
                                   newSelected.delete(goal.id);
@@ -472,7 +521,7 @@ function ExportSection({
                                 className={cn(
                                   "group flex items-center gap-2.5 rounded-lg py-1.5 px-2 text-left",
                                   "transition-colors duration-150 hover:bg-muted/60",
-                                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                 )}
                               >
                                 <div
@@ -480,7 +529,7 @@ function ExportSection({
                                     "flex size-[18px] shrink-0 items-center justify-center rounded transition-all duration-150",
                                     isSelected
                                       ? "bg-foreground text-background"
-                                      : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                                      : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
                                   )}
                                 >
                                   {isSelected && (
@@ -491,7 +540,7 @@ function ExportSection({
                                   <GoalIcon
                                     className={cn(
                                       "size-3",
-                                      `text-${goal.color}-500`
+                                      `text-${goal.color}-500`,
                                     )}
                                   />
                                 </div>
@@ -500,7 +549,7 @@ function ExportSection({
                                     "truncate text-sm transition-colors",
                                     isSelected
                                       ? "text-foreground"
-                                      : "text-muted-foreground"
+                                      : "text-muted-foreground",
                                   )}
                                 >
                                   {goal.label}
