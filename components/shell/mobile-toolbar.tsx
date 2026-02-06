@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: mobile-toolbar.tsx
+ * =============================================================================
+ *
+ * Primary toolbar for mobile and small-tablet shell layouts.
+ *
+ * Provides compact navigation and lightweight controls for day/week planning
+ * when screen real estate is constrained.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Open backlog overlay via hamburger menu.
+ * - Navigate between previous / next day or week.
+ * - Display current date or week range.
+ * - Jump to today.
+ * - Surface active focus session via FocusIndicator.
+ * - Expose minimal settings (week start preference).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing navigation state.
+ * - Persisting user preferences.
+ * - Owning focus session lifecycle.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Optimized for thumb reach and dense layouts.
+ * - Date label adapts between day and week modes.
+ * - Settings are intentionally minimal.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - MobileToolbar
+ * - MobileToolbarProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -78,7 +119,9 @@ function formatDateLabel(date: Date, isWeekView: boolean): string {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 6);
 
-    const startMonth = weekStart.toLocaleDateString("en-US", { month: "short" });
+    const startMonth = weekStart.toLocaleDateString("en-US", {
+      month: "short",
+    });
     const endMonth = weekEnd.toLocaleDateString("en-US", { month: "short" });
     const startDay = weekStart.getDate();
     const endDay = weekEnd.getDate();
@@ -133,10 +176,7 @@ export function MobileToolbar({
 
   return (
     <div
-      className={cn(
-        "flex items-center justify-between px-2 py-2",
-        className
-      )}
+      className={cn("flex items-center justify-between px-2 py-2", className)}
     >
       {/* Left: Hamburger menu */}
       <button
@@ -206,7 +246,9 @@ export function MobileToolbar({
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup
               value={weekStartsOn.toString()}
-              onValueChange={(v) => onWeekStartsOnChange(Number(v) as WeekStartDay)}
+              onValueChange={(v) =>
+                onWeekStartsOnChange(Number(v) as WeekStartDay)
+              }
             >
               <DropdownMenuRadioItem value="1">Monday</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="0">Sunday</DropdownMenuRadioItem>

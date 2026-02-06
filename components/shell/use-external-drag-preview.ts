@@ -1,11 +1,43 @@
-"use client";
-
 /**
- * useExternalDragPreview - Drag preview generation for calendar.
+ * =============================================================================
+ * File: use-external-drag-preview.ts
+ * =============================================================================
  *
- * This hook generates the preview data for external drag operations
- * (from backlog to calendar) and handles the drop logic.
+ * Shell hook that adapts DragProvider state into calendar-compatible
+ * external drag previews and drop handlers.
+ *
+ * Enables dragging items from outside the calendar (backlog, lists, etc.)
+ * and previewing them as blocks over the calendar grid.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Derive ExternalDragPreview data for the Calendar.
+ * - Translate drag state into drop positions.
+ * - Invoke shell-level drop handler with normalized data.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Owning drag state.
+ * - Rendering drag previews.
+ * - Implementing scheduling business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Preview only renders for time-grid drops.
+ * - Adaptive duration is preserved when available.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useExternalDragPreview
+ * - UseExternalDragPreviewOptions
+ * - UseExternalDragPreviewReturn
  */
+
+"use client";
 
 import * as React from "react";
 import type { ExternalDragPreview } from "@/components/calendar";

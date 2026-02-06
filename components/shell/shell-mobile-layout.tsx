@@ -1,12 +1,5 @@
 "use client";
 
-/**
- * ShellMobileLayout - Mobile and tablet layout rendering.
- *
- * Handles the mobile calendar view, full-screen backlog overlay,
- * and block details bottom sheet.
- */
-
 import * as React from "react";
 import { ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
 import { BottomSheet, FullScreenOverlay } from "@/components/ui";
@@ -230,10 +223,12 @@ export function ShellMobileLayout({
             onPauseFocus={onPauseFocus}
             onResumeFocus={onResumeFocus}
             onEndFocus={onEndFocus}
-            focusDisabled={focusSession !== null && !focus.isSidebarBlockFocused}
+            focusDisabled={
+              focusSession !== null && !focus.isSidebarBlockFocused
+            }
             totalFocusedMinutes={
               selectedEvent?.blockType !== "essential"
-                ? selectedEvent?.focusedMinutes ?? 0
+                ? (selectedEvent?.focusedMinutes ?? 0)
                 : undefined
             }
             syncState={syncState}

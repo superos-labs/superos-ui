@@ -1,12 +1,48 @@
-"use client";
-
 /**
- * useShellLayout - UI visibility and panel state management for the Shell.
+ * =============================================================================
+ * File: use-shell-layout.ts
+ * =============================================================================
  *
- * This hook manages the visibility of various panels (calendar, sidebar, etc.),
- * mode state (backlog mode, planning mode), selection state, and sidebar content.
- * Also manages the onboarding flow for first-time users.
+ * Central shell layout and mode orchestration hook.
+ *
+ * Owns UI visibility flags, high-level modes (planning, onboarding, blueprint
+ * edit), selection state, and right-sidebar routing logic.
+ *
+ * This hook acts as the shell’s layout state machine.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Manage visibility of calendar, sidebars, tasks, and inspiration gallery.
+ * - Manage selection of events and goals.
+ * - Orchestrate onboarding steps and transitions.
+ * - Control planning mode and blueprint edit mode.
+ * - Determine which right sidebar content is rendered.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting domain data.
+ * - Fetching or mutating goals, tasks, or events.
+ * - Business rule validation.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Onboarding is triggered when initialGoalsCount === 0.
+ * - Right sidebar content is derived from selection + explicit toggles.
+ * - Blueprint edit mode clears competing panels to avoid conflicts.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useShellLayout
+ * - UseShellLayoutOptions
+ * - UseShellLayoutReturn
+ * - OnboardingStep
  */
+
+"use client";
 
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";
@@ -88,7 +124,7 @@ export interface UseShellLayoutReturn {
   frozenSidebarData: UseBlockSidebarHandlersReturn["sidebarData"];
   isRightSidebarOpen: boolean;
   updateFrozenSidebarData: (
-    data: UseBlockSidebarHandlersReturn["sidebarData"]
+    data: UseBlockSidebarHandlersReturn["sidebarData"],
   ) => void;
 
   // Computed values
@@ -112,7 +148,7 @@ export interface UseShellLayoutReturn {
 // =============================================================================
 
 export function useShellLayout(
-  options: UseShellLayoutOptions = {}
+  options: UseShellLayoutOptions = {},
 ): UseShellLayoutReturn {
   const { initialGoalsCount = 0 } = options;
 
@@ -132,7 +168,7 @@ export function useShellLayout(
   // -------------------------------------------------------------------------
   // Start onboarding if user has no goals (first-time experience)
   const [onboardingStep, setOnboardingStep] = React.useState<OnboardingStep>(
-    () => (initialGoalsCount === 0 ? "goals" : null)
+    () => (initialGoalsCount === 0 ? "goals" : null),
   );
 
   const isOnboarding = onboardingStep !== null;
@@ -153,10 +189,10 @@ export function useShellLayout(
   // Selection State
   // -------------------------------------------------------------------------
   const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
-    null
+    null,
   );
   const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
-    null
+    null,
   );
 
   // -------------------------------------------------------------------------
@@ -240,8 +276,8 @@ export function useShellLayout(
   const targetContent: "block" | "analytics" | null = selectedEventId
     ? "block"
     : showRightSidebar
-    ? "analytics"
-    : null;
+      ? "analytics"
+      : null;
 
   // Update rendered content when target changes
   React.useEffect(() => {
@@ -258,7 +294,7 @@ export function useShellLayout(
         setFrozenSidebarData(data);
       }
     },
-    []
+    [],
   );
 
   // -------------------------------------------------------------------------
@@ -319,7 +355,7 @@ export function useShellLayout(
         return prev;
       });
     },
-    [selectedGoalId]
+    [selectedGoalId],
   );
 
   // -------------------------------------------------------------------------

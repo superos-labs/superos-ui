@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: shell-right-panel.tsx
+ * =============================================================================
+ *
+ * Right sidebar content renderer for the desktop shell layout.
+ *
+ * Conditionally renders one of:
+ * - Integrations sidebar
+ * - Block details sidebar
+ * - Analytics (weekly analytics or planning budget)
+ *
+ * Acts as a thin composition layer between shell wiring state and the
+ * concrete sidebar feature components.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Select which right-panel experience to render based on layout state.
+ * - Pass domain data and handlers to the chosen sidebar.
+ * - Bridge focus session controls into block sidebar.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or persisting data.
+ * - Implementing block, analytics, or integration business logic.
+ * - Managing shell orchestration state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Width is fixed to match desktop layout expectations.
+ * - Panel contents scroll independently from main layout.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ShellRightPanel
+ * - ShellRightPanelProps
+ */
+
 "use client";
 
 /**
@@ -125,7 +167,7 @@ export function ShellRightPanel({ shellProps, wiring }: ShellRightPanelProps) {
         focusDisabled={focusSession !== null && !focus.isSidebarBlockFocused}
         totalFocusedMinutes={
           selectedEvent?.blockType !== "essential"
-            ? selectedEvent?.focusedMinutes ?? 0
+            ? (selectedEvent?.focusedMinutes ?? 0)
             : undefined
         }
         onFocusedMinutesChange={

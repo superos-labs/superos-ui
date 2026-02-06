@@ -1,11 +1,41 @@
-"use client";
-
 /**
- * useMobileNavigation - Mobile day-level navigation within a week.
+ * =============================================================================
+ * File: use-mobile-navigation.ts
+ * =============================================================================
  *
- * Manages the selected day index for mobile/tablet day view,
- * and provides handlers for navigating between days (with week boundary crossing).
+ * Shell hook that manages day-level navigation for mobile layouts.
+ *
+ * Tracks which day within the current week is being viewed and provides
+ * previous/next day navigation that gracefully crosses week boundaries.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Maintain selected day index for mobile day view.
+ * - Derive selected Date from weekDates.
+ * - Handle previous/next day navigation across weeks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing week-level navigation.
+ * - Persisting navigation state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Defaults to today's index when possible.
+ * - Resets index when weekDates change.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useMobileNavigation
+ * - UseMobileNavigationOptions
+ * - UseMobileNavigationReturn
  */
+
+"use client";
 
 import * as React from "react";
 
@@ -52,10 +82,10 @@ export function useMobileNavigation({
       const today = new Date();
       const todayStr = today.toISOString().split("T")[0];
       const idx = weekDates.findIndex(
-        (d) => d.toISOString().split("T")[0] === todayStr
+        (d) => d.toISOString().split("T")[0] === todayStr,
       );
       return idx >= 0 ? idx : 0;
-    }
+    },
   );
 
   // Reset mobile day index when week changes
@@ -63,7 +93,7 @@ export function useMobileNavigation({
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
     const idx = weekDates.findIndex(
-      (d) => d.toISOString().split("T")[0] === todayStr
+      (d) => d.toISOString().split("T")[0] === todayStr,
     );
     setMobileSelectedDayIndex(idx >= 0 ? idx : 0);
   }, [weekDates]);

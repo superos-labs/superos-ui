@@ -1,8 +1,44 @@
 /**
- * Type definitions for the Shell component.
+ * =============================================================================
+ * File: shell-types.ts
+ * =============================================================================
  *
- * The Shell is the top-level application frame that orchestrates
- * calendar, backlog, analytics, focus mode, and planning features.
+ * Type definitions for the Shell feature.
+ *
+ * Centralizes all public and internal TypeScript contracts used by:
+ * - ShellContent composition
+ * - Shell layouts and toolbars
+ * - Shell orchestration hooks (state, wiring, layout)
+ *
+ * These types define the integration boundary between domain state and
+ * shell-level UI composition.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define the full prop contract for ShellContent.
+ * - Define options and return types for shell state hooks.
+ * - Define shell layout state shape.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Implementing runtime logic.
+ * - Enforcing business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - ShellContentProps is intentionally large and exhaustive.
+ * - Prefer extending existing domain types over duplicating structures.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ShellContentProps
+ * - UseShellStateOptions
+ * - UseShellStateReturn
+ * - ShellLayoutState
  */
 
 import type {
@@ -142,7 +178,7 @@ export interface ShellContentProps {
   /** Save an essential's schedule */
   onSaveEssentialSchedule: (
     essentialId: string,
-    slots: EssentialSlot[]
+    slots: EssentialSlot[],
   ) => void;
   /** Import essentials to the current week (for weekly planning) */
   onImportEssentialsToWeek: () => void;
@@ -170,7 +206,7 @@ export interface ShellContentProps {
   onUpdateTask: (
     goalId: string,
     taskId: string,
-    updates: Partial<ScheduleTask>
+    updates: Partial<ScheduleTask>,
   ) => void;
   /** Delete a task */
   onDeleteTask: (goalId: string, taskId: string) => void;
@@ -184,14 +220,14 @@ export interface ShellContentProps {
   onToggleSubtaskComplete: (
     goalId: string,
     taskId: string,
-    subtaskId: string
+    subtaskId: string,
   ) => void;
   /** Update a subtask */
   onUpdateSubtask: (
     goalId: string,
     taskId: string,
     subtaskId: string,
-    label: string
+    label: string,
   ) => void;
   /** Delete a subtask */
   onDeleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
@@ -207,13 +243,13 @@ export interface ShellContentProps {
   onUpdateMilestone: (
     goalId: string,
     milestoneId: string,
-    label: string
+    label: string,
   ) => void;
   /** Update a milestone's deadline */
   onUpdateMilestoneDeadline: (
     goalId: string,
     milestoneId: string,
-    deadline: string | undefined
+    deadline: string | undefined,
   ) => void;
   /** Delete a milestone */
   onDeleteMilestone: (goalId: string, milestoneId: string) => void;
@@ -260,12 +296,12 @@ export interface ShellContentProps {
   /** Update block sync settings */
   onUpdateBlockSyncSettings: (
     blockId: string,
-    settings: Partial<import("@/lib/unified-schedule").BlockSyncSettings>
+    settings: Partial<import("@/lib/unified-schedule").BlockSyncSettings>,
   ) => void;
   /** Update goal sync settings */
   onUpdateGoalSyncSettings: (
     goalId: string,
-    settings: Partial<import("@/lib/unified-schedule").GoalSyncSettings>
+    settings: Partial<import("@/lib/unified-schedule").GoalSyncSettings>,
   ) => void;
 
   // -------------------------------------------------------------------------
@@ -275,7 +311,7 @@ export interface ShellContentProps {
   onDrop: (
     item: import("@/lib/drag-types").DragItem,
     position: import("@/lib/drag-types").DropPosition,
-    weekDates: Date[]
+    weekDates: Date[],
   ) => void;
 
   // -------------------------------------------------------------------------
@@ -368,7 +404,7 @@ export interface ShellContentProps {
       label?: string;
       icon?: import("@/lib/types").IconComponent;
       color?: import("@/lib/colors").GoalColor;
-    }
+    },
   ) => void;
   /** Remove a custom life area */
   onRemoveLifeArea: (id: string) => void;
@@ -400,7 +436,7 @@ export interface ShellContentProps {
   /** Toggle importing events from a calendar */
   onToggleCalendarImport: (
     provider: CalendarProvider,
-    calendarId: string
+    calendarId: string,
   ) => void;
   /** Toggle meetings-only filter for an integration */
   onToggleMeetingsOnly: (provider: CalendarProvider) => void;
@@ -408,32 +444,32 @@ export interface ShellContentProps {
   /** Toggle exporting blueprint to a calendar */
   onToggleCalendarExport: (
     provider: CalendarProvider,
-    calendarId: string
+    calendarId: string,
   ) => void;
   /** Toggle export enabled for a provider */
   onToggleExportEnabled: (provider: CalendarProvider) => void;
   /** Update participation settings for a provider */
   onSetExportParticipation: (
     provider: CalendarProvider,
-    participation: Partial<SyncParticipation>
+    participation: Partial<SyncParticipation>,
   ) => void;
   /** Set goal filter for a provider */
   onSetExportGoalFilter: (
     provider: CalendarProvider,
     mode: GoalFilterMode,
-    selectedIds?: Set<string>
+    selectedIds?: Set<string>,
   ) => void;
   /** Set default appearance for a provider */
   onSetExportDefaultAppearance: (
     provider: CalendarProvider,
-    appearance: ExportBlockVisibility
+    appearance: ExportBlockVisibility,
   ) => void;
   /** Set custom label for exported events */
   onSetExportCustomLabel: (provider: CalendarProvider, label: string) => void;
   /** Update an external event's local state (notes, status, focus time) */
   onUpdateExternalEvent: (
     eventId: string,
-    updates: Partial<ExternalEvent>
+    updates: Partial<ExternalEvent>,
   ) => void;
 }
 

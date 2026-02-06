@@ -1,13 +1,52 @@
-"use client";
-
 /**
- * Shell Toolbar Components - All toolbar variants for the shell.
+ * =============================================================================
+ * File: shell-toolbars.tsx
+ * =============================================================================
  *
- * - ShellMobileToolbar: Mobile/tablet toolbar with hamburger, day nav, settings
- * - ShellDesktopToolbar: Desktop toolbar with sidebar toggles, week nav, analytics
- * - BlueprintEditToolbar: Simplified toolbar during blueprint editing
- * - OnboardingBlueprintToolbar: Minimal toolbar during onboarding blueprint creation
+ * Collection of toolbar variants used by the Shell.
+ *
+ * Includes:
+ * - Mobile toolbar
+ * - Desktop toolbar
+ * - Blueprint edit toolbar
+ * - Onboarding blueprint toolbar
+ *
+ * Each toolbar adapts its controls based on active shell mode and screen size.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render navigation and action controls for the shell.
+ * - Surface focus session indicator and controls.
+ * - Expose minimal settings (week start, blueprint, life areas, shortcuts).
+ * - Reflect shell mode (planning, onboarding, blueprint editing).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing navigation or focus state.
+ * - Persisting user preferences.
+ * - Implementing business logic.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Toolbars are visually consistent via ShellToolbar.
+ * - Desktop and mobile toolbars favor different density and affordances.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ShellMobileToolbar
+ * - ShellDesktopToolbar
+ * - BlueprintEditToolbar
+ * - OnboardingBlueprintToolbar
+ * - ShellMobileToolbarProps
+ * - ShellDesktopToolbarProps
+ * - BlueprintEditToolbarProps
  */
+
+"use client";
 
 import * as React from "react";
 import { ShellToolbar } from "@/components/ui/shell";
@@ -294,7 +333,7 @@ export function ShellDesktopToolbar({
           <button
             className={cn(
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-              showSidebar ? "text-foreground" : "text-muted-foreground"
+              showSidebar ? "text-foreground" : "text-muted-foreground",
             )}
             onClick={onToggleSidebar}
           >
@@ -367,7 +406,7 @@ export function ShellDesktopToolbar({
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
               showIntegrationsSidebar
                 ? "text-foreground"
-                : "text-muted-foreground"
+                : "text-muted-foreground",
             )}
             onClick={onToggleIntegrations}
             title="Integrations"
@@ -381,7 +420,7 @@ export function ShellDesktopToolbar({
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
               showRightSidebar || selectedEvent
                 ? "text-foreground"
-                : "text-muted-foreground"
+                : "text-muted-foreground",
             )}
             onClick={onToggleAnalytics}
             title="Toggle analytics"
@@ -456,7 +495,7 @@ export function BlueprintEditToolbar({
         <button
           className={cn(
             "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
-            showSidebar ? "text-foreground" : "text-muted-foreground"
+            showSidebar ? "text-foreground" : "text-muted-foreground",
           )}
           onClick={onToggleSidebar}
         >

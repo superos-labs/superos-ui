@@ -1,11 +1,39 @@
-"use client";
-
 /**
- * useLifeAreas - Custom life area state management.
+ * =============================================================================
+ * File: use-life-areas.ts
+ * =============================================================================
  *
- * Manages the user's custom life areas (create, update, remove)
- * and merges them with the built-in defaults from LIFE_AREAS.
+ * Shell hook for managing Life Areas.
+ *
+ * Combines built-in default life areas with user-created custom life areas
+ * and exposes simple CRUD helpers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Provide merged list of default and custom life areas.
+ * - Add, update, and remove custom life areas.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting life areas.
+ * - Validating complex domain rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Duplicate labels are prevented (case-insensitive).
+ * - Custom life areas are stored locally in state.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useLifeAreas
+ * - UseLifeAreasReturn
  */
+
+"use client";
 
 import * as React from "react";
 import type { LifeArea, IconComponent } from "@/lib/types";
@@ -30,7 +58,7 @@ export interface UseLifeAreasReturn {
   /** Update a custom life area */
   updateLifeArea: (
     id: string,
-    updates: { label?: string; icon?: IconComponent; color?: GoalColor }
+    updates: { label?: string; icon?: IconComponent; color?: GoalColor },
   ) => void;
   /** Remove a custom life area */
   removeLifeArea: (id: string) => void;
@@ -46,7 +74,7 @@ export function useLifeAreas(): UseLifeAreasReturn {
   // Combined life areas (defaults + custom)
   const allLifeAreas = React.useMemo(
     () => [...LIFE_AREAS, ...customLifeAreas],
-    [customLifeAreas]
+    [customLifeAreas],
   );
 
   const addLifeArea = React.useCallback(
@@ -57,7 +85,7 @@ export function useLifeAreas(): UseLifeAreasReturn {
     }): string | null => {
       // Validate: no duplicate labels (case-insensitive)
       const exists = allLifeAreas.some(
-        (a) => a.label.toLowerCase() === data.label.toLowerCase()
+        (a) => a.label.toLowerCase() === data.label.toLowerCase(),
       );
       if (exists) return null;
 
@@ -71,20 +99,20 @@ export function useLifeAreas(): UseLifeAreasReturn {
       setCustomLifeAreas((prev) => [...prev, newArea]);
       return newArea.id;
     },
-    [allLifeAreas]
+    [allLifeAreas],
   );
 
   const updateLifeArea = React.useCallback(
     (
       id: string,
-      updates: { label?: string; icon?: IconComponent; color?: GoalColor }
+      updates: { label?: string; icon?: IconComponent; color?: GoalColor },
     ) => {
       // Only allow updating custom areas
       setCustomLifeAreas((prev) =>
-        prev.map((area) => (area.id === id ? { ...area, ...updates } : area))
+        prev.map((area) => (area.id === id ? { ...area, ...updates } : area)),
       );
     },
-    []
+    [],
   );
 
   const removeLifeArea = React.useCallback((id: string) => {

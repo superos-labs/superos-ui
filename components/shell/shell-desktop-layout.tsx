@@ -1,14 +1,48 @@
-"use client";
-
 /**
- * ShellDesktopLayout - Desktop three-panel layout rendering.
+ * =============================================================================
+ * File: shell-desktop-layout.tsx
+ * =============================================================================
  *
- * Handles the left sidebar (backlog/planning/blueprint), main content area
- * (calendar/goal detail/inspiration gallery), and right sidebar
- * (block details/analytics/integrations).
+ * Desktop-specific shell layout composition.
  *
- * Also renders the onboarding centered goals view when applicable.
+ * Implements the primary three-panel desktop experience:
+ * - Left: Backlog / Planning / Blueprint panels
+ * - Center: Calendar, Goal Detail, or Inspiration Gallery
+ * - Right: Block details, analytics, or integrations
+ *
+ * Also handles special full-screen states such as onboarding and
+ * centered goal setup.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compose left, center, and right panels based on shell layout state.
+ * - Route domain data and handlers to child feature components.
+ * - Render onboarding-centered goals experience.
+ * - Attach floating feedback and zoom controls to calendar view.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or persisting data.
+ * - Owning domain business rules.
+ * - Managing shell orchestration state (delegated to wiring hook).
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses animated presence for layout transitions.
+ * - Sidebar widths are fixed and animated via CSS transitions.
+ * - Conditional gaps reduce visual noise when panels are hidden.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ShellDesktopLayout
+ * - ShellDesktopLayoutProps
  */
+
+"use client";
 
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -215,8 +249,8 @@ export function ShellDesktopLayout({
             isPlanning
               ? "w-[420px] opacity-100"
               : showSidebar || isBlueprintEditMode || isOnboardingBlueprint
-              ? "w-[360px] opacity-100"
-              : "w-0 opacity-0"
+                ? "w-[360px] opacity-100"
+                : "w-0 opacity-0",
           )}
         >
           {isOnboardingBlueprint ? (
@@ -258,9 +292,7 @@ export function ShellDesktopLayout({
               weeklyFocusTaskIds={
                 planningIntegration.planningFlow.weeklyFocusTaskIds
               }
-              onAddToFocus={
-                planningIntegration.planningFlow.addToWeeklyFocus
-              }
+              onAddToFocus={planningIntegration.planningFlow.addToWeeklyFocus}
               onRemoveFromFocus={
                 planningIntegration.planningFlow.removeFromWeeklyFocus
               }
@@ -380,9 +412,7 @@ export function ShellDesktopLayout({
               onDeleteSubtask={(taskId, subtaskId) =>
                 onDeleteSubtask(selectedGoal.id, taskId, subtaskId)
               }
-              onAddMilestone={(label) =>
-                onAddMilestone(selectedGoal.id, label)
-              }
+              onAddMilestone={(label) => onAddMilestone(selectedGoal.id, label)}
               onToggleMilestone={(milestoneId) =>
                 onToggleMilestoneComplete(selectedGoal.id, milestoneId)
               }
@@ -393,7 +423,7 @@ export function ShellDesktopLayout({
                 onUpdateMilestoneDeadline(
                   selectedGoal.id,
                   milestoneId,
-                  deadline
+                  deadline,
                 )
               }
               onDeleteMilestone={(milestoneId) =>
@@ -406,9 +436,7 @@ export function ShellDesktopLayout({
               onBack={handleCloseGoalDetail}
               lifeAreas={lifeAreas}
               goalIcons={goalIcons}
-              onIconChange={(icon) =>
-                onUpdateGoal(selectedGoal.id, { icon })
-              }
+              onIconChange={(icon) => onUpdateGoal(selectedGoal.id, { icon })}
               onColorChange={(color) =>
                 onUpdateGoal(selectedGoal.id, { color })
               }
@@ -455,8 +483,7 @@ export function ShellDesktopLayout({
               {((isOnboarding && !isOnboardingBlueprint) ||
                 showPlanWeekPrompt ||
                 (isPlanning &&
-                  planningIntegration.planningFlow.step ===
-                    "prioritize")) && (
+                  planningIntegration.planningFlow.step === "prioritize")) && (
                 <div className="absolute inset-0 bg-background/60 pointer-events-none z-10" />
               )}
 
@@ -485,7 +512,7 @@ export function ShellDesktopLayout({
             "shrink-0 overflow-hidden transition-all duration-300 ease-out",
             isRightSidebarOpen || showIntegrationsSidebar
               ? "w-[380px] opacity-100"
-              : "w-0 opacity-0"
+              : "w-0 opacity-0",
           )}
         >
           <ShellRightPanel shellProps={shellProps} wiring={wiring} />

@@ -1,11 +1,45 @@
-"use client";
-
 /**
- * useGoalHandlers - Goal creation, deletion, and onboarding goal management.
+ * =============================================================================
+ * File: use-goal-handlers.ts
+ * =============================================================================
  *
- * Provides handlers for creating goals (from backlog, from inspiration gallery,
- * and during onboarding), deleting goals, and managing the onboarding goals list.
+ * Shell hook that encapsulates goal-level creation, selection, and deletion
+ * interactions.
+ *
+ * Bridges backlog UI intents and onboarding flows to the core goal CRUD
+ * handlers provided by the shell.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Create goals from backlog and onboarding.
+ * - Create and immediately select new goals.
+ * - Delete the currently selected goal.
+ * - Navigate to goal detail when clicking goal deadlines.
+ * - Adapt goals for onboarding goal cards.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goals.
+ * - Validating goal data.
+ * - Managing task or milestone logic.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses crypto.randomUUID for client-side goal IDs.
+ * - Backlog mode drives whether goal detail is shown.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useGoalHandlers
+ * - UseGoalHandlersOptions
+ * - UseGoalHandlersReturn
  */
+
+"use client";
 
 import * as React from "react";
 import type { ScheduleGoal } from "@/lib/unified-schedule";
@@ -58,7 +92,10 @@ export interface UseGoalHandlersReturn {
   /** Add a goal during onboarding */
   handleOnboardingAddGoal: (data: InlineGoalEditorData) => void;
   /** Update a goal during onboarding */
-  handleOnboardingUpdateGoal: (goalId: string, data: InlineGoalEditorData) => void;
+  handleOnboardingUpdateGoal: (
+    goalId: string,
+    data: InlineGoalEditorData,
+  ) => void;
   /** Remove a goal during onboarding */
   handleOnboardingRemoveGoal: (goalId: string) => void;
   /** Goals formatted for the OnboardingGoalsCard */
@@ -101,7 +138,7 @@ export function useGoalHandlers({
         setSelectedGoalId(newGoalId);
       }
     },
-    [onAddGoal, backlogMode, setSelectedGoalId]
+    [onAddGoal, backlogMode, setSelectedGoalId],
   );
 
   const handleCreateAndSelectGoal = React.useCallback(() => {
@@ -151,7 +188,7 @@ export function useGoalHandlers({
       setSelectedGoalId(goalId);
       setBacklogMode("goal-detail");
     },
-    [setSelectedGoalId, setBacklogMode]
+    [setSelectedGoalId, setBacklogMode],
   );
 
   // -------------------------------------------------------------------------
@@ -171,7 +208,7 @@ export function useGoalHandlers({
         tasks: [],
       });
     },
-    [onAddGoal]
+    [onAddGoal],
   );
 
   const handleOnboardingUpdateGoal = React.useCallback(
@@ -184,14 +221,14 @@ export function useGoalHandlers({
         deadline: data.deadline,
       });
     },
-    [onUpdateGoal]
+    [onUpdateGoal],
   );
 
   const handleOnboardingRemoveGoal = React.useCallback(
     (goalId: string) => {
       onDeleteGoal(goalId);
     },
-    [onDeleteGoal]
+    [onDeleteGoal],
   );
 
   // Convert goals to AddedGoal format for OnboardingGoalsCard
@@ -205,7 +242,7 @@ export function useGoalHandlers({
         lifeAreaId: g.lifeAreaId ?? "",
         deadline: g.deadline,
       })),
-    [goals]
+    [goals],
   );
 
   return {

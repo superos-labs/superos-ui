@@ -1,11 +1,41 @@
-"use client";
-
 /**
- * useToastAggregator - Aggregate multiple toast sources.
+ * =============================================================================
+ * File: use-toast-aggregator.ts
+ * =============================================================================
  *
- * This hook manages toast messages from multiple sources (calendar keyboard,
- * sidebar, deadline) and returns the highest priority message to display.
+ * Toast message aggregation hook.
+ *
+ * Combines multiple ephemeral toast sources (calendar shortcuts, sidebar
+ * actions, deadline actions) into a single, prioritized toast channel.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Maintain independent toast states for different feature areas.
+ * - Auto-clear transient toast messages after a short delay.
+ * - Expose a single toastMessage with defined priority.
+ *
+ * -----------------------------------------------------------------------------
+ * PRIORITY ORDER
+ * -----------------------------------------------------------------------------
+ * 1. Calendar keyboard toasts
+ * 2. Sidebar toasts
+ * 3. Deadline toasts
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering toasts.
+ * - Styling or animation.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useToastAggregator
+ * - UseToastAggregatorReturn
  */
+
+"use client";
 
 import * as React from "react";
 

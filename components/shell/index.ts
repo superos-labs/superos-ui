@@ -1,6 +1,45 @@
-// =============================================================================
-// Public API for the Shell feature component
-// =============================================================================
+/**
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public API surface for the Shell feature.
+ *
+ * Centralized export hub for:
+ * - Shell composition components
+ * - Layout variants (desktop / mobile)
+ * - Toolbars and floating controls
+ * - Shell orchestration hooks
+ * - Domain-specific handler hooks
+ * - Shared shell types
+ *
+ * This file defines the intended integration boundary for consumers of the
+ * Shell feature and should remain stable and well-curated.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export all public shell components, hooks, and types.
+ * - Express the canonical import paths for Shell consumers.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Implementing behavior.
+ * - Aggregating runtime logic.
+ * - Enforcing architectural constraints.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Prefer explicit named exports over wildcard exports.
+ * - Group exports by conceptual area for readability.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - (Barrel file; see named exports below)
+ */
 
 // Core component
 export { ShellContentComponent } from "./shell-content";

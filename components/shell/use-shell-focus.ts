@@ -1,11 +1,43 @@
-"use client";
-
 /**
- * useShellFocus - Focus mode coordination (computed values and handlers).
+ * =============================================================================
+ * File: use-shell-focus.ts
+ * =============================================================================
  *
- * This hook provides computed values and handlers for focus mode integration,
- * determining when to show focus indicators and handling focus navigation.
+ * Shell hook that adapts focus-session state to shell UI needs.
+ *
+ * Determines when to show focus indicators and provides helpers for
+ * starting focus and navigating to the focused block.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Determine if the selected sidebar block is currently focused.
+ * - Determine whether toolbar focus indicator should be shown.
+ * - Start focus on the currently selected event.
+ * - Navigate to the focused block.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Owning focus session state.
+ * - Managing timers.
+ * - Persisting focus data.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Focus indicator is hidden when the focused block is already selected.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useShellFocus
+ * - UseShellFocusOptions
+ * - UseShellFocusReturn
+ * - FocusSessionState
  */
+
+"use client";
 
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";

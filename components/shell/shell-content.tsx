@@ -1,19 +1,53 @@
-"use client";
-
 /**
- * ShellContent - The core shell component for orchestrating the full application UI.
+ * =============================================================================
+ * File: shell-content.tsx
+ * =============================================================================
  *
- * This is a thin orchestrator that:
- * 1. Accepts all business data and handlers via props
- * 2. Wires together all sub-hooks via useShellWiring
- * 3. Delegates rendering to layout-specific components
- * 4. Manages local UI state (modals, keyboard shortcuts)
+ * Core shell composition root for SuperOS.
  *
- * Responsive behavior:
- * - Mobile/Tablet Portrait: Day view, bottom sheet, full-screen overlay (ShellMobileLayout)
- * - Tablet Landscape: Week view, bottom sheet, full-screen overlay (ShellMobileLayout)
- * - Desktop: Week view, inline sidebars (ShellDesktopLayout)
+ * Orchestrates the entire authenticated application UI by:
+ * - Wiring domain props into shell-level orchestration hooks
+ * - Selecting appropriate layout (desktop vs mobile)
+ * - Rendering top-level toolbars, layouts, modals, toasts, and overlays
+ *
+ * This component is intentionally large.
+ * It acts as a UI composition and interaction orchestrator, not a business
+ * logic owner.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Invoke useShellWiring to derive shell orchestration state.
+ * - Choose and render the correct toolbar variant.
+ * - Choose and render desktop or mobile layout.
+ * - Host global modals (keyboard shortcuts, life area modals).
+ * - Host global overlays (backlog overlay, drag ghost, toasts).
+ * - Bridge layout changes to external consumers (onLayoutChange).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or persisting domain data.
+ * - Implementing goal, task, block, or blueprint business rules.
+ * - Owning focus session lifecycle.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - All domain mutations flow through props.
+ * - Visual and ephemeral UI state is local.
+ * - Side effects are centralized inside hooks.
+ * - Desktop-first with mobile overlays and fallbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ShellContentComponent
+ * - ShellContentComponentProps
+ * - ShellContentProps (re-export)
  */
+
+"use client";
 
 import * as React from "react";
 import { Shell } from "@/components/ui/shell";
@@ -134,13 +168,10 @@ export function ShellContentComponent({
   }, []);
 
   // Life area creator handler (used by desktop layout)
-  const handleOpenLifeAreaCreator = React.useCallback(
-    (goalId?: string) => {
-      if (goalId) setLifeAreaCreatorForGoalId(goalId);
-      setShowLifeAreaCreator(true);
-    },
-    []
-  );
+  const handleOpenLifeAreaCreator = React.useCallback((goalId?: string) => {
+    if (goalId) setLifeAreaCreatorForGoalId(goalId);
+    setShowLifeAreaCreator(true);
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Render

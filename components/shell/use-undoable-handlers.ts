@@ -1,18 +1,56 @@
-"use client";
-
 /**
- * Hook that wraps shell handlers with undo recording.
- * 
- * This hook takes the original handlers from useShellState and returns
- * enhanced versions that record undo commands before executing.
+ * =============================================================================
+ * File: use-undoable-handlers.ts
+ * =============================================================================
+ *
+ * Undo-aware action wrapper for shell-level mutations.
+ *
+ * This hook decorates a subset of task and calendar handlers with undo
+ * recording logic, while preserving their original signatures.
+ *
+ * It acts as a thin orchestration layer between feature-level actions
+ * (tasks, blocks, deadlines, day completion) and the global undo system.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Wrap selected task mutations with undo commands.
+ * - Wrap selected calendar mutations with undo commands.
+ * - Capture minimal pre-mutation state required to restore changes.
+ * - Batch related operations into single undo commands when appropriate.
+ *
+ * -----------------------------------------------------------------------------
+ * SUPPORTED UNDO ACTIONS
+ * -----------------------------------------------------------------------------
+ * - Toggle task completion
+ * - Delete task
+ * - Unassign task from block
+ * - Delete block
+ * - Change block status (planned/completed)
+ * - Mark entire day complete (batch)
+ * - Record block creation (undo only, no toast)
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering undo UI.
+ * - Defining undo keyboard shortcuts.
+ * - Persisting undo history.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useUndoableHandlers
  */
+
+"use client";
 
 import * as React from "react";
 import { useUndoOptional } from "@/lib/undo";
 import type { UndoCommand } from "@/lib/undo";
-import type { 
-  CalendarEvent, 
-  ScheduleTask, 
+import type {
+  CalendarEvent,
+  ScheduleTask,
   BlockStatus,
   HoverPosition,
 } from "@/lib/unified-schedule";
@@ -25,24 +63,24 @@ interface CalendarHandlers {
   onEventResize: (
     eventId: string,
     newStartMinutes: number,
-    newDurationMinutes: number
+    newDurationMinutes: number,
   ) => void;
   onEventResizeEnd: () => void;
   onEventDragEnd: (
     eventId: string,
     newDayIndex: number,
-    newStartMinutes: number
+    newStartMinutes: number,
   ) => void;
   onEventDuplicate: (
     sourceEventId: string,
     newDayIndex: number,
-    newStartMinutes: number
+    newStartMinutes: number,
   ) => void;
   onGridDoubleClick: (dayIndex: number, startMinutes: number) => void;
   onGridDragCreate: (
     dayIndex: number,
     startMinutes: number,
-    durationMinutes: number
+    durationMinutes: number,
   ) => void;
   onEventCopy: (event: CalendarEvent) => void;
   onEventDelete: (eventId: string) => void;
@@ -66,15 +104,19 @@ interface UndoableHandlersOptions {
   onUnassignTaskFromBlock: (blockId: string, taskId: string) => void;
   onAssignTaskToBlock: (blockId: string, taskId: string) => void;
   onAddTask: (goalId: string, label: string, milestoneId?: string) => string;
-  onUpdateTask: (goalId: string, taskId: string, updates: Partial<ScheduleTask>) => void;
-  
+  onUpdateTask: (
+    goalId: string,
+    taskId: string,
+    updates: Partial<ScheduleTask>,
+  ) => void;
+
   // Event handlers
   onUpdateEvent: (eventId: string, updates: Partial<CalendarEvent>) => void;
   onAddEvent: (event: CalendarEvent) => void;
-  
+
   // Calendar handlers
   calendarHandlers: CalendarHandlers;
-  
+
   // Data accessors for capturing state before mutation
   getTask: (goalId: string, taskId: string) => ScheduleTask | undefined;
   getEvent: (eventId: string) => CalendarEvent | undefined;
@@ -91,10 +133,10 @@ interface UndoableHandlersReturn {
   onToggleTaskComplete: (goalId: string, taskId: string) => void;
   onDeleteTask: (goalId: string, taskId: string) => void;
   onUnassignTaskFromBlock: (blockId: string, taskId: string) => void;
-  
+
   // Enhanced calendar handlers (same type as input, with some handlers replaced)
   calendarHandlers: CalendarHandlers;
-  
+
   // Block creation (undoable but no toast)
   recordBlockCreation: (eventId: string) => void;
 }
@@ -112,7 +154,7 @@ function generateCommandId(): string {
 // =============================================================================
 
 export function useUndoableHandlers(
-  options: UndoableHandlersOptions
+  options: UndoableHandlersOptions,
 ): UndoableHandlersReturn {
   const undoContext = useUndoOptional();
 
@@ -149,7 +191,9 @@ export function useUndoableHandlers(
         const command: UndoCommand = {
           id: generateCommandId(),
           type: "task-complete",
-          description: previousCompleted ? "Task marked incomplete" : "Task completed",
+          description: previousCompleted
+            ? "Task marked incomplete"
+            : "Task completed",
           timestamp: Date.now(),
           undo: () => {
             // Toggle back to previous state
@@ -159,7 +203,7 @@ export function useUndoableHandlers(
         undoContext.recordAction(command);
       }
     },
-    [originalToggleTask, getTask, undoContext]
+    [originalToggleTask, getTask, undoContext],
   );
 
   // -------------------------------------------------------------------------
@@ -169,7 +213,7 @@ export function useUndoableHandlers(
     (goalId: string, taskId: string) => {
       // Capture the full task before deletion
       const task = getTask(goalId, taskId);
-      
+
       if (!task) {
         // Task not found, just execute delete
         originalDeleteTask(goalId, taskId);
@@ -195,8 +239,12 @@ export function useUndoableHandlers(
           undo: () => {
             // Restore the task by creating a new one with the same label
             // then updating it with the original properties
-            const newTaskId = onAddTask(goalId, taskCopy.label, taskCopy.milestoneId);
-            
+            const newTaskId = onAddTask(
+              goalId,
+              taskCopy.label,
+              taskCopy.milestoneId,
+            );
+
             // Update with remaining properties (completed status, description, deadline, etc.)
             onUpdateTask(goalId, newTaskId, {
               completed: taskCopy.completed,
@@ -205,7 +253,7 @@ export function useUndoableHandlers(
               subtasks: taskCopy.subtasks,
               weeklyFocusWeek: taskCopy.weeklyFocusWeek,
             });
-            
+
             // Note: scheduledBlockId won't be restored since the task has a new ID
             // This is a known limitation - the task will be unscheduled after undo
           },
@@ -213,7 +261,7 @@ export function useUndoableHandlers(
         undoContext.recordAction(command);
       }
     },
-    [originalDeleteTask, getTask, undoContext, onAddTask, onUpdateTask]
+    [originalDeleteTask, getTask, undoContext, onAddTask, onUpdateTask],
   );
 
   // -------------------------------------------------------------------------
@@ -239,7 +287,7 @@ export function useUndoableHandlers(
         undoContext.recordAction(command);
       }
     },
-    [originalUnassignTask, undoContext, onAssignTaskToBlock]
+    [originalUnassignTask, undoContext, onAssignTaskToBlock],
   );
 
   // -------------------------------------------------------------------------
@@ -249,7 +297,7 @@ export function useUndoableHandlers(
     (eventId: string) => {
       // Capture the full event before deletion
       const event = getEvent(eventId);
-      
+
       // Don't allow undo for external events
       if (event?.isExternal) {
         originalCalendarHandlers.onEventDelete(eventId);
@@ -274,7 +322,7 @@ export function useUndoableHandlers(
         undoContext.recordAction(command);
       }
     },
-    [originalCalendarHandlers, getEvent, undoContext, onAddEvent]
+    [originalCalendarHandlers, getEvent, undoContext, onAddEvent],
   );
 
   // -------------------------------------------------------------------------
@@ -295,7 +343,9 @@ export function useUndoableHandlers(
         const command: UndoCommand = {
           id: generateCommandId(),
           type: "block-complete",
-          description: isCompleting ? "Block completed" : "Block marked incomplete",
+          description: isCompleting
+            ? "Block completed"
+            : "Block marked incomplete",
           timestamp: Date.now(),
           undo: () => {
             // Restore previous status
@@ -305,7 +355,7 @@ export function useUndoableHandlers(
         undoContext.recordAction(command);
       }
     },
-    [originalCalendarHandlers, getEvent, undoContext, onUpdateEvent]
+    [originalCalendarHandlers, getEvent, undoContext, onUpdateEvent],
   );
 
   // -------------------------------------------------------------------------
@@ -316,7 +366,7 @@ export function useUndoableHandlers(
       // Capture all events and their statuses before mutation
       const eventsOnDay = getEventsForDay(dayIndex);
       const eventStatuses = new Map<string, BlockStatus | undefined>();
-      
+
       eventsOnDay.forEach((event) => {
         // Only track non-external events that aren't already completed
         if (!event.isExternal && event.status !== "completed") {
@@ -332,7 +382,10 @@ export function useUndoableHandlers(
       originalCalendarHandlers.onMarkDayComplete(dayIndex);
 
       // Record batch undo command
-      if (undoContext && (eventStatuses.size > 0 || incompleteTasks.length > 0)) {
+      if (
+        undoContext &&
+        (eventStatuses.size > 0 || incompleteTasks.length > 0)
+      ) {
         const command: UndoCommand = {
           id: generateCommandId(),
           type: "day-complete",
@@ -343,7 +396,7 @@ export function useUndoableHandlers(
             eventStatuses.forEach((previousStatus, eventId) => {
               onUpdateEvent(eventId, { status: previousStatus ?? "planned" });
             });
-            
+
             // Toggle back incomplete tasks
             incompleteTasks.forEach(({ goalId, taskId }) => {
               originalToggleTask(goalId, taskId);
@@ -360,7 +413,7 @@ export function useUndoableHandlers(
       undoContext,
       onUpdateEvent,
       originalToggleTask,
-    ]
+    ],
   );
 
   // -------------------------------------------------------------------------
@@ -380,12 +433,12 @@ export function useUndoableHandlers(
           originalCalendarHandlers.onEventDelete(eventId);
         },
       };
-      
+
       // Record without showing toast (we clear lastCommand immediately)
       undoContext.recordAction(command);
       undoContext.clearLastCommand();
     },
-    [undoContext, originalCalendarHandlers]
+    [undoContext, originalCalendarHandlers],
   );
 
   // -------------------------------------------------------------------------
@@ -403,7 +456,7 @@ export function useUndoableHandlers(
       handleEventDelete,
       handleEventStatusChange,
       handleMarkDayComplete,
-    ]
+    ],
   );
 
   return {

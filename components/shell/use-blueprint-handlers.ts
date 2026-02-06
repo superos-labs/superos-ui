@@ -1,13 +1,51 @@
-"use client";
-
 /**
- * useBlueprintHandlers - Blueprint editing, onboarding blueprint creation,
- * and essentials synchronization handlers.
+ * =============================================================================
+ * File: use-blueprint-handlers.ts
+ * =============================================================================
  *
- * Manages the blueprint edit lifecycle (enter → modify → save/cancel),
- * onboarding blueprint creation, and essential schedule synchronization
- * during blueprint edit mode.
+ * Shell hook that encapsulates all blueprint-related interaction logic.
+ *
+ * Coordinates:
+ * - Entering and exiting blueprint edit mode
+ * - Converting between calendar events and blueprint blocks
+ * - Saving blueprint changes and propagating them to future weeks
+ * - Managing essentials within blueprint context
+ * - Handling onboarding blueprint creation
+ *
+ * This hook operates as a mediator between shell orchestration and
+ * blueprint domain utilities.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Snapshot and restore calendar events around blueprint edit mode.
+ * - Generate blueprint from current events and persist it.
+ * - Populate future unplanned weeks from blueprint.
+ * - Create, delete, and sync essentials with calendar during blueprint editing.
+ * - Expose high-level handlers for UI consumption.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering UI.
+ * - Persisting data to storage.
+ * - Validating business invariants.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Blueprint edit mode is event-snapshot based.
+ * - Future weeks are only regenerated if they are not already planned.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useBlueprintHandlers
+ * - UseBlueprintHandlersOptions
+ * - UseBlueprintHandlersReturn
  */
+
+"use client";
 
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";
@@ -65,14 +103,14 @@ export interface UseBlueprintHandlersOptions {
   /** Create a new essential (returns generated ID) */
   onCreateEssential: (
     data: { label: string; icon: IconComponent; color: GoalColor },
-    slots: EssentialSlot[]
+    slots: EssentialSlot[],
   ) => string;
   /** Delete an essential */
   onDeleteEssential: (essentialId: string) => void;
   /** Save an essential's schedule */
   onSaveEssentialSchedule: (
     essentialId: string,
-    slots: EssentialSlot[]
+    slots: EssentialSlot[],
   ) => void;
 }
 
@@ -94,14 +132,14 @@ export interface UseBlueprintHandlersReturn {
   /** Create an essential and auto-import to calendar */
   handleAddEssentialWithImport: (
     data: { label: string; icon: IconComponent; color: GoalColor },
-    slots: EssentialSlot[]
+    slots: EssentialSlot[],
   ) => void;
   /** Delete an essential and remove its calendar events */
   handleDeleteEssentialWithCleanup: (essentialId: string) => void;
   /** Save essential schedule and sync to calendar in blueprint edit mode */
   handleSaveEssentialScheduleWithSync: (
     essentialId: string,
-    slots: EssentialSlot[]
+    slots: EssentialSlot[],
   ) => void;
 }
 
@@ -138,7 +176,7 @@ export function useBlueprintHandlers({
   const handleAddEssentialWithImport = React.useCallback(
     (
       data: { label: string; icon: IconComponent; color: GoalColor },
-      slots: EssentialSlot[]
+      slots: EssentialSlot[],
     ) => {
       // Create the essential and get the generated ID
       const essentialId = onCreateEssential(data, slots);
@@ -154,7 +192,7 @@ export function useBlueprintHandlers({
         onAddEvent(event);
       });
     },
-    [onCreateEssential, weekDates, onAddEvent]
+    [onCreateEssential, weekDates, onAddEvent],
   );
 
   // Delete an essential and remove all its calendar events
@@ -165,13 +203,13 @@ export function useBlueprintHandlers({
       // Remove all calendar events for this essential
       const eventsToRemove = events.filter(
         (e) =>
-          e.blockType === "essential" && e.sourceEssentialId === essentialId
+          e.blockType === "essential" && e.sourceEssentialId === essentialId,
       );
       eventsToRemove.forEach((event) => {
         calendarHandlers.onEventDelete(event.id);
       });
     },
-    [onDeleteEssential, events, calendarHandlers]
+    [onDeleteEssential, events, calendarHandlers],
   );
 
   // Save essential schedule and sync to calendar in blueprint edit mode
@@ -188,7 +226,7 @@ export function useBlueprintHandlers({
         // Remove existing calendar events for this essential
         const eventsToRemove = events.filter(
           (e) =>
-            e.blockType === "essential" && e.sourceEssentialId === essentialId
+            e.blockType === "essential" && e.sourceEssentialId === essentialId,
         );
         eventsToRemove.forEach((event) => {
           calendarHandlers.onEventDelete(event.id);
@@ -216,7 +254,7 @@ export function useBlueprintHandlers({
       calendarHandlers,
       weekDates,
       onAddEvent,
-    ]
+    ],
   );
 
   // -------------------------------------------------------------------------
@@ -300,7 +338,7 @@ export function useBlueprintHandlers({
         weekDates,
         4, // 4 weeks ahead
         hasWeeklyPlan,
-        eventsToRestore // Use restored events as base to avoid duplicates
+        eventsToRestore, // Use restored events as base to avoid duplicates
       );
 
       // Combine restored events with new blueprint events for future weeks
@@ -339,7 +377,7 @@ export function useBlueprintHandlers({
       weekDates,
       4, // 4 weeks ahead
       hasWeeklyPlan,
-      events // Pass current events to avoid duplicates
+      events, // Pass current events to avoid duplicates
     );
 
     // Add all future events
@@ -375,20 +413,26 @@ export function useBlueprintHandlers({
       events,
       weekDates,
       essentialTemplates,
-      allEssentials.map((e) => e.id)
+      allEssentials.map((e) => e.id),
     );
-  }, [isBlueprintEditMode, events, weekDates, essentialTemplates, allEssentials]);
+  }, [
+    isBlueprintEditMode,
+    events,
+    weekDates,
+    essentialTemplates,
+    allEssentials,
+  ]);
 
   // Update essentials in blueprint edit mode to match current templates
   const handleUpdateBlueprintEssentials = React.useCallback(() => {
     // Remove all existing essential events
     const nonEssentialEvents = events.filter(
-      (e) => e.blockType !== "essential"
+      (e) => e.blockType !== "essential",
     );
 
     // Get enabled templates
     const enabledTemplates = essentialTemplates.filter((t) =>
-      allEssentials.some((e) => e.id === t.essentialId)
+      allEssentials.some((e) => e.id === t.essentialId),
     );
 
     // Map essentials to the format expected by importEssentialsToEvents

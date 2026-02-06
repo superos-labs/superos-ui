@@ -1,12 +1,44 @@
-"use client";
-
 /**
- * FeedbackButton - Floating action buttons for zoom controls and help/feedback.
+ * =============================================================================
+ * File: feedback-button.tsx
+ * =============================================================================
  *
- * Renders in the bottom-right corner of the calendar area with:
- * - Zoom controls dropdown (zoom in/out with percentage display)
- * - Help & feedback dropdown (feedback form, onboarding video, Slack community)
+ * Floating shell control that provides quick access to:
+ * - Calendar zoom controls
+ * - Help, feedback, and community resources
+ *
+ * Renders as a compact cluster in the bottom-right of the shell.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Display current calendar zoom level.
+ * - Invoke zoom in / zoom out handlers.
+ * - Surface links to feedback form, onboarding video, and Slack community.
+ * - Provide subtle motion and hover affordances.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing zoom state.
+ * - Persisting user preferences.
+ * - Owning any shell layout decisions.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses dropdown menus to minimize visual footprint.
+ * - Motion is purely decorative and not state-bearing.
+ * - Buttons are visually consistent with other shell floating controls.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - FeedbackButton
+ * - FeedbackButtonProps
  */
+
+"use client";
 
 import * as React from "react";
 import { motion } from "framer-motion";
@@ -25,10 +57,7 @@ import {
   RiLifebuoyLine,
   RiSlackLine,
 } from "@remixicon/react";
-import {
-  MIN_CALENDAR_ZOOM,
-  MAX_CALENDAR_ZOOM,
-} from "@/lib/preferences";
+import { MIN_CALENDAR_ZOOM, MAX_CALENDAR_ZOOM } from "@/lib/preferences";
 
 // =============================================================================
 // Constants
@@ -38,8 +67,7 @@ const FEEDBACK_FORM_URL =
   "https://super-os.notion.site/2f1dc01c453d80e3a60edfa768c067bc";
 const ONBOARDING_VIDEO_URL =
   "https://www.loom.com/share/e3d7b59cb4ac4642b34eb35df5e88db4";
-const SLACK_COMMUNITY_URL =
-  "https://superoscommunity.slack.com";
+const SLACK_COMMUNITY_URL = "https://superoscommunity.slack.com";
 
 // =============================================================================
 // Types

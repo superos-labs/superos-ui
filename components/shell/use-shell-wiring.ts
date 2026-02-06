@@ -1,9 +1,52 @@
-"use client";
-
 /**
- * useShellWiring - Orchestration hook that wires together all shell sub-hooks
- * and returns all computed state and handlers needed by the shell's render components.
+ * =============================================================================
+ * File: use-shell-wiring.ts
+ * =============================================================================
+ *
+ * Shell interaction wiring and cross-feature orchestration hook.
+ *
+ * Consumes ShellContentProps and composes higher-level behavior by layering
+ * feature-specific hooks (layout, focus, blueprint, planning, undo, keyboard,
+ * drag & drop, sidebars, analytics) into a single cohesive wiring object.
+ *
+ * Think of this hook as:
+ *   "Behavior + Interaction Orchestrator"
+ * not
+ *   "State Owner"
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Bridge domain data (ShellContentProps) to interaction-level hooks.
+ * - Compose keyboard shortcuts, undo system, and toast feedback.
+ * - Coordinate layout state with selection and sidebars.
+ * - Wire focus mode behavior and navigation.
+ * - Provide drag & drop previews and drop handlers.
+ * - Assemble analytics and planning budget derived data.
+ * - Expose a unified wiring surface consumed by layout components.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or persisting data.
+ * - Owning domain state.
+ * - Rendering UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Sits between useShellState and ShellContent component.
+ * - Optimized for LLM scanning and mental mapping of interactions.
+ * - Centralizes complex cross-feature glue to avoid scattering logic.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useShellWiring
+ * - ShellWiring
  */
+
+"use client";
 
 import * as React from "react";
 import {
@@ -35,23 +78,69 @@ import { useBlueprintHandlers } from "./use-blueprint-handlers";
 
 export function useShellWiring(props: ShellContentProps) {
   const {
-    goals, essentials, allEssentials, events, weekDates, weekDeadlines,
-    selectedDate, calendarHandlers, calendarZoom, onCalendarZoomChange,
-    onToggleTaskComplete, onDeleteTask, onUnassignTaskFromBlock,
-    onAssignTaskToBlock, onAddTask, onUpdateTask, onUpdateEvent, onAddEvent,
-    onReplaceEvents, onDrop, focusSession, onStartFocus, onEndFocus,
-    blueprint, hasBlueprint, onSaveBlueprint, onSaveWeeklyPlan,
-    hasWeeklyPlan, onSetWeeklyFocus, weekStartsOn, progressMetric,
-    onPreviousWeek, onNextWeek, onToday, lifeAreas, goalIcons,
-    onAddGoal, onDeleteGoal, onUpdateGoal, onAddSubtask,
-    onToggleSubtaskComplete, onUpdateSubtask, onDeleteSubtask,
-    onUpdateBlockSyncSettings, onClearTaskDeadline, getGoalStats,
-    getEssentialStats, hoveredEvent, hoverPosition, hoveredDayIndex,
-    calendarIntegrations, externalEvents, integrationsSidebar,
-    essentialTemplates, onSaveEssentialSchedule, onCreateEssential,
-    onDeleteEssential, onImportEssentialsToWeek,
-    dayStartMinutes, dayEndMinutes, dayBoundariesEnabled,
-    onDayBoundariesChange, onDayBoundariesEnabledChange,
+    goals,
+    essentials,
+    allEssentials,
+    events,
+    weekDates,
+    weekDeadlines,
+    selectedDate,
+    calendarHandlers,
+    calendarZoom,
+    onCalendarZoomChange,
+    onToggleTaskComplete,
+    onDeleteTask,
+    onUnassignTaskFromBlock,
+    onAssignTaskToBlock,
+    onAddTask,
+    onUpdateTask,
+    onUpdateEvent,
+    onAddEvent,
+    onReplaceEvents,
+    onDrop,
+    focusSession,
+    onStartFocus,
+    onEndFocus,
+    blueprint,
+    hasBlueprint,
+    onSaveBlueprint,
+    onSaveWeeklyPlan,
+    hasWeeklyPlan,
+    onSetWeeklyFocus,
+    weekStartsOn,
+    progressMetric,
+    onPreviousWeek,
+    onNextWeek,
+    onToday,
+    lifeAreas,
+    goalIcons,
+    onAddGoal,
+    onDeleteGoal,
+    onUpdateGoal,
+    onAddSubtask,
+    onToggleSubtaskComplete,
+    onUpdateSubtask,
+    onDeleteSubtask,
+    onUpdateBlockSyncSettings,
+    onClearTaskDeadline,
+    getGoalStats,
+    getEssentialStats,
+    hoveredEvent,
+    hoverPosition,
+    hoveredDayIndex,
+    calendarIntegrations,
+    externalEvents,
+    integrationsSidebar,
+    essentialTemplates,
+    onSaveEssentialSchedule,
+    onCreateEssential,
+    onDeleteEssential,
+    onImportEssentialsToWeek,
+    dayStartMinutes,
+    dayEndMinutes,
+    dayBoundariesEnabled,
+    onDayBoundariesChange,
+    onDayBoundariesEnabledChange,
     onUpdateExternalEvent,
   } = props;
 
@@ -69,15 +158,15 @@ export function useShellWiring(props: ShellContentProps) {
       const goal = goals.find((g) => g.id === goalId);
       return goal?.tasks?.find((t) => t.id === taskId);
     },
-    [goals]
+    [goals],
   );
   const getEvent = React.useCallback(
     (eventId: string) => events.find((e) => e.id === eventId),
-    [events]
+    [events],
   );
   const getEventsForDay = React.useCallback(
     (dayIndex: number) => events.filter((e) => e.dayIndex === dayIndex),
-    [events]
+    [events],
   );
   const getDeadlineTasksForDay = React.useCallback(
     (dayIndex: number) => {
@@ -85,27 +174,40 @@ export function useShellWiring(props: ShellContentProps) {
       if (!dateStr) return [];
       const deadlines = weekDeadlines.get(dateStr) ?? [];
       return deadlines.map((d) => ({
-        goalId: d.goalId, taskId: d.taskId, completed: d.completed,
+        goalId: d.goalId,
+        taskId: d.taskId,
+        completed: d.completed,
       }));
     },
-    [weekDates, weekDeadlines]
+    [weekDates, weekDeadlines],
   );
 
   const undoableHandlers = useUndoableHandlers({
-    onToggleTaskComplete, onDeleteTask, onUnassignTaskFromBlock,
-    onAssignTaskToBlock, onAddTask, onUpdateTask, onUpdateEvent, onAddEvent,
-    calendarHandlers, getTask, getEvent, getEventsForDay, getDeadlineTasksForDay,
+    onToggleTaskComplete,
+    onDeleteTask,
+    onUnassignTaskFromBlock,
+    onAssignTaskToBlock,
+    onAddTask,
+    onUpdateTask,
+    onUpdateEvent,
+    onAddEvent,
+    calendarHandlers,
+    getTask,
+    getEvent,
+    getEventsForDay,
+    getDeadlineTasksForDay,
   });
   const enhancedCalendarHandlers = undoableHandlers.calendarHandlers;
   const enhancedToggleTaskComplete = undoableHandlers.onToggleTaskComplete;
   const enhancedDeleteTask = undoableHandlers.onDeleteTask;
-  const enhancedUnassignTaskFromBlock = undoableHandlers.onUnassignTaskFromBlock;
+  const enhancedUnassignTaskFromBlock =
+    undoableHandlers.onUnassignTaskFromBlock;
 
   // Layout state
   const layout = useShellLayout({ initialGoalsCount: goals.length });
 
   const [scrollToCurrentTimeKey, setScrollToCurrentTimeKey] = React.useState(
-    () => Date.now()
+    () => Date.now(),
   );
   const handleTodayClick = React.useCallback(() => {
     onToday();
@@ -114,12 +216,21 @@ export function useShellWiring(props: ShellContentProps) {
 
   // Feature hooks
   const mobileNav = useMobileNavigation({
-    weekDates, selectedDate, onPreviousWeek, onNextWeek,
+    weekDates,
+    selectedDate,
+    onPreviousWeek,
+    onNextWeek,
   });
 
   const goalHandlers = useGoalHandlers({
-    goals, goalIcons, lifeAreas, onAddGoal, onDeleteGoal, onUpdateGoal,
-    backlogMode: layout.backlogMode, setBacklogMode: layout.setBacklogMode,
+    goals,
+    goalIcons,
+    lifeAreas,
+    onAddGoal,
+    onDeleteGoal,
+    onUpdateGoal,
+    backlogMode: layout.backlogMode,
+    setBacklogMode: layout.setBacklogMode,
     selectedGoalId: layout.selectedGoalId,
     setSelectedGoalId: layout.setSelectedGoalId,
     handleCloseInspiration: layout.handleCloseInspiration,
@@ -128,22 +239,42 @@ export function useShellWiring(props: ShellContentProps) {
   const planningIntegration = usePlanningIntegration({
     isPlanningMode: layout.isPlanningMode,
     setIsPlanningMode: layout.setIsPlanningMode,
-    weekDates, events, onSaveWeeklyPlan, onSetWeeklyFocus, onSaveBlueprint,
-    onAddEvent, hasBlueprint, blueprint, hasWeeklyPlan, calendarIntegrations,
-    onImportEssentialsToWeek, isPlanning: layout.isPlanning,
+    weekDates,
+    events,
+    onSaveWeeklyPlan,
+    onSetWeeklyFocus,
+    onSaveBlueprint,
+    onAddEvent,
+    hasBlueprint,
+    blueprint,
+    hasWeeklyPlan,
+    calendarIntegrations,
+    onImportEssentialsToWeek,
+    isPlanning: layout.isPlanning,
     isOnboardingBlueprint: layout.isOnboardingBlueprint,
     setShowRightSidebar: layout.setShowRightSidebar,
   });
 
   const blueprintHandlers = useBlueprintHandlers({
-    blueprint, events, weekDates, weekStartsOn, onReplaceEvents, onSaveBlueprint,
-    onAddEvent, enterBlueprintEditMode: layout.enterBlueprintEditMode,
+    blueprint,
+    events,
+    weekDates,
+    weekStartsOn,
+    onReplaceEvents,
+    onSaveBlueprint,
+    onAddEvent,
+    enterBlueprintEditMode: layout.enterBlueprintEditMode,
     exitBlueprintEditMode: layout.exitBlueprintEditMode,
-    isBlueprintEditMode: layout.isBlueprintEditMode, hasWeeklyPlan,
+    isBlueprintEditMode: layout.isBlueprintEditMode,
+    hasWeeklyPlan,
     onCompleteOnboardingIntoPlanning: layout.onCompleteOnboardingIntoPlanning,
     onSkipBlueprintCreation: layout.onSkipBlueprintCreation,
-    allEssentials, essentialTemplates, calendarHandlers,
-    onCreateEssential, onDeleteEssential, onSaveEssentialSchedule,
+    allEssentials,
+    essentialTemplates,
+    calendarHandlers,
+    onCreateEssential,
+    onDeleteEssential,
+    onSaveEssentialSchedule,
   });
 
   // Deadline hover state
@@ -152,30 +283,35 @@ export function useShellWiring(props: ShellContentProps) {
 
   // Selected event
   const selectedEvent = layout.selectedEventId
-    ? events.find((e) => e.id === layout.selectedEventId) ?? null
+    ? (events.find((e) => e.id === layout.selectedEventId) ?? null)
     : null;
 
   // Zoom handlers
   const handleZoomIn = React.useCallback(() => {
     onCalendarZoomChange(
-      Math.min(MAX_CALENDAR_ZOOM, calendarZoom + CALENDAR_ZOOM_STEP)
+      Math.min(MAX_CALENDAR_ZOOM, calendarZoom + CALENDAR_ZOOM_STEP),
     );
   }, [calendarZoom, onCalendarZoomChange]);
   const handleZoomOut = React.useCallback(() => {
     onCalendarZoomChange(
-      Math.max(MIN_CALENDAR_ZOOM, calendarZoom - CALENDAR_ZOOM_STEP)
+      Math.max(MIN_CALENDAR_ZOOM, calendarZoom - CALENDAR_ZOOM_STEP),
     );
   }, [calendarZoom, onCalendarZoomChange]);
 
   // Keyboard shortcuts & toast aggregation
   const { toastMessage: calendarToastMessage } = useCalendarKeyboard({
-    hoveredEvent, hoverPosition,
+    hoveredEvent,
+    hoverPosition,
     hasClipboardContent: enhancedCalendarHandlers.hasClipboardContent,
     hoveredDayIndex,
     onCopy: enhancedCalendarHandlers.onEventCopy,
     onPaste: enhancedCalendarHandlers.onEventPaste,
     onDuplicate: (eventId, newDayIndex, newStartMinutes) =>
-      enhancedCalendarHandlers.onEventDuplicate(eventId, newDayIndex, newStartMinutes),
+      enhancedCalendarHandlers.onEventDuplicate(
+        eventId,
+        newDayIndex,
+        newStartMinutes,
+      ),
     onDelete: (eventId) => enhancedCalendarHandlers.onEventDelete(eventId),
     onToggleComplete: (eventId, currentStatus) => {
       const newStatus = currentStatus === "completed" ? "planned" : "completed";
@@ -196,8 +332,11 @@ export function useShellWiring(props: ShellContentProps) {
 
   // Focus mode
   const focus = useShellFocus({
-    focusSession, selectedEventId: layout.selectedEventId, selectedEvent,
-    startFocus: onStartFocus, onNavigateToBlock: layout.setSelectedEventId,
+    focusSession,
+    selectedEventId: layout.selectedEventId,
+    selectedEvent,
+    startFocus: onStartFocus,
+    onNavigateToBlock: layout.setSelectedEventId,
   });
 
   // External drag & drop
@@ -207,16 +346,25 @@ export function useShellWiring(props: ShellContentProps) {
 
   // Block sidebar handlers
   const {
-    sidebarData, availableGoals, syncState, blockSyncSettings,
+    sidebarData,
+    availableGoals,
+    syncState,
+    blockSyncSettings,
     handlers: sidebarHandlers,
   } = useBlockSidebarHandlers({
-    selectedEvent, goals, essentials, weekDates,
+    selectedEvent,
+    goals,
+    essentials,
+    weekDates,
     schedule: {
-      updateEvent: onUpdateEvent, updateTask: onUpdateTask,
+      updateEvent: onUpdateEvent,
+      updateTask: onUpdateTask,
       toggleTaskComplete: enhancedToggleTaskComplete,
-      addTask: onAddTask, addSubtask: onAddSubtask,
+      addTask: onAddTask,
+      addSubtask: onAddSubtask,
       toggleSubtaskComplete: onToggleSubtaskComplete,
-      updateSubtask: onUpdateSubtask, deleteSubtask: onDeleteSubtask,
+      updateSubtask: onUpdateSubtask,
+      deleteSubtask: onDeleteSubtask,
       assignTaskToBlock: onAssignTaskToBlock,
       unassignTaskFromBlock: enhancedUnassignTaskFromBlock,
       updateBlockSyncSettings: onUpdateBlockSyncSettings,
@@ -241,11 +389,17 @@ export function useShellWiring(props: ShellContentProps) {
   const useFocusedHours = progressMetric === "focused";
   const analyticsGoals = React.useMemo(
     () => toAnalyticsItems(goals, getGoalStats, { useFocusedHours }),
-    [goals, getGoalStats, useFocusedHours]
+    [goals, getGoalStats, useFocusedHours],
   );
   const planningBudgetData = React.useMemo(
-    () => buildPlanningBudgetData({ goals, essentials, getGoalStats, getEssentialStats }),
-    [goals, essentials, getGoalStats, getEssentialStats]
+    () =>
+      buildPlanningBudgetData({
+        goals,
+        essentials,
+        getGoalStats,
+        getEssentialStats,
+      }),
+    [goals, essentials, getGoalStats, getEssentialStats],
   );
 
   // Integrations sidebar toggle
@@ -270,7 +424,9 @@ export function useShellWiring(props: ShellContentProps) {
   }, [layout.selectedEventId, layout.showRightSidebar, integrationsSidebar]);
 
   const showIntegrationsSidebar =
-    integrationsSidebar.isOpen && !layout.selectedEventId && !layout.showRightSidebar;
+    integrationsSidebar.isOpen &&
+    !layout.selectedEventId &&
+    !layout.showRightSidebar;
 
   // Sleep / day boundaries handler
   const handleSleepTimesChange = React.useCallback(
@@ -278,7 +434,7 @@ export function useShellWiring(props: ShellContentProps) {
       onDayBoundariesChange(wakeUp, windDown);
       if (!dayBoundariesEnabled) onDayBoundariesEnabledChange(true);
     },
-    [onDayBoundariesChange, onDayBoundariesEnabledChange, dayBoundariesEnabled]
+    [onDayBoundariesChange, onDayBoundariesEnabledChange, dayBoundariesEnabled],
   );
 
   // All-day event toggle
@@ -291,12 +447,14 @@ export function useShellWiring(props: ShellContentProps) {
         onUpdateExternalEvent(eventId, { status: newStatus });
       }
     },
-    [externalEvents, onUpdateExternalEvent]
+    [externalEvents, onUpdateExternalEvent],
   );
 
   // Goal detail derived data
   const selectedGoal = layout.selectedGoalId
-    ? (goals.find((g) => g.id === layout.selectedGoalId) as ScheduleGoal | undefined)
+    ? (goals.find((g) => g.id === layout.selectedGoalId) as
+        | ScheduleGoal
+        | undefined)
     : undefined;
   const selectedGoalLifeArea = React.useMemo(() => {
     if (!selectedGoal?.lifeAreaId) return undefined;
@@ -305,13 +463,14 @@ export function useShellWiring(props: ShellContentProps) {
 
   // Mobile event click handlers
   const handleMobileEventClick = React.useCallback(
-    (event: CalendarEvent) => { layout.setSelectedEventId(event.id); },
-    [layout]
+    (event: CalendarEvent) => {
+      layout.setSelectedEventId(event.id);
+    },
+    [layout],
   );
-  const handleCloseBottomSheet = React.useCallback(
-    () => { layout.setSelectedEventId(null); },
-    [layout]
-  );
+  const handleCloseBottomSheet = React.useCallback(() => {
+    layout.setSelectedEventId(null);
+  }, [layout]);
 
   // Undo toast state
   const undoLastCommand = undoContext?.lastCommand;
@@ -319,23 +478,50 @@ export function useShellWiring(props: ShellContentProps) {
   const simpleToastMessage = toasts.toastMessage;
 
   return {
-    breakpoint, useMobileLayout, shouldShowWeekView,
-    layout, scrollToCurrentTimeKey, handleTodayClick,
-    mobileNav, goalHandlers, planningIntegration, blueprintHandlers,
-    enhancedCalendarHandlers, enhancedToggleTaskComplete,
-    enhancedDeleteTask, enhancedUnassignTaskFromBlock,
-    toasts, undoContext, undoLastCommand, showUndoActionToast, simpleToastMessage,
+    breakpoint,
+    useMobileLayout,
+    shouldShowWeekView,
+    layout,
+    scrollToCurrentTimeKey,
+    handleTodayClick,
+    mobileNav,
+    goalHandlers,
+    planningIntegration,
+    blueprintHandlers,
+    enhancedCalendarHandlers,
+    enhancedToggleTaskComplete,
+    enhancedDeleteTask,
+    enhancedUnassignTaskFromBlock,
+    toasts,
+    undoContext,
+    undoLastCommand,
+    showUndoActionToast,
+    simpleToastMessage,
     focus,
-    externalDragPreview, handleExternalDrop, handleDeadlineDrop,
-    sidebarData, sidebarDataToRender, availableGoals,
-    syncState, blockSyncSettings, sidebarHandlers,
-    handleZoomIn, handleZoomOut,
-    selectedEvent, hoveredDeadline, setHoveredDeadline,
-    analyticsGoals, planningBudgetData,
-    handleIntegrationsToggle, showIntegrationsSidebar,
-    handleSleepTimesChange, handleToggleAllDayEvent,
-    selectedGoal, selectedGoalLifeArea,
-    handleMobileEventClick, handleCloseBottomSheet,
+    externalDragPreview,
+    handleExternalDrop,
+    handleDeadlineDrop,
+    sidebarData,
+    sidebarDataToRender,
+    availableGoals,
+    syncState,
+    blockSyncSettings,
+    sidebarHandlers,
+    handleZoomIn,
+    handleZoomOut,
+    selectedEvent,
+    hoveredDeadline,
+    setHoveredDeadline,
+    analyticsGoals,
+    planningBudgetData,
+    handleIntegrationsToggle,
+    showIntegrationsSidebar,
+    handleSleepTimesChange,
+    handleToggleAllDayEvent,
+    selectedGoal,
+    selectedGoalLifeArea,
+    handleMobileEventClick,
+    handleCloseBottomSheet,
   };
 }
 

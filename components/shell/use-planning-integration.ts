@@ -1,12 +1,48 @@
-"use client";
-
 /**
- * usePlanningIntegration - Planning flow wiring and related state.
+ * =============================================================================
+ * File: use-planning-integration.ts
+ * =============================================================================
  *
- * Manages the planning flow lifecycle (prioritize → schedule → confirm),
- * sync availability detection, essentials session tracking, and
- * auto-open effects for the planning budget sidebar.
+ * Shell hook that bridges weekly planning flow with shell orchestration.
+ *
+ * Coordinates:
+ * - Planning flow state machine
+ * - Weekly plan persistence
+ * - Optional blueprint creation from planned week
+ * - Essentials import during planning
+ * - Budget sidebar auto-opening
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Initialize and expose planning flow.
+ * - Persist weekly plan and weekly focus tasks.
+ * - Save blueprint on first planning when opted in.
+ * - Expose helpers for duplicating last week from blueprint.
+ * - Derive whether calendar sync is available.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering UI.
+ * - Implementing planning step UI.
+ * - Managing blueprint edit mode.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses usePlanningFlow as underlying state machine.
+ * - Planning confirmation is the single exit point from planning mode.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - usePlanningIntegration
+ * - UsePlanningIntegrationOptions
+ * - UsePlanningIntegrationReturn
  */
+
+"use client";
 
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";
@@ -16,10 +52,7 @@ import type {
   CalendarProvider,
   CalendarIntegrationState,
 } from "@/lib/calendar-sync";
-import {
-  blueprintToEvents,
-  eventsToBlueprint,
-} from "@/lib/blueprint";
+import { blueprintToEvents, eventsToBlueprint } from "@/lib/blueprint";
 import { usePlanningFlow } from "@/lib/weekly-planning";
 
 // =============================================================================
@@ -132,7 +165,7 @@ export function usePlanningIntegration({
       if (planningFlowRef.current.weeklyFocusTaskIds.size > 0) {
         onSetWeeklyFocus(
           planningFlowRef.current.weeklyFocusTaskIds,
-          weekStartDate
+          weekStartDate,
         );
       }
 

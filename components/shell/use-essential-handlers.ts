@@ -1,18 +1,47 @@
-"use client";
-
 /**
- * useEssentialHandlers - Essential configuration, scheduling, and CRUD.
+ * =============================================================================
+ * File: use-essential-handlers.ts
+ * =============================================================================
  *
- * Manages:
- * - Essential template configuration (slots, enabled IDs)
- * - Schedule import (populating the week with essentials)
- * - Creating and deleting user-defined essentials
+ * Shell hook that manages Essential configuration and scheduling.
  *
- * This hook owns the `useEssentialConfig` state and all handlers that
- * mutate essential templates or the essentials list. The mutable essentials
- * state itself (`allEssentialsState`) lives in the parent orchestrator
- * because it feeds into `useUnifiedSchedule` before this hook is called.
+ * Bridges between:
+ * - Essential templates (slots per essential)
+ * - Enabled/disabled essential state
+ * - Importing essentials into the current week's calendar
+ * - Creating and deleting essentials
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Initialize essential templates and enabled state.
+ * - Save slot schedules for essentials.
+ * - Detect when a week is missing essentials.
+ * - Import enabled essentials into the calendar.
+ * - Create and delete essentials.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering UI.
+ * - Persisting essentials to storage.
+ * - Validating domain rules beyond simple guards.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses useEssentialConfig as the source of truth for templates.
+ * - New essentials are immediately enabled and templated.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useEssentialHandlers
+ * - UseEssentialHandlersOptions
+ * - UseEssentialHandlersReturn
  */
+
+"use client";
 
 import * as React from "react";
 import type { CalendarEvent } from "@/components/calendar";
@@ -94,7 +123,7 @@ export function useEssentialHandlers({
           ...slot,
           id: `slot-init-${essentialId}-${slot.id}`,
         })),
-      })
+      }),
     );
   }, [initialEnabledEssentialIds, allEssentials]);
 
@@ -111,14 +140,14 @@ export function useEssentialHandlers({
     (essentialId: string, slots: EssentialSlot[]) => {
       essentialConfig.setSlots(essentialId, slots);
     },
-    [essentialConfig]
+    [essentialConfig],
   );
 
   // Check if the week needs essential import
   const needsEssentialImport = React.useMemo(() => {
     return weekNeedsEssentialImport(
       scheduleEvents,
-      essentialConfig.config.enabledIds
+      essentialConfig.config.enabledIds,
     );
   }, [scheduleEvents, essentialConfig.config.enabledIds]);
 
@@ -128,7 +157,7 @@ export function useEssentialHandlers({
 
     // Get enabled templates
     const enabledTemplates = essentialConfig.config.templates.filter((t) =>
-      essentialConfig.config.enabledIds.includes(t.essentialId)
+      essentialConfig.config.enabledIds.includes(t.essentialId),
     );
 
     // Map essentials to the format expected by importEssentialsToEvents
@@ -191,7 +220,7 @@ export function useEssentialHandlers({
 
       return id;
     },
-    [essentialConfig, setAllEssentials, scheduleToggleEssentialEnabled]
+    [essentialConfig, setAllEssentials, scheduleToggleEssentialEnabled],
   );
 
   const deleteEssential = React.useCallback(
@@ -205,7 +234,7 @@ export function useEssentialHandlers({
       // Remove from allEssentials state
       setAllEssentials((prev) => prev.filter((e) => e.id !== essentialId));
     },
-    [essentialConfig, setAllEssentials]
+    [essentialConfig, setAllEssentials],
   );
 
   return {

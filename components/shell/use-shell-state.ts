@@ -1,20 +1,48 @@
-"use client";
-
 /**
- * Composed state orchestration hook for the Shell component.
+ * =============================================================================
+ * File: use-shell-state.ts
+ * =============================================================================
  *
- * This hook brings together all the sub-hooks needed to run the shell:
- * - Unified schedule (goals, events, tasks, essentials)
- * - Focus session management
- * - Blueprint and weekly planning
- * - Week navigation
- * - Preferences
- * - Life area management (via useLifeAreas)
- * - Essential configuration and handlers (via useEssentialHandlers)
+ * Core shell state composition hook.
  *
- * This is the primary integration point that consumers use to get all
- * the state and handlers needed by ShellContent.
+ * Aggregates and wires together all domain-level hooks required by the shell:
+ * schedule, essentials, focus, blueprint, weekly planning, preferences, and
+ * calendar integrations.
+ *
+ * Exposes a single, stable object that matches ShellContentProps.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Instantiate unified schedule and expose its data + handlers.
+ * - Maintain cross-cutting selection state (selected event / goal).
+ * - Derive week dates and handle week navigation.
+ * - Bridge preferences into shell-consumable props.
+ * - Compose essential templates and essential CRUD.
+ * - Orchestrate focus session lifecycle and accumulation.
+ * - Load and save blueprint and weekly plans.
+ * - Merge external calendar events with internal events.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Layout, panels, and view-level UI state.
+ * - Visual presentation or component composition.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Acts as the single source of truth for ShellContent data.
+ * - Intentionally large to keep cross-domain wiring centralized.
+ * - Avoids UI state; delegates that to useShellLayout.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useShellState
  */
+
+"use client";
 
 import * as React from "react";
 import { getWeekDates } from "@/components/calendar";
@@ -28,10 +56,7 @@ import type {
   DeadlineMilestone,
 } from "@/lib/unified-schedule";
 import { useFocusSession, useFocusNotifications } from "@/lib/focus";
-import {
-  useBlueprint,
-  eventsToBlueprint,
-} from "@/lib/blueprint";
+import { useBlueprint, eventsToBlueprint } from "@/lib/blueprint";
 import { useWeeklyPlan } from "@/lib/weekly-planning";
 import { usePreferences } from "@/lib/preferences";
 import {
@@ -49,7 +74,7 @@ import { useEssentialHandlers } from "./use-essential-handlers";
 // =============================================================================
 
 export function useShellState(
-  options: UseShellStateOptions
+  options: UseShellStateOptions,
 ): UseShellStateReturn {
   const {
     initialGoals,
@@ -102,7 +127,7 @@ export function useShellState(
 
   const weekDates = React.useMemo(
     () => getWeekDates(selectedDate, weekStartsOn),
-    [selectedDate, weekStartsOn]
+    [selectedDate, weekStartsOn],
   );
 
   const goToPreviousWeek = React.useCallback(() => {
@@ -135,10 +160,10 @@ export function useShellState(
   // Selection State (lifted here for coordination)
   // -------------------------------------------------------------------------
   const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
-    null
+    null,
   );
   const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
-    null
+    null,
   );
 
   // -------------------------------------------------------------------------
@@ -200,7 +225,7 @@ export function useShellState(
     onSessionEnd: (completed) => {
       // Find the event using ref to get current value
       const event = calendarEventsRef.current.find(
-        (e) => e.id === completed.blockId
+        (e) => e.id === completed.blockId,
       );
       if (!event) return;
 
@@ -272,26 +297,26 @@ export function useShellState(
   const weekDeadlines = React.useMemo(
     () => schedule.getWeekDeadlines(weekDates),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [schedule.getWeekDeadlines, weekDates]
+    [schedule.getWeekDeadlines, weekDates],
   ) as Map<string, DeadlineTask[]>;
 
   const weekGoalDeadlines = React.useMemo(
     () => schedule.getWeekGoalDeadlines(weekDates),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [schedule.getWeekGoalDeadlines, weekDates]
+    [schedule.getWeekGoalDeadlines, weekDates],
   ) as Map<string, DeadlineGoal[]>;
 
   const weekMilestoneDeadlines = React.useMemo(
     () => schedule.getWeekMilestoneDeadlines(weekDates),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [schedule.getWeekMilestoneDeadlines, weekDates]
+    [schedule.getWeekMilestoneDeadlines, weekDates],
   ) as Map<string, DeadlineMilestone[]>;
 
   // Quarter deadlines for planning panel
   const quarterDeadlines = React.useMemo(
     () => schedule.getQuarterDeadlines(new Date()),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [schedule.getQuarterDeadlines]
+    [schedule.getQuarterDeadlines],
   );
 
   // -------------------------------------------------------------------------
@@ -304,19 +329,19 @@ export function useShellState(
   const externalCalendarEvents = React.useMemo(
     () =>
       externalEventsToCalendarEvents(calendarSync.externalEvents, weekDates),
-    [calendarSync.externalEvents, weekDates]
+    [calendarSync.externalEvents, weekDates],
   );
 
   // Convert external all-day events for the deadline tray
   const allDayEvents = React.useMemo(
     () => externalEventsToAllDayEvents(calendarSync.externalEvents, weekDates),
-    [calendarSync.externalEvents, weekDates]
+    [calendarSync.externalEvents, weekDates],
   );
 
   // Merge regular events with external events
   const mergedEvents = React.useMemo(
     () => [...schedule.events, ...externalCalendarEvents],
-    [schedule.events, externalCalendarEvents]
+    [schedule.events, externalCalendarEvents],
   );
 
   // -------------------------------------------------------------------------
