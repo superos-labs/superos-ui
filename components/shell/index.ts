@@ -30,6 +30,17 @@ export type { MobileToolbarProps } from "./mobile-toolbar";
 // State orchestration hook
 export { useShellState } from "./use-shell-state";
 
+// Shell wiring hook
+export { useShellWiring } from "./use-shell-wiring";
+export type { ShellWiring } from "./use-shell-wiring";
+
+// Layout components
+export { ShellDesktopLayout } from "./shell-desktop-layout";
+export type { ShellDesktopLayoutProps } from "./shell-desktop-layout";
+
+export { ShellMobileLayout } from "./shell-mobile-layout";
+export type { ShellMobileLayoutProps } from "./shell-mobile-layout";
+
 // Internal hooks (for advanced customization)
 export { useShellLayout } from "./use-shell-layout";
 export type { UseShellLayoutReturn, OnboardingStep } from "./use-shell-layout";
