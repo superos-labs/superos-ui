@@ -1,3 +1,35 @@
+/**
+ * =============================================================================
+ * File: block.tsx
+ * =============================================================================
+ *
+ * Visual calendar block component.
+ *
+ * Renders a single time block inside the calendar grid with:
+ * - Color theming
+ * - Duration-based height
+ * - Compact vs regular layouts
+ * - Status styling (planned / completed)
+ * - Support for essential, goal, task, and external blocks
+ * - Overnight segment corner handling
+ * - Drag & drop visual states
+ *
+ * This component is presentation-only.
+ * It does NOT own scheduling logic or persistence.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * -----------------------------------------------------------------------------
+ * - One block = one visual primitive.
+ * - All semantic meaning is expressed through props.
+ * - Styling variants live in block-colors.ts.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "A colored rectangle that represents intentional time."
+ */
+
 "use client";
 
 import * as React from "react";
@@ -208,7 +240,9 @@ function Block({
           size="sm"
           className={cn(
             "absolute",
-            isCompact ? "top-1/2 right-1.5 -translate-y-1/2" : "top-1.5 right-1.5",
+            isCompact
+              ? "top-1/2 right-1.5 -translate-y-1/2"
+              : "top-1.5 right-1.5",
           )}
         />
       )}

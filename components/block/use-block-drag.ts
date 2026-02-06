@@ -1,3 +1,33 @@
+/**
+ * =============================================================================
+ * File: use-block-drag.ts
+ * =============================================================================
+ *
+ * Low-level hook that powers drag-and-drop for calendar blocks.
+ *
+ * Responsibilities:
+ * - Distinguishes click vs drag via movement threshold
+ * - Converts pointer movement into (dayIndex, startMinutes)
+ * - Applies snapping, bounds, and fine-grain modifiers
+ * - Tracks modifier keys:
+ *   - Option/Alt → duplicate instead of move
+ *   - Shift → 1-minute snapping
+ * - Exposes visual drag offset and projected preview position
+ *
+ * This hook contains NO rendering logic.
+ * It only provides interaction state and callbacks.
+ *
+ * Higher-level wrappers (e.g. DraggableBlockWrapper) decide how
+ * to visually represent dragging and duplication.
+ *
+ * ---------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * ---------------------------------------------------------------------------
+ * - Pointer math lives in hooks, not components.
+ * - Drag semantics are deterministic and side-effect free.
+ * - Visual behavior is derived from returned state.
+ */
+
 "use client";
 
 import * as React from "react";
@@ -73,7 +103,8 @@ export function useBlockDrag({
 }: UseBlockDragOptions): UseBlockDragReturn {
   const [dragState, setDragState] = React.useState<DragState>("idle");
   const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
-  const [previewPosition, setPreviewPosition] = React.useState<DragPreviewPosition | null>(null);
+  const [previewPosition, setPreviewPosition] =
+    React.useState<DragPreviewPosition | null>(null);
   const [isOptionHeld, setIsOptionHeld] = React.useState(false);
 
   const startPos = React.useRef({ x: 0, y: 0 });
@@ -189,7 +220,9 @@ export function useBlockDrag({
       newDayIndex = Math.max(minDayIndex, Math.min(maxDayIndex, newDayIndex));
 
       // Use fine-grained interval when Shift is held
-      const effectiveInterval = isShiftHeldRef.current ? FINE_GRAIN_INTERVAL : snapInterval;
+      const effectiveInterval = isShiftHeldRef.current
+        ? FINE_GRAIN_INTERVAL
+        : snapInterval;
 
       // Calculate new start time from vertical movement
       const minutesDelta = deltaY / pixelsPerMinute;
@@ -205,8 +238,14 @@ export function useBlockDrag({
       newStartMinutes = Math.min(maxStartMinutes, newStartMinutes);
 
       // Store for use in pointerUp and update preview state
-      currentPosition.current = { dayIndex: newDayIndex, startMinutes: newStartMinutes };
-      setPreviewPosition({ dayIndex: newDayIndex, startMinutes: newStartMinutes });
+      currentPosition.current = {
+        dayIndex: newDayIndex,
+        startMinutes: newStartMinutes,
+      };
+      setPreviewPosition({
+        dayIndex: newDayIndex,
+        startMinutes: newStartMinutes,
+      });
     },
     [
       dragState,
@@ -233,19 +272,20 @@ export function useBlockDrag({
       }
 
       const wasDragging = dragState === "dragging";
-      const { dayIndex: newDayIndex, startMinutes: newStartMinutes } = currentPosition.current;
+      const { dayIndex: newDayIndex, startMinutes: newStartMinutes } =
+        currentPosition.current;
       // Use ref to get current Option state (avoids stale closure issues)
       const wasOptionHeld = isOptionHeldRef.current;
-      
+
       setDragState("idle");
       setDragOffset({ x: 0, y: 0 });
       setPreviewPosition(null);
-      
+
       // Call onClick if this was a click (pointer down + up without dragging)
       if (!wasDragging) {
         onClickRef.current?.();
       }
-      
+
       // Only call drag callbacks if we were actually dragging (not just clicking)
       if (wasDragging) {
         if (wasOptionHeld && onDuplicate) {

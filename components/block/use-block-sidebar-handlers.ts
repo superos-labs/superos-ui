@@ -1,3 +1,31 @@
+/**
+ * =============================================================================
+ * File: use-block-sidebar-handlers.ts
+ * =============================================================================
+ *
+ * Orchestration hook that binds a selected calendar event to BlockSidebar.
+ *
+ * Responsibilities:
+ * - Adapts a CalendarEvent into sidebar display data
+ * - Computes external calendar sync state
+ * - Maps unified-schedule mutations to sidebar callbacks
+ * - Centralizes all write-side logic for block sidebar interactions
+ *
+ * This hook acts as a thin controller layer:
+ * UI → handlers → unified schedule / calendar systems
+ *
+ * It contains NO rendering logic.
+ * It does NOT own state beyond derived memoized values.
+ *
+ * ---------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * ---------------------------------------------------------------------------
+ * - Sidebar components remain stateless and declarative.
+ * - All side effects are centralized here.
+ * - Domain writes flow through unified schedule APIs only.
+ * - Mapping logic is colocated with the consuming surface.
+ */
+
 "use client";
 
 import * as React from "react";
@@ -94,14 +122,14 @@ export interface UseBlockSidebarHandlersReturn {
     // Goal task context callbacks (for expanding tasks in goal blocks)
     onUpdateGoalTask: (
       taskId: string,
-      updates: Partial<{ label: string; description?: string }>
+      updates: Partial<{ label: string; description?: string }>,
     ) => void;
     onAddGoalTaskSubtask: (taskId: string, label: string) => void;
     onToggleGoalTaskSubtask: (taskId: string, subtaskId: string) => void;
     onUpdateGoalTaskSubtask: (
       taskId: string,
       subtaskId: string,
-      label: string
+      label: string,
     ) => void;
     onDeleteGoalTaskSubtask: (taskId: string, subtaskId: string) => void;
     // External calendar sync
@@ -182,7 +210,7 @@ export function useBlockSidebarHandlers({
         icon: g.icon,
         color: getIconColorClass(g.color),
       })),
-    [goals]
+    [goals],
   );
 
   // -------------------------------------------------------------------------
@@ -200,20 +228,20 @@ export function useBlockSidebarHandlers({
         });
       }
     },
-    [selectedEvent, updateEvent, updateTask]
+    [selectedEvent, updateEvent, updateTask],
   );
 
   const handleDateChange = React.useCallback(
     (newDate: string) => {
       if (!selectedEvent) return;
       const newDayIndex = weekDates.findIndex(
-        (d) => d.toISOString().split("T")[0] === newDate
+        (d) => d.toISOString().split("T")[0] === newDate,
       );
       if (newDayIndex >= 0) {
         updateEvent(selectedEvent.id, { date: newDate, dayIndex: newDayIndex });
       }
     },
-    [selectedEvent, weekDates, updateEvent]
+    [selectedEvent, weekDates, updateEvent],
   );
 
   const handleStartTimeChange = React.useCallback(
@@ -222,7 +250,7 @@ export function useBlockSidebarHandlers({
       const newStartMinutes = parseTimeToMinutes(startTime);
       updateEvent(selectedEvent.id, { startMinutes: newStartMinutes });
     },
-    [selectedEvent, updateEvent]
+    [selectedEvent, updateEvent],
   );
 
   const handleEndTimeChange = React.useCallback(
@@ -234,7 +262,7 @@ export function useBlockSidebarHandlers({
         updateEvent(selectedEvent.id, { durationMinutes: newDuration });
       }
     },
-    [selectedEvent, updateEvent]
+    [selectedEvent, updateEvent],
   );
 
   const handleNotesChange = React.useCallback(
@@ -252,7 +280,7 @@ export function useBlockSidebarHandlers({
         });
       }
     },
-    [selectedEvent, updateEvent, updateTask]
+    [selectedEvent, updateEvent, updateTask],
   );
 
   // -------------------------------------------------------------------------
@@ -264,7 +292,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent?.sourceGoalId) return;
       toggleTaskComplete(selectedEvent.sourceGoalId, taskId);
     },
-    [selectedEvent, toggleTaskComplete]
+    [selectedEvent, toggleTaskComplete],
   );
 
   const handleAddSubtask = React.useCallback(
@@ -272,7 +300,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent?.sourceGoalId || !selectedEvent?.sourceTaskId) return;
       addSubtask(selectedEvent.sourceGoalId, selectedEvent.sourceTaskId, label);
     },
-    [selectedEvent, addSubtask]
+    [selectedEvent, addSubtask],
   );
 
   const handleToggleSubtask = React.useCallback(
@@ -281,10 +309,10 @@ export function useBlockSidebarHandlers({
       toggleSubtaskComplete(
         selectedEvent.sourceGoalId,
         selectedEvent.sourceTaskId,
-        subtaskId
+        subtaskId,
       );
     },
-    [selectedEvent, toggleSubtaskComplete]
+    [selectedEvent, toggleSubtaskComplete],
   );
 
   const handleUpdateSubtask = React.useCallback(
@@ -294,10 +322,10 @@ export function useBlockSidebarHandlers({
         selectedEvent.sourceGoalId,
         selectedEvent.sourceTaskId,
         subtaskId,
-        label
+        label,
       );
     },
-    [selectedEvent, updateSubtask]
+    [selectedEvent, updateSubtask],
   );
 
   const handleDeleteSubtask = React.useCallback(
@@ -306,10 +334,10 @@ export function useBlockSidebarHandlers({
       deleteSubtask(
         selectedEvent.sourceGoalId,
         selectedEvent.sourceTaskId,
-        subtaskId
+        subtaskId,
       );
     },
-    [selectedEvent, deleteSubtask]
+    [selectedEvent, deleteSubtask],
   );
 
   // -------------------------------------------------------------------------
@@ -321,7 +349,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent) return;
       assignTaskToBlock(selectedEvent.id, taskId);
     },
-    [selectedEvent, assignTaskToBlock]
+    [selectedEvent, assignTaskToBlock],
   );
 
   const handleUnassignTask = React.useCallback(
@@ -329,7 +357,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent) return;
       unassignTaskFromBlock(selectedEvent.id, taskId);
     },
-    [selectedEvent, unassignTaskFromBlock]
+    [selectedEvent, unassignTaskFromBlock],
   );
 
   const handleCreateTask = React.useCallback(
@@ -340,7 +368,7 @@ export function useBlockSidebarHandlers({
         assignTaskToBlock(selectedEvent.id, newTaskId);
       }
     },
-    [selectedEvent, addTask, assignTaskToBlock]
+    [selectedEvent, addTask, assignTaskToBlock],
   );
 
   // -------------------------------------------------------------------------
@@ -360,7 +388,7 @@ export function useBlockSidebarHandlers({
         blockType: "goal",
       });
     },
-    [selectedEvent, goals, updateEvent]
+    [selectedEvent, goals, updateEvent],
   );
 
   // -------------------------------------------------------------------------
@@ -398,12 +426,12 @@ export function useBlockSidebarHandlers({
   const handleUpdateGoalTask = React.useCallback(
     (
       taskId: string,
-      updates: Partial<{ label: string; description?: string }>
+      updates: Partial<{ label: string; description?: string }>,
     ) => {
       if (!selectedEvent?.sourceGoalId) return;
       updateTask(selectedEvent.sourceGoalId, taskId, updates);
     },
-    [selectedEvent, updateTask]
+    [selectedEvent, updateTask],
   );
 
   const handleAddGoalTaskSubtask = React.useCallback(
@@ -411,7 +439,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent?.sourceGoalId) return;
       addSubtask(selectedEvent.sourceGoalId, taskId, label);
     },
-    [selectedEvent, addSubtask]
+    [selectedEvent, addSubtask],
   );
 
   const handleToggleGoalTaskSubtask = React.useCallback(
@@ -419,7 +447,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent?.sourceGoalId) return;
       toggleSubtaskComplete(selectedEvent.sourceGoalId, taskId, subtaskId);
     },
-    [selectedEvent, toggleSubtaskComplete]
+    [selectedEvent, toggleSubtaskComplete],
   );
 
   const handleUpdateGoalTaskSubtask = React.useCallback(
@@ -427,7 +455,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent?.sourceGoalId) return;
       updateSubtask(selectedEvent.sourceGoalId, taskId, subtaskId, label);
     },
-    [selectedEvent, updateSubtask]
+    [selectedEvent, updateSubtask],
   );
 
   const handleDeleteGoalTaskSubtask = React.useCallback(
@@ -435,7 +463,7 @@ export function useBlockSidebarHandlers({
       if (!selectedEvent?.sourceGoalId) return;
       deleteSubtask(selectedEvent.sourceGoalId, taskId, subtaskId);
     },
-    [selectedEvent, deleteSubtask]
+    [selectedEvent, deleteSubtask],
   );
 
   // -------------------------------------------------------------------------
@@ -449,7 +477,7 @@ export function useBlockSidebarHandlers({
         appearanceOverride: appearance,
       });
     },
-    [selectedEvent, updateBlockSyncSettings]
+    [selectedEvent, updateBlockSyncSettings],
   );
 
   const handleSyncCustomLabelChange = React.useCallback(
@@ -459,7 +487,7 @@ export function useBlockSidebarHandlers({
         customLabel: label,
       });
     },
-    [selectedEvent, updateBlockSyncSettings]
+    [selectedEvent, updateBlockSyncSettings],
   );
 
   // -------------------------------------------------------------------------
@@ -518,7 +546,7 @@ export function useBlockSidebarHandlers({
       handleDeleteGoalTaskSubtask,
       handleSyncAppearanceChange,
       handleSyncCustomLabelChange,
-    ]
+    ],
   );
 
   return {

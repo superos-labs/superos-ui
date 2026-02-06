@@ -1,3 +1,37 @@
+/**
+ * =============================================================================
+ * File: block-sidebar.tsx
+ * =============================================================================
+ *
+ * Primary sidebar surface for viewing and editing a single calendar block.
+ *
+ * This component is responsible for composing all block-related sidebar
+ * sections and orchestrating their interaction:
+ *
+ * - Header (title, source, close/delete, mark complete)
+ * - Date & time editing
+ * - Focus mode (timer, start/pause/resume/stop)
+ * - Goal task assignment and inline task management
+ * - Block notes and block-scoped subtasks
+ * - External calendar sync appearance overrides
+ *
+ * It is a UI composition layer only.
+ * It does NOT own scheduling, persistence, or domain state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * -----------------------------------------------------------------------------
+ * - BlockSidebar is a pure presentational orchestrator.
+ * - All mutations flow outward via callbacks.
+ * - Sub-sections are small, focused components in ./sidebar.
+ * - Behavior varies by blockType (goal | task | essential | external).
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "Inspector panel for a single time block."
+ */
+
 "use client";
 
 import * as React from "react";
@@ -10,10 +44,7 @@ import {
 } from "@remixicon/react";
 import type { ScheduleTask } from "@/lib/unified-schedule";
 import type { AppearanceOverride } from "@/lib/calendar-sync";
-import type {
-  BlockSyncState,
-  BlockSyncSettings,
-} from "@/lib/unified-schedule";
+import type { BlockSyncState, BlockSyncSettings } from "@/lib/unified-schedule";
 import {
   FocusTimer,
   StartFocusButton,
@@ -100,7 +131,7 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onUpdateGoalTaskSubtask?: (
     taskId: string,
     subtaskId: string,
-    label: string
+    label: string,
   ) => void;
   /** Callback to delete a goal task's subtask */
   onDeleteGoalTaskSubtask?: (taskId: string, subtaskId: string) => void;
@@ -222,7 +253,7 @@ function BlockSidebar({
       <div
         className={cn(
           "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-          className
+          className,
         )}
         {...props}
       >
@@ -258,7 +289,7 @@ function BlockSidebar({
     <div
       className={cn(
         "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className
+        className,
       )}
       {...props}
     >
@@ -321,7 +352,7 @@ function BlockSidebar({
             className={cn(
               "w-full bg-transparent text-lg font-semibold text-foreground leading-tight",
               "outline-none placeholder:text-muted-foreground/60",
-              "focus:outline-none"
+              "focus:outline-none",
             )}
             placeholder="Block title..."
           />

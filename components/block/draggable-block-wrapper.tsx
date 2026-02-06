@@ -1,3 +1,38 @@
+/**
+ * =============================================================================
+ * File: draggable-block-wrapper.tsx
+ * =============================================================================
+ *
+ * Drag interaction wrapper for calendar blocks.
+ *
+ * Adds pointer-based dragging behavior to a block and exposes
+ * drag state to children via a render-prop interface.
+ *
+ * Supports:
+ * - Vertical movement (time)
+ * - Horizontal movement (day)
+ * - Snapping to minute intervals
+ * - Option/Alt-drag to duplicate
+ * - Ghost preview rendering during duplication
+ *
+ * This component owns gesture handling and visual drag feedback,
+ * but does NOT mutate scheduling state itself.
+ *
+ * All final scheduling decisions are emitted upward via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * -----------------------------------------------------------------------------
+ * - Keep drag logic isolated from block visuals.
+ * - Children control what is rendered.
+ * - Wrapper only provides motion + state.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "A transparent drag engine around a block."
+ */
+
 "use client";
 
 import * as React from "react";

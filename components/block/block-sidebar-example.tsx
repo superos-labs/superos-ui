@@ -1,3 +1,37 @@
+/**
+ * =============================================================================
+ * File: block-sidebar-example.tsx
+ * =============================================================================
+ *
+ * Interactive playground example for the BlockSidebar component.
+ *
+ * This file wires the BlockSidebar into the Knobs playground to allow:
+ * - Switching between block types (goal / task / essential)
+ * - Toggling whether a block has an assigned goal
+ * - Editing title, date, time, notes
+ * - Managing goal tasks, available tasks, and subtasks
+ *
+ * It uses local React state only and does NOT represent production data flow.
+ *
+ * -----------------------------------------------------------------------------
+ * PURPOSE
+ * -----------------------------------------------------------------------------
+ * - Serve as a visual and behavioral sandbox for block sidebar development.
+ * - Enable rapid iteration on sidebar UX without touching app state.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persistence
+ * - Domain validation
+ * - Real scheduling logic
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "Storybook-style playground for BlockSidebar."
+ */
+
 "use client";
 
 import * as React from "react";

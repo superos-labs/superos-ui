@@ -1,3 +1,38 @@
+/**
+ * =============================================================================
+ * File: content-sections.tsx
+ * =============================================================================
+ *
+ * Sidebar content sections for editing and inspecting a single Block.
+ *
+ * Provides focused, self-contained sections used inside the Block Sidebar:
+ * - Date & Time editing / display
+ * - Notes and Subtasks (for task-type blocks)
+ *
+ * These sections are purely presentational + event-forwarding.
+ * They do not own block persistence or domain state.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render editable or read-only date/time fields for a block.
+ * - Render editable notes field.
+ * - Render and manage inline creation of subtasks.
+ * - Forward user intent via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or saving block data.
+ * - Validating schedules.
+ * - Deciding block type.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "Pluggable sidebar panels for block metadata."
+ */
+
 "use client";
 
 import * as React from "react";
@@ -8,10 +43,7 @@ import {
   RiFileTextLine,
   RiAddLine,
 } from "@remixicon/react";
-import {
-  SubtaskRow,
-  type SubtaskRowData,
-} from "@/components/ui";
+import { SubtaskRow, type SubtaskRowData } from "@/components/ui";
 import type { BlockSubtask } from "../block-types";
 import type { BlockSidebarData } from "./sidebar-utils";
 import {
@@ -58,7 +90,7 @@ export function DateTimeSection({
             }}
             className={cn(
               "w-full rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-              "outline-none focus:bg-muted"
+              "outline-none focus:bg-muted",
             )}
           />
         ) : (
@@ -81,7 +113,7 @@ export function DateTimeSection({
                 }}
                 className={cn(
                   "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                  "outline-none focus:bg-muted"
+                  "outline-none focus:bg-muted",
                 )}
               />
               <span className="text-sm text-muted-foreground">to</span>
@@ -98,7 +130,7 @@ export function DateTimeSection({
                   }}
                   className={cn(
                     "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-                    "outline-none focus:bg-muted"
+                    "outline-none focus:bg-muted",
                   )}
                 />
                 {isOvernightBlock(block) && (
@@ -202,7 +234,7 @@ export function NotesSubtasksSection({
             placeholder="Add notes..."
             className={cn(
               "w-full min-h-[24px] bg-transparent text-sm text-foreground leading-relaxed",
-              "outline-none placeholder:text-muted-foreground/60"
+              "outline-none placeholder:text-muted-foreground/60",
             )}
           />
         ) : (

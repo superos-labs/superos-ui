@@ -1,3 +1,40 @@
+/**
+ * =============================================================================
+ * File: external-sync-section.tsx
+ * =============================================================================
+ *
+ * Sidebar section for configuring how a Block appears
+ * when synced to external calendars (Google, Outlook, etc).
+ *
+ * Allows block-level override of the display appearance:
+ * - Use goal default
+ * - Busy / Blocked
+ * - Goal title / Block title
+ * - Custom label
+ *
+ * Supports per-destination preview and inline editing.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render external calendar destinations for this block.
+ * - Display current sync appearance per destination.
+ * - Allow editing of appearance override and custom label.
+ * - Forward changes via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Performing the actual sync.
+ * - Persisting settings.
+ * - Resolving inherited goal-level defaults.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "How should this block look in external calendars?"
+ */
+
 "use client";
 
 import * as React from "react";
@@ -8,10 +45,7 @@ import {
   RiPencilLine,
   RiEyeLine,
 } from "@remixicon/react";
-import type {
-  BlockSyncState,
-  BlockSyncSettings,
-} from "@/lib/unified-schedule";
+import type { BlockSyncState, BlockSyncSettings } from "@/lib/unified-schedule";
 import type { AppearanceOverride } from "@/lib/calendar-sync";
 import { ProviderBadge } from "@/components/integrations";
 import { BlockSidebarSection } from "./sidebar-sections";
@@ -62,7 +96,8 @@ export function ExternalCalendarSyncSection({
   const [pendingOverride, setPendingOverride] =
     React.useState<AppearanceOverride | null>(null);
   // Track pending custom label during editing
-  const [pendingCustomLabel, setPendingCustomLabel] = React.useState<string>("");
+  const [pendingCustomLabel, setPendingCustomLabel] =
+    React.useState<string>("");
 
   const currentAppearance =
     blockSyncSettings?.appearanceOverride ?? "use_default";
@@ -103,7 +138,7 @@ export function ExternalCalendarSyncSection({
   // Compute display text based on pending override (for live preview while editing)
   const getDisplayTextForAppearance = (
     appearance: AppearanceOverride,
-    dest: (typeof destinations)[0]
+    dest: (typeof destinations)[0],
   ): string => {
     switch (appearance) {
       case "blocked_superos":
@@ -173,7 +208,7 @@ export function ExternalCalendarSyncSection({
                               "text-emerald-600 dark:text-emerald-400",
                               "hover:bg-emerald-50 dark:hover:bg-emerald-950/30",
                               "transition-colors duration-150",
-                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             )}
                             aria-label="Save changes"
                           >
@@ -188,7 +223,7 @@ export function ExternalCalendarSyncSection({
                               "text-muted-foreground",
                               "hover:bg-muted hover:text-foreground",
                               "transition-colors duration-150",
-                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             )}
                             aria-label="Cancel"
                           >
@@ -205,7 +240,7 @@ export function ExternalCalendarSyncSection({
                           "text-muted-foreground",
                           "hover:bg-muted hover:text-foreground",
                           "transition-colors duration-150",
-                          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                         aria-label="Edit appearance"
                       >
@@ -240,7 +275,7 @@ export function ExternalCalendarSyncSection({
                         className={cn(
                           "group flex items-center gap-2 rounded-lg py-1.5 text-left",
                           "transition-colors duration-150",
-                          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                       >
                         <div
@@ -248,7 +283,7 @@ export function ExternalCalendarSyncSection({
                             "flex size-4 shrink-0 items-center justify-center rounded-full transition-all duration-150",
                             isSelected
                               ? "bg-foreground"
-                              : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20"
+                              : "ring-1 ring-inset ring-border bg-background group-hover:ring-foreground/20",
                           )}
                         >
                           {isSelected && (
@@ -260,7 +295,7 @@ export function ExternalCalendarSyncSection({
                             "text-sm transition-colors",
                             isSelected
                               ? "text-foreground"
-                              : "text-muted-foreground"
+                              : "text-muted-foreground",
                           )}
                         >
                           {displayLabel}
@@ -278,7 +313,7 @@ export function ExternalCalendarSyncSection({
                       className={cn(
                         "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm",
                         "placeholder:text-muted-foreground/60",
-                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
                       )}
                       onClick={(e) => e.stopPropagation()}
                     />

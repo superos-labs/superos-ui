@@ -1,14 +1,30 @@
 /**
- * Centralized type definitions for the Block component family.
+ * =============================================================================
+ * File: block-types.ts
+ * =============================================================================
  *
- * This file serves as a barrel for all block-related types, providing a single
- * import point while maintaining backward compatibility with existing imports.
+ * Centralized type definitions for calendar blocks and block-related UI.
  *
- * Usage:
- *   import type { BlockProps, BlockSidebarData, BlockColor } from "@/components/block/block-types";
+ * This file defines:
+ * - Block structural concepts (duration, overnight segments)
+ * - Block sidebar support types
+ * - Ephemeral block-scoped subtask models
+ * - Goal selector option shapes
  *
- * For public API consumers, import from the feature folder:
- *   import type { BlockProps, BlockSidebarData } from "@/components/block";
+ * It intentionally re-exports canonical types from @/lib/types where possible,
+ * acting as a thin, domain-aligned facade rather than a parallel type system.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * -----------------------------------------------------------------------------
+ * - Single source of truth for block-specific types.
+ * - No runtime logic.
+ * - UI-facing shapes only (no persistence models).
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "Shared vocabulary for everything that describes a block."
  */
 
 // =============================================================================

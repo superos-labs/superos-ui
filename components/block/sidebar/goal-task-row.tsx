@@ -1,16 +1,44 @@
+/**
+ * =============================================================================
+ * File: goal-task-row.tsx
+ * =============================================================================
+ *
+ * Expandable row used inside the Block sidebar to display
+ * a goal-assigned task.
+ *
+ * Supports:
+ * - Toggle completion
+ * - Inline title editing
+ * - Expand/collapse to show notes and subtasks
+ * - Unassigning the task from the block
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a compact task row optimized for sidebar usage.
+ * - Manage inline title editing UX.
+ * - Manage expanded state interactions (click, ESC, outside click).
+ * - Forward task and subtask mutations via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or persisting task data.
+ * - Computing scheduling or deadline metadata.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "This block contains this specific task. Let me refine it in place."
+ */
+
 "use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  RiCheckLine,
-  RiCloseLine,
-} from "@remixicon/react";
+import { RiCheckLine, RiCloseLine } from "@remixicon/react";
 import type { ScheduleTask } from "@/lib/unified-schedule";
-import {
-  SubtaskRow,
-  InlineSubtaskCreator,
-} from "@/components/ui";
+import { SubtaskRow, InlineSubtaskCreator } from "@/components/ui";
 
 // =============================================================================
 // Expanded Goal Task Detail
@@ -34,7 +62,7 @@ function ExpandedGoalTaskDetail({
   onDeleteSubtask,
 }: ExpandedGoalTaskDetailProps) {
   const [descriptionValue, setDescriptionValue] = React.useState(
-    task.description ?? ""
+    task.description ?? "",
   );
 
   // Sync description when task changes externally
@@ -213,7 +241,7 @@ export function BlockGoalTaskRow({
         className={cn(
           "group relative flex items-center gap-2.5 rounded-lg py-2 px-2 transition-all",
           !isExpanded && "hover:bg-muted/60",
-          onExpand && "cursor-pointer"
+          onExpand && "cursor-pointer",
         )}
         onClick={handleRowClick}
       >
@@ -228,7 +256,7 @@ export function BlockGoalTaskRow({
             "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
             task.completed
               ? "bg-primary text-primary-foreground"
-              : "border border-border bg-background hover:bg-muted"
+              : "border border-border bg-background hover:bg-muted",
           )}
         >
           {task.completed && <RiCheckLine className="size-3" />}
@@ -246,7 +274,7 @@ export function BlockGoalTaskRow({
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex-1 min-w-0 bg-transparent text-sm outline-none",
-              task.completed ? "text-muted-foreground" : "text-foreground"
+              task.completed ? "text-muted-foreground" : "text-foreground",
             )}
           />
         ) : (
@@ -260,7 +288,7 @@ export function BlockGoalTaskRow({
                 : "text-foreground",
               isExpanded &&
                 onUpdateTask &&
-                "cursor-text hover:bg-muted/60 rounded px-1 -mx-1"
+                "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",
             )}
           >
             {task.label}

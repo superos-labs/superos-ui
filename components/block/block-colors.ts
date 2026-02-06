@@ -1,11 +1,38 @@
+/**
+ * =============================================================================
+ * File: block-colors.ts
+ * =============================================================================
+ *
+ * Centralized color token mapping for calendar blocks.
+ *
+ * This file defines:
+ * - The BlockColor type (alias of GoalColor)
+ * - Muted styling for essential blocks
+ * - A comprehensive map of color → Tailwind class tokens for:
+ *   - Normal blocks
+ *   - Outlined blocks
+ *   - Completed blocks
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Provide a single source of truth for block color styling.
+ * - Normalize how block states (default, outlined, completed) are expressed.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Choosing which color a block should use.
+ * - Applying styles to components.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "A design token dictionary for block visuals."
+ */
+
 import type { GoalColor } from "@/lib/colors";
 
-/**
- * BlockColor is an alias for GoalColor.
- * Both names refer to the same color palette - use whichever fits your context:
- * - GoalColor: When working with goals, backlog items, or semantic meaning
- * - BlockColor: When working with calendar blocks or visual styling
- */
 export type BlockColor = GoalColor;
 
 /**

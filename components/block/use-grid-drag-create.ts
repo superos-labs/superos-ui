@@ -1,3 +1,32 @@
+/**
+ * =============================================================================
+ * File: use-grid-drag-create.ts
+ * =============================================================================
+ *
+ * Interaction hook for creating new blocks by dragging directly on the calendar grid.
+ *
+ * Responsibilities:
+ * - Track pointer drag from an empty grid cell
+ * - Compute start time and duration from drag distance
+ * - Provide live preview dimensions during drag
+ * - Emit final creation intent on pointer release
+ *
+ * This hook is the creation counterpart to:
+ * - useBlockDrag   → moving / duplicating existing blocks
+ * - useBlockResize → resizing existing blocks
+ *
+ * It contains no rendering logic.
+ * It owns only transient interaction state.
+ *
+ * ---------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * ---------------------------------------------------------------------------
+ * - Start time always snaps to standard interval (e.g. 15m)
+ * - Duration can become fine-grained (1m) when Shift is held
+ * - Creation supports overnight blocks (duration may exceed 1440m)
+ * - Threshold-based activation avoids accidental drags
+ */
+
 "use client";
 
 import * as React from "react";
@@ -101,7 +130,8 @@ export function useGridDragCreate({
   }, [isDragging]);
 
   const snapToInterval = React.useCallback(
-    (minutes: number, interval: number = snapInterval) => Math.round(minutes / interval) * interval,
+    (minutes: number, interval: number = snapInterval) =>
+      Math.round(minutes / interval) * interval,
     [snapInterval],
   );
 
@@ -154,21 +184,26 @@ export function useGridDragCreate({
 
       // Use fine-grained interval for duration when Shift is held
       // Note: Start time always uses standard interval for usability
-      const durationInterval = isShiftHeldRef.current ? FINE_GRAIN_INTERVAL : snapInterval;
+      const durationInterval = isShiftHeldRef.current
+        ? FINE_GRAIN_INTERVAL
+        : snapInterval;
 
       // Calculate minutes delta and snap (for end position calculation)
       const deltaMinutes = deltaY / pixelsPerMinute;
-      const currentMinutes = snapToInterval(drag.anchorMinutes + deltaMinutes, durationInterval);
+      const currentMinutes = snapToInterval(
+        drag.anchorMinutes + deltaMinutes,
+        durationInterval,
+      );
 
       // Allow extending past midnight for overnight blocks
       // Start time must be within day (0-1440), but duration can extend past
       const clampedStart = Math.max(0, Math.min(1440, drag.anchorMinutes));
-      
+
       // For downward drags (positive delta), allow going past 1440
       // For upward drags (negative delta), clamp end to anchor
       let startMinutes: number;
       let endMinutes: number;
-      
+
       if (currentMinutes >= drag.anchorMinutes) {
         // Dragging downward
         startMinutes = clampedStart;
@@ -176,7 +211,10 @@ export function useGridDragCreate({
         endMinutes = Math.max(currentMinutes, drag.anchorMinutes);
       } else {
         // Dragging upward - start time snaps to standard interval, but end position uses duration interval
-        startMinutes = Math.max(0, snapToInterval(currentMinutes, snapInterval));
+        startMinutes = Math.max(
+          0,
+          snapToInterval(currentMinutes, snapInterval),
+        );
         endMinutes = drag.anchorMinutes;
       }
 
@@ -190,7 +228,14 @@ export function useGridDragCreate({
         durationMinutes,
       });
     },
-    [pixelsPerMinute, snapInterval, snapToInterval, dragThreshold, minDuration, maxDuration],
+    [
+      pixelsPerMinute,
+      snapInterval,
+      snapToInterval,
+      dragThreshold,
+      minDuration,
+      maxDuration,
+    ],
   );
 
   const handlePointerUp = React.useCallback(
@@ -210,7 +255,11 @@ export function useGridDragCreate({
         preview &&
         preview.durationMinutes >= minDuration
       ) {
-        onCreate?.(preview.dayIndex, preview.startMinutes, preview.durationMinutes);
+        onCreate?.(
+          preview.dayIndex,
+          preview.startMinutes,
+          preview.durationMinutes,
+        );
       }
 
       // Reset state

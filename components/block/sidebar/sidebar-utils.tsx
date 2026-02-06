@@ -1,3 +1,35 @@
+/**
+ * =============================================================================
+ * File: sidebar-utils.ts
+ * =============================================================================
+ *
+ * Shared types and utility helpers for the Block sidebar.
+ *
+ * This file defines:
+ * - The BlockSidebarData shape used to render and edit block details
+ * - Formatting helpers for date, time, and focus duration
+ * - Parsing helpers for user-entered focus time
+ * - A small auto-resizing textarea primitive
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Describe the data model consumed by the block sidebar UI.
+ * - Provide pure formatting / parsing helpers.
+ * - Provide tiny presentational primitives (e.g. auto-resize textarea).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Performing side effects or persistence.
+ * - Owning business rules about blocks or scheduling.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "A thin utility layer that shapes raw block data into display-ready values."
+ */
+
 "use client";
 
 import * as React from "react";

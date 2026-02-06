@@ -1,3 +1,40 @@
+/**
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public API surface for the Block component family.
+ *
+ * This barrel file re-exports all primitives, wrappers, hooks,
+ * and sidebar components used to render and manipulate calendar blocks.
+ *
+ * The Block system is responsible for:
+ * - Visual block rendering
+ * - Dragging, resizing, and grid-based creation
+ * - Block sidebar editing (date, time, notes, tasks, focus, sync)
+ *
+ * It does NOT own:
+ * - Scheduling persistence
+ * - Domain business rules
+ * - Data fetching or mutations
+ *
+ * -----------------------------------------------------------------------------
+ * SUBSYSTEMS
+ * -----------------------------------------------------------------------------
+ * - Block (visual primitive)
+ * - BlockSidebar (editing surface)
+ * - DraggableBlockWrapper / ResizableBlockWrapper
+ * - useBlockDrag / useBlockResize / useGridDragCreate
+ * - Shared block types and color tokens
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * -----------------------------------------------------------------------------
+ * - Barrel exports define the stable public contract.
+ * - Internal file structure can change without breaking consumers.
+ * - Hooks expose mechanics, components expose experience.
+ */
+
 // Public API for the Block component family
 
 // Shared types (re-exported from lib/types for convenience)

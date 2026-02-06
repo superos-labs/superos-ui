@@ -1,3 +1,28 @@
+/**
+ * =============================================================================
+ * File: resizable-block-wrapper.tsx
+ * =============================================================================
+ *
+ * Wrapper that adds vertical resize behavior to calendar blocks.
+ *
+ * This component:
+ * - Renders invisible top/bottom resize handles
+ * - Translates pointer movement into time deltas
+ * - Emits updated start + duration values via callbacks
+ *
+ * It does NOT render block visuals.
+ * It only augments its children with resize interaction.
+ *
+ * All resizing math and snapping logic lives in `useBlockResize`.
+ *
+ * ---------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * ---------------------------------------------------------------------------
+ * - Visual components stay dumb.
+ * - Interaction mechanics live in hooks.
+ * - Wrappers compose behavior without owning layout.
+ */
+
 "use client";
 
 import * as React from "react";

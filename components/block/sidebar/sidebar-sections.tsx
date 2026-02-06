@@ -1,3 +1,37 @@
+/**
+ * =============================================================================
+ * File: sidebar-sections.tsx
+ * =============================================================================
+ *
+ * Reusable building blocks for the Block sidebar UI.
+ *
+ * This file defines a collection of small, composable sidebar sections and
+ * controls used inside the block sidebar, including:
+ * - Section header wrapper
+ * - Focus time display + inline editing
+ * - Inline task creation for goal blocks
+ * - Collapsible list of available goal tasks
+ * - Goal selector dropdown for unassigned blocks
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Provide consistent layout and visual structure for sidebar sections.
+ * - Encapsulate lightweight interaction logic (inline edit, expand/collapse).
+ * - Emit user intent via callbacks (no persistence).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or mutating domain data.
+ * - Managing block selection or sidebar visibility.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "Small focused controls that let me refine what this block represents."
+ */
+
 "use client";
 
 import * as React from "react";
@@ -118,7 +152,7 @@ export function FocusTimeSection({
             placeholder="e.g., 90 or 1h 30m"
             className={cn(
               "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-              "outline-none focus:bg-muted"
+              "outline-none focus:bg-muted",
             )}
           />
           <span className="text-xs text-muted-foreground">min</span>
@@ -131,7 +165,7 @@ export function FocusTimeSection({
             "group flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors",
             onFocusedMinutesChange
               ? "hover:bg-muted/60 cursor-pointer"
-              : "cursor-default"
+              : "cursor-default",
           )}
         >
           <span className="text-sm font-medium tabular-nums text-foreground">
@@ -154,7 +188,9 @@ interface InlineBlockTaskCreatorProps {
   onSave: (label: string) => void;
 }
 
-export function InlineBlockTaskCreator({ onSave }: InlineBlockTaskCreatorProps) {
+export function InlineBlockTaskCreator({
+  onSave,
+}: InlineBlockTaskCreatorProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [value, setValue] = React.useState("");
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -232,7 +268,10 @@ interface AvailableTasksListProps {
   onAssign: (taskId: string) => void;
 }
 
-export function AvailableTasksList({ tasks, onAssign }: AvailableTasksListProps) {
+export function AvailableTasksList({
+  tasks,
+  onAssign,
+}: AvailableTasksListProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   if (tasks.length === 0) return null;
@@ -247,7 +286,7 @@ export function AvailableTasksList({ tasks, onAssign }: AvailableTasksListProps)
           <RiArrowDownSLine
             className={cn(
               "size-4 text-muted-foreground/50 transition-transform group-hover:text-muted-foreground/70",
-              isExpanded && "rotate-180"
+              isExpanded && "rotate-180",
             )}
           />
         </div>

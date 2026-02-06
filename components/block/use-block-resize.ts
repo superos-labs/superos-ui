@@ -1,3 +1,30 @@
+/**
+ * =============================================================================
+ * File: use-block-resize.ts
+ * =============================================================================
+ *
+ * Low-level hook that powers vertical resizing of calendar blocks.
+ *
+ * Responsibilities:
+ * - Handles top-edge and bottom-edge resizing
+ * - Converts pointer movement into startMinutes and durationMinutes
+ * - Applies snapping, bounds, and fine-grain modifiers
+ * - Tracks Shift key for 1-minute precision resizing
+ *
+ * This hook contains NO rendering logic.
+ * It only provides interaction state and callbacks.
+ *
+ * Higher-level wrappers (e.g. ResizableBlockWrapper) decide how
+ * resize handles are rendered and styled.
+ *
+ * ---------------------------------------------------------------------------
+ * DESIGN PRINCIPLES
+ * ---------------------------------------------------------------------------
+ * - Pointer math lives in hooks, not components.
+ * - Resizing behavior is deterministic and side-effect free.
+ * - Visual behavior is derived from returned state.
+ */
+
 "use client";
 
 import * as React from "react";
@@ -50,7 +77,7 @@ export function useBlockResize({
 
   const startY = React.useRef(0);
   const startValues = React.useRef({ start: 0, duration: 0 });
-  
+
   // Track Shift key state for fine-grained resizing (1-minute precision)
   const isShiftHeldRef = React.useRef(false);
 
@@ -116,9 +143,11 @@ export function useBlockResize({
 
       const deltaY = e.clientY - startY.current;
       const deltaMinutes = deltaY / pixelsPerMinute;
-      
+
       // Use fine-grained interval when Shift is held
-      const effectiveInterval = isShiftHeldRef.current ? FINE_GRAIN_INTERVAL : snapInterval;
+      const effectiveInterval = isShiftHeldRef.current
+        ? FINE_GRAIN_INTERVAL
+        : snapInterval;
 
       let newStart = startValues.current.start;
       let newDuration = startValues.current.duration;
@@ -140,7 +169,10 @@ export function useBlockResize({
       } else {
         // Dragging bottom edge: adjust duration only
         const proposedDuration = startValues.current.duration + deltaMinutes;
-        newDuration = Math.max(minDuration, snapToInterval(proposedDuration, effectiveInterval));
+        newDuration = Math.max(
+          minDuration,
+          snapToInterval(proposedDuration, effectiveInterval),
+        );
         // Clamp to maximum duration (supports overnight blocks up to ~48 hours)
         newDuration = Math.min(newDuration, maxDuration);
       }
