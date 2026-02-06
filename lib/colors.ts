@@ -1,6 +1,41 @@
 /**
- * Centralized color palette for goals and blocks.
- * Single source of truth used by: Backlog, Calendar, Block, BlockSidebar
+ * =============================================================================
+ * File: colors.ts
+ * =============================================================================
+ *
+ * Centralized color system for Goals, Tasks, and Blocks.
+ *
+ * Defines the canonical set of supported semantic colors and provides helpers
+ * for mapping each color to:
+ * - Hex values (for charts, canvas, and non-Tailwind contexts)
+ * - Tailwind text color classes
+ * - Tailwind background color classes (solid and soft)
+ *
+ * Acts as a single source of truth for color usage across the app.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Declare the allowed goal color tokens.
+ * - Map color tokens to hex values.
+ * - Provide Tailwind class helpers for common UI scenarios.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Color keys align with Tailwind palette names.
+ * - Keep palette changes centralized here to avoid visual drift.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GOAL_COLORS
+ * - GoalColor
+ * - GOAL_COLOR_HEX
+ * - getHexColor
+ * - getIconColorClass
+ * - getIconBgClass
+ * - getIconBgSoftClass
  */
 
 export const GOAL_COLORS = [

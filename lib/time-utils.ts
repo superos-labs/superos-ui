@@ -1,8 +1,43 @@
 /**
+ * =============================================================================
+ * File: time-utils.ts
+ * =============================================================================
+ *
  * Shared time formatting and parsing utilities.
  *
- * Consolidates time-related functions previously duplicated across
- * multiple backlog components.
+ * Centralizes common helpers for converting between minutes, strings, and
+ * human-readable representations used across calendar, backlog, essentials,
+ * and focus timer surfaces.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Provide day label constants.
+ * - Format minutes into 12-hour time strings.
+ * - Parse user-entered time strings into minutes.
+ * - Format day sets and time ranges for display.
+ * - Format elapsed milliseconds for timers.
+ * - Generate concise schedule summaries for essentials.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Favors tolerant parsing for user input.
+ * - Output strings are optimized for compact UI display.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DAY_LABELS
+ * - DAY_FULL_LABELS
+ * - formatTime
+ * - formatTimeShort
+ * - parseTime
+ * - formatDays
+ * - formatTimeRange
+ * - formatElapsedMs
+ * - formatElapsedMsCompact
+ * - formatScheduleSummary
  */
 
 import type { EssentialSlot } from "@/lib/essentials";

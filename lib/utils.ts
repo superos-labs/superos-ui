@@ -1,3 +1,34 @@
+/**
+ * =============================================================================
+ * File: utils.ts
+ * =============================================================================
+ *
+ * Small, shared utility helpers.
+ *
+ * Includes:
+ * - Class name composition helper (clsx + tailwind-merge).
+ * - Hour formatting helpers for analytics and UI display.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Merge conditional Tailwind class names safely.
+ * - Format numeric hour values for human-readable display.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Keep this file minimal and generic.
+ * - Prefer colocating domain-specific utilities near their features.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - cn
+ * - formatHours
+ * - formatHoursWithUnit
+ */
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

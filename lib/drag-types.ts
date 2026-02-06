@@ -1,6 +1,37 @@
 /**
- * Shared types for cross-component drag-and-drop.
- * Used by: Backlog (drag source), Calendar (drop target), DragContext
+ * =============================================================================
+ * File: drag-types.ts
+ * =============================================================================
+ *
+ * Shared drag-and-drop type definitions and helpers for calendar interactions.
+ *
+ * Describes the shape of items that can be dragged from backlog, deadline trays,
+ * and external calendars, as well as how and where they can be dropped.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define DragItem and DropPosition data contracts.
+ * - Enumerate supported drop target types.
+ * - Provide small helpers for default duration, title, and color resolution.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - DragItem is intentionally permissive; only fields relevant to the given
+ *   item type are populated.
+ * - External all-day events carry provider metadata and use custom hex colors.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DragItem
+ * - DropTarget
+ * - DropPosition
+ * - ADAPTIVE_DROP_MIN_GAP
+ * - getDefaultDuration
+ * - getDragItemTitle
+ * - getDragItemColor
  */
 
 import type { GoalColor } from "./colors";

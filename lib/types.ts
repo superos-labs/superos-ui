@@ -1,6 +1,36 @@
 /**
- * Shared types used across the application.
- * Single source of truth for cross-cutting type definitions.
+ * =============================================================================
+ * File: types.ts
+ * =============================================================================
+ *
+ * Shared cross-cutting type definitions.
+ *
+ * Provides small, foundational types that are reused across multiple
+ * domains such as calendar blocks, goals, life areas, and UI components.
+ *
+ * Acts as a single source of truth for lightweight, app-wide contracts.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define block-related enums/unions.
+ * - Define standard icon component typing.
+ * - Define goal and life-area related interfaces.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Keep this file focused on broadly shared primitives.
+ * - Avoid feature-specific or domain-heavy types here.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - BlockType
+ * - BlockStatus
+ * - IconComponent
+ * - LifeArea
+ * - GoalIconOption
  */
 
 import type React from "react";
