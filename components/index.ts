@@ -1,6 +1,46 @@
-// =============================================================================
-// Public API for the SuperOS UI component library
-// =============================================================================
+/**
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public entry point for the SuperOS UI component library.
+ *
+ * This file defines the stable, supported API surface exposed to consumers
+ * of the SuperOS UI layer. It aggregates and re-exports core components,
+ * hooks, utilities, shared types, and UI primitives in a structured,
+ * discoverable way.
+ *
+ * -----------------------------------------------------------------------------
+ * STRUCTURE
+ * -----------------------------------------------------------------------------
+ * Exports are intentionally grouped by domain to reflect product concepts:
+ * - Core product components (Calendar, Backlog, Block, Focus, Goals, Shell)
+ * - Hooks and utilities tied to those domains
+ * - Shared domain types sourced from a single canonical location
+ * - Cross-cutting systems (drag and drop)
+ * - Reusable UI primitives (layout, forms, overlays, mobile)
+ * - Settings-related components
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Acts as a “barrel file” to simplify imports and enforce consistency.
+ * - Serves as documentation for the component architecture and boundaries.
+ * - Only exports intentionally public components and types.
+ * - Internal or experimental modules should not be surfaced here.
+ *
+ * -----------------------------------------------------------------------------
+ * CONSUMPTION GUIDELINES
+ * -----------------------------------------------------------------------------
+ * - App code and external consumers should import exclusively from this file.
+ * - Direct imports from subfolders are discouraged unless explicitly intended.
+ *
+ * -----------------------------------------------------------------------------
+ * NO RUNTIME LOGIC
+ * -----------------------------------------------------------------------------
+ * - This file contains exports only.
+ * - No side effects, state, or execution should be introduced here.
+ */
 
 // -----------------------------------------------------------------------------
 // Core Components
