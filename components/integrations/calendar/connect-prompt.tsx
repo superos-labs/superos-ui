@@ -40,7 +40,6 @@
 
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiLinksLine } from "@remixicon/react";
 import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";

@@ -44,7 +44,6 @@ import {
   RiAddLine,
 } from "@remixicon/react";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui";
-import type { BlockSubtask } from "../block-types";
 import type { BlockSidebarData } from "./sidebar-utils";
 import {
   formatDateDisplay,

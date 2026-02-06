@@ -317,10 +317,6 @@ function MilestoneSection({
     }
   };
 
-  // Count completed tasks
-  const completedCount = tasks.filter((t) => t.completed).length;
-  const totalCount = tasks.length;
-
   return (
     <div className="flex flex-col">
       {/* Milestone header */}

@@ -66,7 +66,7 @@ import {
   RiCloseLine,
 } from "@remixicon/react";
 import { BLOCK_COLORS, BlockGoalTaskRow } from "@/components/block";
-import type { BlockSidebarData, BlockGoalTask } from "@/components/block";
+import type { BlockSidebarData } from "@/components/block";
 import type { ScheduleTask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
 

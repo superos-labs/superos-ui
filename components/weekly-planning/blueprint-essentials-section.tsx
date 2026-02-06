@@ -498,11 +498,6 @@ export function BlueprintEssentialsSection({
   const getTemplate = (essentialId: string) =>
     essentialTemplates.find((t) => t.essentialId === essentialId);
 
-  // Get IDs of already-added essentials (excluding sleep)
-  const addedEssentialIds = essentials
-    .filter((e) => e.id !== "sleep")
-    .map((e) => e.id);
-
   // Also track labels for filtering suggestions (since IDs are generated)
   const addedEssentialLabels = essentials
     .filter((e) => e.id !== "sleep")

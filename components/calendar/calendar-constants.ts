@@ -217,7 +217,7 @@ export function blockStyleToStatus(style: BlockStyle): BlockStatus {
  * Check if a block can be marked complete/incomplete.
  * All blocks can be marked complete.
  */
-export function canMarkComplete(status: BlockStatus | undefined): boolean {
+export function canMarkComplete(_status: BlockStatus | undefined): boolean {
   return true;
 }
 

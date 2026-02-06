@@ -112,7 +112,6 @@ export function WeekView({
   onGoalDeadlineClick,
   onToggleMilestoneComplete,
   onDayHeaderHover,
-  onMarkDayComplete,
   dayStartMinutes,
   dayEndMinutes,
   dayBoundariesEnabled,

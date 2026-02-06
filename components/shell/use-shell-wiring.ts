@@ -136,8 +136,6 @@ export function useShellWiring(props: ShellContentProps) {
     onCreateEssential,
     onDeleteEssential,
     onImportEssentialsToWeek,
-    dayStartMinutes,
-    dayEndMinutes,
     dayBoundariesEnabled,
     onDayBoundariesChange,
     onDayBoundariesEnabledChange,

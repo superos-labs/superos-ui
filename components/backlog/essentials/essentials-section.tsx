@@ -56,7 +56,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RiAddLine,
-  RiArrowDownSLine,
   RiArrowUpSLine,
   RiMoonLine,
 } from "@remixicon/react";

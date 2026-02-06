@@ -44,7 +44,6 @@
 
 import * as React from "react";
 import {
-  canMarkComplete,
   type CalendarEvent,
   type HoverPosition,
 } from "./calendar-types";

@@ -6,7 +6,6 @@ import type {
   CalendarEvent,
   ScheduleGoal,
   ScheduleEssential,
-  ScheduleTask,
 } from "./types";
 
 // ============================================================================

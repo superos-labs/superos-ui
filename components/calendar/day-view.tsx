@@ -91,7 +91,6 @@ export function DayView({
   onExternalDrop,
   externalDragPreview,
   onDayHeaderHover,
-  onMarkDayComplete,
   dayStartMinutes,
   dayEndMinutes,
   dayBoundariesEnabled,

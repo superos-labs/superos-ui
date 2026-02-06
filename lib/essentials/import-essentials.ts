@@ -14,8 +14,6 @@
  */
 
 import type {
-  EssentialTemplate,
-  EssentialSlot,
   ImportEssentialsOptions,
 } from "./types";
 import type { CalendarEvent } from "@/lib/unified-schedule";

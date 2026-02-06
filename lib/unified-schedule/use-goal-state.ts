@@ -4,12 +4,10 @@ import * as React from "react";
 import type { Subtask, Milestone, ScheduleTask, ScheduleGoal } from "./types";
 import {
   updateGoalById,
-  updateTaskById,
   addTaskToGoal,
   removeTaskFromGoal,
   findTaskInGoal,
   addSubtaskToTask,
-  updateSubtaskById,
   removeSubtaskFromTask,
   addMilestoneToGoal,
   updateMilestoneById,

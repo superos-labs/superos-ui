@@ -55,7 +55,6 @@ import {
   RiArrowRightSLine,
   RiMoreFill,
   RiCloseLine,
-  RiCheckLine,
 } from "@remixicon/react";
 import type {
   ScheduleGoal,
@@ -470,10 +469,6 @@ export function GoalDetail({
   // Compute milestone and task counts for collapsible headers
   const milestones = goal.milestones ?? [];
   const tasks = goal.tasks ?? [];
-  const milestoneCount = {
-    completed: milestones.filter((m) => m.completed).length,
-    total: milestones.length,
-  };
   const taskCount = {
     completed: tasks.filter((t) => t.completed).length,
     total: tasks.length,

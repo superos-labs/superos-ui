@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
 import { BottomSheet, FullScreenOverlay } from "@/components/ui";
 import { Calendar } from "@/components/calendar";

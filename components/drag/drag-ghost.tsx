@@ -40,7 +40,6 @@
 
 "use client";
 
-import * as React from "react";
 import { Block } from "@/components/block";
 import {
   getDefaultDuration,

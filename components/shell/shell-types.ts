@@ -44,11 +44,9 @@
 import type {
   CalendarEvent,
   HoverPosition,
-  CalendarEventCallbacks,
 } from "@/components/calendar";
 import type {
   BacklogMode,
-  NewGoalData,
   NewEssentialData,
 } from "@/components/backlog";
 import type {

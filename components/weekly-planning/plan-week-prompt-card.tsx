@@ -38,7 +38,6 @@
 
 "use client";
 
-import * as React from "react";
 import { RiCalendarScheduleLine } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

@@ -41,7 +41,6 @@
 
 "use client";
 
-import * as React from "react";
 import { IntegrationCard } from "./integration-card";
 import { AppCard, APP_ORDER } from "./app-card";
 import { PROVIDER_ORDER } from "@/lib/calendar-sync";

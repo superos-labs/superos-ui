@@ -39,7 +39,6 @@
 
 "use client";
 
-import * as React from "react";
 import { cn, formatHoursWithUnit } from "@/lib/utils";
 import type { GoalStats } from "@/lib/unified-schedule";
 

@@ -48,7 +48,6 @@
 
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { getIconColorClass, getIconBgSoftClass } from "@/lib/colors";
 import type { GoalColor } from "@/lib/colors";

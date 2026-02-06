@@ -42,8 +42,6 @@
  * - Subtask (re-export)
  */
 
-import type { GoalColor } from "@/lib/colors";
-import type { IconComponent } from "@/lib/types";
 import type { ScheduleTask, Milestone } from "@/lib/unified-schedule";
 import type { BacklogItemBase } from "../backlog-types";
 

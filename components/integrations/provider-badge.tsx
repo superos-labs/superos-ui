@@ -35,7 +35,6 @@
 
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { CALENDAR_PROVIDERS } from "@/lib/calendar-sync";
 import type { CalendarProvider } from "@/lib/calendar-sync";

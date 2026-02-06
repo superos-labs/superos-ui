@@ -118,7 +118,7 @@ export function isWeekPlanned(
  * @param isWeekAlreadyPlanned - Whether the week has been planned
  */
 export function isBlockInScope(
-  block: CalendarEvent,
+  _block: CalendarEvent,
   scope: SyncScope,
   isFromBlueprint: boolean = false,
   isWeekAlreadyPlanned: boolean = false

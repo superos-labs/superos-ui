@@ -45,7 +45,6 @@
  * Renders a grid of icon buttons for selection.
  */
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { GoalIconOption } from "@/lib/types";
 

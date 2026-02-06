@@ -46,7 +46,6 @@
 
 import * as React from "react";
 import { getWeekDates } from "@/components/calendar";
-import type { CalendarEvent } from "@/components/calendar";
 import { useCalendarClipboard } from "@/components/calendar";
 import { useUnifiedSchedule, useWeekNavigation } from "@/lib/unified-schedule";
 import type {
@@ -108,7 +107,6 @@ export function useShellState(
     setWeekStartsOn,
     progressMetric,
     setProgressMetric,
-    autoCompleteEssentials,
     calendarZoom,
     setCalendarZoom,
     dayBoundariesEnabled,
@@ -162,7 +160,7 @@ export function useShellState(
   const [selectedEventId, setSelectedEventId] = React.useState<string | null>(
     null,
   );
-  const [selectedGoalId, setSelectedGoalId] = React.useState<string | null>(
+  const [selectedGoalId, _setSelectedGoalId] = React.useState<string | null>(
     null,
   );
 

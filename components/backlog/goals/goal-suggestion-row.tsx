@@ -48,7 +48,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { RiAddLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { LifeArea, GoalIconOption } from "@/lib/types";

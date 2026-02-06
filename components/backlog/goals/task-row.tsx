@@ -67,7 +67,6 @@ import type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
   ScheduleTask,
-  Subtask,
 } from "@/lib/unified-schedule";
 import type { GoalItem } from "./goal-types";
 import { formatScheduledTime, formatDeadlineDate } from "./goal-utils";

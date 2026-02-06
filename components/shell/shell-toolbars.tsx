@@ -48,7 +48,6 @@
 
 "use client";
 
-import * as React from "react";
 import { ShellToolbar } from "@/components/ui/shell";
 import {
   DropdownMenu,
@@ -295,7 +294,6 @@ export function ShellDesktopToolbar({
   isOnboarding,
   isPlanning,
   isBlueprintEditMode,
-  isOnboardingBlueprint,
   showSidebar,
   onToggleSidebar,
   isEssentialsHidden,

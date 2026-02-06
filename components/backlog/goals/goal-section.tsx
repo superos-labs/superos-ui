@@ -49,7 +49,6 @@
 
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiAddLine, RiSparklingLine } from "@remixicon/react";
 import type {

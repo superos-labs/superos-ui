@@ -149,7 +149,6 @@ export function useBlockSidebarHandlers({
   weekDates,
   schedule,
   calendarIntegrations,
-  onToast,
   onEndFocus,
   onClose,
 }: UseBlockSidebarHandlersOptions): UseBlockSidebarHandlersReturn {

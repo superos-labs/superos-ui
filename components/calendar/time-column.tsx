@@ -93,7 +93,6 @@ export function TimeColumn({
   dayStartMinutes,
   dayEndMinutes,
   dayBoundariesEnabled = false,
-  dayBoundariesDisplay = "dimmed",
 }: TimeColumnProps) {
   // Helper to calculate position percentage
   const getTopPercent = (minutes: number): number => {

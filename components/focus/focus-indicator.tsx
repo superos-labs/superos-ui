@@ -42,7 +42,6 @@
 
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
 import { formatElapsedMsCompact } from "@/lib/time-utils";
 import { RiPlayFill, RiPauseFill } from "@remixicon/react";

@@ -49,7 +49,6 @@
  * (WeeklyAnalytics or PlanningBudget depending on mode).
  */
 
-import * as React from "react";
 import { formatWeekRange } from "@/components/calendar";
 import { WeeklyAnalytics, PlanningBudget } from "@/components/weekly-analytics";
 import { BlockSidebar } from "@/components/block";

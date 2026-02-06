@@ -44,7 +44,6 @@
 
 "use client";
 
-import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
 import { Calendar } from "@/components/calendar";
@@ -151,10 +150,8 @@ export function ShellDesktopLayout({
     goalHandlers,
     planningIntegration,
     blueprintHandlers,
-    enhancedCalendarHandlers,
     enhancedToggleTaskComplete,
     enhancedDeleteTask,
-    focus,
     externalDragPreview,
     handleExternalDrop,
     handleDeadlineDrop,
