@@ -1,8 +1,43 @@
 /**
- * Component-level types for the Essentials section of the Backlog.
+ * =============================================================================
+ * File: essential-types.ts
+ * =============================================================================
  *
- * These types are specific to the UI component layer. Core essential types
- * (EssentialSlot, EssentialTemplate, etc.) are in lib/essentials.
+ * Shared type definitions for backlog "Essentials".
+ *
+ * This file defines lightweight UI-facing types used by backlog components
+ * when rendering and creating essential items. It also re-exports core
+ * scheduling types from the domain layer for convenience.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define EssentialItem display shape for backlog UI.
+ * - Define data shape for creating new essentials.
+ * - Re-export essential scheduling domain types.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Containing scheduling logic.
+ * - Defining persistence or storage models.
+ * - Owning validation rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - EssentialItem intentionally does not embed schedule data.
+ *   Scheduling is provided separately via EssentialTemplate.
+ * - Keeps UI types thin and composable.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - EssentialItem
+ * - NewEssentialData
+ * - EssentialSlot (re-export)
+ * - EssentialTemplate (re-export)
+ * - EssentialConfig (re-export)
  */
 
 import type { GoalColor } from "@/lib/colors";

@@ -1,3 +1,56 @@
+/**
+ * =============================================================================
+ * File: task-row.tsx
+ * =============================================================================
+ *
+ * Task row component for displaying and interacting with a single task
+ * within a goal.
+ *
+ * Supports:
+ * - Completion toggle.
+ * - Inline label editing.
+ * - Drag and drop to calendar or other containers.
+ * - Optional scheduled time or deadline pills.
+ * - Expandable detail area with description and subtasks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a compact, interactive representation of a task.
+ * - Manage local UI state (hover, inline editing, expansion).
+ * - Bridge task-level interactions upward via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting tasks or subtasks.
+ * - Computing scheduling or deadline metadata.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - useDraggable / DragProvider
+ * - formatScheduledTime, formatDeadlineDate
+ * - SubtaskRow, InlineSubtaskCreator
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Expanded state is controlled externally; this component mirrors it.
+ * - Dragging is disabled for completed tasks.
+ * - Keyboard shortcuts:
+ *   - Enter: confirm label edit.
+ *   - Escape: cancel edit or collapse.
+ *   - Delete/Backspace (hovered): delete task.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - TaskRow
+ * - TaskRowProps
+ * - SubtaskRow (re-exported for backward compatibility)
+ */
+
 "use client";
 
 import * as React from "react";

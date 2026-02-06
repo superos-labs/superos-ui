@@ -1,7 +1,31 @@
 /**
- * Shared type definitions for the Backlog component family.
- * Goal-specific types are in ./goals/goal-types.ts
- * Essential-specific types are in ./essentials/essential-types.ts
+ * =============================================================================
+ * File: backlog-types.ts
+ * =============================================================================
+ *
+ * Shared type definitions for items rendered in the Backlog.
+ *
+ * Provides foundational interfaces used by both Goals and Essentials,
+ * plus lightweight grouping and display mode primitives.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define the minimal shape of a backlog item.
+ * - Define high-level backlog display modes.
+ * - Define generic grouping structure.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Containing behavior or logic.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - BacklogItemBase
+ * - BacklogMode
+ * - BacklogGroup
  */
 
 import type { GoalColor } from "@/lib/colors";

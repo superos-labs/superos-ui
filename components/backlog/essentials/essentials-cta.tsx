@@ -1,3 +1,55 @@
+/**
+ * =============================================================================
+ * File: essentials-cta.tsx
+ * =============================================================================
+ *
+ * Call-to-action surface for defining backlog "Essentials" during onboarding
+ * or setup flows.
+ *
+ * This component orchestrates the entire essentials configuration experience:
+ * - Sleep configuration (special case).
+ * - Display of already-added essentials.
+ * - Inline editing of suggested essentials.
+ * - Creation of custom essentials.
+ *
+ * It coordinates UI state and delegates persistence upward via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render header, list, and footer actions.
+ * - Manage which row is expanded or being edited.
+ * - Sort and filter essentials and suggestions.
+ * - Bridge child editors to parent handlers.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting essentials or schedules.
+ * - Defining suggestion data.
+ * - Performing domain validation.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - EssentialRow / SleepRow
+ * - InlineEssentialCreator
+ * - PlaceholderRow (suggestion-editor)
+ * - SUGGESTED_ESSENTIALS
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Progress is defined as sleep configured or at least one essential added.
+ * - Only one suggestion or essential can be edited at a time.
+ * - Sleep row visually emphasized until configured.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - EssentialsCTA
+ */
+
 "use client";
 
 import * as React from "react";
@@ -101,7 +153,7 @@ export function EssentialsCTA({
 
   // Filter out already-added suggestions and sort by time (earliest first)
   const availableSuggestions = SUGGESTED_ESSENTIALS.filter(
-    (s) => !addedEssentialIds.includes(s.id)
+    (s) => !addedEssentialIds.includes(s.id),
   ).sort((a, b) => a.defaultStartMinutes - b.defaultStartMinutes);
 
   // Determine if user has made progress (sleep configured OR essentials added)
@@ -129,7 +181,7 @@ export function EssentialsCTA({
 
   const handleSaveEssential = (
     data: NewEssentialData,
-    slots: EssentialSlot[]
+    slots: EssentialSlot[],
   ) => {
     onAddEssential(data, slots);
     setEditingSuggestionId(null);
@@ -150,7 +202,7 @@ export function EssentialsCTA({
 
   const handleSaveNewEssential = (
     data: NewEssentialData,
-    slots: EssentialSlot[]
+    slots: EssentialSlot[],
   ) => {
     onAddEssential(data, slots);
     setIsCreating(false);
@@ -175,7 +227,7 @@ export function EssentialsCTA({
         <div
           className={cn(
             "rounded-xl transition-colors",
-            !isSleepConfigured && !isSleepExpanded && "bg-muted/20"
+            !isSleepConfigured && !isSleepExpanded && "bg-muted/20",
           )}
         >
           <SleepRow
@@ -248,7 +300,7 @@ export function EssentialsCTA({
             "w-full rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
             hasProgress
               ? "bg-foreground text-background hover:bg-foreground/90"
-              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+              : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
           <span className="inline-block transition-opacity duration-150">

@@ -1,3 +1,59 @@
+/**
+ * =============================================================================
+ * File: essential-row.tsx
+ * =============================================================================
+ *
+ * Row-level UI components for configuring backlog "Essentials" schedules.
+ *
+ * Provides two closely related interactive rows:
+ * - EssentialRow: generic essential activity with selectable days and one or
+ *   more time ranges.
+ * - SleepRow: special-case essential for sleep visualization using wake-up and
+ *   wind-down times.
+ *
+ * These components are purely presentational + interaction-oriented:
+ * - They own transient UI state for editing.
+ * - They do NOT persist data.
+ * - They delegate all saving via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render collapsed and expanded row states.
+ * - Display current schedule summary when collapsed.
+ * - Provide inline editors for days and time ranges.
+ * - Auto-save EssentialRow changes when collapsing.
+ * - Allow optional deletion of an essential.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or storing templates.
+ * - Deciding which essentials exist.
+ * - Validating business rules beyond basic UI constraints.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - useActivitySchedule (lib/essentials): manages editable schedule state.
+ * - TimeInput: minute-based time picker.
+ * - time-utils: formatting and day labels.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Desktop-first, compact rows optimized for dense backlog lists.
+ * - Expansion uses CSS grid row animation instead of conditional mounting.
+ * - SleepRow intentionally diverges from generic schedule editing to support
+ *   visualization-specific semantics.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - EssentialRow
+ * - SleepRow
+ */
+
 "use client";
 
 import * as React from "react";
@@ -222,7 +278,9 @@ export function EssentialRow({
                       />
                       {canDelete && (
                         <button
-                          onClick={() => scheduleState.deleteTimeRange(range.id)}
+                          onClick={() =>
+                            scheduleState.deleteTimeRange(range.id)
+                          }
                           className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
                           title="Remove time range"
                         >

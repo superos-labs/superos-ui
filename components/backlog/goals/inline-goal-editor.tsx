@@ -1,15 +1,49 @@
-"use client";
-
 /**
- * InlineGoalEditor - Inline editor for creating/editing goals during onboarding.
+ * =============================================================================
+ * File: inline-goal-editor.tsx
+ * =============================================================================
  *
- * Features:
- * - Editable label input
- * - Icon picker (popover)
- * - Color picker (popover)
- * - Life area dropdown
- * - Add/Done/Delete/Cancel actions
+ * Inline editor for creating and editing Goals.
+ *
+ * Used by onboarding flows, inspiration pickers, and backlog goal rows.
+ * Supports editing core goal metadata:
+ * - Label
+ * - Icon
+ * - Color
+ * - Life area
+ * - Optional target date (deadline)
+ *
+ * This component manages only form state and delegates persistence upward.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render editable goal fields.
+ * - Provide icon, color, life area, and date pickers.
+ * - Handle confirm, cancel, and optional delete actions.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goals.
+ * - Generating IDs.
+ * - Validating business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Auto-focuses and selects the label input on mount.
+ * - Uses a constrained color palette for visual consistency.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - InlineGoalEditor
+ * - InlineGoalEditorProps
+ * - InlineGoalEditorData
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -112,16 +146,16 @@ export function InlineGoalEditor({
   // Note: icon state needs lazy initializer to avoid React treating the function as an initializer
   const [label, setLabel] = React.useState(initialData?.label ?? "");
   const [icon, setIcon] = React.useState<IconComponent>(
-    () => initialData?.icon ?? fallbackIcon
+    () => initialData?.icon ?? fallbackIcon,
   );
   const [color, setColor] = React.useState<GoalColor>(
-    initialData?.color ?? fallbackColor
+    initialData?.color ?? fallbackColor,
   );
   const [lifeAreaId, setLifeAreaId] = React.useState(
-    initialData?.lifeAreaId ?? fallbackLifeAreaId
+    initialData?.lifeAreaId ?? fallbackLifeAreaId,
   );
   const [deadline, setDeadline] = React.useState<string | undefined>(
-    initialData?.deadline
+    initialData?.deadline,
   );
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -177,7 +211,7 @@ export function InlineGoalEditor({
                 className={cn(
                   "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
                   getIconBgSoftClass(color),
-                  "hover:opacity-80"
+                  "hover:opacity-80",
                 )}
                 title="Change icon and color"
               >
@@ -200,7 +234,7 @@ export function InlineGoalEditor({
                         "flex size-7 items-center justify-center rounded-md transition-colors",
                         isSelected
                           ? "bg-foreground text-background"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                       title={iconOption.label}
                     >
@@ -219,7 +253,7 @@ export function InlineGoalEditor({
                     className={cn(
                       "flex size-6 items-center justify-center rounded-md transition-all",
                       color === c &&
-                        "ring-2 ring-foreground ring-offset-1 ring-offset-background"
+                        "ring-2 ring-foreground ring-offset-1 ring-offset-background",
                     )}
                     title={c}
                   >
@@ -243,7 +277,7 @@ export function InlineGoalEditor({
             className={cn(
               "flex-1 bg-transparent text-sm font-medium text-foreground",
               "placeholder:text-muted-foreground/50",
-              "focus:outline-none"
+              "focus:outline-none",
             )}
           />
 
@@ -271,7 +305,7 @@ export function InlineGoalEditor({
                         <AreaIcon
                           className={cn(
                             "size-3.5",
-                            getIconColorClass(currentLifeArea.color)
+                            getIconColorClass(currentLifeArea.color),
                           )}
                         />
                       );
@@ -327,7 +361,7 @@ export function InlineGoalEditor({
                 "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
                 label.trim()
                   ? "bg-foreground text-background hover:bg-foreground/90"
-                  : "cursor-not-allowed bg-muted text-muted-foreground"
+                  : "cursor-not-allowed bg-muted text-muted-foreground",
               )}
             >
               Add
@@ -341,7 +375,7 @@ export function InlineGoalEditor({
                   "flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
                   label.trim()
                     ? "bg-foreground text-background hover:bg-foreground/90"
-                    : "cursor-not-allowed bg-muted text-muted-foreground"
+                    : "cursor-not-allowed bg-muted text-muted-foreground",
                 )}
               >
                 Done

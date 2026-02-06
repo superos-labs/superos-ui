@@ -1,9 +1,45 @@
 /**
- * Component-level types for the Goals section of the Backlog.
+ * =============================================================================
+ * File: goal-types.ts
+ * =============================================================================
  *
- * These types are specific to the UI component layer. Core data types
- * (ScheduleGoal, ScheduleTask, Milestone, Subtask) are in lib/unified-schedule.
- * Shared creation types are in lib/goals.
+ * Shared type definitions for backlog Goals.
+ *
+ * Defines the UI-facing GoalItem shape used by backlog components and re-exports
+ * related goal, life area, and task types from domain modules for convenience.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define GoalItem display type.
+ * - Re-export goal-related domain types.
+ * - Re-export task and milestone types used by goals.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Containing business logic.
+ * - Defining persistence models.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - plannedHours and completedHours are deprecated in favor of derived stats.
+ * - GoalItem remains thin and composable.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalItem
+ * - BacklogItem (deprecated alias)
+ * - NewGoalData (re-export)
+ * - GoalIconOption (re-export)
+ * - InspirationGoal (re-export)
+ * - InspirationCategory (re-export)
+ * - LifeArea (re-export)
+ * - GoalTask (re-export)
+ * - Milestone (re-export)
+ * - Subtask (re-export)
  */
 
 import type { GoalColor } from "@/lib/colors";

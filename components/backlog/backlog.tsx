@@ -1,3 +1,40 @@
+/**
+ * =============================================================================
+ * File: backlog.tsx
+ * =============================================================================
+ *
+ * Backlog composition root for Goals and Essentials.
+ *
+ * This component orchestrates:
+ * - Rendering and layout of Essentials and Goals sections.
+ * - Onboarding-specific behavior (goals first, then essentials/blueprint).
+ * - Wiring of callbacks between higher-level shell state and leaf components.
+ * - Optional drag-and-drop enablement.
+ *
+ * It is intentionally a *composition + wiring* layer.
+ * It does not fetch data and does not own domain state.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compose EssentialsSection and GoalSection.
+ * - Gate visibility based on onboarding step and blueprint edit mode.
+ * - Forward scheduling, deadline, and mutation callbacks.
+ * - Provide animated mount/unmount for major sections.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Computing goal stats.
+ * - Persisting data.
+ * - Managing domain business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * MENTAL MODEL
+ * -----------------------------------------------------------------------------
+ * "Layout and interaction coordinator for backlog experience."
+ */
+
 "use client";
 
 import * as React from "react";
@@ -218,9 +255,7 @@ export function Backlog({
       </AnimatePresence>
 
       {/* Goals Card */}
-      <div
-        className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm"
-      >
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm">
         <div className="scrollbar-hidden flex-1 overflow-y-auto">
           <GoalSection
             title="Goals"

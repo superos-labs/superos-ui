@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: inline-essential-creator.tsx
+ * =============================================================================
+ *
+ * Inline form for creating a new backlog Essential with a default schedule.
+ *
+ * Designed to be embedded inside Essentials lists and CTA flows, this component
+ * provides lightweight controls for:
+ * - Naming the essential.
+ * - Choosing an icon and color.
+ * - Selecting days of the week.
+ * - Defining a single initial time range.
+ *
+ * The component owns only temporary input state and delegates persistence
+ * upward via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Collect essential display metadata (label, icon, color).
+ * - Collect initial schedule (days, start time, duration).
+ * - Handle basic keyboard shortcuts (Enter = save, Escape = cancel).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Generating permanent IDs.
+ * - Validating business rules.
+ * - Persisting data.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Auto-focuses the name input on mount.
+ * - Emits a single EssentialSlot as the starting schedule.
+ * - Meant for quick, low-friction creation.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - InlineEssentialCreator
+ */
+
 "use client";
 
 import * as React from "react";

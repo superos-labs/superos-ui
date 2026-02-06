@@ -1,5 +1,40 @@
 /**
- * Essentials subfolder - components for essential management in the Backlog.
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public export surface for backlog Essentials components and types.
+ *
+ * Acts as the single entry point for importing Essentials-related UI primitives,
+ * orchestration components, and shared types.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export core Essentials components.
+ * - Re-export associated prop types.
+ * - Re-export shared Essentials domain/UI types.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Containing logic.
+ * - Defining behavior or styling.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Consumers should import from this file instead of deep paths.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - EssentialsSection
+ * - EssentialRow, SleepRow
+ * - InlineEssentialCreator
+ * - EssentialsCTA
+ * - EssentialItem, NewEssentialData
+ * - EssentialSlot, EssentialTemplate, EssentialConfig
  */
 
 // =============================================================================

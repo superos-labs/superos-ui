@@ -1,3 +1,43 @@
+/**
+ * =============================================================================
+ * File: backlog-example.tsx
+ * =============================================================================
+ *
+ * Playground example for the Backlog component.
+ *
+ * Provides a fully interactive, in-memory demo of:
+ * - Essentials
+ * - Goals
+ * - Tasks and subtasks
+ *
+ * Intended for local development, debugging, and UI iteration.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define mock essentials and goals.
+ * - Wire minimal state management for tasks and subtasks.
+ * - Expose knobs to toggle basic presentation flags.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persistence.
+ * - Production data shaping.
+ * - Business logic validation.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses crypto.randomUUID for temporary IDs.
+ * - All state lives locally in this file.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - BacklogExample
+ */
+
 "use client";
 
 import * as React from "react";

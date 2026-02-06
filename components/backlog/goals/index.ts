@@ -1,5 +1,55 @@
 /**
- * Goals subfolder - components for goal management in the Backlog.
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
+ *
+ * Public export surface for backlog Goals components, types, and utilities.
+ *
+ * Acts as the single entry point for importing goal-related UI primitives,
+ * onboarding components, and supporting helpers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export goal section and row components.
+ * - Re-export inline editors and creators.
+ * - Re-export onboarding goal components.
+ * - Re-export goal-related types and utilities.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Containing logic.
+ * - Defining behavior.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Consumers should import from this file instead of deep paths.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * Components:
+ * - GoalSection
+ * - GoalItemRow
+ * - GoalInspirationGallery
+ * - TaskRow, SubtaskRow
+ * - InlineTaskCreator, InlineGoalCreator
+ * - OnboardingGoalsCard
+ * - InlineGoalEditor
+ * - GoalSuggestionRow
+ * - AddedGoalRow
+ *
+ * Types:
+ * - GoalItem, BacklogItem
+ * - GoalTask, Milestone, Subtask
+ * - NewGoalData, GoalIconOption
+ * - InspirationGoal, InspirationCategory, LifeArea
+ *
+ * Utilities:
+ * - formatScheduledTime
+ * - formatDeadlineDate
  */
 
 // =============================================================================

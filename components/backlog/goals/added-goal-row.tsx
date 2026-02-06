@@ -1,11 +1,52 @@
-"use client";
-
 /**
- * AddedGoalRow - Row for goals that have been added during onboarding.
+ * =============================================================================
+ * File: added-goal-row.tsx
+ * =============================================================================
  *
- * Displays the goal with its icon/color and allows clicking to edit.
- * When editing, expands into the inline editor.
+ * Row component for displaying and editing an already-added Goal in backlog
+ * and onboarding goal lists.
+ *
+ * Renders either:
+ * - A compact, clickable summary row.
+ * - An InlineGoalEditor when in editing mode.
+ *
+ * This component owns no persistence logic and simply bridges user actions
+ * to parent handlers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Display goal label, icon, color, life area, and optional deadline.
+ * - Toggle between display and inline edit modes.
+ * - Forward save, cancel, and delete events.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Validating goal data.
+ * - Persisting changes.
+ * - Fetching life areas or icons.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - InlineGoalEditor
+ * - date-fns (for deadline formatting)
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Clicking the row enters edit mode.
+ * - Deadline formatting is defensive against invalid dates.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - AddedGoalRow
+ * - AddedGoalRowProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -104,14 +145,14 @@ export function AddedGoalRow({
       onClick={onStartEdit}
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-        "hover:bg-muted/60"
+        "hover:bg-muted/60",
       )}
     >
       {/* Icon with colored background */}
       <div
         className={cn(
           "flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
-          getIconBgSoftClass(goal.color)
+          getIconBgSoftClass(goal.color),
         )}
       >
         <IconComponent

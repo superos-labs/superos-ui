@@ -1,3 +1,55 @@
+/**
+ * =============================================================================
+ * File: goal-item-row.tsx
+ * =============================================================================
+ *
+ * Row component for rendering a Goal and its associated Tasks inside the backlog.
+ *
+ * Supports:
+ * - Displaying goal metadata (icon, label, current milestone).
+ * - Optional navigation to goal detail.
+ * - Optional drag-and-drop of the goal.
+ * - Inline rendering and editing of tasks.
+ *
+ * This component acts as a composition layer that coordinates multiple child
+ * primitives but does not own domain state.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render goal row and optional task list.
+ * - Manage which task row is expanded.
+ * - Bridge task and subtask actions to parent callbacks.
+ * - Integrate with drag system when enabled.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goals or tasks.
+ * - Fetching schedule or deadline data.
+ * - Enforcing business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - TaskRow
+ * - InlineTaskCreator
+ * - useDraggable / drag context
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - When milestones are enabled, only tasks for the current milestone are shown.
+ * - Tasks can be visually prioritized by weekly focus (This Week).
+ * - Chevron navigation is isolated from drag interactions.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalItemRow
+ * - GoalItemRowProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -170,9 +222,10 @@ export function GoalItemRow({
             const allTasks = item.tasks ?? [];
 
             // When milestones are enabled, filter to only show tasks for the current milestone
-            const tasks = milestonesEnabled && currentMilestone
-              ? allTasks.filter((t) => t.milestoneId === currentMilestone.id)
-              : allTasks;
+            const tasks =
+              milestonesEnabled && currentMilestone
+                ? allTasks.filter((t) => t.milestoneId === currentMilestone.id)
+                : allTasks;
 
             // Partition tasks into "This Week" and "Other"
             const thisWeekTasks = currentWeekStart

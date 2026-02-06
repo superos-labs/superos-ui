@@ -1,18 +1,55 @@
-"use client";
-
 /**
- * OnboardingGoalsCard - Centered goals-only card for the first onboarding step.
+ * =============================================================================
+ * File: onboarding-goals-card.tsx
+ * =============================================================================
  *
- * This component provides a focused goal-setting experience without the calendar
- * visible, reducing cognitive load and making the purpose of the step clear.
+ * Card-based surface for setting initial goals during onboarding.
  *
- * Features:
- * - Header with title and description
- * - Added goals section (editable)
- * - Goal suggestions section (placeholder style)
- * - "Add your own" button
- * - Continue button (enabled when ≥1 goal)
+ * Combines:
+ * - Custom goal creation.
+ * - Editing and deleting added goals.
+ * - Adding goals from predefined suggestions.
+ *
+ * Designed as a self-contained orchestration component that coordinates
+ * multiple goal-related primitives.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render onboarding header, content, and footer.
+ * - Track which row/editor is currently active.
+ * - Bridge add, update, and delete actions to parent.
+ * - Enable Continue only after at least one goal exists.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goals.
+ * - Defining suggestion data.
+ * - Validating goal semantics.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - InlineGoalEditor
+ * - GoalSuggestionRow
+ * - AddedGoalRow
+ * - framer-motion
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Suggestions are filtered once added.
+ * - Custom goal entry is placed at the top for visibility.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - OnboardingGoalsCard
+ * - OnboardingGoalsCardProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -79,13 +116,13 @@ export function OnboardingGoalsCard({
 
   // Filter suggestions to exclude already-added ones
   const availableSuggestions = suggestions.filter(
-    (s) => !addedSuggestionIds.has(s.id)
+    (s) => !addedSuggestionIds.has(s.id),
   );
 
   // Handle adding a goal from a suggestion
   const handleAddFromSuggestion = (
     suggestionId: string,
-    data: InlineGoalEditorData
+    data: InlineGoalEditorData,
   ) => {
     onAddGoal(data);
     setAddedSuggestionIds((prev) => new Set(prev).add(suggestionId));
@@ -133,7 +170,7 @@ export function OnboardingGoalsCard({
     <div
       className={cn(
         "flex w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-background shadow-lg",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -232,7 +269,7 @@ export function OnboardingGoalsCard({
             "w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200",
             canContinue
               ? "bg-foreground text-background hover:bg-foreground/90"
-              : "cursor-not-allowed bg-muted text-muted-foreground"
+              : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >
           Continue

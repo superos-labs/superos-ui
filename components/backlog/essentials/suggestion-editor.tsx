@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: suggestion-editor.tsx
+ * =============================================================================
+ *
+ * Inline editor for configuring suggested Essentials before adding them.
+ *
+ * Provides two related surfaces:
+ * - SuggestionEditor: expanded editor allowing day selection and one or more
+ *   time ranges.
+ * - PlaceholderRow: collapsed row that invites the user to start editing.
+ *
+ * Used primarily inside the Essentials CTA flow.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Allow customization of a SuggestedEssential's schedule.
+ * - Convert editor state into EssentialSlot objects.
+ * - Handle add and cancel actions.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting data.
+ * - Deciding which suggestions exist.
+ * - Validating domain constraints.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Defaults are seeded from SuggestedEssential.
+ * - Supports up to three time ranges.
+ * - Animated mount/unmount via framer-motion.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PlaceholderRow
+ * - PlaceholderRowProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -37,7 +79,7 @@ function SuggestionEditor({
   onCancel,
 }: SuggestionEditorProps) {
   const [selectedDays, setSelectedDays] = React.useState<number[]>(
-    suggestion.defaultDays
+    suggestion.defaultDays,
   );
   const [timeRanges, setTimeRanges] = React.useState<TimeRange[]>([
     {
@@ -59,10 +101,10 @@ function SuggestionEditor({
 
   const updateTimeRange = (
     id: string,
-    updates: { startMinutes?: number; durationMinutes?: number }
+    updates: { startMinutes?: number; durationMinutes?: number },
   ) => {
     setTimeRanges((prev) =>
-      prev.map((range) => (range.id === id ? { ...range, ...updates } : range))
+      prev.map((range) => (range.id === id ? { ...range, ...updates } : range)),
     );
   };
 
@@ -106,7 +148,7 @@ function SuggestionEditor({
         icon: suggestion.icon,
         color: suggestion.color,
       },
-      slots
+      slots,
     );
   };
 
@@ -154,7 +196,7 @@ function SuggestionEditor({
                     "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
                     isSelected
                       ? "bg-foreground/20 text-foreground"
-                      : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground"
+                      : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground",
                   )}
                   title={DAY_FULL_LABELS[index]}
                 >
@@ -227,7 +269,7 @@ function SuggestionEditor({
             "w-full rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
             selectedDays.length > 0
               ? "bg-foreground text-background hover:bg-foreground/90"
-              : "cursor-not-allowed bg-muted text-muted-foreground"
+              : "cursor-not-allowed bg-muted text-muted-foreground",
           )}
         >
           Add
@@ -276,7 +318,7 @@ export function PlaceholderRow({
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-        "hover:bg-muted/60"
+        "hover:bg-muted/60",
       )}
     >
       {/* Icon */}
@@ -286,7 +328,7 @@ export function PlaceholderRow({
             "size-4 transition-colors",
             isHovered
               ? getIconColorClass(suggestion.color)
-              : "text-muted-foreground/40"
+              : "text-muted-foreground/40",
           )}
         />
       </div>
@@ -295,7 +337,7 @@ export function PlaceholderRow({
       <span
         className={cn(
           "flex-1 text-sm transition-colors",
-          isHovered ? "text-muted-foreground" : "text-muted-foreground/50"
+          isHovered ? "text-muted-foreground" : "text-muted-foreground/50",
         )}
       >
         {suggestion.label}

@@ -1,3 +1,52 @@
+/**
+ * =============================================================================
+ * File: goal-section.tsx
+ * =============================================================================
+ *
+ * Section component for rendering a list of Goals inside the backlog.
+ *
+ * Provides:
+ * - Section header (title + optional description).
+ * - List of GoalItemRow entries.
+ * - Optional actions for creating goals and browsing inspiration.
+ * - Special behavior when used inside onboarding.
+ *
+ * This component coordinates layout and high-level flow but does not own
+ * domain state.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render goals and pass through task-related callbacks.
+ * - Highlight selected goal.
+ * - Surface creation and inspiration entry points.
+ * - Adapt copy and controls for onboarding mode.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goals or tasks.
+ * - Fetching schedule/deadline data.
+ * - Enforcing business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - GoalItemRow
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Inline task creation is hidden during onboarding.
+ * - Continue button appears only after at least one goal exists.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalSection
+ * - GoalSectionProps
+ */
+
 "use client";
 
 import * as React from "react";

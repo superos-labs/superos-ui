@@ -1,11 +1,50 @@
-"use client";
-
 /**
- * GoalSuggestionRow - Placeholder-style row for goal suggestions during onboarding.
+ * =============================================================================
+ * File: goal-suggestion-row.tsx
+ * =============================================================================
  *
- * When clicked, expands into an inline editor for customizing the goal.
- * Follows the pattern from EssentialsCTA's PlaceholderRow.
+ * Row component for displaying and adding an onboarding goal suggestion.
+ *
+ * Can render either:
+ * - A collapsed, hoverable suggestion row.
+ * - An InlineGoalEditor when editing.
+ *
+ * Used inside onboarding flows to quickly seed initial goals.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Display suggestion label and icon.
+ * - Toggle into inline edit mode.
+ * - Bridge save and cancel actions to parent.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goals.
+ * - Defining suggestion data.
+ * - Validating goal semantics.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - InlineGoalEditor
+ * - framer-motion
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Hover reveals add affordance.
+ * - Icon color transitions indicate interactivity.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalSuggestionRow
+ * - GoalSuggestionRowProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -81,7 +120,7 @@ export function GoalSuggestionRow({
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-        "hover:bg-muted/60"
+        "hover:bg-muted/60",
       )}
     >
       {/* Icon */}
@@ -91,7 +130,7 @@ export function GoalSuggestionRow({
             "size-4 transition-colors",
             isHovered
               ? getIconColorClass(suggestion.color)
-              : "text-muted-foreground/40"
+              : "text-muted-foreground/40",
           )}
         />
       </div>
@@ -100,7 +139,7 @@ export function GoalSuggestionRow({
       <span
         className={cn(
           "flex-1 text-sm transition-colors",
-          isHovered ? "text-muted-foreground" : "text-muted-foreground/50"
+          isHovered ? "text-muted-foreground" : "text-muted-foreground/50",
         )}
       >
         {suggestion.label}

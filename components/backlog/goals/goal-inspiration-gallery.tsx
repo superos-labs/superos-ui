@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: goal-inspiration-gallery.tsx
+ * =============================================================================
+ *
+ * Gallery-style surface for browsing and adding inspirational goals.
+ *
+ * Displays goals grouped by life area, allowing users to quickly seed their
+ * backlog with pre-defined ideas that align with personal priorities.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render categories of inspiration goals.
+ * - Visually indicate which goals have already been added.
+ * - Allow adding goals with a single action.
+ * - Bridge selections to parent via NewGoalData.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting goals.
+ * - Defining inspiration data.
+ * - Validating goal semantics.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - framer-motion
+ * - goal-types (InspirationCategory, InspirationGoal, NewGoalData)
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Tracks locally added goals to provide immediate feedback.
+ * - Merges local and external added IDs for consistent UI.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GoalInspirationGallery
+ * - GoalInspirationGalleryProps
+ */
+
 "use client";
 
 import * as React from "react";

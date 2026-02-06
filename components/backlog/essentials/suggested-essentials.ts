@@ -1,15 +1,43 @@
 /**
- * Suggested essentials data and type definitions.
+ * =============================================================================
+ * File: suggested-essentials.ts
+ * =============================================================================
  *
- * Static configuration for the pre-defined essential suggestions
- * shown during the CTA onboarding flow.
+ * Curated default set of suggested backlog Essentials.
+ *
+ * These suggestions are used to seed the Essentials CTA and inline suggestion
+ * editors, providing sensible starting points for common routine activities.
+ *
+ * Each suggestion includes display metadata and a default schedule that can be
+ * customized before being added.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define the SuggestedEssential type.
+ * - Provide a small, opinionated list of defaults.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Rendering UI.
+ * - Persisting data.
+ * - Inferring user preferences.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Defaults favor common daily and weekly routines.
+ * - Kept intentionally small and conservative.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - SuggestedEssential
+ * - SUGGESTED_ESSENTIALS
  */
 
-import {
-  RiRestaurantLine,
-  RiCarLine,
-  RiHome4Line,
-} from "@remixicon/react";
+import { RiRestaurantLine, RiCarLine, RiHome4Line } from "@remixicon/react";
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent } from "@/lib/types";
 

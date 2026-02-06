@@ -1,5 +1,37 @@
 /**
- * Utility functions for goal-related components.
+ * =============================================================================
+ * File: task-formatters.ts
+ * =============================================================================
+ *
+ * Formatting helpers for displaying task schedule and deadline information
+ * inside backlog task rows.
+ *
+ * These utilities convert raw schedule/deadline data into short, human-readable
+ * strings suitable for dense list UIs.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Format scheduled start times with optional day prefix.
+ * - Format deadline dates with relative labels (Today, Tomorrow, weekday).
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Parsing or validating domain data.
+ * - Internationalization.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Assumes dayIndex 0 = Monday for scheduled tasks.
+ * - Uses local time for deadline comparisons.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - formatScheduledTime
+ * - formatDeadlineDate
  */
 
 import type {

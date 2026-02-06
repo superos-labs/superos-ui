@@ -1,3 +1,46 @@
+/**
+ * =============================================================================
+ * File: inline-creators.tsx
+ * =============================================================================
+ *
+ * Inline creation primitives for Tasks and Goals inside the backlog.
+ *
+ * Provides:
+ * - InlineTaskCreator: fast, keyboard-driven task entry.
+ * - InlineGoalCreator: lightweight goal creation with icon, color, and life area.
+ *
+ * These components manage only ephemeral form state and delegate persistence
+ * upward via callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Collect minimal input required to create tasks and goals.
+ * - Support rapid entry via keyboard shortcuts.
+ * - Provide compact, inline UI suitable for dense lists.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting entities.
+ * - Generating IDs.
+ * - Enforcing domain validation.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Task creator keeps focus after save to enable rapid entry.
+ * - Goal creator auto-focuses name input on mount.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - InlineTaskCreator
+ * - InlineTaskCreatorProps
+ * - InlineGoalCreator
+ * - InlineGoalCreatorProps
+ */
+
 "use client";
 
 import * as React from "react";

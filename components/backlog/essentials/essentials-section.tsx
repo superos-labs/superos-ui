@@ -1,3 +1,54 @@
+/**
+ * =============================================================================
+ * File: essentials-section.tsx
+ * =============================================================================
+ *
+ * Primary container for rendering and managing the backlog "Essentials" area.
+ *
+ * This component supports two major modes:
+ * - CTA mode: guided setup experience for defining essentials (via EssentialsCTA).
+ * - Configured mode: standard list with expandable rows and inline creation.
+ *
+ * It also supports collapsing into a compact icon strip.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Decide whether to show CTA or configured view.
+ * - Orchestrate animated transitions between modes.
+ * - Render Sleep (special case) and other essentials.
+ * - Manage which essential row is expanded.
+ * - Bridge user actions to parent callbacks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting essentials or schedules.
+ * - Providing suggestion data.
+ * - Enforcing domain rules.
+ *
+ * -----------------------------------------------------------------------------
+ * KEY DEPENDENCIES
+ * -----------------------------------------------------------------------------
+ * - EssentialRow / SleepRow
+ * - EssentialsCTA
+ * - InlineEssentialCreator
+ * - framer-motion
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - CTA is entered only when no essentials and no sleep config exist.
+ * - Once in CTA, it remains until explicitly dismissed.
+ * - Height is animated separately from content to avoid layout jank.
+ * - Sleep is always rendered first and is non-deletable.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - EssentialsSection
+ */
+
 "use client";
 
 import * as React from "react";
