@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: inline-subtask-creator.tsx
+ * =============================================================================
+ *
+ * Inline creator for adding subtasks.
+ *
+ * Renders as a lightweight “Add subtask” button that transforms into
+ * a text input when activated.
+ *
+ * Shared between backlog task rows and block sidebar contexts.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Toggle between idle button and editable input.
+ * - Capture subtask label and emit onSave.
+ * - Handle Enter to save, Escape to cancel, and blur to commit.
+ * - Support compact and default size variants.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting subtasks.
+ * - Generating IDs.
+ * - Validating business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Auto-focuses input when entering edit mode.
+ * - Keeps focus after saving to allow rapid entry.
+ * - Renders an empty checkbox for visual alignment with SubtaskRow.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - InlineSubtaskCreator
+ * - InlineSubtaskCreatorProps
+ */
+
 "use client";
 
 import * as React from "react";

@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: bottom-sheet.tsx
+ * =============================================================================
+ *
+ * Mobile-friendly bottom sheet dialog that slides up from the bottom of the screen.
+ *
+ * Used for lightweight, focused detail views and quick actions, especially on
+ * small screens where full modals feel heavy.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a modal sheet anchored to the bottom viewport edge.
+ * - Handle open/close lifecycle and escape-key dismissal.
+ * - Lock body scroll while open.
+ * - Provide optional header, close button, and drag handle.
+ * - Support drag-down-to-dismiss interaction.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing application state that determines when the sheet opens.
+ * - Performing any business logic for the content.
+ * - Persisting or validating data.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Returns null when `open` is false.
+ * - Uses pointer events for drag gestures.
+ * - Backdrop click can optionally close the sheet.
+ * - Max height is constrained to 85vh.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - BottomSheet
+ * - BottomSheetProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -125,7 +166,7 @@ export function BottomSheet({
       <div
         className={cn(
           "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
-          "animate-in fade-in-0 duration-200"
+          "animate-in fade-in-0 duration-200",
         )}
         onClick={closeOnBackdropClick ? onClose : undefined}
         aria-hidden="true"
@@ -142,7 +183,7 @@ export function BottomSheet({
           "rounded-t-2xl bg-background shadow-xl ring-1 ring-border",
           "animate-in slide-in-from-bottom duration-300 ease-out",
           !isDragging && "transition-transform",
-          className
+          className,
         )}
         style={{
           transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
@@ -165,7 +206,9 @@ export function BottomSheet({
         {(title || showCloseButton) && (
           <div className="flex shrink-0 items-center justify-between border-b border-border px-4 pb-3">
             {title ? (
-              <h2 className="text-base font-semibold text-foreground">{title}</h2>
+              <h2 className="text-base font-semibold text-foreground">
+                {title}
+              </h2>
             ) : (
               <div />
             )}
@@ -185,7 +228,7 @@ export function BottomSheet({
         <div
           className={cn(
             "scrollbar-hidden flex-1 overflow-y-auto",
-            contentClassName
+            contentClassName,
           )}
         >
           {children}

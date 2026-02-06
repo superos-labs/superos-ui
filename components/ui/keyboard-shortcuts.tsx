@@ -1,3 +1,42 @@
+/**
+ * =============================================================================
+ * File: keyboard-shortcuts.tsx
+ * =============================================================================
+ *
+ * Modal overlay that displays available keyboard shortcuts.
+ *
+ * Provides a categorized, platform-aware (Mac vs non-Mac) list of shortcuts
+ * to help users discover and learn power-user interactions.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a modal dialog with backdrop.
+ * - Lock body scroll while open.
+ * - Handle escape-key dismissal.
+ * - Detect platform to display appropriate modifier keys.
+ * - Render shortcut categories and rows.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Registering or handling keyboard shortcuts.
+ * - Managing application command logic.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Returns null when `open` is false.
+ * - Modifier symbols adapt based on detected platform.
+ * - Categories and shortcuts are defined locally in this file.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - KeyboardShortcuts
+ * - KeyboardShortcutsProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -15,7 +54,7 @@ function usePlatform() {
     // Detect platform on mount
     setIsMac(
       typeof navigator !== "undefined" &&
-        /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+        /Mac|iPhone|iPad|iPod/.test(navigator.platform),
     );
   }, []);
 
@@ -53,7 +92,7 @@ function ShortcutKey({ children }: { children: React.ReactNode }) {
       className={cn(
         "inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border",
         "bg-muted px-1.5 text-[11px] font-medium text-muted-foreground",
-        "font-sans"
+        "font-sans",
       )}
     >
       {children}
@@ -73,10 +112,12 @@ function ShortcutRow({
   // Replace modifier symbols based on platform
   const displayKeys = keys.map((key) => {
     if (key === "⌘" || key === "Cmd") return isMac ? "⌘" : "Ctrl";
-    if (key === "⌥" || key === "Alt" || key === "Option") return isMac ? "⌥" : "Alt";
+    if (key === "⌥" || key === "Alt" || key === "Option")
+      return isMac ? "⌥" : "Alt";
     if (key === "⇧" || key === "Shift") return "⇧";
     if (key === "⏎" || key === "Enter") return "⏎";
-    if (key === "⌫" || key === "Backspace" || key === "Delete") return isMac ? "⌫" : "Del";
+    if (key === "⌫" || key === "Backspace" || key === "Delete")
+      return isMac ? "⌫" : "Del";
     return key;
   });
 
@@ -211,7 +252,7 @@ export function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsProps) {
       <div
         className={cn(
           "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
-          "animate-in fade-in-0 duration-200"
+          "animate-in fade-in-0 duration-200",
         )}
         onClick={onClose}
         aria-hidden="true"
@@ -226,7 +267,7 @@ export function KeyboardShortcuts({ open, onClose }: KeyboardShortcutsProps) {
           "fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
           "flex max-h-[85vh] flex-col overflow-hidden",
           "rounded-xl bg-background shadow-xl ring-1 ring-border",
-          "animate-in fade-in-0 zoom-in-95 duration-200"
+          "animate-in fade-in-0 zoom-in-95 duration-200",
         )}
       >
         {/* Header */}

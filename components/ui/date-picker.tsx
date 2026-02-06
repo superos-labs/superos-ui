@@ -1,11 +1,46 @@
-"use client";
-
 /**
- * DatePicker - A date picker component with popover calendar.
+ * =============================================================================
+ * File: date-picker.tsx
+ * =============================================================================
  *
- * Uses react-day-picker for the calendar UI with Radix Popover for the dropdown.
- * Designed for selecting optional dates (like goal deadlines).
+ * Lightweight date picker built on top of Radix Popover and react-day-picker.
+ *
+ * Allows selecting (or clearing) a single calendar date and returns the value
+ * as an ISO date string (yyyy-MM-dd).
+ *
+ * Designed for compact inline usage (e.g. deadlines, due dates).
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a trigger button showing formatted date or placeholder.
+ * - Open a popover calendar for single-date selection.
+ * - Convert between Date objects and ISO date strings.
+ * - Respect user week-start preference when available.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing higher-level scheduling logic.
+ * - Validating semantic meaning of selected dates.
+ * - Persisting values.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Controlled via `value` (ISO string) and `onChange`.
+ * - Closing the popover occurs after selection.
+ * - Clear action is available when a value exists and the popover is open.
+ * - Week start defaults to Monday if not provided or in preferences.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DatePicker
+ * - DatePickerProps
  */
+
+"use client";
 
 import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
@@ -82,7 +117,7 @@ export function DatePicker({
   weekStartsOn: weekStartsOnProp,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
-  
+
   // Get week start preference from context, fallback to Monday (1)
   const preferences = usePreferencesOptional();
   const weekStartsOn = weekStartsOnProp ?? preferences?.weekStartsOn ?? 1;
@@ -116,7 +151,7 @@ export function DatePicker({
               ? "text-foreground"
               : "text-muted-foreground hover:text-foreground",
             disabled && "cursor-not-allowed opacity-50",
-            className
+            className,
           )}
         >
           <RiCalendarLine className="size-3.5" />
@@ -150,7 +185,7 @@ export function DatePicker({
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-            "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2"
+            "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2",
           )}
         >
           <DayPicker
@@ -169,11 +204,11 @@ export function DatePicker({
               nav: "absolute top-0 left-0 right-0 flex items-center justify-between h-9 px-1",
               button_previous: cn(
                 "size-7 flex items-center justify-center rounded-lg",
-                "text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                "text-muted-foreground hover:bg-muted hover:text-foreground transition-colors",
               ),
               button_next: cn(
                 "size-7 flex items-center justify-center rounded-lg",
-                "text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                "text-muted-foreground hover:bg-muted hover:text-foreground transition-colors",
               ),
               month_grid: "w-full border-collapse",
               weekdays: "flex",
@@ -184,12 +219,12 @@ export function DatePicker({
               day_button: cn(
                 "size-8 p-0 font-normal rounded-lg transition-colors",
                 "hover:bg-muted hover:text-foreground",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               ),
               selected: cn(
                 "bg-foreground text-background rounded-lg",
                 "hover:bg-foreground hover:text-background",
-                "focus:bg-foreground focus:text-background"
+                "focus:bg-foreground focus:text-background",
               ),
               today: "bg-accent text-accent-foreground rounded-lg",
               outside:

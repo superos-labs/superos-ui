@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: full-screen-overlay.tsx
+ * =============================================================================
+ *
+ * Full-screen mobile overlay that takes over the entire viewport.
+ *
+ * Used for high-focus surfaces such as mobile backlog, editors,
+ * or deep navigation states where modals or bottom sheets are insufficient.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a full-viewport dialog surface.
+ * - Lock body scroll while open.
+ * - Handle escape-key dismissal.
+ * - Provide fixed header with title and close/back control.
+ * - Render scrollable content area.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing application navigation state.
+ * - Performing business logic.
+ * - Persisting data.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Returns null when `open` is false.
+ * - Slides in from the right.
+ * - `closeStyle="back"` shows a back arrow on the left.
+ * - `closeStyle="close"` shows a close icon on the right.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - FullScreenOverlay
+ * - FullScreenOverlayProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -102,7 +143,7 @@ export function FullScreenOverlay({
       className={cn(
         "fixed inset-0 z-50 flex flex-col bg-background",
         "animate-in slide-in-from-right duration-300 ease-out",
-        className
+        className,
       )}
     >
       {/* Header */}
@@ -145,7 +186,7 @@ export function FullScreenOverlay({
       <div
         className={cn(
           "scrollbar-hidden flex-1 overflow-y-auto",
-          contentClassName
+          contentClassName,
         )}
       >
         {children}
