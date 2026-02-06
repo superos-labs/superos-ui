@@ -1,6 +1,34 @@
 /**
- * Essential activity definitions and default configurations.
- * Essentials are recurring activities users can optionally track (eat, commute, etc.).
+ * =============================================================================
+ * File: essentials.ts
+ * =============================================================================
+ *
+ * Static fixture data for "Essentials" — recurring, non-goal activities that
+ * users may choose to track and schedule (e.g., eating, commuting, exercise).
+ *
+ * These values seed onboarding, blueprint creation, and preference defaults.
+ * Sleep is intentionally excluded and handled via day-boundary preferences.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define the full catalog of available essentials.
+ * - Provide default enabled essential ID sets for different modes.
+ * - Expose an empty essentials dataset for initialization and resets.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - All essentials are optional; none are enabled by default.
+ * - Each essential includes a stable id, label, icon, and color token.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - ALL_ESSENTIALS
+ * - DEFAULT_ENABLED_ESSENTIAL_IDS
+ * - COMPLETE_ENABLED_ESSENTIAL_IDS
+ * - EMPTY_ESSENTIALS
  */
 
 import {

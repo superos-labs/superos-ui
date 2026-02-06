@@ -1,16 +1,33 @@
 /**
- * Responsive utilities for breakpoint detection and responsive behavior.
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
  *
- * @example
- * ```tsx
- * import { useBreakpoint, useIsMobile } from "@/lib/responsive";
+ * Public API for responsive utilities.
  *
- * function MyComponent() {
- *   const { isMobile, isTablet, breakpoint } = useBreakpoint();
- *   // or simply:
- *   const isMobile = useIsMobile();
- * }
- * ```
+ * Re-exports responsive types, breakpoint constants, and hooks used to detect
+ * device size, category, orientation, and interaction capabilities.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Expose responsive-related types and constants.
+ * - Expose breakpoint and device-detection hooks.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - Breakpoint
+ * - DeviceCategory
+ * - Orientation
+ * - ResponsiveOverrides
+ * - BREAKPOINTS
+ * - useBreakpoint
+ * - useIsMobile
+ * - useIsTablet
+ * - useIsDesktop
+ * - useIsTouchDevice
+ * - UseBreakpointReturn
  */
 
 // Types

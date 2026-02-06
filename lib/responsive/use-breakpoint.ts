@@ -1,7 +1,46 @@
+/**
+ * =============================================================================
+ * File: use-breakpoint.ts
+ * =============================================================================
+ *
+ * Client-side hooks for responsive breakpoint detection.
+ *
+ * Determines current breakpoint, device category, and orientation using
+ * window.matchMedia and exposes derived boolean helpers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Compute breakpoint from viewport width and orientation.
+ * - Track breakpoint changes on resize/orientation change.
+ * - Expose convenience hooks for common checks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Returns SSR-safe defaults (desktop) before hydration.
+ * - Treats mobile and tablet as touch-first devices.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useBreakpoint
+ * - useIsMobile
+ * - useIsTablet
+ * - useIsDesktop
+ * - useIsTouchDevice
+ * - UseBreakpointReturn
+ */
+
 "use client";
 
 import * as React from "react";
-import { BREAKPOINTS, type Breakpoint, type DeviceCategory, type Orientation } from "./types";
+import {
+  BREAKPOINTS,
+  type Breakpoint,
+  type DeviceCategory,
+  type Orientation,
+} from "./types";
 
 // =============================================================================
 // Media Query Helpers
@@ -19,7 +58,8 @@ function getBreakpoint(width: number, isLandscape: boolean): Breakpoint {
 
 function getDeviceCategory(breakpoint: Breakpoint): DeviceCategory {
   if (breakpoint === "mobile") return "mobile";
-  if (breakpoint === "tablet-portrait" || breakpoint === "tablet-landscape") return "tablet";
+  if (breakpoint === "tablet-portrait" || breakpoint === "tablet-landscape")
+    return "tablet";
   return "desktop";
 }
 
@@ -54,14 +94,14 @@ export interface UseBreakpointReturn {
 
 /**
  * Hook to detect current responsive breakpoint.
- * 
+ *
  * Uses window.matchMedia for efficient updates on resize/orientation change.
  * Returns SSR-safe defaults (desktop) on server.
- * 
+ *
  * @example
  * ```tsx
  * const { isMobile, isTablet, breakpoint } = useBreakpoint();
- * 
+ *
  * if (isMobile) {
  *   return <MobileLayout />;
  * }
@@ -84,9 +124,13 @@ export function useBreakpoint(): UseBreakpointReturn {
     if (typeof window === "undefined") return;
 
     // Media queries for breakpoints and orientation
-    const mobileQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.sm - 1}px)`);
+    const mobileQuery = window.matchMedia(
+      `(max-width: ${BREAKPOINTS.sm - 1}px)`
+    );
     const tabletQuery = window.matchMedia(
-      `(min-width: ${BREAKPOINTS.sm}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`
+      `(min-width: ${BREAKPOINTS.sm}px) and (max-width: ${
+        BREAKPOINTS.lg - 1
+      }px)`
     );
     const landscapeQuery = window.matchMedia("(orientation: landscape)");
 
@@ -94,7 +138,7 @@ export function useBreakpoint(): UseBreakpointReturn {
       const width = window.innerWidth;
       const isLandscape = landscapeQuery.matches;
       const breakpoint = getBreakpoint(width, isLandscape);
-      
+
       setState({
         breakpoint,
         device: getDeviceCategory(breakpoint),

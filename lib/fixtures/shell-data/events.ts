@@ -1,6 +1,37 @@
 /**
- * Calendar event definitions for sample and complete data sets.
- * Events are generated dynamically based on the current week.
+ * =============================================================================
+ * File: events.ts
+ * =============================================================================
+ *
+ * Fixture calendar events for shell/sample and complete data sets.
+ *
+ * Events are generated relative to the current week so that demos and previews
+ * always appear populated with realistic, navigable schedules.
+ *
+ * Used by the shell experience, onboarding previews, and dev shortcuts
+ * (e.g., skipping onboarding with a pre-filled calendar).
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Generate sample calendar events for the shell experience.
+ * - Generate a fuller "complete" event set for dev / skip-onboarding flows.
+ * - Expose an empty events array for initialization and resets.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Dates are derived from the current week at runtime.
+ * - All events represent goal blocks (not tasks) for clarity in demos.
+ * - Patterns mirror believable weekly routines (morning deep work, workouts,
+ *   evening creative sessions, etc.).
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - SHELL_CALENDAR_EVENTS
+ * - COMPLETE_CALENDAR_EVENTS
+ * - EMPTY_CALENDAR_EVENTS
  */
 
 import { getWeekDates } from "@/components/calendar";

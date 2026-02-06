@@ -1,3 +1,33 @@
+/**
+ * =============================================================================
+ * File: use-focus-session.ts
+ * =============================================================================
+ *
+ * Client-side hook for managing Focus Mode sessions.
+ *
+ * Provides start, pause, resume, and end controls while tracking elapsed time
+ * and emitting a completed session summary when a session finishes.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Create and manage an active focus session.
+ * - Track pause/resume segments and elapsed time.
+ * - Emit a completed session object on end.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Time is tracked in milliseconds.
+ * - Elapsed time updates once per second while running.
+ * - Uses GoalColor as the semantic color type for focused blocks.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useFocusSession
+ */
+
 "use client";
 
 import * as React from "react";
@@ -18,14 +48,14 @@ type BlockColor = GoalColor;
  */
 function calculateElapsedMs(
   session: ActiveFocusSession | null,
-  now: number,
+  now: number
 ): number {
   if (!session) return 0;
 
   // Sum completed segments
   const completedMs = session.segments.reduce(
     (sum, seg) => sum + (seg.endedAt - seg.startedAt),
-    0,
+    0
   );
 
   // Add current segment if running
@@ -36,27 +66,8 @@ function calculateElapsedMs(
   return completedMs + currentMs;
 }
 
-/**
- * Hook for managing focus sessions with pause/resume support.
- *
- * @example
- * ```tsx
- * const { session, isRunning, elapsedMs, start, pause, resume, end } = useFocusSession({
- *   onSessionEnd: (completed) => console.log('Focused for', completed.totalMs, 'ms'),
- * });
- *
- * // Start focus on a block
- * start(blockId, blockTitle, blockColor);
- *
- * // Pause/resume
- * if (isRunning) pause(); else resume();
- *
- * // End and get the completed session data
- * end();
- * ```
- */
 export function useFocusSession(
-  options: UseFocusSessionOptions = {},
+  options: UseFocusSessionOptions = {}
 ): UseFocusSessionReturn {
   const { onSessionEnd } = options;
 
@@ -107,7 +118,7 @@ export function useFocusSession(
       });
       setElapsedMs(0);
     },
-    [],
+    []
   );
 
   const pause = React.useCallback(() => {
@@ -157,7 +168,7 @@ export function useFocusSession(
       // Calculate total time
       const totalMs = finalSegments.reduce(
         (sum, seg) => sum + (seg.endedAt - seg.startedAt),
-        0,
+        0
       );
 
       // Determine session start time

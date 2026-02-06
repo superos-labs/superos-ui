@@ -1,6 +1,33 @@
 /**
- * Goal definitions for sample and complete data sets.
- * Each goal includes tasks, milestones, and life area associations.
+ * =============================================================================
+ * File: goals.ts
+ * =============================================================================
+ *
+ * Fixture goal definitions for shell/sample and complete data sets.
+ *
+ * Provides realistic example goals, including milestones and tasks, to populate
+ * demos, onboarding previews, and the shell experience. Also includes a minimal
+ * goal set used when skipping onboarding.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define sample goals with milestones, tasks, and subtasks.
+ * - Define a clean set of goals without tasks/milestones for dev flows.
+ * - Expose an empty goals array for initialization and resets.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Sample goals mirror common life areas (career, health, creativity, growth).
+ * - IDs are stable and referenced by fixture calendar events.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - SHELL_GOALS
+ * - COMPLETE_GOALS
+ * - EMPTY_GOALS
  */
 
 import {

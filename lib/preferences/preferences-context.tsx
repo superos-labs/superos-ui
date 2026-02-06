@@ -1,3 +1,35 @@
+/**
+ * =============================================================================
+ * File: preferences-context.tsx
+ * =============================================================================
+ *
+ * Client-side context and provider for user preferences.
+ *
+ * Manages user-configurable settings related to calendar behavior, progress
+ * measurement, and day-boundary display, and exposes setters to update them.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store user preference state.
+ * - Provide clamped setters for constrained values (zoom, minutes).
+ * - Expose preferences via context and hooks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Defaults reflect common planning assumptions (Mon start, 7am–11pm day).
+ * - No persistence layer here; higher-level code may hydrate/persist.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PreferencesProvider
+ * - PreferencesProviderProps
+ * - usePreferences
+ * - usePreferencesOptional
+ */
+
 "use client";
 
 import * as React from "react";
@@ -33,7 +65,7 @@ interface PreferencesContextValue extends UserPreferences {
 }
 
 const PreferencesContext = React.createContext<PreferencesContextValue | null>(
-  null,
+  null
 );
 
 // =============================================================================
@@ -79,12 +111,12 @@ export function PreferencesProvider({
 }: PreferencesProviderProps) {
   // Week starts on Monday by default
   const [weekStartsOn, setWeekStartsOn] = React.useState<WeekStartDay>(
-    defaultWeekStartsOn ?? DEFAULT_WEEK_START,
+    defaultWeekStartsOn ?? DEFAULT_WEEK_START
   );
 
   // Progress metric: default to 'completed'
   const [progressMetric, setProgressMetric] = React.useState<ProgressMetric>(
-    defaultProgressMetric ?? "completed",
+    defaultProgressMetric ?? "completed"
   );
 
   // Auto-complete essentials: default to true
@@ -93,7 +125,7 @@ export function PreferencesProvider({
 
   // Calendar zoom: default to 100%
   const [calendarZoom, setCalendarZoomState] = React.useState<CalendarZoom>(
-    defaultCalendarZoom ?? DEFAULT_CALENDAR_ZOOM,
+    defaultCalendarZoom ?? DEFAULT_CALENDAR_ZOOM
   );
 
   // Day boundaries enabled: default to false
@@ -103,21 +135,21 @@ export function PreferencesProvider({
   // Day boundaries display mode: default to 'dimmed'
   const [dayBoundariesDisplay, setDayBoundariesDisplay] =
     React.useState<DayBoundariesDisplay>(
-      defaultDayBoundariesDisplay ?? "dimmed",
+      defaultDayBoundariesDisplay ?? "dimmed"
     );
 
   // Day boundaries: default to 7am - 11pm
   const [dayStartMinutes, setDayStartMinutesState] = React.useState<number>(
-    defaultDayStartMinutes ?? DEFAULT_DAY_START_MINUTES,
+    defaultDayStartMinutes ?? DEFAULT_DAY_START_MINUTES
   );
   const [dayEndMinutes, setDayEndMinutesState] = React.useState<number>(
-    defaultDayEndMinutes ?? DEFAULT_DAY_END_MINUTES,
+    defaultDayEndMinutes ?? DEFAULT_DAY_END_MINUTES
   );
 
   // Clamped setter for calendar zoom
   const setCalendarZoom = React.useCallback((zoom: CalendarZoom) => {
     setCalendarZoomState(
-      Math.max(MIN_CALENDAR_ZOOM, Math.min(MAX_CALENDAR_ZOOM, zoom)),
+      Math.max(MIN_CALENDAR_ZOOM, Math.min(MAX_CALENDAR_ZOOM, zoom))
     );
   }, []);
 
@@ -136,7 +168,7 @@ export function PreferencesProvider({
       setDayStartMinutesState(Math.max(0, Math.min(1440, startMinutes)));
       setDayEndMinutesState(Math.max(0, Math.min(1440, endMinutes)));
     },
-    [],
+    []
   );
 
   const value = React.useMemo(
@@ -172,7 +204,7 @@ export function PreferencesProvider({
       dayEndMinutes,
       setDayEndMinutes,
       setDayBoundaries,
-    ],
+    ]
   );
 
   return (

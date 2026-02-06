@@ -1,9 +1,47 @@
 /**
- * Types for the undo system.
- * Defines command structures for undoable actions.
+ * =============================================================================
+ * File: types.ts
+ * =============================================================================
+ *
+ * Type definitions for the Undo system.
+ *
+ * Defines undoable command structures, action types, and payload shapes used
+ * to restore previous state across tasks, blocks, and days.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define undo action type union.
+ * - Define base UndoCommand interface.
+ * - Define strongly-typed payloads for specific undo scenarios.
+ * - Define Undo context contract.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Commands encapsulate both metadata and undo behavior.
+ * - Payload types exist for type-safe handler implementations.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - UndoActionType
+ * - UndoCommand
+ * - TaskCompletePayload
+ * - TaskDeletePayload
+ * - TaskUnassignPayload
+ * - BlockCompletePayload
+ * - BlockDeletePayload
+ * - BlockCreatePayload
+ * - DayCompletePayload
+ * - UndoContextValue
  */
 
-import type { CalendarEvent, ScheduleTask, BlockStatus } from "@/lib/unified-schedule";
+import type {
+  CalendarEvent,
+  ScheduleTask,
+  BlockStatus,
+} from "@/lib/unified-schedule";
 
 // =============================================================================
 // Command Types
@@ -81,7 +119,11 @@ export interface DayCompletePayload {
   /** Previous status of each event */
   previousEventStatuses: Map<string, BlockStatus | undefined>;
   /** Tasks that were marked complete (goalId -> taskId[]) */
-  completedTasks: Array<{ goalId: string; taskId: string; previousCompleted: boolean }>;
+  completedTasks: Array<{
+    goalId: string;
+    taskId: string;
+    previousCompleted: boolean;
+  }>;
 }
 
 // =============================================================================

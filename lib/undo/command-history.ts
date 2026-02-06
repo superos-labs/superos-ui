@@ -1,6 +1,32 @@
 /**
- * Command history management for undo functionality.
- * Maintains a stack of undoable commands with a configurable limit.
+ * =============================================================================
+ * File: command-history.ts
+ * =============================================================================
+ *
+ * In-memory command history for undo functionality.
+ *
+ * Maintains a bounded stack of undoable commands and exposes helpers for
+ * pushing, popping, and inspecting history.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store undoable commands in order.
+ * - Enforce a maximum history size.
+ * - Provide stack-like accessors.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Oldest commands are dropped when exceeding max size.
+ * - Pure in-memory utility (no persistence).
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - MAX_HISTORY_SIZE
+ * - CommandHistory
+ * - createCommandHistory
  */
 
 import type { UndoCommand } from "./types";
@@ -30,7 +56,7 @@ export class CommandHistory {
    */
   push(command: UndoCommand): void {
     this.commands.push(command);
-    
+
     // Trim history if it exceeds max size
     if (this.commands.length > this.maxSize) {
       this.commands = this.commands.slice(-this.maxSize);
@@ -49,8 +75,8 @@ export class CommandHistory {
    * Get the most recent command without removing it.
    */
   peek(): UndoCommand | null {
-    return this.commands.length > 0 
-      ? this.commands[this.commands.length - 1] 
+    return this.commands.length > 0
+      ? this.commands[this.commands.length - 1]
       : null;
   }
 

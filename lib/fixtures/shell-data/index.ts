@@ -1,8 +1,38 @@
 /**
- * Shell fixture data — barrel file.
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
  *
- * Re-exports all shell data from domain-specific modules so consumers
- * can continue importing from `@/lib/fixtures/shell-data`.
+ * Shell fixture data barrel.
+ *
+ * Centralizes and re-exports all shell fixture data (goals, essentials, events,
+ * icons, and life areas) so consumers can import from a single module.
+ *
+ * Also defines named data set presets (sample, empty, complete) used by the
+ * shell experience, onboarding previews, and dev shortcuts.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export domain-specific shell fixture modules.
+ * - Re-export commonly used types for convenience.
+ * - Define strongly-typed fixture data sets.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - "sample" = rich demo data with tasks and milestones.
+ * - "complete" = clean goals + events for skip-onboarding flows.
+ * - "empty" = blank state for fresh users.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GOAL_ICONS
+ * - ALL_ESSENTIALS, DEFAULT_ENABLED_ESSENTIAL_IDS, COMPLETE_ENABLED_ESSENTIAL_IDS
+ * - SHELL_GOALS, COMPLETE_GOALS, EMPTY_GOALS
+ * - SHELL_CALENDAR_EVENTS, COMPLETE_CALENDAR_EVENTS, EMPTY_CALENDAR_EVENTS
+ * - DATA_SETS, DataSetId, DataSet
  */
 
 import type {

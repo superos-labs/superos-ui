@@ -1,11 +1,33 @@
 /**
- * Types for goals in the application.
+ * =============================================================================
+ * File: types.ts
+ * =============================================================================
  *
- * This module contains types specific to goal management that are shared
- * between the component layer and the app layer.
+ * Goal domain types shared between components and app logic.
  *
- * Core data types (ScheduleGoal, ScheduleTask, Milestone, Subtask) are in
- * lib/unified-schedule/types.ts as they're part of the scheduling system.
+ * Defines shapes for goal creation and the inspiration gallery. Core scheduling
+ * goal structures live in the unified schedule domain.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define data needed to create new goals.
+ * - Define inspiration gallery goal and category types.
+ * - Re-export common goal-related types for convenience.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Keeps UI-level goal concerns separate from scheduling primitives.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - NewGoalData
+ * - InspirationGoal
+ * - InspirationCategory
+ * - LifeArea
+ * - GoalIconOption
  */
 
 import type { GoalColor } from "@/lib/colors";

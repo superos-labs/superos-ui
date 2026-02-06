@@ -1,6 +1,31 @@
 /**
+ * =============================================================================
+ * File: goal-inspiration-data.ts
+ * =============================================================================
+ *
  * Seed data for the Goal Inspiration Gallery.
- * Goals that benefit from time allocation and weekly recurrence.
+ *
+ * Defines curated goal ideas grouped by life area to help users quickly
+ * discover goals that benefit from time allocation and weekly recurrence.
+ *
+ * Used during onboarding and in the backlog when browsing or adding new goals.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define inspiration categories mapped to life areas.
+ * - Provide goal templates with id, label, and icon.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Goals are phrased as simple, action-oriented labels.
+ * - List is intentionally inspirational, not prescriptive.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - INSPIRATION_CATEGORIES
  */
 
 import {

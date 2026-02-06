@@ -1,5 +1,34 @@
 /**
- * Focus mode types for tracking deep work sessions.
+ * =============================================================================
+ * File: types.ts
+ * =============================================================================
+ *
+ * Type definitions for Focus Mode.
+ *
+ * Models the shape of focus sessions, pause/resume segments, and the public
+ * contract for the focus session hook.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define active and completed focus session structures.
+ * - Define focus segment (pause/resume slice) structure.
+ * - Define hook option and return types.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses GoalColor as the semantic color type for focused blocks.
+ * - Time values are represented as timestamps or milliseconds.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - FocusSegment
+ * - ActiveFocusSession
+ * - CompletedFocusSession
+ * - UseFocusSessionOptions
+ * - UseFocusSessionReturn
  */
 
 import type { GoalColor } from "@/lib/colors";

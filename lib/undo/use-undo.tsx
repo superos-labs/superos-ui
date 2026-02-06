@@ -1,9 +1,37 @@
-"use client";
-
 /**
- * React hook for undo functionality.
- * Provides a context-based undo system that can be used throughout the app.
+ * =============================================================================
+ * File: use-undo.tsx
+ * =============================================================================
+ *
+ * Client-side undo system using React context and command pattern.
+ *
+ * Provides a provider, hooks, and keyboard handling for recording and undoing
+ * user actions across the application.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Manage undo command history via CommandHistory.
+ * - Expose record and undo operations through context.
+ * - Track last command for toast/feedback.
+ * - Handle CMD/Ctrl+Z keyboard shortcut.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - History is stored in a ref to avoid unnecessary re-renders.
+ * - Keyboard handler ignores inputs and editable fields.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - UndoProvider
+ * - useUndo
+ * - useUndoOptional
+ * - useUndoKeyboard
  */
+
+"use client";
 
 import * as React from "react";
 import { CommandHistory, createCommandHistory } from "./command-history";
@@ -28,7 +56,7 @@ interface UndoProviderProps {
 export function UndoProvider({ children, maxHistorySize }: UndoProviderProps) {
   // Use ref for history to avoid re-renders on every action
   const historyRef = React.useRef<CommandHistory | null>(null);
-  
+
   // Lazy initialization of history
   if (!historyRef.current) {
     historyRef.current = createCommandHistory(maxHistorySize);
@@ -36,9 +64,11 @@ export function UndoProvider({ children, maxHistorySize }: UndoProviderProps) {
 
   // State to track if we can undo (triggers re-render when needed)
   const [canUndo, setCanUndo] = React.useState(false);
-  
+
   // State to track the last command for toast display
-  const [lastCommand, setLastCommand] = React.useState<UndoCommand | null>(null);
+  const [lastCommand, setLastCommand] = React.useState<UndoCommand | null>(
+    null
+  );
 
   const recordAction = React.useCallback((command: UndoCommand) => {
     historyRef.current?.push(command);
@@ -48,18 +78,18 @@ export function UndoProvider({ children, maxHistorySize }: UndoProviderProps) {
 
   const undo = React.useCallback((): UndoCommand | null => {
     const command = historyRef.current?.pop() ?? null;
-    
+
     if (command) {
       // Execute the undo function
       command.undo();
-      
+
       // Update canUndo state
       setCanUndo(!historyRef.current?.isEmpty());
-      
+
       // Clear lastCommand since we just undid it
       setLastCommand(null);
     }
-    
+
     return command;
   }, []);
 
@@ -85,11 +115,7 @@ export function UndoProvider({ children, maxHistorySize }: UndoProviderProps) {
     [recordAction, undo, canUndo, lastCommand, clearLastCommand, clearHistory]
   );
 
-  return (
-    <UndoContext.Provider value={value}>
-      {children}
-    </UndoContext.Provider>
-  );
+  return <UndoContext.Provider value={value}>{children}</UndoContext.Provider>;
 }
 
 // =============================================================================
@@ -102,11 +128,11 @@ export function UndoProvider({ children, maxHistorySize }: UndoProviderProps) {
  */
 export function useUndo(): UndoContextValue {
   const context = React.useContext(UndoContext);
-  
+
   if (!context) {
     throw new Error("useUndo must be used within an UndoProvider");
   }
-  
+
   return context;
 }
 
@@ -133,9 +159,9 @@ interface UseUndoKeyboardOptions {
  * Hook to handle CMD+Z keyboard shortcut for undo.
  * Should be used at the shell level to capture global shortcuts.
  */
-export function useUndoKeyboard({ 
-  onUndo, 
-  enabled = true 
+export function useUndoKeyboard({
+  onUndo,
+  enabled = true,
 }: UseUndoKeyboardOptions = {}) {
   const undoContext = useUndoOptional();
 
@@ -157,7 +183,7 @@ export function useUndoKeyboard({
       const isMeta = e.metaKey || e.ctrlKey;
       if (isMeta && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
-        
+
         if (undoContext.canUndo) {
           const command = undoContext.undo();
           onUndo?.(command);

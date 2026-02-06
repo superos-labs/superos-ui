@@ -1,8 +1,26 @@
 /**
- * Goals module - types and utilities for goal management.
+ * =============================================================================
+ * File: index.ts
+ * =============================================================================
  *
- * Core data types (ScheduleGoal, ScheduleTask, Milestone, Subtask) are in
- * lib/unified-schedule as they're part of the scheduling system.
+ * Public types barrel for backlog-related domain.
+ *
+ * Re-exports commonly used backlog and inspiration-related types so consumers
+ * can import from a single module.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export backlog and inspiration domain types.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - NewGoalData
+ * - GoalIconOption
+ * - InspirationGoal
+ * - InspirationCategory
+ * - LifeArea
  */
 
 // Types

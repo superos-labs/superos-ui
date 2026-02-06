@@ -1,12 +1,41 @@
 /**
- * User preferences types.
+ * =============================================================================
+ * File: types.ts
+ * =============================================================================
+ *
+ * Type definitions and constants for user preferences.
+ *
+ * Defines the shape of user-configurable settings related to calendar behavior,
+ * progress measurement, and day-boundary visualization.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define preference-related types.
+ * - Define constants for calendar zoom and day boundaries.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Zoom is expressed as a percentage mapped to pixels-per-hour elsewhere.
+ * - Minutes are used for day boundaries for easy arithmetic.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - WeekStartDay
+ * - ProgressMetric
+ * - CalendarZoom
+ * - DayBoundariesDisplay
+ * - UserPreferences
+ * - MIN_CALENDAR_ZOOM
+ * - MAX_CALENDAR_ZOOM
+ * - DEFAULT_CALENDAR_ZOOM
+ * - CALENDAR_ZOOM_STEP
+ * - DEFAULT_DAY_START_MINUTES
+ * - DEFAULT_DAY_END_MINUTES
  */
 
-/**
- * Day the week starts on.
- * - 0 = Sunday
- * - 1 = Monday
- */
 export type WeekStartDay = 0 | 1;
 
 /**

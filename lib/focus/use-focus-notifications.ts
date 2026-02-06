@@ -1,3 +1,35 @@
+/**
+ * =============================================================================
+ * File: use-focus-notifications.ts
+ * =============================================================================
+ *
+ * Client-side hook for Focus Mode browser notifications.
+ *
+ * Sends a notification when the currently focused block reaches its scheduled
+ * end time, based on the associated calendar event.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Request and track browser notification permission.
+ * - Determine the end timestamp of the focused calendar block.
+ * - Schedule and fire a notification when the block ends.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - No notification is sent if the block is already in the past.
+ * - Only one notification is sent per focus session.
+ * - Gracefully no-ops if the Notification API is unsupported.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useFocusNotifications
+ * - UseFocusNotificationsOptions
+ * - UseFocusNotificationsReturn
+ */
+
 "use client";
 
 import * as React from "react";

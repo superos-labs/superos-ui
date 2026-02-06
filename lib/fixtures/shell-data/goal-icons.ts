@@ -1,6 +1,31 @@
 /**
- * Curated icon options for goal creation.
- * Organized by category for the icon picker UI.
+ * =============================================================================
+ * File: goal-icons.ts
+ * =============================================================================
+ *
+ * Curated icon catalog for goal creation and editing.
+ *
+ * Provides a broad but intentional set of icon options grouped by common
+ * life areas (work, creative, health, learning, social, finance, etc.) to help
+ * users quickly visually identify goals.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define the list of selectable goal icon options.
+ * - Pair each icon with a human-readable label.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Icons are sourced from Remix Icon for consistency.
+ * - List is intentionally curated (not exhaustive) to reduce choice overload.
+ * - Labels are short and UI-friendly.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - GOAL_ICONS
  */
 
 import {

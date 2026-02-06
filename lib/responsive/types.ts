@@ -1,11 +1,29 @@
 /**
- * Responsive breakpoint types and constants.
+ * =============================================================================
+ * File: types.ts
+ * =============================================================================
  *
- * Breakpoints:
- * - mobile: < 640px
- * - tablet-portrait: 640px – 1024px (portrait orientation)
- * - tablet-landscape: 640px – 1024px (landscape orientation)
- * - desktop: > 1024px
+ * Type definitions and constants for responsive breakpoints.
+ *
+ * Defines named breakpoints, numeric thresholds, and helper types used by
+ * responsive hooks and components.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define breakpoint name union.
+ * - Define pixel thresholds for breakpoints.
+ * - Define device category and orientation helper types.
+ * - Define responsive override props pattern.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - Breakpoint
+ * - BREAKPOINTS
+ * - DeviceCategory
+ * - Orientation
+ * - ResponsiveOverrides
  */
 
 // =============================================================================
