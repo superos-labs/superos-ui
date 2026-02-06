@@ -8,9 +8,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { RiCloseLine, RiStarLine } from "@remixicon/react";
-import { getIconColorClass, getIconBgClass } from "@/lib/colors";
+import { getIconColorClass } from "@/lib/colors";
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent, GoalIconOption, LifeArea } from "@/lib/types";
+import { IconPicker } from "./icon-picker";
+import { ColorPicker } from "./color-picker";
 
 // =============================================================================
 // Types
@@ -32,23 +34,6 @@ export interface LifeAreaCreatorModalProps {
     color: GoalColor;
   }) => void;
 }
-
-// Subset of colors for the picker (most distinct/common)
-const PICKER_COLORS: GoalColor[] = [
-  "slate",
-  "red",
-  "orange",
-  "amber",
-  "green",
-  "teal",
-  "cyan",
-  "blue",
-  "indigo",
-  "violet",
-  "purple",
-  "pink",
-  "rose",
-];
 
 // =============================================================================
 // Component
@@ -209,28 +194,12 @@ export function LifeAreaCreatorModal({
             <span className="text-xs font-medium text-muted-foreground">
               Icon
             </span>
-            <div className="flex flex-wrap gap-1 rounded-md border p-2">
-              {goalIcons.slice(0, 40).map((iconOption, index) => {
-                const IconComp = iconOption.icon;
-                const isSelected = selectedIconIndex === index;
-                return (
-                  <button
-                    key={iconOption.label}
-                    type="button"
-                    onClick={() => setSelectedIconIndex(index)}
-                    className={cn(
-                      "flex size-7 items-center justify-center rounded-md transition-colors",
-                      isSelected
-                        ? "bg-foreground text-background"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    )}
-                    title={iconOption.label}
-                  >
-                    <IconComp className="size-3.5" />
-                  </button>
-                );
-              })}
-            </div>
+            <IconPicker
+              className="rounded-md border p-2"
+              goalIcons={goalIcons}
+              selectedIndex={selectedIconIndex}
+              onSelect={setSelectedIconIndex}
+            />
           </div>
 
           {/* Color Picker */}
@@ -238,25 +207,10 @@ export function LifeAreaCreatorModal({
             <span className="text-xs font-medium text-muted-foreground">
               Color
             </span>
-            <div className="flex flex-wrap gap-1">
-              {PICKER_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setSelectedColor(c)}
-                  className={cn(
-                    "flex size-7 items-center justify-center rounded-md transition-all",
-                    selectedColor === c &&
-                      "ring-2 ring-foreground ring-offset-1 ring-offset-background",
-                  )}
-                  title={c}
-                >
-                  <div
-                    className={cn("size-5 rounded-full", getIconBgClass(c))}
-                  />
-                </button>
-              ))}
-            </div>
+            <ColorPicker
+              selectedColor={selectedColor}
+              onSelect={setSelectedColor}
+            />
           </div>
 
           {/* Actions */}
