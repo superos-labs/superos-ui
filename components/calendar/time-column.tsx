@@ -3,94 +3,16 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import {
-  Block,
-  ResizableBlockWrapper,
-  DraggableBlockWrapper,
-} from "@/components/block";
+import { Block } from "@/components/block";
 import {
   HOURS,
   COMPACT_LAYOUT_THRESHOLD_PX,
-  BLOCK_MARGIN_PX,
-  BLOCK_GAP_PX,
-  blockStyleToStatus,
-  canMarkComplete,
-  isOvernightEvent,
   type TimeColumnProps,
-  type OverlapLayout,
 } from "./calendar-types";
-import {
-  formatTimeFromMinutes,
-  snapToGrid,
-  blockAnimations,
-  calculateAdaptiveDrop,
-} from "./calendar-utils";
-import { useDragContextOptional } from "@/components/drag";
-import { getDefaultDuration } from "@/lib/drag-types";
-
-/**
- * Default layout for segments without overlap calculation.
- */
-const DEFAULT_LAYOUT: OverlapLayout = {
-  column: 0,
-  totalColumns: 1,
-  leftPercent: 0,
-  widthPercent: 100,
-};
-
-/**
- * Calculate the CSS style for block positioning based on overlap layout.
- * Uses calc() to combine percentage-based layout with pixel margins and gaps.
- *
- * Applies consistent gaps:
- * - Horizontal: outer margins on first/last columns, small gap between adjacent blocks
- * - Vertical: between sequential blocks (bottom gap)
- */
-function getBlockPositionStyle(
-  layout: OverlapLayout | undefined,
-  topPercent: number,
-  heightPercent: number,
-): React.CSSProperties {
-  const { leftPercent, widthPercent, column, totalColumns } =
-    layout ?? DEFAULT_LAYOUT;
-
-  // For overlapping blocks, use smarter margin distribution:
-  // - First column: full left margin, half gap on right
-  // - Middle columns: half gap on each side
-  // - Last column: half gap on left, full right margin
-  // - Single column (no overlap): full margins on both sides
-  const isFirstColumn = column === 0;
-  const isLastColumn = column === totalColumns - 1;
-  const isSingleColumn = totalColumns === 1;
-
-  let leftOffset: number;
-  let widthReduction: number;
-
-  if (isSingleColumn) {
-    // No overlap - standard margins
-    leftOffset = BLOCK_MARGIN_PX;
-    widthReduction = BLOCK_MARGIN_PX * 2;
-  } else {
-    // Overlapping blocks - distribute gaps evenly
-    const halfGap = BLOCK_GAP_PX / 2;
-    leftOffset = isFirstColumn ? BLOCK_MARGIN_PX : halfGap;
-    const rightReduction = isLastColumn ? BLOCK_MARGIN_PX : halfGap;
-    widthReduction = leftOffset + rightReduction;
-  }
-
-  return {
-    position: "absolute" as const,
-    top: `${topPercent}%`,
-    // Reduce height by gap to create vertical spacing between sequential blocks
-    height: `calc(${heightPercent}% - ${BLOCK_GAP_PX}px)`,
-    left: `calc(${leftPercent}% + ${leftOffset}px)`,
-    width: `calc(${widthPercent}% - ${widthReduction}px)`,
-  };
-}
-import {
-  BlockContextMenu,
-  EmptySpaceContextMenu,
-} from "./calendar-context-menu";
+import { formatTimeFromMinutes, snapToGrid } from "./calendar-utils";
+import { EmptySpaceContextMenu } from "./calendar-context-menu";
+import { TimeColumnBlock } from "./time-column-block";
+import { useExternalDrag } from "./use-external-drag";
 
 /**
  * TimeColumn renders a single day column with hour cells and event segments.
@@ -139,9 +61,8 @@ export function TimeColumn({
   };
 
   const columnRef = React.useRef<HTMLDivElement>(null);
-  const dragContext = useDragContextOptional();
 
-  // Track block element refs for hit detection
+  // Track block element refs for hit detection (shared with external drag hook)
   const blockRefsMap = React.useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Register a block element ref
@@ -156,166 +77,21 @@ export function TimeColumn({
     [],
   );
 
-  // Check if a point is inside a block's bounding rect
-  const getBlockAtPoint = React.useCallback(
-    (
-      clientX: number,
-      clientY: number,
-    ): { blockId: string; event: (typeof segments)[0]["event"] } | null => {
-      const dragItem = dragContext?.state.item;
-      // Only check for task drags
-      if (!dragItem || dragItem.type !== "task") return null;
-
-      for (const segment of segments) {
-        const event = segment.event;
-        // Skip essentials - they don't accept drops
-        if (event.blockType === "essential") continue;
-        // Skip if goal doesn't match
-        if (event.sourceGoalId !== dragItem.goalId) continue;
-        // Only goal and task blocks can accept task drops
-        if (event.blockType !== "goal" && event.blockType !== "task") continue;
-
-        const blockEl = blockRefsMap.current.get(event.id);
-        if (!blockEl) continue;
-
-        const rect = blockEl.getBoundingClientRect();
-        if (
-          clientX >= rect.left &&
-          clientX <= rect.right &&
-          clientY >= rect.top &&
-          clientY <= rect.bottom
-        ) {
-          return { blockId: event.id, event };
-        }
-      }
-      return null;
-    },
-    [dragContext?.state.item, segments],
-  );
-
-  // Calculate raw minutes from Y position for external drops (no snapping)
-  const getRawMinutesFromY = React.useCallback(
-    (clientY: number): number => {
-      if (!columnRef.current) return 0;
-      const rect = columnRef.current.getBoundingClientRect();
-      const scrollParent = columnRef.current.closest("[data-calendar-scroll]");
-      const scrollTop = scrollParent?.scrollTop ?? 0;
-      const y = clientY - rect.top + scrollTop;
-      const rawMinutes = y / pixelsPerMinute;
-      return Math.max(0, Math.min(1440 - 15, rawMinutes));
-    },
-    [pixelsPerMinute],
-  );
-
-  // Handle pointer move for external drag preview
-  const handleExternalDragMove = React.useCallback(
-    (e: React.PointerEvent) => {
-      if (!enableExternalDrop || !dragContext?.state.isDragging) return;
-
-      const dragItem = dragContext.state.item;
-      if (!dragItem) return;
-
-      // Check if pointer is over a valid block drop target
-      const blockHit = getBlockAtPoint(e.clientX, e.clientY);
-      if (blockHit) {
-        dragContext.setPreviewPosition({
-          dayIndex,
-          dropTarget: "existing-block",
-          targetBlockId: blockHit.blockId,
-        });
-        return;
-      }
-
-      const rawMinutes = getRawMinutesFromY(e.clientY);
-      const defaultDuration = getDefaultDuration(dragItem.type);
-
-      // Default: Adaptive drop - fits block to available gaps
-      if (!dragContext.state.isOverlapModeEnabled) {
-        // Pass raw cursor position - adaptive algorithm handles centering within gaps
-        const adaptive = calculateAdaptiveDrop(
-          segments,
-          rawMinutes,
-          defaultDuration,
-        );
-        dragContext.setPreviewPosition({
-          dayIndex,
-          startMinutes: adaptive.startMinutes,
-          dropTarget: "time-grid",
-          adaptiveDuration: adaptive.isAdapted
-            ? adaptive.durationMinutes
-            : undefined,
-        });
-      } else {
-        // Shift held: Override to allow overlap placement
-        const centeredMinutes = Math.max(0, rawMinutes - defaultDuration / 2);
-        const snappedMinutes = snapToGrid(centeredMinutes);
-        dragContext.setPreviewPosition({
-          dayIndex,
-          startMinutes: snappedMinutes,
-          dropTarget: "time-grid",
-        });
-      }
-    },
-    [
-      enableExternalDrop,
-      dragContext,
-      dayIndex,
-      getRawMinutesFromY,
-      getBlockAtPoint,
-      segments,
-    ],
-  );
-
-  // Handle pointer up for external drop
-  const handleExternalDrop = React.useCallback(
-    (e: React.PointerEvent) => {
-      if (
-        !enableExternalDrop ||
-        !dragContext?.state.isDragging ||
-        !dragContext.state.item
-      )
-        return;
-
-      // Check if dropping on a block
-      const blockHit = getBlockAtPoint(e.clientX, e.clientY);
-      if (blockHit) {
-        // The drop will be handled by the parent via handleDrop with existing-block target
-        onExternalDrop?.(dayIndex, 0); // startMinutes not used for block drops
-        dragContext.endDrag();
-        return;
-      }
-
-      // Grid drop - use the snapped position from preview if available
-      const previewPos = dragContext.state.previewPosition;
-      const startMinutes =
-        previewPos?.startMinutes ?? snapToGrid(getRawMinutesFromY(e.clientY));
-      onExternalDrop?.(dayIndex, startMinutes);
-      dragContext.endDrag();
-    },
-    [
-      enableExternalDrop,
-      dragContext,
-      dayIndex,
-      getRawMinutesFromY,
-      onExternalDrop,
-      getBlockAtPoint,
-    ],
-  );
-
-  // Handle pointer leave - clear preview if leaving this column
-  const handlePointerLeave = React.useCallback(() => {
-    if (!dragContext?.state.isDragging) return;
-    if (dragContext.state.previewPosition?.dayIndex === dayIndex) {
-      dragContext.setPreviewPosition(null);
-    }
-  }, [dragContext, dayIndex]);
-
-  // Check if external drag is over this column (time-grid only, not header)
-  const isExternalDragOver =
-    enableExternalDrop &&
-    dragContext?.state.isDragging &&
-    dragContext?.state.previewPosition?.dayIndex === dayIndex &&
-    dragContext?.state.previewPosition?.dropTarget === "time-grid";
+  // External drag handling
+  const {
+    handleExternalDragMove,
+    handleExternalDrop: handleExternalDropEvent,
+    handlePointerLeave,
+    isExternalDragOver,
+  } = useExternalDrag({
+    columnRef,
+    pixelsPerMinute,
+    enableExternalDrop,
+    dayIndex,
+    segments,
+    onExternalDrop,
+    blockRefsMap,
+  });
 
   return (
     <div
@@ -326,7 +102,7 @@ export function TimeColumn({
         isExternalDragOver && "bg-primary/[0.05]",
       )}
       onPointerMove={enableExternalDrop ? handleExternalDragMove : undefined}
-      onPointerUp={enableExternalDrop ? handleExternalDrop : undefined}
+      onPointerUp={enableExternalDrop ? handleExternalDropEvent : undefined}
       onPointerLeave={enableExternalDrop ? handlePointerLeave : undefined}
     >
       {/* Hour Cells */}
@@ -335,7 +111,6 @@ export function TimeColumn({
         const hourEndMinutes = hourStartMinutes + 60;
 
         // Check if this hour is outside the day boundaries (for dimming)
-        // An hour is "outside" if it ends before day start OR starts after day end
         const isOutsideDayBoundaries =
           dayBoundariesEnabled &&
           ((dayStartMinutes !== undefined &&
@@ -391,278 +166,28 @@ export function TimeColumn({
       {/* Event Segments */}
       <AnimatePresence>
         {segments.map((segment) => {
-          const { event, startMinutes, endMinutes, position, layout } = segment;
-          const segmentKey = `${event.id}-${position}`;
-          const segmentDuration = endMinutes - startMinutes;
-
-          const topPercent = getTopPercent(startMinutes);
-          const heightPercent = getHeightPercent(segmentDuration);
-
-          // Get positioning style based on overlap layout
-          const positionStyle = getBlockPositionStyle(
-            layout,
-            topPercent,
-            heightPercent,
-          );
-
-          // Compute actual pixel height to determine layout mode
-          const segmentHeightPx = segmentDuration * pixelsPerMinute;
-          const useCompactLayout =
-            segmentHeightPx < COMPACT_LAYOUT_THRESHOLD_PX;
-
-          // Compute drop target state for this block
-          const dragItem = dragContext?.state.item;
-          const previewPos = dragContext?.state.previewPosition;
-
-          // A block is a valid drop target if:
-          // 1. We're dragging a task
-          // 2. Block type is goal or task (not essential)
-          // 3. The dragged task's goalId matches this block's sourceGoalId
-          const isValidDropTarget = Boolean(
-            dragContext?.state.isDragging &&
-            dragItem?.type === "task" &&
-            (event.blockType === "goal" || event.blockType === "task") &&
-            event.sourceGoalId &&
-            dragItem.goalId === event.sourceGoalId,
-          );
-
-          // Check if drag is currently over this specific block
-          const isDragOver = Boolean(
-            isValidDropTarget &&
-            previewPos?.dropTarget === "existing-block" &&
-            previewPos?.targetBlockId === event.id,
-          );
-
-          // Helper to get display times for the segment
-          const getDisplayTimes = (previewStartMinutes?: number) => {
-            const isOvernight = isOvernightEvent(event);
-
-            if (isOvernight) {
-              const eventStart = previewStartMinutes ?? event.startMinutes;
-              const eventEnd = eventStart + event.durationMinutes;
-              return {
-                startTime: formatTimeFromMinutes(eventStart),
-                endTime: formatTimeFromMinutes(eventEnd),
-              };
-            }
-
-            const displayStart = previewStartMinutes ?? startMinutes;
-            const displayEnd = displayStart + segmentDuration;
-            return {
-              startTime: formatTimeFromMinutes(displayStart),
-              endTime: formatTimeFromMinutes(displayEnd),
-            };
-          };
-
-          // Helper to create block content with optional preview times
-          const createBlockContent = (previewStartMinutes?: number) => {
-            const times = getDisplayTimes(previewStartMinutes);
-
-            return (
-              <Block
-                title={event.title}
-                startTime={times.startTime}
-                endTime={times.endTime}
-                color={event.color}
-                status={
-                  setBlockStyle
-                    ? blockStyleToStatus(setBlockStyle)
-                    : (event.status ?? "planned")
-                }
-                duration={segmentDuration as 30 | 60 | 240}
-                pendingTaskCount={
-                  position === "start" || position === "only"
-                    ? event.pendingTaskCount
-                    : undefined
-                }
-                completedTaskCount={
-                  position === "start" || position === "only"
-                    ? event.completedTaskCount
-                    : undefined
-                }
-                segmentPosition={position}
-                compactLayout={useCompactLayout}
-                fillContainer
-                isDropTarget={isValidDropTarget}
-                isDragOver={isDragOver}
-                blockType={
-                  position === "start" || position === "only"
-                    ? event.blockType
-                    : undefined
-                }
-                sourceProvider={event.sourceProvider}
-                customColor={event.customColor}
-              />
-            );
-          };
-
-          // Helper to wrap with resize if needed
-          const wrapWithResize = (blockContent: React.ReactNode) => {
-            if (onEventResize) {
-              const canResizeTop = position === "only" || position === "start";
-              const canResizeBottom = position === "only" || position === "end";
-
-              return (
-                <ResizableBlockWrapper
-                  className="h-full"
-                  startMinutes={event.startMinutes}
-                  durationMinutes={event.durationMinutes}
-                  pixelsPerMinute={pixelsPerMinute}
-                  enableTopResize={canResizeTop}
-                  enableBottomResize={canResizeBottom}
-                  onResize={(newStart, newDuration) =>
-                    onEventResize(event.id, newStart, newDuration)
-                  }
-                  onResizeEnd={() => onEventResizeEnd?.(event.id)}
-                >
-                  {blockContent}
-                </ResizableBlockWrapper>
-              );
-            }
-            return blockContent;
-          };
-
-          // Helper to wrap content with context menu
-          // Always applies the key, with or without context menu
-          const wrapWithContextMenu = (
-            content: React.ReactNode,
-            key: string,
-          ) => {
-            if (!onEventCopy && !onEventDelete && !onEventStatusChange) {
-              // Return a Fragment with key to ensure AnimatePresence can track elements
-              return <React.Fragment key={key}>{content}</React.Fragment>;
-            }
-            return (
-              <BlockContextMenu
-                key={key}
-                event={event}
-                onCopy={() => onEventCopy?.(event)}
-                onDuplicate={() => {
-                  const nextDay = (event.dayIndex + 1) % 7;
-                  onEventDuplicate?.(event.id, nextDay, event.startMinutes);
-                }}
-                onDelete={() => onEventDelete?.(event.id)}
-                onToggleComplete={
-                  canMarkComplete(event.status) && onEventStatusChange
-                    ? () => {
-                        const newStatus =
-                          event.status === "completed"
-                            ? "planned"
-                            : "completed";
-                        onEventStatusChange(event.id, newStatus);
-                      }
-                    : undefined
-                }
-              >
-                {content}
-              </BlockContextMenu>
-            );
-          };
-
-          // Add drag capability if callbacks provided
-          // Only allow dragging from the 'start' or 'only' segment
-          if (
-            (onEventDragEnd || onEventDuplicate) &&
-            dayColumnWidth > 0 &&
-            (position === "only" || position === "start")
-          ) {
-            return wrapWithContextMenu(
-              <motion.div
-                ref={(el) => registerBlockRef(event.id, el)}
-                style={positionStyle}
-                onMouseEnter={() => onEventHover?.(event)}
-                onMouseLeave={() => onEventHover?.(null)}
-                {...blockAnimations}
-              >
-                <DraggableBlockWrapper
-                  className="h-full"
-                  startMinutes={event.startMinutes}
-                  dayIndex={dayIndex}
-                  durationMinutes={event.durationMinutes}
-                  pixelsPerMinute={pixelsPerMinute}
-                  dayColumnWidth={dayColumnWidth}
-                  minDayIndex={minDayIndex}
-                  maxDayIndex={maxDayIndex}
-                  onDragEnd={
-                    onEventDragEnd
-                      ? (newDay, newStart) =>
-                          onEventDragEnd(event.id, newDay, newStart)
-                      : undefined
-                  }
-                  onDuplicate={
-                    onEventDuplicate
-                      ? (newDay, newStart) =>
-                          onEventDuplicate(event.id, newDay, newStart)
-                      : undefined
-                  }
-                  onClick={() => onEventClick?.(event)}
-                  onDoubleClick={(e) => e.stopPropagation()}
-                >
-                  {({ isDragging, previewPosition }) => {
-                    const previewStart =
-                      isDragging && previewPosition
-                        ? previewPosition.startMinutes
-                        : undefined;
-                    return wrapWithResize(createBlockContent(previewStart));
-                  }}
-                </DraggableBlockWrapper>
-              </motion.div>,
-              segmentKey,
-            );
-          }
-
-          // 'end' segment of overnight blocks - resize only (bottom edge)
-          if (position === "end" && onEventResize) {
-            return wrapWithContextMenu(
-              <motion.div
-                ref={(el) => registerBlockRef(event.id, el)}
-                className="z-10"
-                style={positionStyle}
-                onMouseEnter={() => onEventHover?.(event)}
-                onMouseLeave={() => onEventHover?.(null)}
-                onClick={() => onEventClick?.(event)}
-                onDoubleClick={(e) => e.stopPropagation()}
-                {...blockAnimations}
-              >
-                {wrapWithResize(createBlockContent())}
-              </motion.div>,
-              segmentKey,
-            );
-          }
-
-          // Resize only (no drag)
-          if (onEventResize) {
-            return wrapWithContextMenu(
-              <motion.div
-                ref={(el) => registerBlockRef(event.id, el)}
-                className="z-10"
-                style={positionStyle}
-                onMouseEnter={() => onEventHover?.(event)}
-                onMouseLeave={() => onEventHover?.(null)}
-                onClick={() => onEventClick?.(event)}
-                onDoubleClick={(e) => e.stopPropagation()}
-                {...blockAnimations}
-              >
-                {wrapWithResize(createBlockContent())}
-              </motion.div>,
-              segmentKey,
-            );
-          }
-
-          return wrapWithContextMenu(
-            <motion.div
-              ref={(el) => registerBlockRef(event.id, el)}
-              className="z-10"
-              style={positionStyle}
-              onMouseEnter={() => onEventHover?.(event)}
-              onMouseLeave={() => onEventHover?.(null)}
-              onClick={() => onEventClick?.(event)}
-              onDoubleClick={(e) => e.stopPropagation()}
-              {...blockAnimations}
-            >
-              {createBlockContent()}
-            </motion.div>,
-            segmentKey,
+          const segmentKey = `${segment.event.id}-${segment.position}`;
+          return (
+            <TimeColumnBlock
+              key={segmentKey}
+              segment={segment}
+              dayIndex={dayIndex}
+              pixelsPerMinute={pixelsPerMinute}
+              dayColumnWidth={dayColumnWidth}
+              minDayIndex={minDayIndex}
+              maxDayIndex={maxDayIndex}
+              setBlockStyle={setBlockStyle}
+              registerBlockRef={registerBlockRef}
+              onEventResize={onEventResize}
+              onEventResizeEnd={onEventResizeEnd}
+              onEventDragEnd={onEventDragEnd}
+              onEventDuplicate={onEventDuplicate}
+              onEventCopy={onEventCopy}
+              onEventDelete={onEventDelete}
+              onEventStatusChange={onEventStatusChange}
+              onEventHover={onEventHover}
+              onEventClick={onEventClick}
+            />
           );
         })}
       </AnimatePresence>
