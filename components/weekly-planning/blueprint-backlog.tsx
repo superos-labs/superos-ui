@@ -1,12 +1,49 @@
-"use client";
-
 /**
- * BlueprintBacklog - Backlog panel for blueprint creation during onboarding.
+ * =============================================================================
+ * File: blueprint-backlog.tsx
+ * =============================================================================
  *
- * Shows essentials creation and goals that can be dragged to the calendar to build
- * the user's ideal typical week template. Essentials are created directly here
- * and auto-imported to the calendar.
+ * Blueprint creation backlog used during onboarding and blueprint editing.
+ *
+ * Allows users to define routine essentials (including sleep), and drag goals
+ * into a schedule-like view to design their ideal typical week.
+ *
+ * Acts as the primary composition layer that wires together:
+ * - Essentials creation and scheduling
+ * - Goal scheduling
+ * - Inline guidance (video tutorial)
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render blueprint header and guidance.
+ * - Orchestrate essentials section (including sleep configuration).
+ * - Render draggable schedule views for essentials and goals.
+ * - Provide a fallback display when essentials creation is unavailable.
+ * - Expose a save action to persist the blueprint upstream.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting blueprint data.
+ * - Computing schedules or conflicts.
+ * - Validating business rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Sleep is treated as a special essential with inline expansion.
+ * - Save action is sticky to ensure visibility.
+ * - Supports both onboarding and post-onboarding editing contexts.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - BlueprintBacklog
+ * - BlueprintBacklogProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -29,7 +66,8 @@ import type { GoalIconOption } from "@/lib/types";
 // Types
 // =============================================================================
 
-export interface BlueprintBacklogProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BlueprintBacklogProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   /** Goals available for scheduling */
   goals: ScheduleGoal[];
   /** Essentials for scheduling */
@@ -102,13 +140,14 @@ export function BlueprintBacklog({
   };
 
   // Check if essentials creation is available (all required props provided)
-  const hasEssentialsCreation = onAddEssential && onSaveSchedule && onDeleteEssential;
+  const hasEssentialsCreation =
+    onAddEssential && onSaveSchedule && onDeleteEssential;
 
   return (
     <div
       className={cn(
         "flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className,
+        className
       )}
       {...props}
     >
@@ -125,7 +164,8 @@ export function BlueprintBacklog({
               Create your blueprint
             </h2>
             <p className="text-sm text-muted-foreground">
-              Define your routine essentials and drag goals to design your ideal typical week.
+              Define your routine essentials and drag goals to design your ideal
+              typical week.
             </p>
           </div>
 
@@ -190,7 +230,8 @@ export function BlueprintBacklog({
               Your starting point
             </span>
             <span className="text-xs text-muted-foreground">
-              This blueprint will be used as a starting point when planning future weeks.
+              This blueprint will be used as a starting point when planning
+              future weeks.
             </span>
           </div>
 

@@ -1,12 +1,48 @@
-"use client";
-
 /**
- * BlueprintEssentialsSection - Embedded essentials creation for blueprint setup.
+ * =============================================================================
+ * File: blueprint-essentials-section.tsx
+ * =============================================================================
  *
- * Allows users to create, edit, and delete essentials directly within the
- * blueprint backlog panel. Essentials are auto-imported to the calendar
- * as they are created.
+ * Essentials management section used within blueprint creation.
+ *
+ * Lets users configure sleep, review existing essentials, add new essentials
+ * (via suggestions or custom creation), and define their weekly schedules.
+ *
+ * Designed to reduce setup friction by offering sensible defaults and
+ * inline editing.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render and manage the Sleep row with expandable configuration.
+ * - Display existing essentials with editable schedules.
+ * - Surface suggested essentials with one-tap inline setup.
+ * - Provide an inline creator for fully custom essentials.
+ * - Orchestrate expansion, editing, and creation states.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting essentials.
+ * - Validating scheduling rules.
+ * - Resolving schedule conflicts.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Suggested essentials include opinionated default days and times.
+ * - Only one editing surface (sleep, suggestion, essential, or creator)
+ *   is active at a time.
+ * - Essentials are sorted by earliest start time for scannability.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - BlueprintEssentialsSection
+ * - BlueprintEssentialsSectionProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -23,8 +59,15 @@ import { getIconColorClass } from "@/lib/colors";
 import type { GoalIconOption, IconComponent } from "@/lib/types";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
 import type { ScheduleEssential } from "@/lib/unified-schedule";
-import { SleepRow, EssentialRow, InlineEssentialCreator } from "@/components/backlog/essentials";
-import type { EssentialItem, NewEssentialData } from "@/components/backlog/essentials";
+import {
+  SleepRow,
+  EssentialRow,
+  InlineEssentialCreator,
+} from "@/components/backlog/essentials";
+import type {
+  EssentialItem,
+  NewEssentialData,
+} from "@/components/backlog/essentials";
 import { DAY_LABELS, DAY_FULL_LABELS } from "@/lib/time-utils";
 import { TimeInput } from "@/components/ui/time-input";
 
@@ -140,7 +183,7 @@ function SuggestionEditor({
   onCancel,
 }: SuggestionEditorProps) {
   const [selectedDays, setSelectedDays] = React.useState<number[]>(
-    suggestion.defaultDays,
+    suggestion.defaultDays
   );
   const [timeRanges, setTimeRanges] = React.useState<TimeRange[]>([
     {
@@ -162,10 +205,10 @@ function SuggestionEditor({
 
   const updateTimeRange = (
     id: string,
-    updates: { startMinutes?: number; durationMinutes?: number },
+    updates: { startMinutes?: number; durationMinutes?: number }
   ) => {
     setTimeRanges((prev) =>
-      prev.map((range) => (range.id === id ? { ...range, ...updates } : range)),
+      prev.map((range) => (range.id === id ? { ...range, ...updates } : range))
     );
   };
 
@@ -209,7 +252,7 @@ function SuggestionEditor({
         icon: suggestion.icon,
         color: suggestion.color,
       },
-      slots,
+      slots
     );
   };
 
@@ -257,7 +300,7 @@ function SuggestionEditor({
                     "flex size-7 items-center justify-center rounded-md text-xs font-medium transition-colors",
                     isSelected
                       ? "bg-foreground/20 text-foreground"
-                      : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground",
+                      : "bg-background text-muted-foreground/50 hover:bg-background/80 hover:text-muted-foreground"
                   )}
                   title={DAY_FULL_LABELS[index]}
                 >
@@ -330,7 +373,7 @@ function SuggestionEditor({
             "w-full rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200",
             selectedDays.length > 0
               ? "bg-foreground text-background hover:bg-foreground/90"
-              : "cursor-not-allowed bg-muted text-muted-foreground",
+              : "cursor-not-allowed bg-muted text-muted-foreground"
           )}
         >
           Add
@@ -379,7 +422,7 @@ function PlaceholderRow({
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-        "hover:bg-muted/60",
+        "hover:bg-muted/60"
       )}
     >
       {/* Icon */}
@@ -389,7 +432,7 @@ function PlaceholderRow({
             "size-4 transition-colors",
             isHovered
               ? getIconColorClass(suggestion.color)
-              : "text-muted-foreground/40",
+              : "text-muted-foreground/40"
           )}
         />
       </div>
@@ -398,7 +441,7 @@ function PlaceholderRow({
       <span
         className={cn(
           "flex-1 text-sm transition-colors",
-          isHovered ? "text-muted-foreground" : "text-muted-foreground/50",
+          isHovered ? "text-muted-foreground" : "text-muted-foreground/50"
         )}
       >
         {suggestion.label}
@@ -487,7 +530,7 @@ export function BlueprintEssentialsSection({
   // Filter out already-added suggestions by matching labels (case-insensitive)
   // and sort by time (earliest first)
   const availableSuggestions = SUGGESTED_ESSENTIALS.filter(
-    (s) => !addedEssentialLabels.includes(s.label.toLowerCase()),
+    (s) => !addedEssentialLabels.includes(s.label.toLowerCase())
   ).sort((a, b) => a.defaultStartMinutes - b.defaultStartMinutes);
 
   const handleToggleEssentialExpand = (id: string) => {
@@ -513,7 +556,7 @@ export function BlueprintEssentialsSection({
 
   const handleSaveEssential = (
     data: NewEssentialData,
-    slots: EssentialSlot[],
+    slots: EssentialSlot[]
   ) => {
     onAddEssential(data, slots);
     setEditingSuggestionId(null);
@@ -535,7 +578,7 @@ export function BlueprintEssentialsSection({
 
   const handleSaveNewEssential = (
     data: NewEssentialData,
-    slots: EssentialSlot[],
+    slots: EssentialSlot[]
   ) => {
     onAddEssential(data, slots);
     setIsCreating(false);
@@ -545,7 +588,9 @@ export function BlueprintEssentialsSection({
     <div className={cn("flex flex-col", className)}>
       {/* Section header */}
       <div className="px-4 pb-1">
-        <h4 className="text-xs font-medium text-muted-foreground">Essentials</h4>
+        <h4 className="text-xs font-medium text-muted-foreground">
+          Essentials
+        </h4>
       </div>
 
       {/* Content */}
@@ -554,7 +599,7 @@ export function BlueprintEssentialsSection({
         <div
           className={cn(
             "rounded-xl transition-colors",
-            !isSleepConfigured && !isSleepExpanded && "bg-muted/20",
+            !isSleepConfigured && !isSleepExpanded && "bg-muted/20"
           )}
         >
           <SleepRow

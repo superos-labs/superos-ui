@@ -1,15 +1,46 @@
-"use client";
-
 /**
- * PlanningPrioritizeView - Step 1 of weekly planning.
+ * =============================================================================
+ * File: planning-prioritize-view.tsx
+ * =============================================================================
  *
- * Shows goals with their tasks (focus tasks first, then other tasks).
- * Users can hover over tasks to see +/- buttons to toggle weekly focus status.
- * For goals with no tasks, adding a task automatically marks it as weekly focus.
+ * Step 1 of weekly planning: task prioritization.
  *
- * Note: No section headers are displayed - focus tasks are simply ordered first,
- * and the scheduling on calendar (with time pills) serves as the visual indicator.
+ * Allows users to select a small set of focus tasks per goal that will
+ * define what they actively work on during the week.
+ *
+ * Tasks marked as focus are surfaced first and can be quickly toggled.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render goals with their associated tasks.
+ * - Support toggling tasks into and out of weekly focus.
+ * - Surface focus tasks before non-focus tasks.
+ * - Optionally allow inline creation of new tasks (auto-marked as focus).
+ * - Respect milestone context by showing only current-milestone tasks when applicable.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting focus state.
+ * - Scheduling tasks on the calendar.
+ * - Enforcing limits on number of focus tasks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Focus state is the primary signal in this step.
+ * - Completed tasks are visually muted.
+ * - Inline task creation is intentionally minimal.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PlanningPrioritizeView
+ * - PlanningPrioritizeViewProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -128,7 +159,7 @@ function PrioritizeTaskRow({
       onClick={onToggleFocus}
       className={cn(
         "group flex w-full items-center gap-2.5 rounded-md py-1.5 pl-4 pr-3 text-left transition-all",
-        isInFocus ? "bg-muted/40 hover:bg-muted/60" : "hover:bg-muted/60",
+        isInFocus ? "bg-muted/40 hover:bg-muted/60" : "hover:bg-muted/60"
       )}
       aria-label={isInFocus ? "Remove from this week" : "Add to this week"}
     >
@@ -139,8 +170,8 @@ function PrioritizeTaskRow({
           task.completed
             ? "bg-muted text-muted-foreground"
             : isInFocus
-              ? "bg-muted/80 text-muted-foreground/60"
-              : "bg-muted/40 text-muted-foreground/30",
+            ? "bg-muted/80 text-muted-foreground/60"
+            : "bg-muted/40 text-muted-foreground/30"
         )}
       >
         {task.completed && <RiCheckLine className="size-2.5" />}
@@ -153,8 +184,8 @@ function PrioritizeTaskRow({
           task.completed
             ? "text-muted-foreground line-through"
             : isInFocus
-              ? "text-foreground"
-              : "text-muted-foreground",
+            ? "text-foreground"
+            : "text-muted-foreground"
         )}
       >
         {task.label}
@@ -165,7 +196,7 @@ function PrioritizeTaskRow({
         className={cn(
           "flex size-5 shrink-0 items-center justify-center rounded transition-all",
           "opacity-0 group-hover:opacity-100",
-          "text-muted-foreground",
+          "text-muted-foreground"
         )}
       >
         {isInFocus ? (
@@ -224,7 +255,7 @@ function GoalWithSubsections({
         onAddToFocus(newTaskId);
       }
     },
-    [onAddTask, onAddToFocus],
+    [onAddTask, onAddToFocus]
   );
 
   return (
@@ -285,7 +316,9 @@ export function PlanningPrioritizeView({
       {goals.length > 0 ? (
         <div className="flex flex-col">
           <div className="px-4 pb-1">
-            <h4 className="text-xs font-medium text-muted-foreground">Your goals</h4>
+            <h4 className="text-xs font-medium text-muted-foreground">
+              Your goals
+            </h4>
           </div>
           <div className="flex flex-col gap-3 px-2">
             {goals.map((goal) => (

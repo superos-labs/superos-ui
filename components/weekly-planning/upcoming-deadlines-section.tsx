@@ -1,15 +1,46 @@
-"use client";
-
 /**
- * UpcomingDeadlinesSection - Shows upcoming deadlines within the quarter.
+ * =============================================================================
+ * File: upcoming-deadlines-section.tsx
+ * =============================================================================
  *
- * Displays goal, milestone, and task deadlines in a compact list format.
- * Read-only display - clicking does nothing.
- * Only shows incomplete deadlines, sorted by date.
+ * Inline section variant of upcoming deadlines.
  *
- * By default, shows only deadlines within the next 30 days.
- * Users can expand to see all quarter deadlines.
+ * Displays a lightweight list of goal, milestone, and task deadlines,
+ * collapsed to a near-term window by default, with optional expansion.
+ *
+ * Intended for embedding inside larger views (e.g., sidebars, panels)
+ * rather than as a standalone card.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a list of upcoming deadlines.
+ * - Format deadline dates into human-friendly labels.
+ * - Collapse to a near-term window by default.
+ * - Allow toggling between collapsed and expanded views.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching, filtering, or sorting deadlines.
+ * - Persisting expansion state.
+ * - Determining urgency or priority.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Mirrors behavior of UpcomingDeadlinesCard in a section form factor.
+ * - 30-day window chosen as a sensible default horizon.
+ * - Icon varies by deadline type (goal, milestone, task).
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - UpcomingDeadlinesSection
+ * - UpcomingDeadlinesSectionProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -168,7 +199,8 @@ export function UpcomingDeadlinesSection({
   );
 
   // Check if there are deadlines beyond the 30-day limit
-  const hasDeadlinesBeyondLimit = deadlines.length > deadlinesWithinLimit.length;
+  const hasDeadlinesBeyondLimit =
+    deadlines.length > deadlinesWithinLimit.length;
 
   // Check if there are any deadlines within the limit
   const hasDeadlinesWithinLimit = deadlinesWithinLimit.length > 0;

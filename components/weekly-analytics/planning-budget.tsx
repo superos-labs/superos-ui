@@ -1,13 +1,53 @@
-"use client";
-
 /**
- * PlanningBudget - Time budget analytics for weekly planning mode.
+ * =============================================================================
+ * File: planning-budget.tsx
+ * =============================================================================
  *
- * Shows time as a diminishing resource:
- * - 168h total week → essentials consumed → available for goals
- * - Real-time updates as items are scheduled
- * - Distribution by goals or life areas (toggle)
+ * Weekly Planning Budget card.
+ *
+ * Presents a high-level breakdown of a user's 168 weekly hours into:
+ * - Sleep
+ * - Essentials
+ * - Scheduled goal time
+ * - Unallocated time
+ *
+ * Helps users understand how much time they truly have for goals and whether
+ * their current plan fits within that budget.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define core PlanningBudget data types (goals, essentials).
+ * - Calculate sleep hours from wake/wind-down times.
+ * - Compute available hours, scheduled hours, and remaining budget.
+ * - Render a waterfall-style breakdown of weekly time.
+ * - Show remaining goal time and over-budget state.
+ * - Delegate detailed breakdown to DistributionSection.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Determining or mutating scheduled hours.
+ * - Persisting user data.
+ * - Enforcing planning constraints or recommendations.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses a fixed 168h weekly baseline.
+ * - Over-budget states are visually emphasized.
+ * - Distribution can be viewed by Goals or Life Areas.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PlanningBudget
+ * - PlanningBudgetProps
+ * - PlanningBudgetGoal
+ * - PlanningBudgetEssential
  */
+
+"use client";
 
 import * as React from "react";
 import { cn, formatHours, formatHoursWithUnit } from "@/lib/utils";
@@ -40,7 +80,8 @@ export interface PlanningBudgetEssential {
   scheduledHours: number;
 }
 
-export interface PlanningBudgetProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface PlanningBudgetProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   /** Goals with their scheduled hours */
   goals: PlanningBudgetGoal[];
   /** Essentials with their scheduled hours (from calendar blocks) */
@@ -73,7 +114,7 @@ const TOTAL_WEEKLY_HOURS = 168;
  */
 function calculateSleepHours(
   wakeUpMinutes: number,
-  windDownMinutes: number,
+  windDownMinutes: number
 ): number {
   // Time from midnight to wake up
   const morningMinutes = wakeUpMinutes;
@@ -108,7 +149,7 @@ function WaterfallBar({ segments, totalHours, className }: WaterfallBarProps) {
     <div
       className={cn(
         "flex h-3 w-full overflow-hidden rounded-full bg-muted",
-        className,
+        className
       )}
     >
       {segments.map((segment) => {
@@ -191,7 +232,9 @@ function BudgetHeader({
     <div className="flex flex-col gap-4 px-4 py-4">
       {/* Title */}
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Your time availability</h2>
+        <h2 className="text-sm font-semibold text-foreground">
+          Your time availability
+        </h2>
         <span className="text-xs text-muted-foreground">
           {formatHours(TOTAL_WEEKLY_HOURS)}h total
         </span>
@@ -263,7 +306,7 @@ function BudgetTracker({
           <span
             className={cn(
               "text-2xl font-semibold tabular-nums",
-              isOverBudget ? "text-amber-600" : "text-foreground",
+              isOverBudget ? "text-amber-600" : "text-foreground"
             )}
           >
             {formatHours(Math.max(0, remainingHours))}h
@@ -281,8 +324,8 @@ function BudgetTracker({
               isOverBudget
                 ? "bg-amber-500"
                 : scheduledPercent > 80
-                  ? "bg-emerald-500"
-                  : "bg-foreground/70",
+                ? "bg-emerald-500"
+                : "bg-foreground/70"
             )}
             style={{ width: `${Math.min(scheduledPercent, 100)}%` }}
           />
@@ -297,9 +340,7 @@ function BudgetTracker({
       {isOverBudget && (
         <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-500">
           <RiTimeLine className="size-3.5 shrink-0" />
-          <span>
-            {formatHours(Math.abs(remainingHours))}h over budget
-          </span>
+          <span>{formatHours(Math.abs(remainingHours))}h over budget</span>
         </div>
       )}
     </div>
@@ -328,14 +369,14 @@ export function PlanningBudget({
 
   const essentialsHours = essentials.reduce(
     (sum, e) => sum + e.scheduledHours,
-    0,
+    0
   );
   const committedHours = sleepHours + essentialsHours;
   const availableHours = TOTAL_WEEKLY_HOURS - committedHours;
 
   const scheduledGoalHours = goals.reduce(
     (sum, g) => sum + g.scheduledHours,
-    0,
+    0
   );
   const remainingHours = availableHours - scheduledGoalHours;
 
@@ -343,7 +384,7 @@ export function PlanningBudget({
     <div
       className={cn(
         "flex w-full max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className,
+        className
       )}
       {...props}
     >

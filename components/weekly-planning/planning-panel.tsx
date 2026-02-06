@@ -1,3 +1,46 @@
+/**
+ * =============================================================================
+ * File: planning-panel.tsx
+ * =============================================================================
+ *
+ * Two-step weekly planning panel.
+ *
+ * Guides users through:
+ * 1) Prioritizing a small set of focus tasks per goal.
+ * 2) Scheduling those focus tasks into the calendar.
+ *
+ * Serves as the main orchestration layer for the weekly planning flow.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render step-specific headers and descriptions.
+ * - Switch between prioritize and schedule views.
+ * - Pass focus state and callbacks to child views.
+ * - Handle cancellation, step progression, and final confirmation.
+ * - Optionally allow saving the week as a blueprint template.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting planning results.
+ * - Computing schedules or conflicts.
+ * - Enforcing prioritization rules.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Step 1 emphasizes selection over scheduling.
+ * - Step 2 shows only focus tasks to reduce clutter.
+ * - Save-as-blueprint toggle appears only when no blueprint exists.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PlanningPanel
+ * - PlanningPanelProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -18,7 +61,8 @@ import { RiCalendarLine, RiCloseLine } from "@remixicon/react";
 // Types
 // =============================================================================
 
-export interface PlanningPanelProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface PlanningPanelProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   /** Goals available for scheduling */
   goals: ScheduleGoal[];
   /** Essentials for scheduling */
@@ -103,7 +147,9 @@ export function PlanningPanel({
   const [saveAsBlueprint, setSaveAsBlueprint] = React.useState(true);
 
   // Header content based on step
-  const headerTitle = isPrioritizeStep ? "Prioritize tasks" : "Review & schedule";
+  const headerTitle = isPrioritizeStep
+    ? "Prioritize tasks"
+    : "Review & schedule";
   const headerDescription = isPrioritizeStep
     ? "Select 2-3 tasks for each goal that move it forward this week."
     : "Adjust your schedule as needed and drag tasks to blocks to make time for them.";
@@ -112,7 +158,7 @@ export function PlanningPanel({
     <div
       className={cn(
         "flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm",
-        className,
+        className
       )}
       {...props}
     >
@@ -186,13 +232,13 @@ export function PlanningPanel({
                 onClick={() => setSaveAsBlueprint(!saveAsBlueprint)}
                 className={cn(
                   "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors",
-                  saveAsBlueprint ? "bg-foreground" : "bg-muted-foreground/30",
+                  saveAsBlueprint ? "bg-foreground" : "bg-muted-foreground/30"
                 )}
               >
                 <span
                   className={cn(
                     "pointer-events-none block size-5 rounded-full bg-background shadow-sm ring-0 transition-transform",
-                    saveAsBlueprint ? "translate-x-[22px]" : "translate-x-0.5",
+                    saveAsBlueprint ? "translate-x-[22px]" : "translate-x-0.5"
                   )}
                 />
               </button>

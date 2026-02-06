@@ -1,11 +1,46 @@
-"use client";
-
 /**
- * InlineVideoTutorial - Dismissible video tutorial with play button overlay
+ * =============================================================================
+ * File: inline-video-tutorial.tsx
+ * =============================================================================
  *
- * Shows a video thumbnail with an animated play button that opens the video
- * in a new tab when clicked. Can be dismissed by the user.
+ * Inline, dismissible video tutorial preview.
+ *
+ * Displays a thumbnail with a play overlay that opens an external video in a
+ * new tab, plus a short caption and a "Maybe later" dismissal affordance.
+ *
+ * Used in onboarding and setup flows to provide lightweight, optional guidance
+ * without blocking progression.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render video thumbnail with interactive play overlay.
+ * - Open the provided video URL in a new tab.
+ * - Allow user to dismiss the tutorial.
+ * - Handle simple hover and entrance/exit animations.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Embedding or playing video inline.
+ * - Tracking watch state or completion.
+ * - Persisting dismissal state.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses subtle motion and scale for approachability.
+ * - Frosted-glass style play button for visual prominence.
+ * - Entire thumbnail area is clickable.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - InlineVideoTutorial
+ * - InlineVideoTutorialProps
  */
+
+"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,15 +99,15 @@ export function InlineVideoTutorial({
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ 
-            opacity: 0, 
+          exit={{
+            opacity: 0,
             scale: 0.98,
             marginTop: 0,
             marginBottom: 0,
           }}
-          transition={{ 
+          transition={{
             duration: 0.25,
-            ease: [0.4, 0, 0.2, 1]
+            ease: [0.4, 0, 0.2, 1],
           }}
           className={cn("relative flex flex-col gap-2", className)}
         >
@@ -91,7 +126,7 @@ export function InlineVideoTutorial({
                 fill
                 className={cn(
                   "object-cover transition-transform duration-500 ease-out",
-                  isHovered && "scale-[1.02]",
+                  isHovered && "scale-[1.02]"
                 )}
                 sizes="(max-width: 768px) 100vw, 360px"
               />
@@ -101,7 +136,7 @@ export function InlineVideoTutorial({
             <div
               className={cn(
                 "absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-black/5 transition-opacity duration-300",
-                isHovered ? "opacity-80" : "opacity-100",
+                isHovered ? "opacity-80" : "opacity-100"
               )}
             />
 
@@ -115,14 +150,15 @@ export function InlineVideoTutorial({
                   "shadow-[0_2px_8px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)]",
                   "ring-1 ring-black/[0.04]",
                   // Subtle hover state
-                  isHovered && "bg-white/95 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] scale-[1.04]",
+                  isHovered &&
+                    "bg-white/95 shadow-[0_4px_12px_rgba(0,0,0,0.15),0_2px_4px_rgba(0,0,0,0.1)] scale-[1.04]"
                 )}
               >
                 {/* Play icon - optically centered */}
                 <PlayIcon
                   className={cn(
                     "size-5 text-neutral-800 transition-colors duration-300",
-                    isHovered && "text-neutral-900",
+                    isHovered && "text-neutral-900"
                   )}
                 />
               </div>

@@ -1,3 +1,47 @@
+/**
+ * =============================================================================
+ * File: time-range-row.tsx
+ * =============================================================================
+ *
+ * Primitive time editing components used for configuring start/end times
+ * and durations in minute-based form.
+ *
+ * Provides:
+ * - TimeInput: Flexible text input for a single time value.
+ * - TimeRangeRow: Paired start/end time inputs with optional delete action.
+ *
+ * All times are represented as minutes from midnight.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render time inputs that accept human-friendly formats.
+ * - Format minutes into display strings and parse user input back to minutes.
+ * - Translate end-time edits into duration updates.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting values.
+ * - Enforcing scheduling rules or overlaps.
+ * - Validating cross-row constraints.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - TimeInput is controlled but maintains internal display state while focused.
+ * - Invalid input on blur reverts to the last valid value.
+ * - End time changes are clamped to positive durations only.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - TimeInput
+ * - TimeInputProps
+ * - TimeRangeRow
+ * - TimeRangeRowProps
+ */
+
 "use client";
 
 import * as React from "react";
@@ -61,7 +105,7 @@ export function TimeInput({ value, onChange, className }: TimeInputProps) {
       className={cn(
         "w-[80px] rounded-md bg-background/60 px-2 py-1.5 text-center text-sm text-foreground",
         "focus:bg-background focus:outline-none focus:ring-1 focus:ring-ring/50",
-        className,
+        className
       )}
     />
   );

@@ -1,11 +1,42 @@
-"use client";
-
 /**
- * PlanWeekPromptCard - Encourages users to plan their week after onboarding.
+ * =============================================================================
+ * File: plan-week-prompt-card.tsx
+ * =============================================================================
  *
- * Displayed as a centered overlay card on top of the dimmed calendar
- * immediately after the user completes goals and essentials setup.
+ * Prompt card encouraging users to start weekly planning.
+ *
+ * Presents a short motivational message with a primary call-to-action
+ * to begin planning and a secondary dismissal option.
+ *
+ * Typically surfaced after blueprint creation or when a new week begins.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a lightweight, visually distinctive prompt.
+ * - Invoke callbacks for starting planning or dismissing the prompt.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Performing navigation.
+ * - Persisting dismissal state.
+ * - Determining when the card should appear.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses subtle decorative background layers for depth.
+ * - Centered, single-focus layout to minimize cognitive load.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PlanWeekPromptCard
+ * - PlanWeekPromptCardProps
  */
+
+"use client";
 
 import * as React from "react";
 import { RiCalendarScheduleLine } from "@remixicon/react";
@@ -30,7 +61,7 @@ export function PlanWeekPromptCard({
       className={cn(
         "relative flex flex-col items-center overflow-hidden rounded-2xl border border-border bg-background shadow-sm",
         "max-w-[420px]",
-        className,
+        className
       )}
     >
       {/* Decorative gradient background */}
@@ -64,8 +95,8 @@ export function PlanWeekPromptCard({
             Focus on what matters
           </h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Your schedule is ready. Pick 2-3 priority tasks for each goal
-            to focus on this week.
+            Your schedule is ready. Pick 2-3 priority tasks for each goal to
+            focus on this week.
           </p>
         </div>
 

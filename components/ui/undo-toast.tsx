@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: undo-toast.tsx
+ * =============================================================================
+ *
+ * Lightweight toast notifications for transient action feedback.
+ *
+ * Provides:
+ * - UndoToast: Toast with optional Undo action.
+ * - SimpleToast: Toast without actions (legacy / backward compatibility).
+ *
+ * Designed to appear as a small pill at the bottom center of the viewport
+ * with subtle enter/exit motion.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render animated toast UI.
+ * - Optionally render an Undo action.
+ * - Auto-dismiss after a configurable delay.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Managing undo stacks or command history.
+ * - Deciding which actions are undoable.
+ * - Global toast orchestration.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses framer-motion for enter/exit transitions.
+ * - UndoToast shows an "Undo" button with ⌘Z hint when provided.
+ * - Null message hides the toast.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - UndoToast
+ * - SimpleToast
+ */
+
 "use client";
 
 import * as React from "react";
@@ -28,12 +70,12 @@ interface UndoToastProps {
 /**
  * A toast notification for action feedback with optional undo button.
  * Displays a small dark pill with white text at the bottom center of the screen.
- * 
+ *
  * When an undo button is shown, the toast stays longer (4 seconds) to give
  * users time to click it. The undo button uses CMD+Z shortcut indicator.
  */
-export function UndoToast({ 
-  message, 
+export function UndoToast({
+  message,
   onUndo,
   showUndo = !!onUndo,
   dismissDelay = 4000,
@@ -49,11 +91,14 @@ export function UndoToast({
     }
   }, [message, dismissDelay, onDismiss]);
 
-  const handleUndo = React.useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onUndo?.();
-  }, [onUndo]);
+  const handleUndo = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onUndo?.();
+    },
+    [onUndo]
+  );
 
   return (
     <AnimatePresence>
@@ -65,7 +110,7 @@ export function UndoToast({
           transition={{ duration: 0.15, ease: "easeOut" }}
           className="pointer-events-auto fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
         >
-          <div 
+          <div
             className={cn(
               "flex items-center gap-2 rounded-full bg-zinc-900 px-3 py-1.5 shadow-lg",
               "dark:bg-zinc-100"
@@ -90,7 +135,7 @@ export function UndoToast({
                   )}
                 >
                   <span>Undo</span>
-                  <kbd 
+                  <kbd
                     className={cn(
                       "rounded px-1 py-0.5 text-[10px] font-medium",
                       "bg-white/10 text-white/60",

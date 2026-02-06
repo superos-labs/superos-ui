@@ -1,10 +1,48 @@
-"use client";
-
 /**
- * PlanningScheduleView - Backlog-like view for scheduling during weekly planning.
+ * =============================================================================
+ * File: planning-schedule-view.tsx
+ * =============================================================================
  *
- * Shows essentials and goals with their tasks, allowing drag-to-calendar scheduling.
+ * Step 2 of weekly planning: scheduling.
+ *
+ * Displays essentials, goals, and tasks in a lightweight list optimized for
+ * drag-and-drop into the calendar.
+ *
+ * Can optionally filter to only show weekly focus tasks and highlight specific
+ * tasks based on external context.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render essentials as draggable rows.
+ * - Render goals with their tasks.
+ * - Support drag-and-drop for goals, essentials, and tasks.
+ * - Show scheduled time or deadline metadata for tasks.
+ * - Optionally filter tasks to weekly focus set.
+ * - Optionally surface an "Add essentials to calendar" action.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting schedules.
+ * - Computing conflicts or availability.
+ * - Determining which tasks are focus tasks.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Completed tasks are visually muted.
+ * - Highlighted tasks receive a subtle star indicator.
+ * - When focus filtering is active, goals without visible tasks are hidden.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PlanningScheduleView
+ * - PlanningScheduleViewProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -87,7 +125,7 @@ function EssentialRow({ essential, draggable = false }: EssentialRowProps) {
         "group flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
         "hover:bg-muted/60",
         isDragging && "opacity-50",
-        canDrag && "cursor-grab active:cursor-grabbing",
+        canDrag && "cursor-grab active:cursor-grabbing"
       )}
       {...(canDrag ? draggableProps : {})}
     >
@@ -153,7 +191,7 @@ function PlanningTaskRow({
         isDragging && "opacity-50",
         canDrag && "cursor-grab active:cursor-grabbing",
         isHighlighted &&
-          "bg-amber-500/10 hover:bg-amber-500/15 ring-1 ring-inset ring-amber-500/30",
+          "bg-amber-500/10 hover:bg-amber-500/15 ring-1 ring-inset ring-amber-500/30"
       )}
       {...(canDrag ? draggableProps : {})}
     >
@@ -168,7 +206,7 @@ function PlanningTaskRow({
           "flex size-4 shrink-0 items-center justify-center rounded transition-colors",
           task.completed
             ? "bg-muted text-muted-foreground"
-            : "bg-muted/60 text-muted-foreground/50",
+            : "bg-muted/60 text-muted-foreground/50"
         )}
       >
         {task.completed && <RiCheckLine className="size-2.5" />}
@@ -180,7 +218,7 @@ function PlanningTaskRow({
           "flex-1 truncate text-xs",
           task.completed
             ? "text-muted-foreground line-through"
-            : "text-foreground/80",
+            : "text-foreground/80"
         )}
       >
         {task.label}
@@ -201,7 +239,7 @@ function PlanningTaskRow({
             "flex shrink-0 items-center gap-1 text-[10px] tabular-nums",
             deadlineInfo.isOverdue
               ? "text-amber-600 dark:text-amber-500"
-              : "text-muted-foreground",
+              : "text-muted-foreground"
           )}
         >
           <RiFlagLine className="size-3" />
@@ -280,7 +318,7 @@ function GoalRow({
           "group flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
           "hover:bg-muted/60",
           isDragging && "opacity-50",
-          canDrag && "cursor-grab active:cursor-grabbing",
+          canDrag && "cursor-grab active:cursor-grabbing"
         )}
         {...(canDrag ? draggableProps : {})}
       >
@@ -347,7 +385,7 @@ export function PlanningScheduleView({
       return goals.length > 0;
     }
     return goals.some((goal) =>
-      goal.tasks?.some((t) => weeklyFocusTaskIds.has(t.id)),
+      goal.tasks?.some((t) => weeklyFocusTaskIds.has(t.id))
     );
   }, [goals, weeklyFocusTaskIds]);
 

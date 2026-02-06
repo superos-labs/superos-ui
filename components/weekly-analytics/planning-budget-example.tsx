@@ -1,3 +1,43 @@
+/**
+ * =============================================================================
+ * File: planning-budget-example.tsx
+ * =============================================================================
+ *
+ * Playground example for the PlanningBudget component.
+ *
+ * Provides representative sample goals, essentials, and sleep configuration,
+ * along with interactive knobs to simulate different weekly planning scenarios.
+ *
+ * Intended for internal development, design iteration, and visual QA.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define sample PlanningBudgetGoal and PlanningBudgetEssential data.
+ * - Manage local state for simulated scheduled hours and sleep settings.
+ * - Render PlanningBudget with controllable inputs.
+ * - Expose knobs for real-time parameter tweaking.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting any data.
+ * - Enforcing business rules.
+ * - Representing production usage patterns.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses Remix Icons to mirror real app icon usage.
+ * - Knobs are grouped by concern (sleep, then goals).
+ * - Week label is hard-coded for demo purposes.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - PlanningBudgetExample
+ */
+
 "use client";
 
 import * as React from "react";

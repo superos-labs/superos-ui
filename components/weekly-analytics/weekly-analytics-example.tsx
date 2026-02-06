@@ -1,3 +1,41 @@
+/**
+ * =============================================================================
+ * File: weekly-analytics-example.tsx
+ * =============================================================================
+ *
+ * Playground example for the WeeklyAnalytics component.
+ *
+ * Provides sample goal analytics data and a minimal set of knobs to
+ * toggle high-level presentation states.
+ *
+ * Intended for internal development, visual QA, and design iteration.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define representative WeeklyAnalyticsItem sample data.
+ * - Manage local state for demo-only toggles.
+ * - Render WeeklyAnalytics inside a knobs playground.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting analytics data.
+ * - Computing planned or completed hours.
+ * - Representing production usage patterns.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses Remix Icons to mirror real app icon usage.
+ * - Week label is hard-coded for demo purposes.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - WeeklyAnalyticsExample
+ */
+
 "use client";
 
 import * as React from "react";

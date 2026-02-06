@@ -1,11 +1,47 @@
-"use client";
-
 /**
- * PlanningBudget Distribution Components
+ * =============================================================================
+ * File: planning-budget-distribution.tsx
+ * =============================================================================
  *
- * Breakdown of scheduled goal hours by individual goals or life areas,
- * with a stacked bar and sortable list. Used inside PlanningBudget.
+ * Visualizes how scheduled weekly hours are distributed across Goals or Life Areas.
+ *
+ * Combines a stacked distribution bar with a ranked list of items showing
+ * absolute hours and percentage of total scheduled time.
+ *
+ * Used within the Planning Budget experience to help users quickly assess
+ * whether their time allocation reflects their priorities.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Aggregate scheduled goal hours into goal-level and life-area-level buckets.
+ * - Render a stacked horizontal bar representing proportional distribution.
+ * - Render a sortable list of items with hours and percentages.
+ * - Provide a toggle between "Goals" and "Life Areas" views.
+ * - Coordinate hover state between bar segments and list rows.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting planning data.
+ * - Computing scheduled hours for goals.
+ * - Enforcing budget constraints or validation.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Zero-hour items are filtered out to reduce visual noise.
+ * - Items are sorted by descending hours for quick scanning.
+ * - Uses goal/life-area color as the primary visual encoding.
+ * - If no scheduled hours exist, the section renders nothing.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - DistributionSection
  */
+
+"use client";
 
 import * as React from "react";
 import { cn, formatHours, formatHoursWithUnit } from "@/lib/utils";
@@ -59,7 +95,7 @@ function DistributionBar({
     <div
       className={cn(
         "flex h-2.5 w-full overflow-hidden rounded-full bg-muted",
-        className,
+        className
       )}
       onMouseLeave={() => onHoverItem?.(null)}
     >
@@ -73,7 +109,7 @@ function DistributionBar({
               "h-full cursor-pointer transition-all",
               bgColor,
               index === 0 && "rounded-l-full",
-              index === sortedItems.length - 1 && "rounded-r-full",
+              index === sortedItems.length - 1 && "rounded-r-full"
             )}
             style={{
               width: `${widthPercent}%`,
@@ -131,7 +167,7 @@ function DistributionList({
             key={item.id}
             className={cn(
               "flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors",
-              isHighlighted && "bg-muted/50",
+              isHighlighted && "bg-muted/50"
             )}
           >
             {/* Icon */}
@@ -242,7 +278,7 @@ export function DistributionSection({
               "rounded px-2 py-0.5 text-xs font-medium transition-colors",
               mode === "goals"
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Goals
@@ -253,7 +289,7 @@ export function DistributionSection({
               "rounded px-2 py-0.5 text-xs font-medium transition-colors",
               mode === "life-areas"
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
             Life Areas

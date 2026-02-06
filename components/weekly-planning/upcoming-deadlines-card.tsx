@@ -1,16 +1,46 @@
-"use client";
-
 /**
- * UpcomingDeadlinesCard - Card component showing upcoming deadlines.
+ * =============================================================================
+ * File: upcoming-deadlines-card.tsx
+ * =============================================================================
  *
- * Displays goal, milestone, and task deadlines in a card format
- * for the right sidebar during weekly planning.
- * Read-only display - clicking does nothing.
- * Only shows incomplete deadlines, sorted by date.
+ * Compact card showing upcoming goal, milestone, and task deadlines.
  *
- * By default, shows only deadlines within the next 30 days.
- * Users can expand to see all quarter deadlines.
+ * Displays near-term deadlines by default (next 30 days), with an option to
+ * expand and view all provided deadlines.
+ *
+ * Designed to give users quick situational awareness of what is coming up
+ * without overwhelming them.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Render a list of upcoming deadlines.
+ * - Format deadline dates into human-friendly labels.
+ * - Collapse to a near-term window by default.
+ * - Allow toggling between collapsed and expanded views.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching, filtering, or sorting deadlines.
+ * - Persisting expansion state.
+ * - Determining urgency or priority.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - 30-day window chosen as a sensible default horizon.
+ * - Icon varies by deadline type (goal, milestone, task).
+ * - Card hides entirely when there are no deadlines.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - UpcomingDeadlinesCard
+ * - UpcomingDeadlinesCardProps
  */
+
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -170,7 +200,8 @@ export function UpcomingDeadlinesCard({
   );
 
   // Check if there are deadlines beyond the 30-day limit
-  const hasDeadlinesBeyondLimit = deadlines.length > deadlinesWithinLimit.length;
+  const hasDeadlinesBeyondLimit =
+    deadlines.length > deadlinesWithinLimit.length;
 
   // Check if there are any deadlines within the limit
   const hasDeadlinesWithinLimit = deadlinesWithinLimit.length > 0;
