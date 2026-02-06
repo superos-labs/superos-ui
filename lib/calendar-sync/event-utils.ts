@@ -1,5 +1,43 @@
 /**
- * Utilities for converting external events to calendar events.
+ * =============================================================================
+ * File: external-events-adapter.ts
+ * =============================================================================
+ *
+ * Adapter utilities for transforming external calendar events into internal
+ * CalendarEvent and AllDayEvent formats.
+ *
+ * Separates timed external events (rendered on the calendar grid) from all-day
+ * external events (rendered in the deadline tray).
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Convert ExternalEvent[] into CalendarEvent[] for timed rendering.
+ * - Resolve dayIndex for events within a given week.
+ * - Extract and group all-day external events by date.
+ * - Convert all-day external events into AllDayEvent format.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Fetching or syncing external calendars.
+ * - Persisting external events.
+ * - Rendering calendar or deadline tray UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Filters timed events to the active week.
+ * - Uses a fallback slate color while honoring custom external colors.
+ * - Adapters are pure and synchronous.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - externalEventsToCalendarEvents
+ * - getAllDayEventsForDate
+ * - getAllDayEventsForWeek
+ * - externalEventsToAllDayEvents
  */
 
 import type { ExternalEvent } from "./types";
@@ -16,11 +54,11 @@ import type { AllDayEvent } from "@/components/calendar";
  */
 export function externalEventsToCalendarEvents(
   externalEvents: ExternalEvent[],
-  weekDates: Date[],
+  weekDates: Date[]
 ): CalendarEvent[] {
   // Get week date strings for filtering
   const weekDateStrings = new Set(
-    weekDates.map((d) => d.toISOString().split("T")[0]),
+    weekDates.map((d) => d.toISOString().split("T")[0])
   );
 
   return externalEvents
@@ -52,7 +90,7 @@ export function externalEventsToCalendarEvents(
  */
 function getDayIndexFromDate(dateStr: string, weekDates: Date[]): number {
   const index = weekDates.findIndex(
-    (d) => d.toISOString().split("T")[0] === dateStr,
+    (d) => d.toISOString().split("T")[0] === dateStr
   );
   return index >= 0 ? index : 0;
 }
@@ -67,10 +105,10 @@ function getDayIndexFromDate(dateStr: string, weekDates: Date[]): number {
  */
 export function getAllDayEventsForDate(
   externalEvents: ExternalEvent[],
-  date: string,
+  date: string
 ): ExternalEvent[] {
   return externalEvents.filter(
-    (event) => event.isAllDay && event.date === date,
+    (event) => event.isAllDay && event.date === date
   );
 }
 
@@ -84,7 +122,7 @@ export function getAllDayEventsForDate(
  */
 export function getAllDayEventsForWeek(
   externalEvents: ExternalEvent[],
-  weekDates: Date[],
+  weekDates: Date[]
 ): Map<string, ExternalEvent[]> {
   const result = new Map<string, ExternalEvent[]>();
 
@@ -116,7 +154,7 @@ export function getAllDayEventsForWeek(
  */
 export function externalEventsToAllDayEvents(
   externalEvents: ExternalEvent[],
-  weekDates: Date[],
+  weekDates: Date[]
 ): Map<string, AllDayEvent[]> {
   const result = new Map<string, AllDayEvent[]>();
 

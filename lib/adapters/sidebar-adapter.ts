@@ -1,6 +1,47 @@
 /**
- * Adapter to convert CalendarEvent to BlockSidebarData.
- * Used by shell/app components to display event details in the sidebar.
+ * =============================================================================
+ * File: sidebar-adapter.ts
+ * =============================================================================
+ *
+ * Adapter utilities for converting unified calendar events into the
+ * BlockSidebarData shape used by the block sidebar UI.
+ *
+ * Enriches raw CalendarEvent data with goal, task, essential, and subtask
+ * metadata so the sidebar can display and manage block details.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define sidebar-facing goal and essential data shapes.
+ * - Convert CalendarEvent into BlockSidebarData.
+ * - Resolve source goal, task, and essential from provided collections.
+ * - Derive start/end dates and times, including overnight blocks.
+ * - Build assigned goal tasks, available goal tasks, and task subtasks.
+ * - Resolve icon color classes for display.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Computing schedule events.
+ * - Persisting block, task, or goal changes.
+ * - Rendering sidebar UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses planned startMinutes + durationMinutes for same-day blocks.
+ * - Overnight blocks derive end day and minutes via calendar helpers.
+ * - Keeps adapter pure and synchronous.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - EventToSidebarResult
+ * - SidebarGoal
+ * - SidebarEssential
+ * - formatMinutesToTime
+ * - parseTimeToMinutes
+ * - eventToBlockSidebarData
  */
 
 import type { CalendarEvent } from "@/lib/unified-schedule";
@@ -58,7 +99,9 @@ export interface SidebarEssential {
 export function formatMinutesToTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+  return `${hours.toString().padStart(2, "0")}:${mins
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 /** Parse HH:MM time string to minutes from midnight */
@@ -80,7 +123,7 @@ export function eventToBlockSidebarData(
   event: CalendarEvent,
   goals: SidebarGoal[],
   essentials: SidebarEssential[],
-  weekDates: Date[],
+  weekDates: Date[]
 ): EventToSidebarResult {
   // Find source goal for goal/task blocks
   const sourceGoal = event.sourceGoalId
@@ -150,7 +193,7 @@ export function eventToBlockSidebarData(
             (t) =>
               !assignedTaskIds.includes(t.id) && // not already assigned to this block
               !t.completed && // not completed
-              !t.scheduledBlockId, // not scheduled to another block
+              !t.scheduledBlockId // not scheduled to another block
           )
           .map((t) => ({
             id: t.id,

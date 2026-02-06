@@ -1,3 +1,17 @@
+/**
+ * =============================================================================
+ * File: essentials/index.ts
+ * =============================================================================
+ *
+ * Public entry point for the Essentials system.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export essentials types, hooks, and utilities.
+ * - Provide a single import surface for essentials features.
+ */
+
 // Types
 export type {
   EssentialSlot,

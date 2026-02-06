@@ -1,5 +1,16 @@
 /**
- * Utility function for importing essential templates to calendar events.
+ * =============================================================================
+ * File: import-essentials.ts
+ * =============================================================================
+ *
+ * Utility helpers for importing essential templates into calendar events.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Convert EssentialTemplate slots into CalendarEvent objects.
+ * - Detect whether essentials already exist for a week.
+ * - Determine if a week requires essential import.
  */
 
 import type {
@@ -78,10 +89,10 @@ export function importEssentialsToEvents({
  */
 export function hasEssentialEventsForWeek(
   events: CalendarEvent[],
-  essentialId: string,
+  essentialId: string
 ): boolean {
   return events.some(
-    (e) => e.blockType === "essential" && e.sourceEssentialId === essentialId,
+    (e) => e.blockType === "essential" && e.sourceEssentialId === essentialId
   );
 }
 
@@ -94,7 +105,7 @@ export function hasEssentialEventsForWeek(
  */
 export function weekNeedsEssentialImport(
   events: CalendarEvent[],
-  enabledEssentialIds: string[],
+  enabledEssentialIds: string[]
 ): boolean {
   for (const essentialId of enabledEssentialIds) {
     if (!hasEssentialEventsForWeek(events, essentialId)) {

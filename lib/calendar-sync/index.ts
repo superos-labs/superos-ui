@@ -1,17 +1,15 @@
 /**
- * Calendar Sync Module
+ * =============================================================================
+ * File: calendar-sync/index.ts
+ * =============================================================================
  *
- * Provides types, configuration, hooks, and mock data for external calendar integration.
+ * Public entry point for the Calendar Sync module.
  *
- * @example
- * ```tsx
- * import {
- *   useCalendarSync,
- *   CALENDAR_PROVIDERS,
- *   externalEventsToCalendarEvents,
- * } from "@/lib/calendar-sync";
- * import type { CalendarProvider, ExternalEvent } from "@/lib/calendar-sync";
- * ```
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export calendar sync types, hooks, utilities, and configuration.
+ * - Provide a single import surface for calendar integration features.
  */
 
 // Types

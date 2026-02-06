@@ -1,7 +1,15 @@
 /**
- * Types for the blueprint system.
- * A blueprint is a template for a "typical week" that can be imported
- * during weekly planning to speed up schedule creation.
+ * =============================================================================
+ * File: blueprint/types.ts
+ * =============================================================================
+ *
+ * Type definitions for the Blueprint system.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define Blueprint and BlueprintBlock shapes.
+ * - Define hook return contract for useBlueprint.
  */
 
 import type { GoalColor } from "@/lib/colors";

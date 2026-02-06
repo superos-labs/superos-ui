@@ -1,14 +1,59 @@
 /**
- * Sync Resolver
+ * =============================================================================
+ * File: sync-resolution.ts
+ * =============================================================================
  *
- * Determines if a block should be synced to external calendars
- * and how it should appear based on the precedence hierarchy:
+ * Core logic for resolving whether calendar blocks should be exported to
+ * external calendars and how they should appear once synced.
  *
- * 1. Global settings (provider level) - master toggle, scope, participation
- * 2. Goal-level overrides - syncEnabled, appearanceOverride
- * 3. Block-level overrides - appearanceOverride
+ * Encapsulates the full precedence hierarchy across:
+ * - Global integration settings
+ * - Provider state
+ * - Sync scope (scheduled vs blueprint)
+ * - Block type participation
+ * - Goal-level filters
+ * - Block- and goal-level appearance overrides
  *
- * Precedence for appearance: Block > Goal > Global
+ * Also exposes helpers for computing cross-provider sync state for UI display.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Determine if a week is considered "planned".
+ * - Check whether a block falls within the active sync scope.
+ * - Determine participation of block types and goals in sync.
+ * - Resolve final appearance for a block (block > goal > global).
+ * - Resolve per-provider sync decision for a single block.
+ * - Aggregate sync destinations across providers for UI.
+ * - Define default sync settings for goals and blocks.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Performing actual export to external calendars.
+ * - Persisting integration or sync settings.
+ * - Rendering sync UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Resolution is deterministic and order-independent.
+ * - External blocks never participate in export.
+ * - Adapters are pure and synchronous.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - SyncResolution
+ * - isWeekPlanned
+ * - isBlockInScope
+ * - blockTypeParticipates
+ * - goalParticipates
+ * - resolveAppearance
+ * - resolveSyncState
+ * - getBlockSyncState
+ * - DEFAULT_GOAL_SYNC_SETTINGS
+ * - DEFAULT_BLOCK_SYNC_SETTINGS
  */
 
 import type {

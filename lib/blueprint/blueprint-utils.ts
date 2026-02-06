@@ -1,5 +1,54 @@
 /**
- * Utility functions for blueprint operations.
+ * =============================================================================
+ * File: blueprint-utils.ts
+ * =============================================================================
+ *
+ * Utilities for converting between Blueprint templates and CalendarEvent data,
+ * as well as helpers for analyzing, generating, and validating blueprint state.
+ *
+ * Supports:
+ * - Importing blueprints into weekly schedules.
+ * - Deriving blueprints from existing calendar events.
+ * - Computing aggregate blueprint metrics.
+ * - Generating future weeks from a blueprint.
+ * - Detecting when essential blocks are out of sync with templates.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Convert Blueprint <-> CalendarEvent.
+ * - Build multi-week calendar events from a blueprint.
+ * - Provide helpers for querying blueprint blocks by goal or essential.
+ * - Compute total planned hours for a blueprint.
+ * - Detect mismatches between blueprint essentials and essential templates.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting blueprints or events.
+ * - Rendering UI.
+ * - Computing essential templates.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Adapters are pure and synchronous.
+ * - Uses ISO date strings (YYYY-MM-DD) for comparisons.
+ * - Duplicate prevention is handled via deterministic event keys.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - blueprintToEvents
+ * - eventsToBlueprint
+ * - getBlueprintTotalHours
+ * - getBlueprintBlocksForGoal
+ * - getBlueprintBlocksForEssential
+ * - getWeekStartDateString
+ * - getWeekDatesWithOffset
+ * - generateBlueprintEventsForWeeks
+ * - blueprintEssentialsNeedUpdate
+ * - eventsEssentialsNeedUpdate
  */
 
 import type { CalendarEvent } from "@/lib/unified-schedule";
@@ -21,7 +70,7 @@ import type { EssentialTemplate } from "@/lib/essentials";
  */
 export function blueprintToEvents(
   blueprint: Blueprint,
-  weekDates: Date[],
+  weekDates: Date[]
 ): CalendarEvent[] {
   return blueprint.blocks.map((block) => {
     // Get the actual date for this day of week
@@ -58,7 +107,7 @@ export function blueprintToEvents(
  */
 export function eventsToBlueprint(
   events: CalendarEvent[],
-  weekDates: Date[],
+  weekDates: Date[]
 ): BlueprintBlock[] {
   // Create a map of date string to day index
   const dateToIndex = new Map<string, number>();
@@ -97,7 +146,7 @@ export function eventsToBlueprint(
 export function getBlueprintTotalHours(blueprint: Blueprint): number {
   const totalMinutes = blueprint.blocks.reduce(
     (sum, block) => sum + block.durationMinutes,
-    0,
+    0
   );
   return Math.round((totalMinutes / 60) * 10) / 10;
 }
@@ -107,7 +156,7 @@ export function getBlueprintTotalHours(blueprint: Blueprint): number {
  */
 export function getBlueprintBlocksForGoal(
   blueprint: Blueprint,
-  goalId: string,
+  goalId: string
 ): BlueprintBlock[] {
   return blueprint.blocks.filter((block) => block.sourceGoalId === goalId);
 }
@@ -117,10 +166,10 @@ export function getBlueprintBlocksForGoal(
  */
 export function getBlueprintBlocksForEssential(
   blueprint: Blueprint,
-  essentialId: string,
+  essentialId: string
 ): BlueprintBlock[] {
   return blueprint.blocks.filter(
-    (block) => block.sourceEssentialId === essentialId,
+    (block) => block.sourceEssentialId === essentialId
   );
 }
 
@@ -131,7 +180,7 @@ export function getBlueprintBlocksForEssential(
  */
 export function getWeekStartDateString(
   date: Date,
-  weekStartsOn: 0 | 1 = 0,
+  weekStartsOn: 0 | 1 = 0
 ): string {
   const d = new Date(date);
   const day = d.getDay();
@@ -147,7 +196,7 @@ export function getWeekStartDateString(
  */
 export function getWeekDatesWithOffset(
   baseWeekDates: Date[],
-  weekOffset: number,
+  weekOffset: number
 ): Date[] {
   return baseWeekDates.map((date) => {
     const newDate = new Date(date);
@@ -172,7 +221,7 @@ export function generateBlueprintEventsForWeeks(
   currentWeekDates: Date[],
   weeksAhead: number = 4,
   hasWeeklyPlan: (weekStartDate: string) => boolean,
-  existingEvents: CalendarEvent[],
+  existingEvents: CalendarEvent[]
 ): CalendarEvent[] {
   const allNewEvents: CalendarEvent[] = [];
 
@@ -180,8 +229,8 @@ export function generateBlueprintEventsForWeeks(
   // Key format: date:startMinutes:durationMinutes:title
   const existingEventKeys = new Set(
     existingEvents.map(
-      (e) => `${e.date}:${e.startMinutes}:${e.durationMinutes}:${e.title}`,
-    ),
+      (e) => `${e.date}:${e.startMinutes}:${e.durationMinutes}:${e.title}`
+    )
   );
 
   // Generate for current week (offset 0) through weeksAhead
@@ -252,13 +301,13 @@ function slotKey(slot: NormalizedSlot): string {
 export function blueprintEssentialsNeedUpdate(
   blueprint: Blueprint,
   essentialTemplates: EssentialTemplate[],
-  enabledEssentialIds: string[],
+  enabledEssentialIds: string[]
 ): boolean {
   // Normalize blueprint essential blocks
   const blueprintSlots: NormalizedSlot[] = blueprint.blocks
     .filter(
       (block) =>
-        block.blockType === "essential" && block.sourceEssentialId != null,
+        block.blockType === "essential" && block.sourceEssentialId != null
     )
     .map((block) => ({
       essentialId: block.sourceEssentialId!,
@@ -318,7 +367,7 @@ export function eventsEssentialsNeedUpdate(
   events: CalendarEvent[],
   weekDates: Date[],
   essentialTemplates: EssentialTemplate[],
-  enabledEssentialIds: string[],
+  enabledEssentialIds: string[]
 ): boolean {
   // Create a map of date string to day index
   const dateToIndex = new Map<string, number>();
@@ -333,7 +382,7 @@ export function eventsEssentialsNeedUpdate(
       (event) =>
         event.blockType === "essential" &&
         event.sourceEssentialId != null &&
-        dateToIndex.has(event.date),
+        dateToIndex.has(event.date)
     )
     .map((event) => ({
       essentialId: event.sourceEssentialId!,

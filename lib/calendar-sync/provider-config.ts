@@ -1,13 +1,18 @@
 /**
- * Static configuration for calendar providers.
- * Contains display metadata like icons, colors, and labels.
+ * =============================================================================
+ * File: provider-config.ts
+ * =============================================================================
+ *
+ * Static configuration for supported calendar providers.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define display metadata for each provider.
+ * - Provide a consistent provider ordering.
  */
 
-import {
-  RiGoogleFill,
-  RiAppleFill,
-  RiMicrosoftFill,
-} from "@remixicon/react";
+import { RiGoogleFill, RiAppleFill, RiMicrosoftFill } from "@remixicon/react";
 import type { IntegrationConfig, CalendarProvider } from "./types";
 
 /** Configuration for each supported calendar provider */
@@ -39,4 +44,8 @@ export const CALENDAR_PROVIDERS: Record<CalendarProvider, IntegrationConfig> = {
 };
 
 /** Ordered list of providers for consistent display */
-export const PROVIDER_ORDER: CalendarProvider[] = ["google", "apple", "outlook"];
+export const PROVIDER_ORDER: CalendarProvider[] = [
+  "google",
+  "apple",
+  "outlook",
+];

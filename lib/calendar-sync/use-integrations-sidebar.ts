@@ -1,3 +1,17 @@
+/**
+ * =============================================================================
+ * File: use-integrations-sidebar.ts
+ * =============================================================================
+ *
+ * Client-side hook for managing integrations sidebar UI state.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Track open/close state.
+ * - Manage navigation between list and provider views.
+ */
+
 "use client";
 
 import * as React from "react";
@@ -7,30 +21,13 @@ import type {
   UseIntegrationsSidebarReturn,
 } from "./types";
 
-/**
- * Hook for managing the integrations sidebar state.
- *
- * Handles:
- * - Sidebar open/close state
- * - Navigation between list view and provider settings view
- *
- * @example
- * ```tsx
- * const {
- *   isOpen,
- *   currentView,
- *   open,
- *   close,
- *   navigateToProvider,
- *   navigateToList,
- * } = useIntegrationsSidebar();
- * ```
- */
 export function useIntegrationsSidebar(): UseIntegrationsSidebarReturn {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [currentView, setCurrentView] = React.useState<IntegrationsSidebarView>({
-    type: "list",
-  });
+  const [currentView, setCurrentView] = React.useState<IntegrationsSidebarView>(
+    {
+      type: "list",
+    }
+  );
 
   const open = React.useCallback(() => {
     setIsOpen(true);

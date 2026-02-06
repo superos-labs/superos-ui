@@ -1,4 +1,16 @@
-// Public API for the blueprint system
+/**
+ * =============================================================================
+ * File: blueprint/index.ts
+ * =============================================================================
+ *
+ * Public entry point for the Blueprint system.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Re-export blueprint hook, utilities, and types.
+ * - Provide a single import surface for blueprint features.
+ */
 
 // Hook
 export { useBlueprint } from "./use-blueprint";

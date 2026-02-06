@@ -1,3 +1,44 @@
+/**
+ * =============================================================================
+ * File: use-activity-schedule.ts
+ * =============================================================================
+ *
+ * Client-side hook for managing editable schedule state for an essential's
+ * recurring activity.
+ *
+ * Transforms between the persisted EssentialSlot[] format and an editing-
+ * friendly model composed of:
+ * - A shared set of selected days.
+ * - One or more time ranges (start + duration).
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Initialize editing state from EssentialSlot[].
+ * - Manage selected days and time ranges independently.
+ * - Add, update, and remove time ranges.
+ * - Convert editing state back to EssentialSlot[] for saving.
+ * - Reset editing state from a new slot array.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting essential configuration.
+ * - Validating overlapping or conflicting time ranges.
+ * - Rendering schedule UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Deduplicates time ranges by startMinutes + durationMinutes.
+ * - Provides sensible defaults when no slots exist.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useActivitySchedule
+ */
+
 "use client";
 
 import * as React from "react";
@@ -25,7 +66,7 @@ export interface UseActivityScheduleReturn {
   addTimeRange: () => void;
   updateTimeRange: (
     id: string,
-    updates: { startMinutes?: number; durationMinutes?: number },
+    updates: { startMinutes?: number; durationMinutes?: number }
   ) => void;
   deleteTimeRange: (id: string) => void;
   /** Convert current state to EssentialSlot array for saving */
@@ -77,10 +118,10 @@ export function useActivitySchedule({
   };
 
   const [selectedDays, setSelectedDays] = React.useState<number[]>(() =>
-    extractDays(initialSlots),
+    extractDays(initialSlots)
   );
   const [timeRanges, setTimeRanges] = React.useState<TimeRange[]>(() =>
-    extractTimeRanges(initialSlots),
+    extractTimeRanges(initialSlots)
   );
 
   const addTimeRange = React.useCallback(() => {
@@ -108,15 +149,15 @@ export function useActivitySchedule({
   const updateTimeRange = React.useCallback(
     (
       id: string,
-      updates: { startMinutes?: number; durationMinutes?: number },
+      updates: { startMinutes?: number; durationMinutes?: number }
     ) => {
       setTimeRanges((prev) =>
         prev.map((range) =>
-          range.id === id ? { ...range, ...updates } : range,
-        ),
+          range.id === id ? { ...range, ...updates } : range
+        )
       );
     },
-    [],
+    []
   );
 
   const deleteTimeRange = React.useCallback((id: string) => {

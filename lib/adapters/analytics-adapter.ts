@@ -1,6 +1,42 @@
 /**
- * Adapter to convert goals/commitments to WeeklyAnalyticsItem format.
- * Used by shell/app components to display analytics.
+ * =============================================================================
+ * File: analytics-adapter.ts
+ * =============================================================================
+ *
+ * Adapter utilities for transforming domain analytics data into the
+ * WeeklyAnalyticsItem format consumed by the analytics UI.
+ *
+ * Bridges generic sources (goals, life areas, etc.) with the visual and
+ * structural requirements of the weekly analytics component.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define lightweight analytics source and stats interfaces.
+ * - Convert source items + stats lookup into WeeklyAnalyticsItem objects.
+ * - Resolve icon color classes from domain color tokens.
+ * - Support optional use of focused hours as the progress metric.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Computing or aggregating analytics stats.
+ * - Persisting analytics data.
+ * - Rendering analytics UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Keeps conversion logic centralized to avoid UI-specific shaping elsewhere.
+ * - Defaults to completedHours for progress, with an opt-in focusedHours path.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - AnalyticsStats
+ * - AnalyticsSource
+ * - ToAnalyticsItemsOptions
+ * - toAnalyticsItems
  */
 
 import type { WeeklyAnalyticsItem } from "@/components/weekly-analytics";
@@ -40,7 +76,7 @@ export interface ToAnalyticsItemsOptions {
 export function toAnalyticsItems(
   items: AnalyticsSource[],
   getStats: (id: string) => AnalyticsStats,
-  options: ToAnalyticsItemsOptions = {},
+  options: ToAnalyticsItemsOptions = {}
 ): WeeklyAnalyticsItem[] {
   const { useFocusedHours = false } = options;
 

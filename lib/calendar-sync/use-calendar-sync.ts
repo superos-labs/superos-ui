@@ -1,3 +1,45 @@
+/**
+ * =============================================================================
+ * File: use-calendar-sync.ts
+ * =============================================================================
+ *
+ * Client-side hook for managing calendar provider integrations and imported
+ * external events.
+ *
+ * Powers the integrations UI and demo/prototype behavior, including simulated
+ * provider connections, calendar selection, import/export settings, and local
+ * external event state.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Manage CalendarIntegrationState per provider.
+ * - Simulate provider connect/disconnect flows.
+ * - Manage import settings (provider-level and calendar-level).
+ * - Manage export settings and participation configuration.
+ * - Maintain and filter ExternalEvent local state.
+ * - Expose helpers for querying integration state.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Real OAuth or calendar API communication.
+ * - Performing external sync or conflict resolution.
+ * - Rendering UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Uses mock data sources for demo and prototyping.
+ * - State stored in Maps for O(1) provider access.
+ * - Filtering of external events is derived via useMemo.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useCalendarSync
+ */
+
 "use client";
 
 import * as React from "react";

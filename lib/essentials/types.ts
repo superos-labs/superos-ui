@@ -1,9 +1,46 @@
 /**
- * Types for essential templates and configuration.
+ * =============================================================================
+ * File: essentials-types.ts
+ * =============================================================================
  *
- * Essentials are recurring activities (Eat, Exercise, Commute, etc.) that users
- * can track on their calendar. Users configure templates for each essential
- * with typical weekly schedules, which are auto-imported to new weeks.
+ * Type definitions and defaults for configuring "Essentials" and their
+ * recurring weekly time slots.
+ *
+ * Essentials represent non-negotiable life activities (e.g., eating, commuting,
+ * exercising) that can be templated and later imported into schedules or
+ * blueprints.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define core types for essential slots, templates, and configuration.
+ * - Provide default slot presets for common essentials.
+ * - Define import option types for converting essentials to calendar events.
+ * - Define hook option/return contracts for managing essential configuration.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting essential configuration.
+ * - Rendering essential configuration UI.
+ * - Performing calendar import logic.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Slots are expressed in minutes-from-midnight for consistency.
+ * - Templates can contain multiple slots per essential.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - EssentialSlot
+ * - EssentialTemplate
+ * - EssentialConfig
+ * - DEFAULT_ESSENTIAL_SLOTS
+ * - ImportEssentialsOptions
+ * - UseEssentialConfigOptions
+ * - UseEssentialConfigReturn
  */
 
 // =============================================================================
@@ -173,7 +210,7 @@ export interface UseEssentialConfigReturn {
   updateSlot: (
     essentialId: string,
     slotId: string,
-    updates: Partial<Omit<EssentialSlot, "id">>,
+    updates: Partial<Omit<EssentialSlot, "id">>
   ) => void;
 
   /** Remove a slot from an essential's template */

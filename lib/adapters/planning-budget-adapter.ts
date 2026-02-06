@@ -1,6 +1,17 @@
 /**
- * Adapter to convert schedule data to PlanningBudget format.
- * Used during weekly planning to show time budget analytics.
+ * =============================================================================
+ * File: planning-budget-adapter.ts
+ * =============================================================================
+ *
+ * Adapter functions for shaping schedule goals and essentials into the
+ * Planning Budget data structures used by weekly analytics.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Convert schedule goals to PlanningBudgetGoal.
+ * - Convert schedule essentials to PlanningBudgetEssential.
+ * - Build combined planning budget data from schedule state.
  */
 
 import type {

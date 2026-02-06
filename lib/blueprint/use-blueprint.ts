@@ -1,3 +1,18 @@
+/**
+ * =============================================================================
+ * File: use-blueprint.ts
+ * =============================================================================
+ *
+ * Client-side hook for managing the user's blueprint (typical week template).
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store blueprint in memory.
+ * - Provide create, update, and clear actions.
+ * - Expose existence flag.
+ */
+
 "use client";
 
 /**

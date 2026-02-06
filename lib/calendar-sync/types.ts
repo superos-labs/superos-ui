@@ -1,13 +1,54 @@
 /**
- * Types for the calendar sync/integration system.
- * Single source of truth for external calendar integration type definitions.
+ * =============================================================================
+ * File: calendar-sync-types.ts
+ * =============================================================================
  *
- * This module handles:
- * - Provider connections (Google, Apple, Outlook)
- * - Calendar selection and sync settings
- * - External events imported from providers
- * - Integrations sidebar navigation
- * - Export sync scope and participation settings
+ * Shared type definitions for calendar integrations, external events, and
+ * import/export (sync) configuration.
+ *
+ * Centralizes all domain-level types used by calendar sync state, resolution,
+ * adapters, and UI so the integration surface remains consistent.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define supported providers and integration status types.
+ * - Define export visibility, sync scope, and participation models.
+ * - Define runtime integration state shape.
+ * - Define provider calendar and external event shapes.
+ * - Define hook option/return contracts for calendar sync and sidebar.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Implementing sync logic.
+ * - Fetching or persisting integration data.
+ * - Rendering UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Types are intentionally explicit to reduce cross-module coupling.
+ * - Mirrors real integration concepts while remaining provider-agnostic.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - CalendarProvider
+ * - IntegrationStatus
+ * - ExportBlockVisibility
+ * - SyncScope
+ * - SyncParticipation
+ * - GoalFilterMode
+ * - AppearanceOverride
+ * - IntegrationConfig
+ * - CalendarIntegrationState
+ * - ProviderCalendar
+ * - ExternalEvent
+ * - IntegrationsSidebarView
+ * - UseCalendarSyncOptions
+ * - UseCalendarSyncReturn
+ * - UseIntegrationsSidebarReturn
  */
 
 import type { BlockStatus, IconComponent } from "@/lib/types";

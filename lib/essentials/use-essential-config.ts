@@ -1,3 +1,41 @@
+/**
+ * =============================================================================
+ * File: use-essential-config.ts
+ * =============================================================================
+ *
+ * Client-side hook for managing a user's Essential configuration.
+ *
+ * Handles enabling/disabling essentials and editing their recurring schedule
+ * templates (slots), with sensible defaults when an essential is first enabled.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Store enabled essential IDs and their templates.
+ * - Enable essentials with default slot presets.
+ * - Disable essentials and remove associated templates.
+ * - Add, update, remove, and replace slots within a template.
+ * - Expose helpers to query enabled state and templates.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Persisting configuration.
+ * - Importing essentials into the calendar.
+ * - Rendering UI.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Slot IDs are generated locally.
+ * - State updates are immutable and scoped per essential.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - useEssentialConfig
+ */
+
 "use client";
 
 import * as React from "react";
@@ -34,14 +72,14 @@ export function useEssentialConfig({
   // Check if an essential is enabled
   const isEnabled = React.useCallback(
     (essentialId: string) => config.enabledIds.includes(essentialId),
-    [config.enabledIds],
+    [config.enabledIds]
   );
 
   // Get template for an essential
   const getTemplate = React.useCallback(
     (essentialId: string) =>
       config.templates.find((t) => t.essentialId === essentialId),
-    [config.templates],
+    [config.templates]
   );
 
   // Enable an essential with default slots
@@ -85,7 +123,7 @@ export function useEssentialConfig({
         enableEssential(essentialId);
       }
     },
-    [isEnabled, enableEssential, disableEssential],
+    [isEnabled, enableEssential, disableEssential]
   );
 
   // Add a slot to an essential's template
@@ -93,7 +131,7 @@ export function useEssentialConfig({
     (essentialId: string, slot: Omit<EssentialSlot, "id">) => {
       setConfig((prev) => {
         const templateIndex = prev.templates.findIndex(
-          (t) => t.essentialId === essentialId,
+          (t) => t.essentialId === essentialId
         );
         if (templateIndex === -1) return prev;
 
@@ -107,7 +145,7 @@ export function useEssentialConfig({
         return { ...prev, templates: updatedTemplates };
       });
     },
-    [],
+    []
   );
 
   // Update a slot
@@ -115,11 +153,11 @@ export function useEssentialConfig({
     (
       essentialId: string,
       slotId: string,
-      updates: Partial<Omit<EssentialSlot, "id">>,
+      updates: Partial<Omit<EssentialSlot, "id">>
     ) => {
       setConfig((prev) => {
         const templateIndex = prev.templates.findIndex(
-          (t) => t.essentialId === essentialId,
+          (t) => t.essentialId === essentialId
         );
         if (templateIndex === -1) return prev;
 
@@ -136,7 +174,7 @@ export function useEssentialConfig({
         return { ...prev, templates: updatedTemplates };
       });
     },
-    [],
+    []
   );
 
   // Remove a slot
@@ -144,7 +182,7 @@ export function useEssentialConfig({
     (essentialId: string, slotId: string) => {
       setConfig((prev) => {
         const templateIndex = prev.templates.findIndex(
-          (t) => t.essentialId === essentialId,
+          (t) => t.essentialId === essentialId
         );
         if (templateIndex === -1) return prev;
 
@@ -157,7 +195,7 @@ export function useEssentialConfig({
         return { ...prev, templates: updatedTemplates };
       });
     },
-    [],
+    []
   );
 
   // Replace all slots for an essential
@@ -165,7 +203,7 @@ export function useEssentialConfig({
     (essentialId: string, slots: EssentialSlot[]) => {
       setConfig((prev) => {
         const templateIndex = prev.templates.findIndex(
-          (t) => t.essentialId === essentialId,
+          (t) => t.essentialId === essentialId
         );
         if (templateIndex === -1) return prev;
 
@@ -178,7 +216,7 @@ export function useEssentialConfig({
         return { ...prev, templates: updatedTemplates };
       });
     },
-    [],
+    []
   );
 
   return {

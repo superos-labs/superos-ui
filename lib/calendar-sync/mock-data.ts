@@ -1,6 +1,45 @@
 /**
- * Mock data for calendar sync demo/prototype.
- * Provides sample calendars and events for each provider.
+ * =============================================================================
+ * File: calendar-sync-mock-data.ts
+ * =============================================================================
+ *
+ * Mock data used by the calendar sync demo and prototype flows.
+ *
+ * Provides:
+ * - Sample provider calendars (Google, Apple, Outlook).
+ * - Sample external events per provider and calendar.
+ * - Initial disconnected integration states with sensible defaults.
+ *
+ * Intended strictly for prototyping, demos, and local development.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define mock ProviderCalendar lists per provider.
+ * - Define mock ExternalEvent records returned when calendars are enabled.
+ * - Define initial CalendarIntegrationState objects for demo bootstrapping.
+ *
+ * -----------------------------------------------------------------------------
+ * NON-RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Real calendar API integration.
+ * - Persisting integration state.
+ * - Sync logic or conflict resolution.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Data is deterministic and human-readable for easy inspection.
+ * - Mirrors real data shapes to exercise adapters and UI.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - MOCK_GOOGLE_CALENDARS
+ * - MOCK_APPLE_CALENDARS
+ * - MOCK_OUTLOOK_CALENDARS
+ * - MOCK_EXTERNAL_EVENTS
+ * - DEMO_INITIAL_STATES
  */
 
 import type {

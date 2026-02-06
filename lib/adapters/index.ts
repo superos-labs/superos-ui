@@ -1,4 +1,16 @@
-// Public API for adapters
+/**
+ * =============================================================================
+ * File: adapters/index.ts
+ * =============================================================================
+ *
+ * Barrel file that re-exports all adapter utilities and related types.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Provide a single import surface for adapter functions.
+ * - Re-export adapter-related types for convenience.
+ */
 
 // Sidebar adapter
 export {
