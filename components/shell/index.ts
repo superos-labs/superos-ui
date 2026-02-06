@@ -88,6 +88,15 @@ export type {
   UseBlueprintHandlersReturn,
 } from "./use-blueprint-handlers";
 
+export { useLifeAreas } from "./use-life-areas";
+export type { UseLifeAreasReturn } from "./use-life-areas";
+
+export { useEssentialHandlers } from "./use-essential-handlers";
+export type {
+  UseEssentialHandlersOptions,
+  UseEssentialHandlersReturn,
+} from "./use-essential-handlers";
+
 // Types
 export type {
   ShellContentProps,

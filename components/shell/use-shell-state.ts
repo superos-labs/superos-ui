@@ -9,6 +9,8 @@
  * - Blueprint and weekly planning
  * - Week navigation
  * - Preferences
+ * - Life area management (via useLifeAreas)
+ * - Essential configuration and handlers (via useEssentialHandlers)
  *
  * This is the primary integration point that consumers use to get all
  * the state and handlers needed by ShellContent.
@@ -20,31 +22,18 @@ import type { CalendarEvent } from "@/components/calendar";
 import { useCalendarClipboard } from "@/components/calendar";
 import { useUnifiedSchedule, useWeekNavigation } from "@/lib/unified-schedule";
 import type {
-  ScheduleGoal,
   ScheduleEssential,
   DeadlineTask,
   DeadlineGoal,
   DeadlineMilestone,
 } from "@/lib/unified-schedule";
-import {
-  useEssentialConfig,
-  importEssentialsToEvents,
-  weekNeedsEssentialImport,
-} from "@/lib/essentials";
-import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
-import { DEFAULT_ESSENTIAL_SLOTS } from "@/lib/essentials";
 import { useFocusSession, useFocusNotifications } from "@/lib/focus";
 import {
   useBlueprint,
-  blueprintToEvents,
   eventsToBlueprint,
 } from "@/lib/blueprint";
-import { useWeeklyPlan, usePlanningFlow } from "@/lib/weekly-planning";
+import { useWeeklyPlan } from "@/lib/weekly-planning";
 import { usePreferences } from "@/lib/preferences";
-import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
-import type { GoalColor } from "@/lib/colors";
-import { LIFE_AREAS } from "@/lib/life-areas";
-import type { NewEssentialData } from "@/components/backlog";
 import {
   useCalendarSync,
   useIntegrationsSidebar,
@@ -52,6 +41,8 @@ import {
   externalEventsToAllDayEvents,
 } from "@/lib/calendar-sync";
 import type { UseShellStateOptions, UseShellStateReturn } from "./shell-types";
+import { useLifeAreas } from "./use-life-areas";
+import { useEssentialHandlers } from "./use-essential-handlers";
 
 // =============================================================================
 // Hook Implementation
@@ -65,7 +56,6 @@ export function useShellState(
     allEssentials: allEssentialsInput,
     initialEnabledEssentialIds,
     initialEvents,
-    lifeAreas: defaultLifeAreas,
     goalIcons,
     skipOnboarding,
   } = options;
@@ -73,60 +63,14 @@ export function useShellState(
   // -------------------------------------------------------------------------
   // Custom Life Areas
   // -------------------------------------------------------------------------
-  const [customLifeAreas, setCustomLifeAreas] = React.useState<LifeArea[]>([]);
-
-  // Combined life areas (defaults + custom)
-  const allLifeAreas = React.useMemo(
-    () => [...LIFE_AREAS, ...customLifeAreas],
-    [customLifeAreas]
-  );
-
-  const handleAddLifeArea = React.useCallback(
-    (data: {
-      label: string;
-      icon: IconComponent;
-      color: GoalColor;
-    }): string | null => {
-      // Validate: no duplicate labels (case-insensitive)
-      const exists = allLifeAreas.some(
-        (a) => a.label.toLowerCase() === data.label.toLowerCase()
-      );
-      if (exists) return null;
-
-      const newArea: LifeArea = {
-        id: `custom-${Date.now()}`,
-        label: data.label,
-        icon: data.icon,
-        color: data.color,
-        isCustom: true,
-      };
-      setCustomLifeAreas((prev) => [...prev, newArea]);
-      return newArea.id;
-    },
-    [allLifeAreas]
-  );
-
-  const handleUpdateLifeArea = React.useCallback(
-    (
-      id: string,
-      updates: { label?: string; icon?: IconComponent; color?: GoalColor }
-    ) => {
-      // Only allow updating custom areas
-      setCustomLifeAreas((prev) =>
-        prev.map((area) => (area.id === id ? { ...area, ...updates } : area))
-      );
-    },
-    []
-  );
-
-  const handleRemoveLifeArea = React.useCallback((id: string) => {
-    setCustomLifeAreas((prev) => prev.filter((a) => a.id !== id));
-  }, []);
+  const lifeAreasHook = useLifeAreas();
 
   // -------------------------------------------------------------------------
   // Mutable Essentials List
   // -------------------------------------------------------------------------
-  // Keep a mutable copy of allEssentials so we can add/remove essentials
+  // Keep a mutable copy of allEssentials so we can add/remove essentials.
+  // This lives here because useUnifiedSchedule needs it before
+  // useEssentialHandlers can be called (dependency ordering).
   const [allEssentialsState, setAllEssentialsState] = React.useState<
     ScheduleEssential[]
   >(() => allEssentialsInput);
@@ -150,30 +94,6 @@ export function useShellState(
     dayEndMinutes,
     setDayBoundaries,
   } = usePreferences();
-
-  // -------------------------------------------------------------------------
-  // Essential Config (templates)
-  // -------------------------------------------------------------------------
-  // Generate initial templates for enabled essentials with default slots
-  const initialTemplates = React.useMemo(() => {
-    const enabledIds =
-      initialEnabledEssentialIds ?? allEssentialsState.map((e) => e.id);
-    return enabledIds.map(
-      (essentialId): EssentialTemplate => ({
-        essentialId,
-        slots: (DEFAULT_ESSENTIAL_SLOTS[essentialId] ?? []).map((slot) => ({
-          ...slot,
-          id: `slot-init-${essentialId}-${slot.id}`,
-        })),
-      })
-    );
-  }, [initialEnabledEssentialIds, allEssentialsState]);
-
-  const essentialConfig = useEssentialConfig({
-    initialEnabledIds:
-      initialEnabledEssentialIds ?? allEssentialsState.map((e) => e.id),
-    initialTemplates,
-  });
 
   // -------------------------------------------------------------------------
   // Week Navigation
@@ -243,6 +163,20 @@ export function useShellState(
     onPaste: paste,
     hasClipboardContent,
     onEventCreated: (event) => setSelectedEventId(event.id),
+  });
+
+  // -------------------------------------------------------------------------
+  // Essential Config & Handlers
+  // -------------------------------------------------------------------------
+  const essentialHandlers = useEssentialHandlers({
+    allEssentials: allEssentialsState,
+    setAllEssentials: setAllEssentialsState,
+    initialEnabledEssentialIds,
+    weekDates,
+    scheduleEvents: schedule.events,
+    scheduleAllEssentials: schedule.allEssentials,
+    scheduleAddEvent: schedule.addEvent,
+    scheduleToggleEssentialEnabled: schedule.toggleEssentialEnabled,
   });
 
   // -------------------------------------------------------------------------
@@ -386,112 +320,6 @@ export function useShellState(
   );
 
   // -------------------------------------------------------------------------
-  // Essential Schedule Handlers
-  // -------------------------------------------------------------------------
-  const handleSaveEssentialSchedule = React.useCallback(
-    (essentialId: string, slots: EssentialSlot[]) => {
-      essentialConfig.setSlots(essentialId, slots);
-    },
-    [essentialConfig]
-  );
-
-  // Check if the week needs essential import
-  const needsEssentialImport = React.useMemo(() => {
-    return weekNeedsEssentialImport(
-      schedule.events,
-      essentialConfig.config.enabledIds
-    );
-  }, [schedule.events, essentialConfig.config.enabledIds]);
-
-  const handleImportEssentialsToWeek = React.useCallback(() => {
-    // Skip if week already has essentials
-    if (!needsEssentialImport) return;
-
-    // Get enabled templates
-    const enabledTemplates = essentialConfig.config.templates.filter((t) =>
-      essentialConfig.config.enabledIds.includes(t.essentialId)
-    );
-
-    // Map essentials to the format expected by importEssentialsToEvents
-    const essentialsData = schedule.allEssentials.map((e) => ({
-      id: e.id,
-      label: e.label,
-      color: e.color,
-    }));
-
-    // Import essentials to events
-    const newEvents = importEssentialsToEvents({
-      templates: enabledTemplates,
-      weekDates,
-      essentials: essentialsData,
-    });
-
-    // Add all new events
-    newEvents.forEach((event) => {
-      schedule.addEvent(event);
-    });
-  }, [
-    needsEssentialImport,
-    essentialConfig.config,
-    schedule.allEssentials,
-    weekDates,
-    schedule.addEvent,
-  ]);
-
-  // -------------------------------------------------------------------------
-  // Create/Delete Essential Handlers
-  // -------------------------------------------------------------------------
-  const handleCreateEssential = React.useCallback(
-    (data: NewEssentialData, slots: EssentialSlot[]): string => {
-      // Generate a unique ID for the new essential
-      const id = `essential-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 9)}`;
-
-      // Create the new essential
-      const newEssential: ScheduleEssential = {
-        id,
-        label: data.label,
-        icon: data.icon,
-        color: data.color,
-      };
-
-      // Add to allEssentials state
-      setAllEssentialsState((prev) => [...prev, newEssential]);
-
-      // Enable the essential in the visibility system (for UI display)
-      // This updates useEssentialVisibility's enabledEssentialIds
-      schedule.toggleEssentialEnabled(id);
-
-      // Enable the essential and set its slots in config (for templates)
-      // We need to manually add the template since enableEssential uses defaults
-      essentialConfig.enableEssential(id);
-
-      // Set the slots after enabling (with a small delay to ensure template exists)
-      setTimeout(() => {
-        essentialConfig.setSlots(id, slots);
-      }, 0);
-
-      return id;
-    },
-    [essentialConfig, schedule.toggleEssentialEnabled]
-  );
-
-  const handleDeleteEssential = React.useCallback(
-    (essentialId: string) => {
-      // Don't allow deleting Sleep
-      if (essentialId === "sleep") return;
-
-      // Disable in config (removes from enabledIds and templates)
-      essentialConfig.disableEssential(essentialId);
-
-      // Remove from allEssentials state
-      setAllEssentialsState((prev) => prev.filter((e) => e.id !== essentialId));
-    },
-    [essentialConfig]
-  );
-
-  // -------------------------------------------------------------------------
   // Return Value
   // -------------------------------------------------------------------------
   return {
@@ -521,8 +349,8 @@ export function useShellState(
     onStartEditingEssentials: schedule.startEditingEssentials,
     onSaveEssentialChanges: schedule.saveEssentialChanges,
     onCancelEssentialChanges: schedule.cancelEssentialChanges,
-    onCreateEssential: handleCreateEssential,
-    onDeleteEssential: handleDeleteEssential,
+    onCreateEssential: essentialHandlers.createEssential,
+    onDeleteEssential: essentialHandlers.deleteEssential,
 
     // Day boundaries
     dayStartMinutes,
@@ -534,10 +362,10 @@ export function useShellState(
     onDayBoundariesDisplayChange: setDayBoundariesDisplay,
 
     // Essential templates
-    essentialTemplates: essentialConfig.config.templates,
-    onSaveEssentialSchedule: handleSaveEssentialSchedule,
-    onImportEssentialsToWeek: handleImportEssentialsToWeek,
-    weekNeedsEssentialImport: needsEssentialImport,
+    essentialTemplates: essentialHandlers.essentialTemplates,
+    onSaveEssentialSchedule: essentialHandlers.saveEssentialSchedule,
+    onImportEssentialsToWeek: essentialHandlers.importEssentialsToWeek,
+    weekNeedsEssentialImport: essentialHandlers.weekNeedsEssentialImport,
 
     // Goal CRUD
     onAddGoal: schedule.addGoal,
@@ -621,14 +449,14 @@ export function useShellState(
     onToday: goToToday,
 
     // Reference data
-    lifeAreas: allLifeAreas,
-    customLifeAreas,
+    lifeAreas: lifeAreasHook.allLifeAreas,
+    customLifeAreas: lifeAreasHook.customLifeAreas,
     goalIcons,
 
     // Life area management
-    onAddLifeArea: handleAddLifeArea,
-    onUpdateLifeArea: handleUpdateLifeArea,
-    onRemoveLifeArea: handleRemoveLifeArea,
+    onAddLifeArea: lifeAreasHook.addLifeArea,
+    onUpdateLifeArea: lifeAreasHook.updateLifeArea,
+    onRemoveLifeArea: lifeAreasHook.removeLifeArea,
 
     // Calendar integrations
     calendarIntegrations: calendarSync.integrationStates,
