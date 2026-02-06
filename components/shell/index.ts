@@ -6,7 +6,24 @@
 export { ShellContentComponent } from "./shell-content";
 export type { ShellContentComponentProps } from "./shell-content";
 
-// Mobile toolbar (for responsive layouts)
+// Toolbar components
+export {
+  ShellMobileToolbar,
+  ShellDesktopToolbar,
+  BlueprintEditToolbar,
+  OnboardingBlueprintToolbar,
+} from "./shell-toolbars";
+export type {
+  ShellMobileToolbarProps,
+  ShellDesktopToolbarProps,
+  BlueprintEditToolbarProps,
+} from "./shell-toolbars";
+
+// Feedback button
+export { FeedbackButton } from "./feedback-button";
+export type { FeedbackButtonProps } from "./feedback-button";
+
+// Mobile toolbar (standalone, for external layouts)
 export { MobileToolbar } from "./mobile-toolbar";
 export type { MobileToolbarProps } from "./mobile-toolbar";
 
@@ -34,6 +51,31 @@ export { useToastAggregator } from "./use-toast-aggregator";
 export type { UseToastAggregatorReturn } from "./use-toast-aggregator";
 
 export { useUndoableHandlers } from "./use-undoable-handlers";
+
+// Extracted hooks
+export { useMobileNavigation } from "./use-mobile-navigation";
+export type {
+  UseMobileNavigationOptions,
+  UseMobileNavigationReturn,
+} from "./use-mobile-navigation";
+
+export { useGoalHandlers } from "./use-goal-handlers";
+export type {
+  UseGoalHandlersOptions,
+  UseGoalHandlersReturn,
+} from "./use-goal-handlers";
+
+export { usePlanningIntegration } from "./use-planning-integration";
+export type {
+  UsePlanningIntegrationOptions,
+  UsePlanningIntegrationReturn,
+} from "./use-planning-integration";
+
+export { useBlueprintHandlers } from "./use-blueprint-handlers";
+export type {
+  UseBlueprintHandlersOptions,
+  UseBlueprintHandlersReturn,
+} from "./use-blueprint-handlers";
 
 // Types
 export type {
