@@ -18,6 +18,7 @@
  * - Expose composable sub-hooks for advanced or partial integrations.
  * - Re-export immutable goal/task/milestone state utilities.
  * - Re-export core domain and derived types.
+ * - Re-export goal creation and inspiration types (merged from lib/goals).
  *
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
@@ -31,6 +32,7 @@
  * - Hooks (useUnifiedSchedule, useGoalState, useScheduling, etc.)
  * - State utilities from goal-state-utils
  * - Unified schedule types
+ * - Goal creation types (NewGoalData, InspirationGoal, InspirationCategory)
  */
 
 // Main orchestration hook
@@ -130,4 +132,8 @@ export type {
   // Hook types
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
+  // Goal creation & inspiration types (merged from lib/goals)
+  NewGoalData,
+  InspirationGoal,
+  InspirationCategory,
 } from "./types";

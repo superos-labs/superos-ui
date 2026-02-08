@@ -70,17 +70,6 @@
   - Keeps file focused on broadly shared primitives
   - Avoids feature-specific or domain-heavy types
 
-### Component Registry
-- **`registry.ts`** — Component registry for lazily loaded example/demo surfaces
-  - Maps stable slug to human-readable name and lazily imported React component
-  - Optionally specifies preferred layout container
-  - Primarily used by internal demo routes and playground-style views
-  - Defines registry of example components
-  - Lazily loads components for code-splitting
-  - Provides lookup by slug
-  - Slugs treated as stable identifiers for routing and selection
-  - Components wrapped in React.lazy with explicit named exports
-
 ## Feature Domain Libraries
 
 ### Unified Schedule
@@ -146,12 +135,10 @@ See [`responsive/README.md`](./responsive/README.md) for detailed documentation.
 
 **Key Components:** Breakpoint hook, device detection, types
 
-### Goals
-See [`goals/README.md`](./goals/README.md) for detailed documentation.
+### Goals (Relocated)
+See [`goals/README.md`](./goals/README.md) for details.
 
-**Purpose:** Goal domain types for goal creation and inspiration gallery.
-
-**Key Components:** Goal creation types, inspiration types
+**Status:** Code files merged into `unified-schedule/types.ts`. Directory contains documentation only. Import goal creation and inspiration types from `@/lib/unified-schedule`.
 
 ### Adapters
 See [`adapters/README.md`](./adapters/README.md) for detailed documentation.
@@ -187,8 +174,7 @@ lib/
 ├── drag-types.ts               # Drag & drop types
 ├── life-areas.ts               # Life area definitions
 ├── types.ts                    # Shared cross-cutting types
-├── registry.ts                 # Component registry
-├── unified-schedule/           # Unified schedule domain
+├── unified-schedule/           # Unified schedule domain (includes goal creation types)
 ├── calendar-sync/             # Calendar integration system
 ├── blueprint/                  # Blueprint template system
 ├── weekly-planning/           # Weekly planning flow
@@ -197,7 +183,7 @@ lib/
 ├── undo/                       # Undo system
 ├── preferences/                # User preferences
 ├── responsive/                 # Responsive utilities
-├── goals/                      # Goal domain types
+├── goals/                      # Goal domain types (relocated, docs only)
 ├── adapters/                   # Data adapters
 └── fixtures/                   # Fixture data
 ```

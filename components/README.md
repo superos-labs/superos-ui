@@ -2,37 +2,6 @@
 
 **Purpose:** Complete UI component library for SuperOS, organized by feature domain and containing all React components, hooks, utilities, and shared types used throughout the application.
 
-## Root-Level Files
-
-### Public API
-- **`index.ts`** — Public entry point for the SuperOS UI component library
-  - Defines stable, supported API surface exposed to consumers
-  - Aggregates and re-exports core components, hooks, utilities, shared types, and UI primitives
-  - Exports grouped by domain to reflect product concepts
-  - Acts as "barrel file" to simplify imports and enforce consistency
-  - Serves as documentation for component architecture and boundaries
-  - Only exports intentionally public components and types
-  - App code and external consumers should import exclusively from this file
-  - Contains exports only; no runtime logic
-
-### Example/Development Tools
-- **`example.tsx`** — Lightweight layout primitives for rendering isolated UI examples
-  - Used in documentation, playgrounds, and exploratory views
-  - Provides consistent, centered, and constrained environment for component examples
-  - ExampleWrapper: Full-width page wrapper that centers example content within responsive max-width grid
-  - Example: Single example container with optional title and dashed-border content area
-  - Enforces consistent spacing, width constraints, and alignment
-  - Visually distinguishes example content from background
-  - Remains styling-focused with no state or business logic
-  - Uses data-slot attributes for targeted styling and inspection
-
-- **`_playground/knobs.tsx`** — Development tooling for component playgrounds
-  - Provides KnobsProvider context for managing playground state
-  - KnobsPanel for exposing interactive controls
-  - KnobsToggle for showing/hiding knobs panel
-  - Various knob components (KnobsToggle, KnobBoolean, etc.) for real-time parameter tweaking
-  - Used in example/playground components for development and design iteration
-
 ## Feature Domains
 
 ### Core Product Components
@@ -178,21 +147,16 @@ See [`ui/README.md`](./ui/README.md) for detailed documentation.
 ## Architecture Principles
 
 - **Domain Organization:** Components organized by feature domain (Calendar, Backlog, Block, etc.)
-- **Barrel Exports:** Public API via `index.ts` for stable import surface
+- **Feature Barrels:** Each feature folder has an `index.ts` for convenient imports
 - **Composition:** Large features composed from smaller, focused components
 - **Presentational:** Components manage UI state but delegate persistence via callbacks
 - **Reusability:** Shared UI primitives in `ui/` directory
-- **Development Tools:** Example components and playground tools for iteration
 - **Documentation:** Each major domain has its own README
 
 ## Directory Structure
 
 ```
 components/
-├── index.ts                    # Public API barrel file
-├── example.tsx                 # Example layout primitives
-├── _playground/                # Development tooling
-│   └── knobs.tsx
 ├── calendar/                    # Calendar system
 ├── block/                      # Block components
 ├── backlog/                    # Backlog system
@@ -211,10 +175,9 @@ components/
 
 ## Usage Guidelines
 
-- **Import from Root:** Use `@/components` (via `index.ts`) for public components
+- **Import from Feature Folders:** Use `@/components/calendar`, `@/components/block`, etc. for feature components
 - **Domain Boundaries:** Each domain is self-contained with its own types and utilities
 - **Composition:** Build complex features by composing smaller components
-- **Development:** Use example components and playground tools for iteration
 - **Documentation:** Refer to domain-specific READMEs for detailed information
 
-**Total Subdirectories:** 12 major feature domains + UI primitives + development tools
+**Total Subdirectories:** 12 major feature domains + UI primitives

@@ -6,7 +6,8 @@
  * Canonical type definitions for the unified schedule system.
  *
  * Serves as the single source of truth for all schedule-related domain,
- * derived, and hook interface types used across the app.
+ * derived, and hook interface types used across the app. Also contains
+ * goal creation and inspiration gallery types (merged from lib/goals).
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
@@ -16,6 +17,7 @@
  * - Define external calendar sync configuration and computed sync state.
  * - Define computed/derived data shapes (stats, deadlines, schedule info).
  * - Define option and return types for unified schedule hooks.
+ * - Define goal creation data and inspiration gallery types.
  *
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
@@ -23,6 +25,8 @@
  * - Other modules may re-export these types, but this file is authoritative.
  * - Types are intentionally UI-agnostic and persistence-agnostic.
  * - Prefer extending types here rather than redefining them elsewhere.
+ * - Goal creation and inspiration types were consolidated here from the
+ *   former lib/goals module to reduce indirection.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -31,6 +35,7 @@
  * - ScheduleGoal, ScheduleTask, Subtask, Milestone, ScheduleEssential
  * - Sync-related types (GoalSyncSettings, BlockSyncSettings, BlockSyncState)
  * - Computed/derived types and hook option/return types
+ * - NewGoalData, InspirationGoal, InspirationCategory
  */
 
 import type { GoalColor } from "@/lib/colors";
@@ -526,4 +531,38 @@ export interface UseUnifiedScheduleReturn {
     onDayHeaderHover: (dayIndex: number | null) => void;
     onMarkDayComplete: (dayIndex: number) => void;
   };
+}
+
+// ============================================================================
+// Goal Creation & Inspiration Types (merged from lib/goals)
+// ============================================================================
+
+/**
+ * Data for creating a new goal.
+ * Used by goal creation forms and inspiration gallery.
+ */
+export interface NewGoalData {
+  label: string;
+  icon: IconComponent;
+  color: GoalColor;
+  lifeAreaId: string;
+}
+
+/**
+ * A goal suggestion in the inspiration gallery.
+ */
+export interface InspirationGoal {
+  id: string;
+  label: string;
+  icon: IconComponent;
+  /** Optional description shown on hover */
+  description?: string;
+}
+
+/**
+ * A category of inspiration goals grouped by life area.
+ */
+export interface InspirationCategory {
+  lifeArea: import("@/lib/types").LifeArea;
+  goals: InspirationGoal[];
 }

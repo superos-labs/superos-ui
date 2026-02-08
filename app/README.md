@@ -45,31 +45,6 @@
   - Token naming mirrors shadcn conventions for interoperability
   - Keeps file focused on primitives, not component styling
 
-## Routes
-
-### Dynamic Component Preview
-- **`[slug]/page.tsx`** — Dynamic component preview page
-  - Resolves component by slug from internal component registry
-  - Renders component inside simple layout shell
-  - Used primarily for prototyping, inspection, and isolated experience exploration
-  - Reads dynamic route param (`slug`)
-  - Looks up component metadata via `getComponent`
-  - Renders resolved component with layout wrapper
-  - Displays loading skeleton while component suspends
-  - Triggers Next.js `notFound()` when no registry entry exists
-  - Supports lightweight layout modes: "full" (entire viewport), "center" (centered, default), "bottom" (centered horizontally, aligned to bottom)
-  - Uses Suspense to allow components to be async without leaking complexity
-
-### Sample Components Index
-- **`sample-components/page.tsx`** — Index page for browsing registered sample components
-  - Renders simple list of links derived from internal component registry
-  - Allows quick navigation to each component's dedicated preview page
-  - Reads component metadata from `registry`
-  - Renders navigable list of component names
-  - Links each entry to corresponding `[slug]` preview route
-  - Intentionally minimal and unopinionated
-  - Serves as lightweight developer-facing entry point rather than user-facing experience
-
 ## Static Assets
 
 - **`favicon.ico`** — Application favicon
@@ -82,7 +57,6 @@
 - **Font System:** Multiple font families (Geist, Geist Mono, Public Sans) exposed as CSS variables
 - **Design Tokens:** Comprehensive design token system using CSS variables and Tailwind v4
 - **Dark Mode:** Class-based dark mode support via `.dark` class
-- **Component Registry:** Dynamic component preview system for development
 - **Onboarding Simulation:** Ability to switch between empty and complete states
 
 ## Design Principles
@@ -92,7 +66,6 @@
 - **Fixture-Based:** Uses fixture data for prototyping (non-persistent)
 - **Token System:** Design tokens defined as CSS variables and mapped to Tailwind
 - **OKLCH Colors:** Color system uses OKLCH for perceptual consistency
-- **Developer Tools:** Component registry and preview system for development
 - **Suspense Support:** Async components supported via Suspense boundaries
 
 ## Architecture
@@ -102,10 +75,6 @@ app/
 ├── layout.tsx              # Root layout with fonts and metadata
 ├── page.tsx                # Main application entry (shell composition)
 ├── globals.css             # Global styles and design tokens
-├── [slug]/                 # Dynamic component preview route
-│   └── page.tsx
-├── sample-components/      # Component registry index
-│   └── page.tsx
 ├── favicon.ico             # Application favicon
 └── avatar-portrait.jpeg    # Avatar asset
 ```
@@ -116,7 +85,6 @@ app/
 - **Preferences:** PreferencesProvider manages user preferences
 - **Undo System:** UndoProvider enables undo functionality
 - **Drag System:** DragProvider enables drag-and-drop
-- **Component Registry:** Dynamic routes use component registry for previews
 - **Fixture Data:** Uses fixture data sets for development and prototyping
 
-**Total Files:** 5 (3 core files, 2 route files) + 2 static assets
+**Total Files:** 3 core files + 2 static assets

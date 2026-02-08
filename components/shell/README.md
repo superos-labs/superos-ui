@@ -62,6 +62,7 @@
   - Composes keyboard shortcuts, undo system, and toast feedback
   - Provides drag & drop previews and drop handlers
   - Exposes unified wiring surface consumed by layout components
+  - Contains inlined helper hooks (useShellFocus, useToastAggregator, useMobileNavigation) to reduce file count
 - **`use-shell-layout.ts`** — Central shell layout and mode orchestration hook
   - Owns UI visibility flags, high-level modes (planning, onboarding, blueprint edit)
   - Manages selection state and right-sidebar routing logic
@@ -108,16 +109,6 @@
 
 ## Utility Hooks
 
-### Focus & Navigation
-- **`use-shell-focus.ts`** — Shell hook adapting focus-session state to shell UI needs
-  - Determines when to show focus indicators
-  - Provides helpers for starting focus and navigating to focused block
-  - Determines if selected sidebar block is currently focused
-- **`use-mobile-navigation.ts`** — Shell hook managing day-level navigation for mobile layouts
-  - Tracks which day within current week is being viewed
-  - Provides previous/next day navigation that gracefully crosses week boundaries
-  - Maintains selected day index for mobile day view
-
 ### Drag & Drop
 - **`use-external-drag-preview.ts`** — Shell hook adapting DragProvider state into calendar-compatible external drag previews
   - Enables dragging items from outside calendar (backlog, lists, etc.)
@@ -126,11 +117,6 @@
   - Invokes shell-level drop handler with normalized data
 
 ### Feedback & Undo
-- **`use-toast-aggregator.ts`** — Toast message aggregation hook
-  - Combines multiple ephemeral toast sources (calendar shortcuts, sidebar actions, deadline actions)
-  - Maintains independent toast states for different feature areas
-  - Auto-clears transient toast messages after short delay
-  - Exposes single toastMessage with defined priority
 - **`use-undoable-handlers.ts`** — Undo-aware action wrapper for shell-level mutations
   - Decorates task and calendar handlers with undo recording logic
   - Captures minimal pre-mutation state required to restore changes
@@ -177,4 +163,4 @@
 - **Toast feedback:** Aggregated toast messages from multiple sources
 - **Life areas:** Customizable goal categorization
 
-**Total Files:** 23 (5 core components, 3 orchestration hooks, 4 domain handler hooks, 5 utility hooks, 2 types/API files)
+**Total Files:** 20 (5 core components, 3 orchestration hooks, 4 domain handler hooks, 2 utility hooks, 2 types/API files, 4 supporting components)

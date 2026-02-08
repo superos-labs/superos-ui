@@ -8,7 +8,7 @@
 - **`index.ts`** — Public API that re-exports hooks, utilities, and types
 
 ### Type System
-- **`types.ts`** — Canonical type definitions for calendar events, goals, tasks, subtasks, milestones, essentials, sync configurations, and hook interfaces
+- **`types.ts`** — Canonical type definitions for calendar events, goals, tasks, subtasks, milestones, essentials, sync configurations, hook interfaces, goal creation data, and inspiration gallery types
 
 ### State Utilities
 - **`goal-state-utils.ts`** — Pure immutable helper functions for nested goal/task/subtask/milestone updates (no React dependencies)

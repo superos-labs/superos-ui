@@ -9,6 +9,9 @@
  * feature-specific hooks (layout, focus, blueprint, planning, undo, keyboard,
  * drag & drop, sidebars, analytics) into a single cohesive wiring object.
  *
+ * Also contains inlined helper hooks that were too thin to justify separate
+ * files: useShellFocus, useToastAggregator, and useMobileNavigation.
+ *
  * Think of this hook as:
  *   "Behavior + Interaction Orchestrator"
  * not
@@ -24,6 +27,9 @@
  * - Provide drag & drop previews and drop handlers.
  * - Assemble analytics and planning budget derived data.
  * - Expose a unified wiring surface consumed by layout components.
+ * - Manage focus indicator visibility and focus-start actions (inlined).
+ * - Aggregate toast messages from multiple sources with priority (inlined).
+ * - Track mobile day-level navigation within the current week (inlined).
  *
  * -----------------------------------------------------------------------------
  * NON-RESPONSIBILITIES
@@ -38,6 +44,9 @@
  * - Sits between useShellState and ShellContent component.
  * - Optimized for LLM scanning and mental mapping of interactions.
  * - Centralizes complex cross-feature glue to avoid scattering logic.
+ * - useShellFocus, useToastAggregator, and useMobileNavigation are defined
+ *   as file-local functions rather than separate modules to reduce file count
+ *   and navigation overhead during prototyping.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -64,17 +73,160 @@ import {
   CALENDAR_ZOOM_STEP,
 } from "@/lib/preferences";
 import { useBreakpoint } from "@/lib/responsive";
+import type { GoalColor } from "@/lib/colors";
 import type { DeadlineTask, ScheduleGoal } from "@/lib/unified-schedule";
 import type { ShellContentProps } from "./shell-types";
 import { useShellLayout } from "./use-shell-layout";
-import { useShellFocus } from "./use-shell-focus";
 import { useExternalDragPreview } from "./use-external-drag-preview";
-import { useToastAggregator } from "./use-toast-aggregator";
 import { useUndoableHandlers } from "./use-undoable-handlers";
-import { useMobileNavigation } from "./use-mobile-navigation";
 import { useGoalHandlers } from "./use-goal-handlers";
 import { usePlanningIntegration } from "./use-planning-integration";
 import { useBlueprintHandlers } from "./use-blueprint-handlers";
+
+// =============================================================================
+// Inlined: Focus Session (from use-shell-focus.ts)
+// =============================================================================
+
+interface FocusSessionState {
+  blockId: string;
+  blockTitle: string;
+  blockColor: GoalColor;
+}
+
+function useShellFocus({
+  focusSession,
+  selectedEventId,
+  selectedEvent,
+  startFocus,
+  onNavigateToBlock,
+}: {
+  focusSession: FocusSessionState | null;
+  selectedEventId: string | null;
+  selectedEvent: CalendarEvent | null;
+  startFocus: (blockId: string, title: string, color: GoalColor) => void;
+  onNavigateToBlock: (blockId: string) => void;
+}) {
+  const isSidebarBlockFocused = focusSession?.blockId === selectedEventId;
+  const showFocusIndicator =
+    focusSession !== null && selectedEventId !== focusSession?.blockId;
+
+  const handleStartFocus = React.useCallback(() => {
+    if (!selectedEvent) return;
+    startFocus(selectedEvent.id, selectedEvent.title, selectedEvent.color);
+  }, [selectedEvent, startFocus]);
+
+  const handleNavigateToFocusedBlock = React.useCallback(() => {
+    if (focusSession) {
+      onNavigateToBlock(focusSession.blockId);
+    }
+  }, [focusSession, onNavigateToBlock]);
+
+  return {
+    isSidebarBlockFocused,
+    showFocusIndicator,
+    handleStartFocus,
+    handleNavigateToFocusedBlock,
+  };
+}
+
+// =============================================================================
+// Inlined: Toast Aggregator (from use-toast-aggregator.ts)
+// =============================================================================
+
+function useToastAggregator(calendarToastMessage: string | null) {
+  const [sidebarToastMessage, setSidebarToastMessage] = React.useState<
+    string | null
+  >(null);
+  const [deadlineToastMessage, setDeadlineToastMessage] = React.useState<
+    string | null
+  >(null);
+
+  React.useEffect(() => {
+    if (sidebarToastMessage) {
+      const timer = setTimeout(() => setSidebarToastMessage(null), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [sidebarToastMessage]);
+
+  React.useEffect(() => {
+    if (deadlineToastMessage) {
+      const timer = setTimeout(() => setDeadlineToastMessage(null), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [deadlineToastMessage]);
+
+  const toastMessage =
+    calendarToastMessage ?? sidebarToastMessage ?? deadlineToastMessage;
+
+  return {
+    toastMessage,
+    setSidebarToast: setSidebarToastMessage,
+    setDeadlineToast: setDeadlineToastMessage,
+  };
+}
+
+// =============================================================================
+// Inlined: Mobile Navigation (from use-mobile-navigation.ts)
+// =============================================================================
+
+function useMobileNavigation({
+  weekDates,
+  selectedDate,
+  onPreviousWeek,
+  onNextWeek,
+}: {
+  weekDates: Date[];
+  selectedDate: Date;
+  onPreviousWeek: () => void;
+  onNextWeek: () => void;
+}) {
+  const [mobileSelectedDayIndex, setMobileSelectedDayIndex] = React.useState(
+    () => {
+      const today = new Date();
+      const todayStr = today.toISOString().split("T")[0];
+      const idx = weekDates.findIndex(
+        (d) => d.toISOString().split("T")[0] === todayStr,
+      );
+      return idx >= 0 ? idx : 0;
+    },
+  );
+
+  React.useEffect(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+    const idx = weekDates.findIndex(
+      (d) => d.toISOString().split("T")[0] === todayStr,
+    );
+    setMobileSelectedDayIndex(idx >= 0 ? idx : 0);
+  }, [weekDates]);
+
+  const handleMobilePreviousDay = React.useCallback(() => {
+    if (mobileSelectedDayIndex > 0) {
+      setMobileSelectedDayIndex(mobileSelectedDayIndex - 1);
+    } else {
+      onPreviousWeek();
+      setMobileSelectedDayIndex(6);
+    }
+  }, [mobileSelectedDayIndex, onPreviousWeek]);
+
+  const handleMobileNextDay = React.useCallback(() => {
+    if (mobileSelectedDayIndex < 6) {
+      setMobileSelectedDayIndex(mobileSelectedDayIndex + 1);
+    } else {
+      onNextWeek();
+      setMobileSelectedDayIndex(0);
+    }
+  }, [mobileSelectedDayIndex, onNextWeek]);
+
+  const mobileSelectedDate = weekDates[mobileSelectedDayIndex] ?? selectedDate;
+
+  return {
+    mobileSelectedDayIndex,
+    mobileSelectedDate,
+    handleMobilePreviousDay,
+    handleMobileNextDay,
+  };
+}
 
 export function useShellWiring(props: ShellContentProps) {
   const {

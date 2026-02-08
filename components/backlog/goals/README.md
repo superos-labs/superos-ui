@@ -109,9 +109,8 @@
 ### Types & Utilities
 - **`goal-types.ts`** — Shared type definitions for backlog Goals
   - Defines UI-facing GoalItem shape used by backlog components
-  - Re-exports related goal, life area, and task types from domain modules
-  - Defines GoalItem display type
-  - Re-exports goal-related domain types
+  - Re-exports goal creation and inspiration types from lib/unified-schedule
+  - Re-exports shared types (LifeArea, GoalIconOption) from lib/types
   - Re-exports task and milestone types used by goals
   - plannedHours and completedHours deprecated in favor of derived stats
   - GoalItem remains thin and composable

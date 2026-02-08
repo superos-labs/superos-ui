@@ -26,23 +26,14 @@
   - Defines generic grouping structure
   - Base interface shared by goals and essentials (id, label, icon, color)
 
-### Example/Playground
-- **`backlog-example.tsx`** — Playground example for the Backlog component
-  - Fully interactive, in-memory demo of Essentials, Goals, Tasks, and subtasks
-  - Intended for local development, debugging, and UI iteration
-  - Defines mock essentials and goals
-  - Wires minimal state management for tasks and subtasks
-  - Exposes knobs to toggle basic presentation flags
-  - Uses crypto.randomUUID for temporary IDs
-  - All state lives locally in file
-
 ### Public API
 - **`index.ts`** — Public entry point for Backlog module
   - Centralizes and re-exports Backlog composition root, Goals and Essentials components, shared backlog types, onboarding helpers, and convenience re-exports from lib domains
   - Defines public surface area of Backlog package
   - Provides stable, ergonomic import surface
   - Hides internal folder structure
-  - Groups related exports by domain (Goals, Essentials, Shared, Hooks)
+  - Groups related exports by domain (Goals, Essentials, Shared)
+  - Only exports what the backlog module owns; lib-level types and hooks should be imported from their source modules
 
 ## Subsystems
 
@@ -128,7 +119,6 @@ See [`essentials/README.md`](./essentials/README.md) for detailed documentation.
 backlog/
 ├── backlog.tsx              # Main composition root
 ├── backlog-types.ts         # Shared type definitions
-├── backlog-example.tsx      # Development playground
 ├── index.ts                 # Public API
 ├── goals/                   # Goals subsystem
 │   ├── goal-section.tsx
@@ -143,4 +133,4 @@ backlog/
     └── ...
 ```
 
-**Total Files:** 4 main files + 2 subsystems (goals: 12 files, essentials: 8 files)
+**Total Files:** 3 main files + 2 subsystems (goals: 12 files, essentials: 8 files)

@@ -10,16 +10,17 @@
  * - Goals and Essentials components.
  * - Shared backlog types.
  * - Onboarding helpers.
- * - Convenience re-exports from lib domains.
  *
- * This file defines the public surface area of the Backlog package.
+ * This barrel only exports what the backlog module owns. Lib-level types
+ * (GoalStats, TaskScheduleInfo, etc.) and hooks (useActivitySchedule) should
+ * be imported directly from their source modules.
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
  * - Provide a stable, ergonomic import surface.
  * - Hide internal folder structure.
- * - Group related exports by domain (Goals, Essentials, Shared, Hooks).
+ * - Group related exports by domain (Goals, Essentials, Shared).
  *
  * -----------------------------------------------------------------------------
  * NON-RESPONSIBILITIES
@@ -27,11 +28,12 @@
  * - Business logic.
  * - State management.
  * - Runtime behavior.
+ * - Re-exporting lib-level types or hooks.
  *
  * -----------------------------------------------------------------------------
  * MENTAL MODEL
  * -----------------------------------------------------------------------------
- * "Backlog package public API."
+ * "Backlog package public API — components and types only."
  */
 
 // =============================================================================
@@ -126,22 +128,3 @@ export type {
   InlineEssentialCreatorProps,
 } from "./essentials";
 
-// =============================================================================
-// Hooks (Re-exported from lib/essentials for convenience)
-// =============================================================================
-
-export { useActivitySchedule } from "@/lib/essentials";
-export type {
-  UseActivityScheduleOptions,
-  UseActivityScheduleReturn,
-} from "@/lib/essentials";
-
-// =============================================================================
-// Unified Schedule Types (Re-exported for convenience)
-// =============================================================================
-
-export type {
-  GoalStats,
-  TaskScheduleInfo,
-  TaskDeadlineInfo,
-} from "@/lib/unified-schedule";

@@ -13,13 +13,13 @@
  * - Domain-specific handler hooks
  * - Shared shell types
  *
- * This file defines the intended integration boundary for consumers of the
- * Shell feature and should remain stable and well-curated.
+ * Note: useShellFocus, useToastAggregator, and useMobileNavigation are
+ * inlined directly in use-shell-wiring.ts and are not exported separately.
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Re-export all public shell components, hooks, and types.
+ * - Re-export public shell components, hooks, and types.
  * - Express the canonical import paths for Shell consumers.
  *
  * -----------------------------------------------------------------------------
@@ -27,7 +27,6 @@
  * -----------------------------------------------------------------------------
  * - Implementing behavior.
  * - Aggregating runtime logic.
- * - Enforcing architectural constraints.
  *
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
@@ -84,30 +83,13 @@ export type { ShellMobileLayoutProps } from "./shell-mobile-layout";
 export { useShellLayout } from "./use-shell-layout";
 export type { UseShellLayoutReturn, OnboardingStep } from "./use-shell-layout";
 
-export { useShellFocus } from "./use-shell-focus";
-export type {
-  UseShellFocusOptions,
-  UseShellFocusReturn,
-  FocusSessionState,
-} from "./use-shell-focus";
-
 export { useExternalDragPreview } from "./use-external-drag-preview";
 export type {
   UseExternalDragPreviewOptions,
   UseExternalDragPreviewReturn,
 } from "./use-external-drag-preview";
 
-export { useToastAggregator } from "./use-toast-aggregator";
-export type { UseToastAggregatorReturn } from "./use-toast-aggregator";
-
 export { useUndoableHandlers } from "./use-undoable-handlers";
-
-// Extracted hooks
-export { useMobileNavigation } from "./use-mobile-navigation";
-export type {
-  UseMobileNavigationOptions,
-  UseMobileNavigationReturn,
-} from "./use-mobile-navigation";
 
 export { useGoalHandlers } from "./use-goal-handlers";
 export type {

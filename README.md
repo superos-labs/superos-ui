@@ -1,10 +1,10 @@
 # SuperOS UI
 
-**A comprehensive React/Next.js UI component library and application prototype for SuperOS, a unified productivity and calendar management system.**
+**A React/Next.js application prototype for SuperOS, a unified productivity and calendar management system.**
 
 ## Overview
 
-SuperOS UI is a modern, type-safe React application built with Next.js that provides a unified interface for managing goals, tasks, calendar events, and recurring life activities. The application features a sophisticated calendar system, drag-and-drop interactions, focus mode, weekly planning, analytics, and calendar integrations.
+SuperOS UI is a modern, type-safe React application built with Next.js that provides a unified interface for managing goals, tasks, calendar events, and recurring life activities. The application features a sophisticated calendar system, drag-and-drop interactions, focus mode, weekly planning, analytics, and calendar integrations. The codebase is optimized for rapid prototyping.
 
 ## Tech Stack
 
@@ -38,10 +38,9 @@ superos-ui/
 ├── app/                    # Next.js App Router directory
 │   ├── layout.tsx         # Root layout (fonts, metadata, global styles)
 │   ├── page.tsx           # Main application entry (shell composition)
-│   ├── globals.css        # Global styles and design tokens
-│   └── [slug]/            # Dynamic component preview routes
+│   └── globals.css        # Global styles and design tokens
 │
-├── components/             # UI component library
+├── components/             # UI components organized by feature domain
 │   ├── calendar/          # Calendar view system
 │   ├── block/            # Calendar block components
 │   ├── backlog/          # Goals and essentials backlog
@@ -50,11 +49,10 @@ superos-ui/
 │   ├── focus/            # Focus mode components
 │   ├── integrations/     # Calendar integration UI
 │   ├── drag/             # Drag-and-drop system
-│   ├── ui/               # Reusable UI primitives
-│   └── index.ts          # Public component API
+│   └── ui/               # Reusable UI primitives
 │
 ├── lib/                   # Core library code
-│   ├── unified-schedule/ # Unified schedule domain logic
+│   ├── unified-schedule/ # Unified schedule domain logic and types
 │   ├── calendar-sync/    # Calendar integration system
 │   ├── blueprint/        # Blueprint template system
 │   ├── weekly-planning/ # Weekly planning hooks
@@ -69,9 +67,6 @@ superos-ui/
 │   ├── time-utils.ts     # Time formatting utilities
 │   ├── utils.ts          # General utilities
 │   └── types.ts          # Shared types
-│
-├── hooks/                 # Public hooks API
-│   └── index.ts          # Re-exports unified schedule hooks
 │
 └── public/                # Static assets
 ```
@@ -193,9 +188,9 @@ See subdirectory READMEs for domain-specific documentation.
 - **Performance** - React Compiler optimizations enabled
 
 ### Import Guidelines
-- **Public APIs** - Import from `components/index.ts` and `lib/*/index.ts`
+- **Feature Barrels** - Import from feature-level `index.ts` (e.g., `@/components/calendar`, `@/lib/unified-schedule`)
 - **Path Aliases** - Use `@/*` for absolute imports
-- **Avoid Direct Imports** - Prefer barrel file exports
+- **Direct Imports** - Direct file imports are acceptable when convenient; barrels are not mandatory
 
 ## Scripts
 

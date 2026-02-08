@@ -12,7 +12,8 @@
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
  * - Define GoalItem display type.
- * - Re-export goal-related domain types.
+ * - Re-export goal creation and inspiration types from unified schedule.
+ * - Re-export shared types (LifeArea, GoalIconOption) from lib/types.
  * - Re-export task and milestone types used by goals.
  *
  * -----------------------------------------------------------------------------
@@ -26,17 +27,18 @@
  * -----------------------------------------------------------------------------
  * - plannedHours and completedHours are deprecated in favor of derived stats.
  * - GoalItem remains thin and composable.
+ * - Goal creation and inspiration types originate in lib/unified-schedule/types.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
  * -----------------------------------------------------------------------------
  * - GoalItem
  * - BacklogItem (deprecated alias)
- * - NewGoalData (re-export)
- * - GoalIconOption (re-export)
- * - InspirationGoal (re-export)
- * - InspirationCategory (re-export)
- * - LifeArea (re-export)
+ * - NewGoalData (re-export from unified-schedule)
+ * - InspirationGoal (re-export from unified-schedule)
+ * - InspirationCategory (re-export from unified-schedule)
+ * - GoalIconOption (re-export from lib/types)
+ * - LifeArea (re-export from lib/types)
  * - GoalTask (re-export)
  * - Milestone (re-export)
  * - Subtask (re-export)
@@ -45,14 +47,15 @@
 import type { ScheduleTask, Milestone } from "@/lib/unified-schedule";
 import type { BacklogItemBase } from "../backlog-types";
 
-// Re-export from lib/goals for convenience
+// Re-export goal creation and inspiration types
 export type {
   NewGoalData,
-  GoalIconOption,
   InspirationGoal,
   InspirationCategory,
-  LifeArea,
-} from "@/lib/goals";
+} from "@/lib/unified-schedule";
+
+// Re-export shared types
+export type { GoalIconOption, LifeArea } from "@/lib/types";
 
 // Re-export task types for convenience
 export type {
