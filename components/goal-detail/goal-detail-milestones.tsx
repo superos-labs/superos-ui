@@ -16,8 +16,10 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
+ * - Sort milestones by deadline (earliest first; no deadline at end).
  * - Group tasks by milestone.
  * - Render milestone headers with completion, label, and optional deadline.
+ * - Support period-bound deadlines (day / month / quarter) via GranularDatePicker.
  * - Render TaskRow items within each milestone.
  * - Provide inline creators for milestones and tasks.
  * - Manage local expansion state for tasks (accordion).
@@ -32,8 +34,10 @@
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
- * - First incomplete milestone is treated as the "current" phase.
+ * - Milestones are sorted by deadline so temporal pacing is visible at a glance.
+ * - First incomplete milestone (in sorted order) is treated as the "current" phase.
  * - Milestones default to expanded when incomplete.
+ * - Deadline display uses formatGranularDate for period-aware labels.
  * - Inline creators are keyboard-first.
  * - Compact typography favors dense, scannable lists.
  *

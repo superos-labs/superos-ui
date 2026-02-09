@@ -50,17 +50,20 @@
 ### Milestones Section
 - **`goal-detail-milestones.tsx`** — Milestones and tasks section for the Goal Detail view
   - Renders vertical list of milestones, each containing associated tasks
+  - Sorts milestones by deadline (earliest first; milestones without deadlines appear at end)
   - Supports creating, editing, completing, and deleting milestones
   - Supports creating, editing, completing, and deleting tasks within milestones
   - Supports managing subtasks inside individual tasks
+  - Supports period-bound deadlines (day / month / quarter) via GranularDatePicker
   - Designed to express medium-to-large goals as phased progression
   - Groups tasks by milestone
   - Renders milestone headers with completion, label, and optional deadline
   - Renders TaskRow items within each milestone
   - Provides inline creators for milestones and tasks
   - Manages local expansion state for tasks (accordion)
-  - First incomplete milestone treated as "current" phase
+  - First incomplete milestone (in sorted order) treated as "current" phase
   - Milestones default to expanded when incomplete
+  - Deadline display uses granularity-aware formatting (e.g., "Mar 2026", "Q2 2026")
   - Inline creators are keyboard-first
   - Compact typography favors dense, scannable lists
 
@@ -131,6 +134,6 @@
 - **Unified Schedule:** Integrates with unified schedule domain types
 - **Calendar Sync:** Goal-level sync settings integration
 - **Life Areas:** Uses life area types for categorization
-- **GranularDatePicker:** Uses granular date picker for start date and target date selection (Day/Month/Quarter)
+- **GranularDatePicker:** Uses granular date picker for start date, target date, and milestone deadline selection (Day/Month/Quarter)
 
 **Total Files:** 7 (5 component files, 1 example file, 1 public API)
