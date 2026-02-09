@@ -7,6 +7,9 @@
 ### Types & Schema
 - **`types.ts`** — Shared types and Zod schemas for the AI briefing feature
   - `BlockBriefingContext` — multi-layer context object sent to the model (block, goal, week, day layers)
+  - `TaskContext` — per-task context with scheduling flags (`isAssignedToThisBlock`, `isScheduledAsOwnBlock`, `isAssignedToAnotherBlock`) and optional `BlockReference` details for temporal awareness
+  - `TaskSummary` — aggregate counts (total, completed, assignedToThisBlock, scheduledElsewhere, available) for at-a-glance task distribution
+  - `BlockReference` — lightweight date/time reference to a block on the calendar
   - `BriefingResponseSchema` — Zod schema shared between server route and client hook
   - `BriefingResponse`, `NewTaskSuggestion` — TypeScript types derived from the schema
   - Context types are plain serializable objects (no React components)
@@ -16,6 +19,8 @@
   - Classifies block time-of-day (morning / afternoon / evening)
   - Determines block position in the day's sequence
   - Computes milestone completion percentages
+  - Resolves cross-block task scheduling (tasks with own blocks, tasks assigned to other goal blocks) with concrete date/time references
+  - Computes task summary counts (completed, assigned, scheduled elsewhere, available)
   - Identifies previous blocks for the same goal this week
   - Summarizes today's schedule shape
   - No side effects, fully testable
@@ -41,6 +46,7 @@ The API route lives at `app/api/briefing/route.ts`:
 
 - **Structured output**: Uses Zod schema for type-safe streaming (no regex parsing)
 - **Context-only prompting**: Model only sees data from the context object — no hallucinated facts
+- **Cross-block awareness**: Task context includes scheduling flags and block references so the model can distinguish between tasks assigned here, scheduled elsewhere, and truly available
 - **Separation of concerns**: Context assembly is pure; API route is thin; hook manages streaming lifecycle
 - **Graceful degradation**: Missing context layers (no milestones, no previous blocks) degrade to sensible defaults
 

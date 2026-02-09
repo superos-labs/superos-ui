@@ -21,7 +21,8 @@
  * - useBlockBriefing (hook)
  * - assembleBlockContext (pure function)
  * - BriefingResponseSchema (Zod schema)
- * - Types: BlockBriefingContext, BriefingResponse, NewTaskSuggestion, etc.
+ * - Types: BlockBriefingContext, BriefingResponse, NewTaskSuggestion,
+ *          TaskContext, TaskSummary, BlockReference, etc.
  */
 
 // Hook
@@ -46,4 +47,6 @@ export type {
   WeekContext,
   DayContext,
   TaskContext,
+  TaskSummary,
+  BlockReference,
 } from "./types";

@@ -5,25 +5,35 @@
  *
  * Orchestration hook that binds a selected calendar event to BlockSidebar.
  *
- * Responsibilities:
- * - Adapts a CalendarEvent into sidebar display data
- * - Computes external calendar sync state
- * - Maps unified-schedule mutations to sidebar callbacks
- * - Centralizes all write-side logic for block sidebar interactions
- *
- * This hook acts as a thin controller layer:
+ * Acts as a thin controller layer:
  * UI → handlers → unified schedule / calendar systems
  *
- * It contains NO rendering logic.
- * It does NOT own state beyond derived memoized values.
+ * Contains NO rendering logic. Does NOT own state beyond derived memoized
+ * values.
  *
- * ---------------------------------------------------------------------------
- * DESIGN PRINCIPLES
- * ---------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Adapt a CalendarEvent into sidebar display data (via sidebar adapter).
+ * - Compute external calendar sync state.
+ * - Map unified-schedule mutations to sidebar callbacks.
+ * - Centralize all write-side logic for block sidebar interactions.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
  * - Sidebar components remain stateless and declarative.
  * - All side effects are centralized here.
  * - Domain writes flow through unified schedule APIs only.
- * - Mapping logic is colocated with the consuming surface.
+ * - Passes week events to the sidebar adapter so available tasks exclude
+ *   tasks assigned to other blocks of the same goal.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - UseBlockSidebarHandlersOptions
+ * - UseBlockSidebarHandlersReturn
+ * - useBlockSidebarHandlers
  */
 
 "use client";
@@ -60,6 +70,8 @@ export interface UseBlockSidebarHandlersOptions {
   essentials: ScheduleEssential[];
   /** Week dates for the current view */
   weekDates: Date[];
+  /** All week events (used to exclude tasks assigned to other blocks) */
+  events: CalendarEvent[];
   /** Unified schedule methods */
   schedule: Pick<
     UseUnifiedScheduleReturn,
@@ -147,6 +159,7 @@ export function useBlockSidebarHandlers({
   goals,
   essentials,
   weekDates,
+  events,
   schedule,
   calendarIntegrations,
   onEndFocus,
@@ -170,8 +183,8 @@ export function useBlockSidebarHandlers({
   // Compute sidebar data for the selected event
   const sidebarData = React.useMemo(() => {
     if (!selectedEvent) return null;
-    return eventToBlockSidebarData(selectedEvent, goals, essentials, weekDates);
-  }, [selectedEvent, goals, essentials, weekDates]);
+    return eventToBlockSidebarData(selectedEvent, goals, essentials, weekDates, events);
+  }, [selectedEvent, goals, essentials, weekDates, events]);
 
   // Compute sync state for the selected block across all providers
   const syncState = React.useMemo<BlockSyncState | undefined>(() => {

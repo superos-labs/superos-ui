@@ -31,6 +31,8 @@
  * -----------------------------------------------------------------------------
  * - Uses planned startMinutes + durationMinutes for same-day blocks.
  * - Overnight blocks derive end day and minutes via calendar helpers.
+ * - Accepts optional allEvents to filter tasks assigned to other blocks
+ *   of the same goal from the "available" list.
  * - Keeps adapter pure and synchronous.
  *
  * -----------------------------------------------------------------------------
@@ -117,13 +119,15 @@ export function parseTimeToMinutes(time: string): number {
  * @param goals - Array of goals to look up source goal/task data
  * @param essentials - Array of essentials to look up source essential data
  * @param weekDates - Array of dates for the current week (to compute ISO date)
+ * @param allEvents - All week events (used to exclude tasks assigned to other blocks)
  * @returns Object containing the sidebar data and available tasks for assignment
  */
 export function eventToBlockSidebarData(
   event: CalendarEvent,
   goals: SidebarGoal[],
   essentials: SidebarEssential[],
-  weekDates: Date[]
+  weekDates: Date[],
+  allEvents: CalendarEvent[] = [],
 ): EventToSidebarResult {
   // Find source goal for goal/task blocks
   const sourceGoal = event.sourceGoalId
@@ -183,17 +187,36 @@ export function eventToBlockSidebarData(
           }))
       : [];
 
+  // Collect task IDs assigned to OTHER blocks of the same goal so they are
+  // excluded from the "available" list.  This prevents a task assigned to
+  // Goal Block A from appearing as available in Goal Block B.
+  const otherBlockAssignedTaskIds = new Set<string>();
+  if (sourceGoal && event.blockType === "goal") {
+    for (const e of allEvents) {
+      if (
+        e.id !== event.id &&
+        e.sourceGoalId === sourceGoal.id &&
+        e.assignedTaskIds
+      ) {
+        for (const tid of e.assignedTaskIds) {
+          otherBlockAssignedTaskIds.add(tid);
+        }
+      }
+    }
+  }
+
   // Build available tasks (not yet assigned) for goal blocks
-  // Filter out: already assigned, completed, or scheduled to other blocks
-  // Pass full task objects for consistency
+  // Filter out: already assigned to this block, assigned to another block,
+  // completed, or scheduled as its own block
   const availableGoalTasks: BlockGoalTask[] =
     sourceGoal && event.blockType === "goal"
       ? (sourceGoal.tasks ?? [])
           .filter(
             (t) =>
               !assignedTaskIds.includes(t.id) && // not already assigned to this block
+              !otherBlockAssignedTaskIds.has(t.id) && // not assigned to another block
               !t.completed && // not completed
-              !t.scheduledBlockId // not scheduled to another block
+              !t.scheduledBlockId // not scheduled as its own block
           )
           .map((t) => ({
             id: t.id,

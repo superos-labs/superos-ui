@@ -29,7 +29,9 @@
  * -----------------------------------------------------------------------------
  * EXPORTS
  * -----------------------------------------------------------------------------
- * - BlockBriefingContext
+ * - BlockBriefingContext, BlockContext, GoalContext, WeekContext, DayContext
+ * - TaskContext, TaskSummary, BlockReference
+ * - PreviousBlockContext, DayBlockSummary
  * - BriefingResponseSchema
  * - BriefingResponse (inferred type)
  * - NewTaskSuggestion
@@ -62,6 +64,19 @@ export interface GoalContext {
     completionPct: number;
   };
   tasks: TaskContext[];
+  /** Quick counts of task distribution across categories */
+  taskSummary: TaskSummary;
+}
+
+/** Aggregate task counts for at-a-glance understanding of goal progress */
+export interface TaskSummary {
+  total: number;
+  completed: number;
+  assignedToThisBlock: number;
+  /** Tasks committed to other blocks (own block or assigned to another goal block) */
+  scheduledElsewhere: number;
+  /** Incomplete tasks not assigned to any block — candidates for suggestion */
+  available: number;
 }
 
 /** Individual task context */
@@ -71,9 +86,24 @@ export interface TaskContext {
   completed: boolean;
   isWeeklyFocus: boolean;
   isAssignedToThisBlock: boolean;
+  /** Task is scheduled as its own dedicated block elsewhere */
+  isScheduledAsOwnBlock: boolean;
+  /** Task is assigned to a different goal block (not this one) */
+  isAssignedToAnotherBlock: boolean;
+  /** When this task has its own dedicated block: where and when */
+  scheduledBlockInfo?: BlockReference;
+  /** When this task is assigned to other goal blocks: which ones */
+  otherBlockAssignments?: BlockReference[];
   hasDeadline: boolean;
   deadline?: string;
   subtaskProgress?: string; // "2/5"
+}
+
+/** Lightweight reference to a block on the calendar */
+export interface BlockReference {
+  date: string; // "2026-02-10"
+  dayOfWeek: string; // "Tuesday"
+  startTime: string; // "09:00"
 }
 
 /** Week-level context (hours, previous blocks, focus tasks) */
@@ -136,8 +166,9 @@ export const BriefingResponseSchema = z.object({
     .array(z.string())
     .describe(
       "IDs of existing goal tasks the user should focus on during this block, " +
-        "ordered by priority. Prefer weekly focus tasks, then tasks with " +
-        "upcoming deadlines, then unscheduled tasks.",
+        "ordered by priority. MUST only include tasks that are assigned to " +
+        "this block or available (unscheduled). NEVER include tasks that are " +
+        "scheduled elsewhere (isScheduledAsOwnBlock or isAssignedToAnotherBlock).",
     ),
   newTaskSuggestions: z
     .array(

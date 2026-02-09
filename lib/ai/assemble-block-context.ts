@@ -16,6 +16,8 @@
  * - Classify block time-of-day (morning / afternoon / evening).
  * - Determine block position in the day's sequence.
  * - Compute milestone completion percentages.
+ * - Resolve cross-block task scheduling (own blocks, other goal block assignments).
+ * - Compute task summary counts (completed, assigned, scheduled elsewhere, available).
  * - Identify previous blocks for the same goal this week.
  * - Summarize today's schedule shape.
  * - Assemble all layers into a single BlockBriefingContext.
@@ -54,6 +56,8 @@ import type {
   WeekContext,
   DayContext,
   TaskContext,
+  TaskSummary,
+  BlockReference,
   PreviousBlockContext,
 } from "./types";
 
@@ -160,13 +164,25 @@ function buildBlockContext(
 // Goal Layer
 // =============================================================================
 
+/** Map from task ID → info about the dedicated block it's scheduled as */
+type ScheduledBlockMap = Map<string, BlockReference>;
+
+/** Map from task ID → list of other goal blocks it's assigned to */
+type OtherAssignmentMap = Map<string, BlockReference[]>;
+
 function buildTaskContext(
   task: ScheduleTask,
   assignedTaskIds: string[],
+  otherBlockAssignedTaskIds: Set<string>,
+  scheduledBlockMap: ScheduledBlockMap,
+  otherAssignmentMap: OtherAssignmentMap,
   weekStartDate: string,
 ): TaskContext {
   const subtasks = task.subtasks ?? [];
   const completedSubtasks = subtasks.filter((s) => s.completed).length;
+
+  const isScheduledAsOwnBlock = !!task.scheduledBlockId;
+  const isAssignedToAnotherBlock = otherBlockAssignedTaskIds.has(task.id);
 
   return {
     id: task.id,
@@ -174,6 +190,14 @@ function buildTaskContext(
     completed: task.completed ?? false,
     isWeeklyFocus: task.weeklyFocusWeek === weekStartDate,
     isAssignedToThisBlock: assignedTaskIds.includes(task.id),
+    isScheduledAsOwnBlock,
+    isAssignedToAnotherBlock,
+    scheduledBlockInfo: isScheduledAsOwnBlock
+      ? scheduledBlockMap.get(task.id)
+      : undefined,
+    otherBlockAssignments: isAssignedToAnotherBlock
+      ? otherAssignmentMap.get(task.id)
+      : undefined,
     hasDeadline: !!task.deadline,
     deadline: task.deadline,
     subtaskProgress:
@@ -186,12 +210,52 @@ function buildTaskContext(
 function buildGoalContext(
   goal: ScheduleGoal,
   event: CalendarEvent,
+  events: CalendarEvent[],
   weekStartDate: string,
 ): GoalContext {
   const lifeArea = getLifeArea(goal.lifeAreaId);
   const assignedTaskIds = event.assignedTaskIds ?? [];
 
-  // Find current (first incomplete) milestone
+  // ── Cross-block lookups ──────────────────────────────────────────────
+  // 1. Task IDs assigned to OTHER blocks of the same goal
+  const otherBlockAssignedTaskIds = new Set<string>();
+  // 2. Map: taskId → list of BlockReferences for other goal blocks
+  const otherAssignmentMap: OtherAssignmentMap = new Map();
+  // 3. Map: taskId → BlockReference for tasks that are their own block
+  const scheduledBlockMap: ScheduledBlockMap = new Map();
+
+  const goalBlocks = events.filter((e) => e.sourceGoalId === goal.id);
+
+  for (const e of goalBlocks) {
+    // Build other-assignment maps (skip the current block)
+    if (e.id !== event.id && e.assignedTaskIds) {
+      const ref: BlockReference = {
+        date: e.date,
+        dayOfWeek: getDayOfWeek(e.date),
+        startTime: minutesToTime(e.startMinutes),
+      };
+      for (const tid of e.assignedTaskIds) {
+        otherBlockAssignedTaskIds.add(tid);
+        const existing = otherAssignmentMap.get(tid);
+        if (existing) {
+          existing.push(ref);
+        } else {
+          otherAssignmentMap.set(tid, [ref]);
+        }
+      }
+    }
+
+    // Build scheduled-block map (task blocks linked via sourceTaskId)
+    if (e.blockType === "task" && e.sourceTaskId) {
+      scheduledBlockMap.set(e.sourceTaskId, {
+        date: e.date,
+        dayOfWeek: getDayOfWeek(e.date),
+        startTime: minutesToTime(e.startMinutes),
+      });
+    }
+  }
+
+  // ── Milestone context ────────────────────────────────────────────────
   const currentMilestone = goal.milestones?.find((m) => !m.completed);
   let milestoneContext: GoalContext["currentMilestone"];
 
@@ -211,10 +275,37 @@ function buildGoalContext(
     };
   }
 
-  // Build task contexts — weekly focus and incomplete first
+  // ── Build individual task contexts ───────────────────────────────────
   const tasks = (goal.tasks ?? []).map((t) =>
-    buildTaskContext(t, assignedTaskIds, weekStartDate),
+    buildTaskContext(
+      t,
+      assignedTaskIds,
+      otherBlockAssignedTaskIds,
+      scheduledBlockMap,
+      otherAssignmentMap,
+      weekStartDate,
+    ),
   );
+
+  // ── Compute task summary ─────────────────────────────────────────────
+  const taskSummary: TaskSummary = {
+    total: tasks.length,
+    completed: tasks.filter((t) => t.completed).length,
+    assignedToThisBlock: tasks.filter((t) => t.isAssignedToThisBlock).length,
+    scheduledElsewhere: tasks.filter(
+      (t) =>
+        !t.completed &&
+        !t.isAssignedToThisBlock &&
+        (t.isScheduledAsOwnBlock || t.isAssignedToAnotherBlock),
+    ).length,
+    available: tasks.filter(
+      (t) =>
+        !t.completed &&
+        !t.isAssignedToThisBlock &&
+        !t.isScheduledAsOwnBlock &&
+        !t.isAssignedToAnotherBlock,
+    ).length,
+  };
 
   return {
     label: goal.label,
@@ -225,6 +316,7 @@ function buildGoalContext(
         : undefined,
     currentMilestone: milestoneContext,
     tasks,
+    taskSummary,
   };
 }
 
@@ -345,11 +437,18 @@ export function assembleBlockContext({
 
   // Goal context — requires goal data
   const goalCtx: GoalContext = goal
-    ? buildGoalContext(goal, event, weekStartDate)
+    ? buildGoalContext(goal, event, events, weekStartDate)
     : {
         label: event.title,
         lifeArea: "Unknown",
         tasks: [],
+        taskSummary: {
+          total: 0,
+          completed: 0,
+          assignedToThisBlock: 0,
+          scheduledElsewhere: 0,
+          available: 0,
+        },
       };
 
   // Week context — requires goal data

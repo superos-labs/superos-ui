@@ -506,6 +506,7 @@ export function useShellWiring(props: ShellContentProps) {
     goals,
     essentials,
     weekDates,
+    events,
     schedule: {
       updateEvent: onUpdateEvent,
       updateTask: onUpdateTask,

@@ -13,6 +13,7 @@
   - Resolves source goal, task, and essential from provided collections
   - Derives start/end dates and times, including overnight blocks
   - Builds assigned goal tasks, available goal tasks, and task subtasks
+  - Filters available tasks by excluding tasks assigned to other blocks of the same goal (via optional `allEvents` parameter)
   - Resolves icon color classes for display
   - Uses planned startMinutes + durationMinutes for same-day blocks
   - Overnight blocks derive end day and minutes via calendar helpers
