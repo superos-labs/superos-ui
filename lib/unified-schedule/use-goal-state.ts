@@ -36,7 +36,13 @@
 "use client";
 
 import * as React from "react";
-import type { Subtask, Milestone, ScheduleTask, ScheduleGoal } from "./types";
+import type {
+  Subtask,
+  Milestone,
+  ScheduleTask,
+  ScheduleGoal,
+  DateGranularity,
+} from "./types";
 import {
   updateGoalById,
   addTaskToGoal,
@@ -104,6 +110,7 @@ export interface UseGoalStateReturn {
     goalId: string,
     milestoneId: string,
     deadline: string | undefined,
+    deadlineGranularity: DateGranularity | undefined,
   ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
@@ -325,11 +332,17 @@ export function useGoalState({
   );
 
   const updateMilestoneDeadline = React.useCallback(
-    (goalId: string, milestoneId: string, deadline: string | undefined) => {
+    (
+      goalId: string,
+      milestoneId: string,
+      deadline: string | undefined,
+      deadlineGranularity: DateGranularity | undefined,
+    ) => {
       setGoals((prev) =>
         updateMilestoneInGoals(prev, goalId, milestoneId, (milestone) => ({
           ...milestone,
           deadline,
+          deadlineGranularity,
         })),
       );
     },

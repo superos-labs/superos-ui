@@ -407,6 +407,7 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onUpdateMilestoneDeadline?: (
     milestoneId: string,
     deadline: string | undefined,
+    deadlineGranularity: DateGranularity | undefined,
   ) => void;
   onDeleteMilestone?: (milestoneId: string) => void;
   /** Callback to toggle milestones enabled/disabled */

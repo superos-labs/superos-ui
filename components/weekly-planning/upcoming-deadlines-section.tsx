@@ -47,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { RiFlagLine, RiPokerDiamondsLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { QuarterDeadlineItem } from "@/lib/unified-schedule";
+import { formatGranularDate } from "@/lib/unified-schedule";
 
 // =============================================================================
 // Constants
@@ -73,11 +74,18 @@ export interface UpcomingDeadlinesSectionProps {
 
 /**
  * Format a deadline date for display.
- * Shows "Today", "Tomorrow", day of week for this week,
- * or formatted date for later dates.
+ * For day-granularity deadlines: shows "Today", "Tomorrow", day of week
+ * for this week, or formatted date for later dates.
+ * For month/quarter-granularity deadlines: shows the period label
+ * (e.g., "Mar 2026", "Q2 2026") for a clearer sense of pacing.
  */
-function formatDeadlineDate(deadline: string, weekStartDate: Date): string {
-  const deadlineDate = new Date(deadline + "T00:00:00");
+function formatDeadlineDate(deadline: QuarterDeadlineItem, weekStartDate: Date): string {
+  // For coarse-grained deadlines, show the period label instead of resolved date
+  if (deadline.deadlineGranularity && deadline.deadlineGranularity !== "day") {
+    return formatGranularDate(deadline.deadline, deadline.deadlineGranularity);
+  }
+
+  const deadlineDate = new Date(deadline.deadline + "T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -246,7 +254,7 @@ export function UpcomingDeadlinesSection({
           <DeadlineRow
             key={`${deadline.type}-${deadline.id}`}
             deadline={deadline}
-            formattedDate={formatDeadlineDate(deadline.deadline, weekStartDate)}
+            formattedDate={formatDeadlineDate(deadline, weekStartDate)}
           />
         ))}
       </div>

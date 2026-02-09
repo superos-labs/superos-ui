@@ -55,11 +55,11 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
-      { id: "superos-m1", label: "Research competitors", completed: true },
-      { id: "superos-m2", label: "Write product spec", completed: true },
-      { id: "superos-m3", label: "Design billing UI", completed: true },
-      { id: "superos-m4", label: "Ship billing integration", completed: false },
-      { id: "superos-m5", label: "Launch to beta users", completed: false },
+      { id: "superos-m1", label: "Research competitors", completed: true, deadline: "2026-03-31", deadlineGranularity: "quarter" },
+      { id: "superos-m2", label: "Write product spec", completed: true, deadline: "2026-03-31", deadlineGranularity: "quarter" },
+      { id: "superos-m3", label: "Design billing UI", completed: true, deadline: "2026-03-31", deadlineGranularity: "quarter" },
+      { id: "superos-m4", label: "Ship billing integration", completed: false, deadline: "2026-06-30", deadlineGranularity: "quarter" },
+      { id: "superos-m5", label: "Launch to beta users", completed: false, deadline: "2026-06-30", deadlineGranularity: "quarter" },
     ],
     tasks: [
       {
@@ -108,14 +108,10 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     deadline: "2026-09-30",
     deadlineGranularity: "quarter",
     milestones: [
-      { id: "marathon-m1", label: "Run 5K without stopping", completed: true },
-      {
-        id: "marathon-m2",
-        label: "Complete 10K under 50min",
-        completed: false,
-      },
-      { id: "marathon-m3", label: "Run half marathon", completed: false },
-      { id: "marathon-m4", label: "Complete full marathon", completed: false },
+      { id: "marathon-m1", label: "Run 5K without stopping", completed: true, deadline: "2026-07-31", deadlineGranularity: "month" },
+      { id: "marathon-m2", label: "Complete 10K under 50min", completed: false, deadline: "2026-08-31", deadlineGranularity: "month" },
+      { id: "marathon-m3", label: "Run half marathon", completed: false, deadline: "2026-09-15" },
+      { id: "marathon-m4", label: "Complete full marathon", completed: false, deadline: "2026-09-30", deadlineGranularity: "quarter" },
     ],
     tasks: [
       {
@@ -143,11 +139,11 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     deadline: "2026-06-30",
     deadlineGranularity: "month",
     milestones: [
-      { id: "book-m1", label: "Complete outline", completed: true },
-      { id: "book-m2", label: "Finish chapter 1 draft", completed: true },
-      { id: "book-m3", label: "Finish chapter 2 draft", completed: true },
-      { id: "book-m4", label: "Finish chapter 3 draft", completed: false },
-      { id: "book-m5", label: "Complete first draft", completed: false },
+      { id: "book-m1", label: "Complete outline", completed: true, deadline: "2026-03-31", deadlineGranularity: "month" },
+      { id: "book-m2", label: "Finish chapter 1 draft", completed: true, deadline: "2026-04-30", deadlineGranularity: "month" },
+      { id: "book-m3", label: "Finish chapter 2 draft", completed: true, deadline: "2026-04-30", deadlineGranularity: "month" },
+      { id: "book-m4", label: "Finish chapter 3 draft", completed: false, deadline: "2026-05-31", deadlineGranularity: "month" },
+      { id: "book-m5", label: "Complete first draft", completed: false, deadline: "2026-06-30", deadlineGranularity: "month" },
     ],
     tasks: [
       { id: "book-1", label: "Outline the main conflict", completed: true },

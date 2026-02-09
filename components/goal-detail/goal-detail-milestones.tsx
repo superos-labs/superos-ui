@@ -55,25 +55,33 @@ import {
   RiArrowRightSLine,
   RiCalendarLine,
 } from "@remixicon/react";
-import { format, parse, isValid } from "date-fns";
 import type {
   Milestone,
   ScheduleTask,
   TaskScheduleInfo,
   TaskDeadlineInfo,
+  DateGranularity,
 } from "@/lib/unified-schedule";
+import { formatGranularDate } from "@/lib/unified-schedule";
 import type { GoalItem } from "@/components/backlog";
 import { TaskRow } from "@/components/backlog";
-import { DatePicker } from "@/components/ui/date-picker";
+import {
+  GranularDatePicker,
+  type GranularDateValue,
+} from "@/components/ui/granular-date-picker";
 
 /**
- * Format an ISO date string for compact display.
- * e.g., "2026-01-15" -> "Jan 15"
+ * Format an ISO date string for compact milestone display.
+ * Uses granularity-aware formatting from the unified schedule module.
+ * e.g., ("2026-01-15", "day")     -> "Jan 15, 2026"
+ *       ("2026-03-31", "month")   -> "Mar 2026"
+ *       ("2026-06-30", "quarter") -> "Q2 2026"
  */
-function formatDeadlineCompact(isoDate: string): string {
-  const date = parse(isoDate, "yyyy-MM-dd", new Date());
-  if (!isValid(date)) return isoDate;
-  return format(date, "MMM d");
+function formatDeadlineCompact(
+  isoDate: string,
+  granularity: DateGranularity = "day",
+): string {
+  return formatGranularDate(isoDate, granularity);
 }
 
 // =============================================================================
@@ -242,7 +250,10 @@ interface MilestoneSectionProps {
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   onToggleMilestone?: () => void;
   onUpdateMilestone?: (label: string) => void;
-  onUpdateMilestoneDeadline?: (deadline: string | undefined) => void;
+  onUpdateMilestoneDeadline?: (
+    deadline: string | undefined,
+    deadlineGranularity: DateGranularity | undefined,
+  ) => void;
   onDeleteMilestone?: () => void;
   onToggleTask?: (taskId: string) => void;
   onAddTask?: (label: string, milestoneId: string) => void;
@@ -391,18 +402,31 @@ function MilestoneSection({
         {/* Spacer to push deadline and delete to the right */}
         <div className="flex-1" />
 
-        {/* Deadline pill */}
+        {/* Deadline pill (supports day / month / quarter granularity) */}
         {onUpdateMilestoneDeadline ? (
-          <DatePicker
-            value={milestone.deadline}
-            onChange={onUpdateMilestoneDeadline}
+          <GranularDatePicker
+            value={
+              milestone.deadline
+                ? {
+                    date: milestone.deadline,
+                    granularity: milestone.deadlineGranularity ?? "day",
+                  }
+                : undefined
+            }
+            onChange={(v: GranularDateValue | undefined) =>
+              onUpdateMilestoneDeadline(v?.date, v?.granularity)
+            }
+            role="end"
             placeholder="Target"
             className="bg-transparent hover:bg-muted/60 text-muted-foreground/60 hover:text-muted-foreground py-1 px-2"
           />
         ) : milestone.deadline ? (
           <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
             <RiCalendarLine className="size-3" />
-            {formatDeadlineCompact(milestone.deadline)}
+            {formatDeadlineCompact(
+              milestone.deadline,
+              milestone.deadlineGranularity,
+            )}
           </span>
         ) : null}
 
@@ -498,6 +522,7 @@ export interface GoalDetailMilestonesProps {
   onUpdateMilestoneDeadline?: (
     milestoneId: string,
     deadline: string | undefined,
+    deadlineGranularity: DateGranularity | undefined,
   ) => void;
   /** Callback to delete a milestone */
   onDeleteMilestone?: (milestoneId: string) => void;
@@ -541,8 +566,24 @@ export function GoalDetailMilestones({
   onDeleteTask,
   className,
 }: GoalDetailMilestonesProps) {
-  // Find the current milestone (first incomplete)
-  const currentMilestoneId = milestones.find((m) => !m.completed)?.id;
+  // Sort milestones by deadline (earliest first, no deadline at end)
+  const sortedMilestones = React.useMemo(() => {
+    return [...milestones].sort((a, b) => {
+      // Both have deadlines: compare by date string (ISO dates sort lexically)
+      if (a.deadline && b.deadline) {
+        return a.deadline.localeCompare(b.deadline);
+      }
+      // Only a has deadline: a comes first
+      if (a.deadline && !b.deadline) return -1;
+      // Only b has deadline: b comes first
+      if (!a.deadline && b.deadline) return 1;
+      // Neither has deadline: preserve original order
+      return 0;
+    });
+  }, [milestones]);
+
+  // Find the current milestone (first incomplete in sorted order)
+  const currentMilestoneId = sortedMilestones.find((m) => !m.completed)?.id;
 
   // Task expansion state (accordion - one at a time)
   const [expandedTaskId, setExpandedTaskId] = React.useState<string | null>(
@@ -558,7 +599,7 @@ export function GoalDetailMilestones({
     const grouped = new Map<string, ScheduleTask[]>();
 
     // Initialize with empty arrays for each milestone
-    milestones.forEach((m) => {
+    sortedMilestones.forEach((m) => {
       grouped.set(m.id, []);
     });
 
@@ -570,11 +611,11 @@ export function GoalDetailMilestones({
     });
 
     return grouped;
-  }, [milestones, tasks]);
+  }, [sortedMilestones, tasks]);
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      {milestones.map((milestone) => (
+      {sortedMilestones.map((milestone) => (
         <MilestoneSection
           key={milestone.id}
           milestone={milestone}
@@ -597,7 +638,12 @@ export function GoalDetailMilestones({
           }
           onUpdateMilestoneDeadline={
             onUpdateMilestoneDeadline
-              ? (deadline) => onUpdateMilestoneDeadline(milestone.id, deadline)
+              ? (deadline, granularity) =>
+                  onUpdateMilestoneDeadline(
+                    milestone.id,
+                    deadline,
+                    granularity,
+                  )
               : undefined
           }
           onDeleteMilestone={

@@ -425,11 +425,12 @@ export function ShellDesktopLayout({
               onUpdateMilestone={(milestoneId, label) =>
                 onUpdateMilestone(selectedGoal.id, milestoneId, label)
               }
-              onUpdateMilestoneDeadline={(milestoneId, deadline) =>
+              onUpdateMilestoneDeadline={(milestoneId, deadline, granularity) =>
                 onUpdateMilestoneDeadline(
                   selectedGoal.id,
                   milestoneId,
                   deadline,
+                  granularity,
                 )
               }
               onDeleteMilestone={(milestoneId) =>

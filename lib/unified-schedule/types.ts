@@ -204,6 +204,8 @@ export interface Milestone {
   completed: boolean;
   /** Optional target completion date (ISO date string, e.g., "2026-03-15") */
   deadline?: string;
+  /** Granularity of the deadline. Defaults to "day" when absent. */
+  deadlineGranularity?: DateGranularity;
 }
 
 /** Task within a goal */
@@ -314,6 +316,8 @@ export interface DeadlineMilestone {
   goalLabel: string;
   goalColor: GoalColor;
   completed: boolean;
+  /** Granularity of the deadline. Defaults to "day" when absent. */
+  deadlineGranularity?: DateGranularity;
 }
 
 /** Unified deadline item for quarter view (goals, milestones, and tasks) */
@@ -326,6 +330,8 @@ export interface QuarterDeadlineItem {
   label: string;
   /** ISO date string for the deadline */
   deadline: string;
+  /** Granularity of the deadline. Defaults to "day" when absent. */
+  deadlineGranularity?: DateGranularity;
   /** Parent goal ID */
   goalId: string;
   /** Parent goal label */
@@ -449,6 +455,7 @@ export interface UseUnifiedScheduleReturn {
     goalId: string,
     milestoneId: string,
     deadline: string | undefined,
+    deadlineGranularity: DateGranularity | undefined,
   ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;

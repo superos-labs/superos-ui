@@ -53,6 +53,7 @@ import type {
   ScheduleGoal,
   ScheduleEssential,
   ScheduleTask,
+  DateGranularity,
   GoalStats,
   TaskScheduleInfo,
   TaskDeadlineInfo,
@@ -248,6 +249,7 @@ export interface ShellContentProps {
     goalId: string,
     milestoneId: string,
     deadline: string | undefined,
+    deadlineGranularity: DateGranularity | undefined,
   ) => void;
   /** Delete a milestone */
   onDeleteMilestone: (goalId: string, milestoneId: string) => void;

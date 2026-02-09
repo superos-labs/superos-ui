@@ -317,6 +317,7 @@ export function useScheduleStats({
               goalLabel: goal.label,
               goalColor: goal.color,
               completed: milestone.completed,
+              deadlineGranularity: milestone.deadlineGranularity,
             });
             result.set(milestone.deadline, existing);
           }
@@ -381,6 +382,7 @@ export function useScheduleStats({
                   id: milestone.id,
                   label: milestone.label,
                   deadline: milestone.deadline,
+                  deadlineGranularity: milestone.deadlineGranularity,
                   goalId: goal.id,
                   goalLabel: goal.label,
                   goalColor: goal.color,
