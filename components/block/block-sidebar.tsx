@@ -13,12 +13,15 @@
  * - Action buttons (Complete + Start Focus, side by side)
  * - Focus mode (timer, start/pause/resume/stop)
  * - Notes/description
+ * - AI-powered block briefing generation
  * - Goal task assignment and inline task management
  * - Block-scoped subtasks
  * - External calendar sync appearance overrides
  *
  * It is a UI composition layer only.
- * It does NOT own scheduling, persistence, or domain state.
+ * It does NOT own scheduling, persistence, or domain state
+ * (with the exception of the useBlockBriefing hook which makes
+ * API calls for AI briefing generation).
  *
  * -----------------------------------------------------------------------------
  * DESIGN PRINCIPLES
@@ -44,9 +47,14 @@ import {
   RiCheckboxCircleFill,
   RiDeleteBinLine,
 } from "@remixicon/react";
-import type { ScheduleTask } from "@/lib/unified-schedule";
+import type {
+  ScheduleTask,
+  ScheduleGoal,
+  CalendarEvent,
+} from "@/lib/unified-schedule";
 import type { AppearanceOverride } from "@/lib/calendar-sync";
 import type { BlockSyncState, BlockSyncSettings } from "@/lib/unified-schedule";
+import { useBlockBriefing } from "@/lib/ai";
 import {
   FocusTimer,
   StartFocusButton,
@@ -75,6 +83,10 @@ import {
   FocusTimePropertyRow,
   NotesSubtasksSection,
 } from "./sidebar/content-sections";
+import {
+  BriefingTrigger,
+  BriefingSuggestions,
+} from "./sidebar/briefing-section";
 
 // =============================================================================
 // BlockSidebar Props
@@ -179,6 +191,16 @@ interface BlockSidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onSyncAppearanceChange?: (appearance: AppearanceOverride) => void;
   /** Callback to update block sync custom label */
   onSyncCustomLabelChange?: (label: string) => void;
+
+  // AI Briefing context (optional — enables the "Generate Briefing" feature)
+  /** Raw CalendarEvent for this block (needed for AI context assembly) */
+  selectedEvent?: CalendarEvent;
+  /** All events for the current week (for AI context assembly) */
+  weekEvents?: CalendarEvent[];
+  /** Current week dates, Monday–Sunday (for AI context assembly) */
+  weekDates?: Date[];
+  /** Full goal data for this block's source goal (for AI context assembly) */
+  sourceGoal?: ScheduleGoal;
 }
 
 // =============================================================================
@@ -231,6 +253,11 @@ function BlockSidebar({
   blockSyncSettings,
   onSyncAppearanceChange,
   onSyncCustomLabelChange,
+  // AI Briefing context
+  selectedEvent,
+  weekEvents,
+  weekDates,
+  sourceGoal,
   className,
   ...props
 }: BlockSidebarProps) {
@@ -250,6 +277,88 @@ function BlockSidebar({
   const handleGoalTaskExpand = React.useCallback((taskId: string) => {
     setExpandedGoalTaskId((prev) => (prev === taskId ? null : taskId));
   }, []);
+
+  // ---------------------------------------------------------------------------
+  // AI Briefing
+  // ---------------------------------------------------------------------------
+
+  const briefingEnabled =
+    (isGoalBlock || isTaskBlock) &&
+    !!selectedEvent &&
+    !!weekEvents &&
+    !!weekDates;
+
+  const briefing = useBlockBriefing({
+    event: briefingEnabled ? (selectedEvent ?? null) : null,
+    sourceGoal,
+    weekEvents: weekEvents ?? [],
+    weekDates: weekDates ?? [],
+  });
+
+  // Sync streaming briefing text into block.notes via onNotesChange
+  const lastSyncedTextRef = React.useRef<string>("");
+  React.useEffect(() => {
+    if (!briefing.briefingText || !onNotesChange) return;
+    // Only update if the text has actually changed
+    if (briefing.briefingText === lastSyncedTextRef.current) return;
+    lastSyncedTextRef.current = briefing.briefingText;
+
+    const existing = briefing.preExistingNotes;
+    const combined = existing
+      ? briefing.briefingText + "\n\n---\n\n" + existing
+      : briefing.briefingText;
+    onNotesChange(combined);
+  }, [briefing.briefingText, briefing.preExistingNotes, onNotesChange]);
+
+  // Build task label map and assigned set for briefing suggestions
+  const taskLabels = React.useMemo(() => {
+    const map = new Map<string, string>();
+    if (isGoalBlock) {
+      // Include all goal tasks (assigned + available)
+      for (const task of block.goalTasks) {
+        map.set(task.id, task.label);
+      }
+      if (availableGoalTasks) {
+        for (const task of availableGoalTasks) {
+          map.set(task.id, task.label);
+        }
+      }
+    }
+    return map;
+  }, [isGoalBlock, block.goalTasks, availableGoalTasks]);
+
+  const assignedTaskIds = React.useMemo(
+    () => new Set(block.goalTasks.map((t) => t.id)),
+    [block.goalTasks],
+  );
+
+  // Track dismissed new-task suggestions
+  const [dismissedSuggestions, setDismissedSuggestions] = React.useState<
+    Set<number>
+  >(new Set());
+
+  const handleDismissSuggestion = React.useCallback((index: number) => {
+    setDismissedSuggestions((prev) => new Set(prev).add(index));
+  }, []);
+
+  const visibleNewSuggestions = React.useMemo(
+    () =>
+      briefing.newTaskSuggestions.filter(
+        (_, i) => !dismissedSuggestions.has(i),
+      ),
+    [briefing.newTaskSuggestions, dismissedSuggestions],
+  );
+
+  // Handle notes change: cancel briefing if user types during generation
+  const handleNotesChange = React.useCallback(
+    (notes: string) => {
+      if (briefing.isGenerating) {
+        briefing.stop();
+      }
+      onNotesChange?.(notes);
+    },
+    [briefing, onNotesChange],
+  );
 
   // Render focus mode layout when this block is being focused
   if (isFocused) {
@@ -461,15 +570,42 @@ function BlockSidebar({
       {/* Content – notes then tasks, no section titles */}
       <div className="flex flex-col gap-5 px-5 pb-5 pt-4">
         {/* Notes / description */}
-        <NotesSubtasksSection
-          block={block}
-          isTaskBlock={isTaskBlock}
-          onNotesChange={onNotesChange}
-          onAddSubtask={onAddSubtask}
-          onToggleSubtask={onToggleSubtask}
-          onUpdateSubtask={onUpdateSubtask}
-          onDeleteSubtask={onDeleteSubtask}
-        />
+        <div className="flex flex-col gap-1">
+          <NotesSubtasksSection
+            block={block}
+            isTaskBlock={isTaskBlock}
+            onNotesChange={handleNotesChange}
+            onAddSubtask={onAddSubtask}
+            onToggleSubtask={onToggleSubtask}
+            onUpdateSubtask={onUpdateSubtask}
+            onDeleteSubtask={onDeleteSubtask}
+          />
+
+          {/* AI Briefing trigger */}
+          {briefingEnabled && block.status !== "completed" && (
+            <BriefingTrigger
+              onGenerate={briefing.generate}
+              isGenerating={briefing.isGenerating}
+              hasResult={briefing.hasResult}
+            />
+          )}
+        </div>
+
+        {/* AI Briefing task suggestions (visible after generation) */}
+        {briefing.hasResult &&
+          isGoalBlock &&
+          (briefing.suggestedTaskIds.length > 0 ||
+            visibleNewSuggestions.length > 0) && (
+            <BriefingSuggestions
+              suggestedTaskIds={briefing.suggestedTaskIds}
+              taskLabels={taskLabels}
+              assignedTaskIds={assignedTaskIds}
+              newTaskSuggestions={visibleNewSuggestions}
+              onAssignTask={onAssignTask}
+              onCreateTask={onCreateTask}
+              onDismissSuggestion={handleDismissSuggestion}
+            />
+          )}
 
         {/* Goal Tasks (only for goal blocks with assigned goal) */}
         {isGoalBlock && block.goal && (

@@ -73,6 +73,7 @@ export interface ShellRightPanelProps {
 export function ShellRightPanel({ shellProps, wiring }: ShellRightPanelProps) {
   const {
     goals,
+    events,
     weekDates,
     quarterDeadlines,
     focusSession,
@@ -177,6 +178,15 @@ export function ShellRightPanel({ shellProps, wiring }: ShellRightPanelProps) {
         }
         syncState={syncState}
         blockSyncSettings={blockSyncSettings}
+        // AI Briefing context
+        selectedEvent={selectedEvent ?? undefined}
+        weekEvents={events}
+        weekDates={weekDates}
+        sourceGoal={
+          selectedEvent?.sourceGoalId
+            ? goals.find((g) => g.id === selectedEvent.sourceGoalId)
+            : undefined
+        }
         className="h-full w-[380px] max-w-none overflow-y-auto"
       />
     );

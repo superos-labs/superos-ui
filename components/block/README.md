@@ -15,8 +15,9 @@
 - **`block-sidebar.tsx`** — Primary sidebar surface for viewing and editing a single calendar block
   - Notion/Linear-style property rows (goal, date, time, focus time) with click-to-edit
   - Side-by-side Complete + Start Focus action buttons
+  - AI-powered block briefing generation (streams into notes, suggests tasks)
   - Composes all block-related sidebar sections (notes/description, goal tasks, subtasks, external sync)
-  - Pure presentational orchestrator; all mutations flow outward via callbacks
+  - Presentational orchestrator with `useBlockBriefing` hook for AI features
   - Behavior varies by blockType (goal | task | essential | external)
 - **`block-sidebar-example.tsx`** — Interactive playground example for BlockSidebar component
   - Wires BlockSidebar into Knobs playground for rapid iteration

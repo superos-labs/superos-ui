@@ -140,6 +140,13 @@ See [`goals/README.md`](./goals/README.md) for details.
 
 **Status:** Code files merged into `unified-schedule/types.ts`. Directory contains documentation only. Import goal creation and inspiration types from `@/lib/unified-schedule`.
 
+### AI
+See [`ai/README.md`](./ai/README.md) for detailed documentation.
+
+**Purpose:** AI-powered features including block briefing generation that contextualizes upcoming work sessions.
+
+**Key Components:** Context assembler, block briefing hook, Zod schema, types
+
 ### Adapters
 See [`adapters/README.md`](./adapters/README.md) for detailed documentation.
 
@@ -184,6 +191,7 @@ lib/
 ├── preferences/                # User preferences
 ├── responsive/                 # Responsive utilities
 ├── goals/                      # Goal domain types (relocated, docs only)
+├── ai/                         # AI features (block briefing)
 ├── adapters/                   # Data adapters
 └── fixtures/                   # Fixture data
 ```
@@ -196,4 +204,4 @@ lib/
 - **Color System:** Use colors.ts helpers for consistent color usage
 - **Time Formatting:** Use time-utils.ts for all time-related formatting
 
-**Total Subdirectories:** 11 feature domains + root-level utilities
+**Total Subdirectories:** 12 feature domains + root-level utilities

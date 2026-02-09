@@ -30,6 +30,12 @@
   - Collapsible list of available goal tasks
   - Goal selector dropdown for unassigned blocks
 
+### AI Briefing
+- **`briefing-section.tsx`** — AI-powered briefing section for the block sidebar
+  - `BriefingTrigger` — "Generate Briefing" / "Regenerate" button with loading state
+  - `BriefingSuggestions` — suggested existing tasks (with "Assign" action) + new task proposals (with "Create" and "Dismiss")
+  - Presentational only; briefing hook lives in parent via `useBlockBriefing`
+
 ### Utilities & Types
 - **`sidebar-utils.tsx`** — Shared types and utility helpers
   - `BlockSidebarData` shape for rendering and editing block details
@@ -52,4 +58,4 @@
 - **Sidebar Sections:** "Small focused controls that let me refine what this block represents."
 - **Utils:** "A thin utility layer that shapes raw block data into display-ready values."
 
-**Total Files:** 5 (4 component files, 1 utility/types file)
+**Total Files:** 6 (5 component files, 1 utility/types file)

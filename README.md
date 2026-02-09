@@ -42,6 +42,8 @@ SuperOS UI is a modern, type-safe React application built with Next.js that prov
 ```
 superos-ui/
 ├── app/                    # Next.js App Router directory
+│   ├── api/               # API route handlers
+│   │   └── briefing/      # AI block briefing endpoint
 │   ├── layout.tsx         # Root layout (fonts, metadata, global styles)
 │   ├── page.tsx           # Main application entry (shell composition)
 │   └── globals.css        # Global styles and design tokens
@@ -60,6 +62,7 @@ superos-ui/
 ├── lib/                   # Core library code
 │   ├── unified-schedule/ # Unified schedule domain logic and types
 │   ├── calendar-sync/    # Calendar integration system
+│   ├── ai/              # AI features (block briefing)
 │   ├── blueprint/        # Blueprint template system
 │   ├── weekly-planning/ # Weekly planning hooks
 │   ├── essentials/       # Essentials configuration
@@ -134,6 +137,11 @@ The application will be available at `http://localhost:3000`.
 - **Recurring Activities** - Configure recurring life activities
 - **Auto-Scheduling** - Automatic calendar event generation
 - **Schedule Management** - Edit activity schedules with day/time configuration
+
+### AI Features
+- **Block Briefing** - AI-generated contextual briefing for upcoming work sessions
+- **Task Suggestions** - AI-powered task prioritization and new task proposals
+- **Streaming UI** - Real-time streaming of AI responses into the sidebar
 
 ### User Preferences
 - **Customizable Settings** - Week start day, progress metrics, calendar zoom
