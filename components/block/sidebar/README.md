@@ -6,8 +6,9 @@
 
 ### Content Sections
 - **`content-sections.tsx`** — Sidebar content sections for editing and inspecting a single Block
-  - Date & Time editing/display
-  - Notes and Subtasks (for task-type blocks)
+  - PropertyRow (2-column Notion/Linear-style label → value layout)
+  - DatePropertyRow, TimePropertyRow, FocusTimePropertyRow (click-to-edit property rows)
+  - Notes/description and Subtasks (for task-type blocks)
   - Purely presentational + event-forwarding (no persistence or domain state)
 
 ### External Sync Configuration
@@ -25,7 +26,6 @@
 ### Reusable Building Blocks
 - **`sidebar-sections.tsx`** — Collection of small, composable sidebar sections and controls
   - Section header wrapper
-  - Focus time display + inline editing
   - Inline task creation for goal blocks
   - Collapsible list of available goal tasks
   - Goal selector dropdown for unassigned blocks
@@ -46,7 +46,7 @@
 
 ## Mental Models
 
-- **Content Sections:** "Pluggable sidebar panels for block metadata"
+- **Content Sections:** "Notion-style property rows and pluggable sidebar panels for block metadata"
 - **External Sync:** "How should this block look in external calendars?"
 - **Goal Task Row:** "This block contains this specific task. Let me refine it in place."
 - **Sidebar Sections:** "Small focused controls that let me refine what this block represents."

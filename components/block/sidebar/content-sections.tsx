@@ -6,7 +6,8 @@
  * Sidebar content sections for editing and inspecting a single Block.
  *
  * Provides focused, self-contained sections used inside the Block Sidebar:
- * - Date & Time editing / display
+ * - PropertyRow (2-column Notion/Linear-style label → value layout)
+ * - DatePropertyRow, TimePropertyRow, FocusTimePropertyRow (click-to-edit)
  * - Notes and Subtasks (for task-type blocks)
  *
  * These sections are purely presentational + event-forwarding.
@@ -15,8 +16,9 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Render editable or read-only date/time fields for a block.
- * - Render editable notes field.
+ * - Provide 2-column property row layout for block metadata.
+ * - Render click-to-edit date, time, and focus time fields.
+ * - Render editable notes/description field.
  * - Render and manage inline creation of subtasks.
  * - Forward user intent via callbacks.
  *
@@ -48,7 +50,6 @@ import {
   isOvernightBlock,
   AutoResizeTextarea,
 } from "./sidebar-utils";
-
 
 // =============================================================================
 // Property Row – Notion/Linear-style 2-column layout

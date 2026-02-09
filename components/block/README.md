@@ -13,7 +13,9 @@
 
 ### Sidebar System
 - **`block-sidebar.tsx`** — Primary sidebar surface for viewing and editing a single calendar block
-  - Composes all block-related sidebar sections (header, date/time, focus mode, goal tasks, notes, external sync)
+  - Notion/Linear-style property rows (goal, date, time, focus time) with click-to-edit
+  - Side-by-side Complete + Start Focus action buttons
+  - Composes all block-related sidebar sections (notes/description, goal tasks, subtasks, external sync)
   - Pure presentational orchestrator; all mutations flow outward via callbacks
   - Behavior varies by blockType (goal | task | essential | external)
 - **`block-sidebar-example.tsx`** — Interactive playground example for BlockSidebar component

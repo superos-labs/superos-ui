@@ -8,7 +8,6 @@
  * This file defines a collection of small, composable sidebar sections and
  * controls used inside the block sidebar, including:
  * - Section header wrapper
- * - Focus time display + inline editing
  * - Inline task creation for goal blocks
  * - Collapsible list of available goal tasks
  * - Goal selector dropdown for unassigned blocks

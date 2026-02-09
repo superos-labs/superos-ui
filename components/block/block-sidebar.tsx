@@ -8,11 +8,13 @@
  * This component is responsible for composing all block-related sidebar
  * sections and orchestrating their interaction:
  *
- * - Header (title, source, close/delete, mark complete)
- * - Date & time editing
+ * - Header (title, close/delete, mark complete/incomplete)
+ * - Notion/Linear-style property rows (goal, date, time, focus time)
+ * - Action buttons (Complete + Start Focus, side by side)
  * - Focus mode (timer, start/pause/resume/stop)
+ * - Notes/description
  * - Goal task assignment and inline task management
- * - Block notes and block-scoped subtasks
+ * - Block-scoped subtasks
  * - External calendar sync appearance overrides
  *
  * It is a UI composition layer only.
