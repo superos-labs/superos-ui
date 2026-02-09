@@ -380,8 +380,17 @@ export function ShellDesktopLayout({
               onTitleChange={(title) =>
                 onUpdateGoal(selectedGoal.id, { label: title })
               }
-              onDeadlineChange={(deadline) =>
-                onUpdateGoal(selectedGoal.id, { deadline })
+              onStartDateChange={(startDate, startDateGranularity) =>
+                onUpdateGoal(selectedGoal.id, {
+                  startDate,
+                  startDateGranularity,
+                })
+              }
+              onDeadlineChange={(deadline, deadlineGranularity) =>
+                onUpdateGoal(selectedGoal.id, {
+                  deadline,
+                  deadlineGranularity,
+                })
               }
               getTaskSchedule={getTaskSchedule}
               getTaskDeadline={getTaskDeadline}

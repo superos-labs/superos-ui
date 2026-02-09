@@ -31,7 +31,8 @@
  * -----------------------------------------------------------------------------
  * - Hooks (useUnifiedSchedule, useGoalState, useScheduling, etc.)
  * - State utilities from goal-state-utils
- * - Unified schedule types
+ * - Time range utilities (resolve, format, query helpers)
+ * - Unified schedule types (including DateGranularity)
  * - Goal creation types (NewGoalData, InspirationGoal, InspirationCategory)
  */
 
@@ -104,8 +105,22 @@ export {
   completeTasksInMilestone,
 } from "./goal-state-utils";
 
+// Time range utilities
+export {
+  resolveMonthDate,
+  resolveQuarterDate,
+  formatGranularDate,
+  getQuarterForDate,
+  getMonthLabel,
+  getQuarterMonthRange,
+  isActiveInRange,
+} from "./time-range-utils";
+export type { DateRole } from "./time-range-utils";
+
 // Types
 export type {
+  // Date granularity (lazy dates)
+  DateGranularity,
   // Core data types
   Subtask,
   Milestone,

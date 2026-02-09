@@ -8,10 +8,13 @@
 - **`index.ts`** — Public API that re-exports hooks, utilities, and types
 
 ### Type System
-- **`types.ts`** — Canonical type definitions for calendar events, goals, tasks, subtasks, milestones, essentials, sync configurations, hook interfaces, goal creation data, and inspiration gallery types
+- **`types.ts`** — Canonical type definitions for calendar events, goals, tasks, subtasks, milestones, essentials, sync configurations, hook interfaces, goal creation data, inspiration gallery types, and `DateGranularity` for lazy dates
 
 ### State Utilities
 - **`goal-state-utils.ts`** — Pure immutable helper functions for nested goal/task/subtask/milestone updates (no React dependencies)
+
+### Time Range Utilities
+- **`time-range-utils.ts`** — Pure helper functions for resolving, formatting, and querying granular (lazy) dates used on goal start dates and target dates. Includes month/quarter resolution, display formatting, and overlap checking for future horizon views
 
 ## React Hooks (Composable)
 
@@ -41,4 +44,4 @@
 - **No persistence:** Callers own saving/loading
 - **UI-agnostic:** Domain logic separated from rendering
 
-**Total Files:** 11 (1 entry point, 1 types file, 1 utility module, 8 React hooks)
+**Total Files:** 12 (1 entry point, 1 types file, 2 utility modules, 8 React hooks)

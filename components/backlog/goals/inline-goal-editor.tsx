@@ -11,7 +11,8 @@
  * - Icon
  * - Color
  * - Life area
- * - Optional target date (deadline)
+ * - Optional start date (with Day/Month/Quarter granularity)
+ * - Optional target date (with Day/Month/Quarter granularity)
  *
  * This component manages only form state and delegates persistence upward.
  *
@@ -62,7 +63,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { DatePicker } from "@/components/ui/date-picker";
+import {
+  GranularDatePicker,
+  type GranularDateValue,
+} from "@/components/ui/granular-date-picker";
+import type { DateGranularity } from "@/lib/unified-schedule";
 import {
   getIconColorClass,
   getIconBgClass,
@@ -80,8 +85,14 @@ export interface InlineGoalEditorData {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
+  /** Optional start date (ISO date string) */
+  startDate?: string;
+  /** Granularity of the start date */
+  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
+  /** Granularity of the target date */
+  deadlineGranularity?: DateGranularity;
 }
 
 export interface InlineGoalEditorProps {
@@ -154,9 +165,18 @@ export function InlineGoalEditor({
   const [lifeAreaId, setLifeAreaId] = React.useState(
     initialData?.lifeAreaId ?? fallbackLifeAreaId,
   );
+  const [startDate, setStartDate] = React.useState<string | undefined>(
+    initialData?.startDate,
+  );
+  const [startDateGranularity, setStartDateGranularity] = React.useState<
+    DateGranularity | undefined
+  >(initialData?.startDateGranularity);
   const [deadline, setDeadline] = React.useState<string | undefined>(
     initialData?.deadline,
   );
+  const [deadlineGranularity, setDeadlineGranularity] = React.useState<
+    DateGranularity | undefined
+  >(initialData?.deadlineGranularity);
 
   const inputRef = React.useRef<HTMLInputElement>(null);
 
@@ -170,6 +190,25 @@ export function InlineGoalEditor({
   const currentLifeArea = lifeAreas.find((a) => a.id === lifeAreaId);
 
   // Handle save
+  // Granular date picker handlers
+  const startDateValue: GranularDateValue | undefined = startDate
+    ? { date: startDate, granularity: startDateGranularity ?? "day" }
+    : undefined;
+
+  const deadlineValue: GranularDateValue | undefined = deadline
+    ? { date: deadline, granularity: deadlineGranularity ?? "day" }
+    : undefined;
+
+  const handleStartDateChange = (v: GranularDateValue | undefined) => {
+    setStartDate(v?.date);
+    setStartDateGranularity(v?.granularity);
+  };
+
+  const handleDeadlineChange = (v: GranularDateValue | undefined) => {
+    setDeadline(v?.date);
+    setDeadlineGranularity(v?.granularity);
+  };
+
   const handleSave = () => {
     if (!label.trim()) return;
     onSave({
@@ -177,7 +216,10 @@ export function InlineGoalEditor({
       icon,
       color,
       lifeAreaId,
+      startDate,
+      startDateGranularity,
       deadline,
+      deadlineGranularity,
     });
   };
 
@@ -342,10 +384,20 @@ export function InlineGoalEditor({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Start date picker */}
+          <GranularDatePicker
+            value={startDateValue}
+            onChange={handleStartDateChange}
+            role="start"
+            placeholder="Start date"
+            className="bg-background hover:bg-background/80"
+          />
+
           {/* Target date picker */}
-          <DatePicker
-            value={deadline}
-            onChange={setDeadline}
+          <GranularDatePicker
+            value={deadlineValue}
+            onChange={handleDeadlineChange}
+            role="end"
             placeholder="Target date"
             className="bg-background hover:bg-background/80"
           />

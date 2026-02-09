@@ -31,8 +31,9 @@
  * -----------------------------------------------------------------------------
  * EXPORTS
  * -----------------------------------------------------------------------------
+ * - DateGranularity
  * - CalendarEvent, HoverPosition, BlockStatus
- * - ScheduleGoal, ScheduleTask, Subtask, Milestone, ScheduleEssential
+ * - ScheduleGoal (with startDate, deadline, and granularity fields), ScheduleTask, Subtask, Milestone, ScheduleEssential
  * - Sync-related types (GoalSyncSettings, BlockSyncSettings, BlockSyncState)
  * - Computed/derived types and hook option/return types
  * - NewGoalData, InspirationGoal, InspirationCategory
@@ -174,6 +175,18 @@ export interface BlockSyncState {
 }
 
 // ============================================================================
+// Date Granularity (Lazy Dates)
+// ============================================================================
+
+/**
+ * Granularity at which a date was expressed.
+ * - "day"     — exact calendar date (e.g., 2026-03-15)
+ * - "month"   — a full calendar month (e.g., March 2026)
+ * - "quarter" — a full calendar quarter (e.g., Q2 2026)
+ */
+export type DateGranularity = "day" | "month" | "quarter";
+
+// ============================================================================
 // Core Data Types
 // ============================================================================
 
@@ -220,8 +233,14 @@ export interface ScheduleGoal {
   color: GoalColor;
   /** Life area this goal belongs to */
   lifeAreaId: string;
+  /** Optional start date for the goal's active period (ISO date string, e.g., "2026-04-01") */
+  startDate?: string;
+  /** Granularity of the start date. Defaults to "day" when absent. */
+  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string, e.g., "2026-03-15") */
   deadline?: string;
+  /** Granularity of the target date. Defaults to "day" when absent. */
+  deadlineGranularity?: DateGranularity;
   /** Ordered milestones (sequential steps toward the goal) */
   milestones?: Milestone[];
   /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
@@ -546,6 +565,14 @@ export interface NewGoalData {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
+  /** Optional start date (ISO date string) */
+  startDate?: string;
+  /** Granularity of the start date */
+  startDateGranularity?: DateGranularity;
+  /** Optional target completion date (ISO date string) */
+  deadline?: string;
+  /** Granularity of the target date */
+  deadlineGranularity?: DateGranularity;
 }
 
 /**

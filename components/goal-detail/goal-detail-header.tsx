@@ -10,7 +10,8 @@
  * - Color
  * - Title
  * - Life area
- * - Optional target date (deadline)
+ * - Optional start date (with Day/Month/Quarter granularity)
+ * - Optional target date (with Day/Month/Quarter granularity)
  *
  * Designed to work in both read-only and editable modes depending on
  * which callbacks are provided.
@@ -21,7 +22,7 @@
  * - Render goal icon, title, and metadata pills.
  * - Provide inline editing for title.
  * - Provide dropdown pickers for icon, color, and life area.
- * - Provide date picker for deadline.
+ * - Provide granular date pickers for start date and target date.
  * - Surface "add life area" affordance when supported.
  *
  * -----------------------------------------------------------------------------
@@ -38,6 +39,7 @@
  * - Icon and color are edited together via a single dropdown.
  * - Subset of distinct colors is used for faster scanning.
  * - Pills provide compact, glanceable metadata.
+ * - Start and target dates use GranularDatePicker (Day/Month/Quarter).
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -60,7 +62,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { DatePicker } from "@/components/ui/date-picker";
+import {
+  GranularDatePicker,
+  type GranularDateValue,
+} from "@/components/ui/granular-date-picker";
+import type { DateGranularity } from "@/lib/unified-schedule";
 import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
 
@@ -73,8 +79,14 @@ export interface GoalDetailHeaderProps {
   color: GoalColor;
   /** Associated life area */
   lifeArea?: LifeArea;
+  /** Optional start date (ISO date string) */
+  startDate?: string;
+  /** Granularity of the start date */
+  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
+  /** Granularity of the target date */
+  deadlineGranularity?: DateGranularity;
   /** Available life areas for editing */
   lifeAreas?: LifeArea[];
   /** Available icons for editing */
@@ -87,8 +99,16 @@ export interface GoalDetailHeaderProps {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
+  /** Callback when start date is changed (undefined to clear) */
+  onStartDateChange?: (
+    startDate: string | undefined,
+    granularity: DateGranularity | undefined,
+  ) => void;
   /** Callback when deadline is changed (undefined to clear) */
-  onDeadlineChange?: (deadline: string | undefined) => void;
+  onDeadlineChange?: (
+    deadline: string | undefined,
+    granularity: DateGranularity | undefined,
+  ) => void;
   /** Callback to open the add life area modal */
   onAddLifeArea?: () => void;
   className?: string;
@@ -116,13 +136,17 @@ export function GoalDetailHeader({
   title,
   color,
   lifeArea,
+  startDate,
+  startDateGranularity,
   deadline,
+  deadlineGranularity,
   lifeAreas,
   goalIcons,
   onTitleChange,
   onIconChange,
   onColorChange,
   onLifeAreaChange,
+  onStartDateChange,
   onDeadlineChange,
   onAddLifeArea,
   className,
@@ -322,17 +346,62 @@ export function GoalDetailHeader({
           </div>
         ) : null}
 
-        {/* Deadline pill */}
+        {/* Start date pill */}
+        {onStartDateChange ? (
+          <GranularDatePicker
+            value={
+              startDate
+                ? {
+                    date: startDate,
+                    granularity: startDateGranularity ?? "day",
+                  }
+                : undefined
+            }
+            onChange={(v: GranularDateValue | undefined) =>
+              onStartDateChange(v?.date, v?.granularity)
+            }
+            role="start"
+            placeholder="Start date"
+            className="bg-muted hover:bg-muted/80"
+          />
+        ) : startDate ? (
+          <GranularDatePicker
+            value={{
+              date: startDate,
+              granularity: startDateGranularity ?? "day",
+            }}
+            role="start"
+            placeholder="Start date"
+            className="bg-muted pointer-events-none"
+            disabled
+          />
+        ) : null}
+
+        {/* Target date pill */}
         {onDeadlineChange ? (
-          <DatePicker
-            value={deadline}
-            onChange={onDeadlineChange}
-            placeholder="Set target date"
+          <GranularDatePicker
+            value={
+              deadline
+                ? {
+                    date: deadline,
+                    granularity: deadlineGranularity ?? "day",
+                  }
+                : undefined
+            }
+            onChange={(v: GranularDateValue | undefined) =>
+              onDeadlineChange(v?.date, v?.granularity)
+            }
+            role="end"
+            placeholder="Target date"
             className="bg-muted hover:bg-muted/80"
           />
         ) : deadline ? (
-          <DatePicker
-            value={deadline}
+          <GranularDatePicker
+            value={{
+              date: deadline,
+              granularity: deadlineGranularity ?? "day",
+            }}
+            role="end"
             placeholder="Target date"
             className="bg-muted pointer-events-none"
             disabled

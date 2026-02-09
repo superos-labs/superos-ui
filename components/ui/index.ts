@@ -13,6 +13,11 @@ export {
 } from "./alert-dialog";
 export { Badge, badgeVariants } from "./badge";
 export { DatePicker, type DatePickerProps } from "./date-picker";
+export {
+  GranularDatePicker,
+  type GranularDatePickerProps,
+  type GranularDateValue,
+} from "./granular-date-picker";
 export { Button, buttonVariants } from "./button";
 export {
   Card,

@@ -12,7 +12,7 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Define sample goals with milestones, tasks, and subtasks.
+ * - Define sample goals with milestones, tasks, subtasks, and granular dates.
  * - Define a clean set of goals without tasks/milestones for dev flows.
  * - Expose an empty goals array for initialization and resets.
  *
@@ -50,6 +50,10 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiRocketLine,
     color: "violet",
     lifeAreaId: "career",
+    startDate: "2026-01-01",
+    startDateGranularity: "quarter",
+    deadline: "2026-06-30",
+    deadlineGranularity: "quarter",
     milestones: [
       { id: "superos-m1", label: "Research competitors", completed: true },
       { id: "superos-m2", label: "Write product spec", completed: true },
@@ -99,6 +103,10 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiMedalLine,
     color: "rose",
     lifeAreaId: "health",
+    startDate: "2026-07-01",
+    startDateGranularity: "quarter",
+    deadline: "2026-09-30",
+    deadlineGranularity: "quarter",
     milestones: [
       { id: "marathon-m1", label: "Run 5K without stopping", completed: true },
       {
@@ -130,6 +138,10 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiPenNibLine,
     color: "teal",
     lifeAreaId: "creativity",
+    startDate: "2026-03-01",
+    startDateGranularity: "month",
+    deadline: "2026-06-30",
+    deadlineGranularity: "month",
     milestones: [
       { id: "book-m1", label: "Complete outline", completed: true },
       { id: "book-m2", label: "Finish chapter 1 draft", completed: true },

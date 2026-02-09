@@ -16,7 +16,7 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Display goal label, icon, color, life area, and optional deadline.
+ * - Display goal label, icon, color, life area, optional start date, and optional target date.
  * - Toggle between display and inline edit modes.
  * - Forward save, cancel, and delete events.
  *
@@ -31,13 +31,13 @@
  * KEY DEPENDENCIES
  * -----------------------------------------------------------------------------
  * - InlineGoalEditor
- * - date-fns (for deadline formatting)
+ * - formatGranularDate (from lib/unified-schedule)
  *
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
  * - Clicking the row enters edit mode.
- * - Deadline formatting is defensive against invalid dates.
+ * - Dates formatted using granular display (day/month/quarter).
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -52,22 +52,13 @@ import { cn } from "@/lib/utils";
 import { getIconColorClass, getIconBgSoftClass } from "@/lib/colors";
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent, LifeArea, GoalIconOption } from "@/lib/types";
-import { format, parse, isValid } from "date-fns";
+import type { DateGranularity } from "@/lib/unified-schedule";
+import { formatGranularDate } from "@/lib/unified-schedule";
 import { RiCalendarLine } from "@remixicon/react";
 import {
   InlineGoalEditor,
   type InlineGoalEditorData,
 } from "./inline-goal-editor";
-
-/**
- * Format an ISO date string for display.
- * e.g., "2026-01-15" -> "Jan 15, 2026"
- */
-function formatDateDisplay(isoDate: string): string {
-  const date = parse(isoDate, "yyyy-MM-dd", new Date());
-  if (!isValid(date)) return isoDate;
-  return format(date, "MMM d, yyyy");
-}
 
 // =============================================================================
 // Types
@@ -79,8 +70,14 @@ export interface AddedGoal {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
+  /** Optional start date (ISO date string) */
+  startDate?: string;
+  /** Granularity of the start date */
+  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
+  /** Granularity of the target date */
+  deadlineGranularity?: DateGranularity;
 }
 
 export interface AddedGoalRowProps {
@@ -127,7 +124,10 @@ export function AddedGoalRow({
           icon: goal.icon,
           color: goal.color,
           lifeAreaId: goal.lifeAreaId,
+          startDate: goal.startDate,
+          startDateGranularity: goal.startDateGranularity,
           deadline: goal.deadline,
+          deadlineGranularity: goal.deadlineGranularity,
         }}
         lifeAreas={lifeAreas}
         goalIcons={goalIcons}
@@ -166,13 +166,28 @@ export function AddedGoalRow({
         </span>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {lifeArea && <span>{lifeArea.label}</span>}
-          {lifeArea && goal.deadline && (
+          {lifeArea && (goal.startDate || goal.deadline) && (
             <span className="text-muted-foreground/40">·</span>
+          )}
+          {goal.startDate && (
+            <span className="flex items-center gap-1">
+              <RiCalendarLine className="size-3" />
+              {formatGranularDate(
+                goal.startDate,
+                goal.startDateGranularity ?? "day",
+              )}
+            </span>
+          )}
+          {goal.startDate && goal.deadline && (
+            <span className="text-muted-foreground/40">–</span>
           )}
           {goal.deadline && (
             <span className="flex items-center gap-1">
-              <RiCalendarLine className="size-3" />
-              {formatDateDisplay(goal.deadline)}
+              {!goal.startDate && <RiCalendarLine className="size-3" />}
+              {formatGranularDate(
+                goal.deadline,
+                goal.deadlineGranularity ?? "day",
+              )}
             </span>
           )}
         </div>

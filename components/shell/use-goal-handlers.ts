@@ -132,6 +132,10 @@ export function useGoalHandlers({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
+        startDate: data.startDate,
+        startDateGranularity: data.startDateGranularity,
+        deadline: data.deadline,
+        deadlineGranularity: data.deadlineGranularity,
         tasks: [],
       });
       if (backlogMode === "goal-detail") {
@@ -204,7 +208,10 @@ export function useGoalHandlers({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
+        startDate: data.startDate,
+        startDateGranularity: data.startDateGranularity,
         deadline: data.deadline,
+        deadlineGranularity: data.deadlineGranularity,
         tasks: [],
       });
     },
@@ -218,7 +225,10 @@ export function useGoalHandlers({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
+        startDate: data.startDate,
+        startDateGranularity: data.startDateGranularity,
         deadline: data.deadline,
+        deadlineGranularity: data.deadlineGranularity,
       });
     },
     [onUpdateGoal],
@@ -240,7 +250,10 @@ export function useGoalHandlers({
         icon: g.icon,
         color: g.color,
         lifeAreaId: g.lifeAreaId ?? "",
+        startDate: g.startDate,
+        startDateGranularity: g.startDateGranularity,
         deadline: g.deadline,
+        deadlineGranularity: g.deadlineGranularity,
       })),
     [goals],
   );

@@ -73,6 +73,16 @@
   - Respects user week-start preference when available
   - Clear action available when value exists and popover is open
 
+- **`granular-date-picker.tsx`** — Date picker with Day / Month / Quarter granularity tabs
+  - Inspired by the Linear date picker pattern
+  - Day tab: standard single-date calendar via react-day-picker
+  - Month tab: 4×3 grid of months with year navigation
+  - Quarter tab: 2×2 grid of quarters (Q1–Q4) with year navigation
+  - `role` prop ("start" | "end") controls whether months/quarters resolve to first or last day
+  - Returns composite value (ISO date string + granularity)
+  - Same pill-trigger style as DatePicker
+  - Respects user week-start preference for Day tab
+
 ## Dialog & Overlay Components
 
 - **`alert-dialog.tsx`** — Composed Alert Dialog primitive built on top of Radix AlertDialog
@@ -225,4 +235,4 @@
 - **Keyboard Shortcuts:** Modal displaying available shortcuts
 - **Specialized:** Subtask management and inline creation components
 
-**Total Files:** 24 (22 component files, 1 public API, 1 index file)
+**Total Files:** 25 (23 component files, 1 public API, 1 index file)

@@ -37,11 +37,11 @@
   - Used in backlog and onboarding goal lists
   - Renders either compact, clickable summary row or InlineGoalEditor when editing
   - Owns no persistence logic; bridges user actions to parent handlers
-  - Displays goal label, icon, color, life area, and optional deadline
+  - Displays goal label, icon, color, life area, optional start date, and optional target date
   - Toggles between display and inline edit modes
   - Forwards save, cancel, and delete events
   - Clicking row enters edit mode
-  - Deadline formatting defensive against invalid dates
+  - Dates formatted using granular display (day/month/quarter) via formatGranularDate
 
 - **`goal-suggestion-row.tsx`** — Row component for displaying and adding an onboarding goal suggestion
   - Used inside onboarding flows to quickly seed initial goals
@@ -67,10 +67,10 @@
 ### Creation & Editing Components
 - **`inline-goal-editor.tsx`** — Inline editor for creating and editing Goals
   - Used by onboarding flows, inspiration pickers, and backlog goal rows
-  - Supports editing core goal metadata: label, icon, color, life area, optional target date
+  - Supports editing core goal metadata: label, icon, color, life area, start date, target date (all with Day/Month/Quarter granularity)
   - Manages only form state; delegates persistence upward
   - Renders editable goal fields
-  - Provides icon, color, life area, and date pickers
+  - Provides icon, color, life area, and granular date pickers
   - Handles confirm, cancel, and optional delete actions
   - Auto-focuses and selects label input on mount
   - Uses constrained color palette for visual consistency
@@ -166,6 +166,6 @@
 - **Calendar:** Tasks can be dragged to calendar for scheduling
 - **Unified Schedule:** Integrates with unified schedule domain types
 - **Life Areas:** Uses life area types for goal categorization
-- **Date Formatting:** Uses date-fns for deadline formatting
+- **Date Formatting:** Uses formatGranularDate from lib/unified-schedule for granular date display
 
 **Total Files:** 12 (10 component files, 1 types file, 1 utilities file, 1 public API)

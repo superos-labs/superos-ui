@@ -21,17 +21,18 @@
 
 ### Header Section
 - **`goal-detail-header.tsx`** — Header section for the Goal Detail view
-  - Presents and optionally allows editing of goal's core identity: icon, color, title, life area, optional target date (deadline)
+  - Presents and optionally allows editing of goal's core identity: icon, color, title, life area, start date, and target date
   - Designed to work in both read-only and editable modes depending on which callbacks are provided
   - Renders goal icon, title, and metadata pills
   - Provides inline editing for title
   - Provides dropdown pickers for icon, color, and life area
-  - Provides date picker for deadline
+  - Provides granular date pickers for start date and target date (Day/Month/Quarter)
   - Surfaces "add life area" affordance when supported
   - Title editing is optimistic and commits on blur or Enter
   - Icon and color edited together via single dropdown
   - Subset of distinct colors used for faster scanning
   - Pills provide compact, glanceable metadata
+  - Start and target dates use GranularDatePicker with Day/Month/Quarter tabs
 
 ### Tasks Section
 - **`goal-detail-tasks.tsx`** — Tasks list section for the Goal Detail view (without milestones)
@@ -116,7 +117,7 @@
 ## Usage Patterns
 
 1. **View Goal:** GoalDetail renders comprehensive goal view with all sections
-2. **Edit Identity:** Click header to edit icon, color, title, life area, deadline
+2. **Edit Identity:** Click header to edit icon, color, title, life area, start date, target date
 3. **Manage Tasks:** Create, edit, complete, and delete tasks inline
 4. **Milestone Mode:** When enabled, tasks organized by milestone phases
 5. **Flat Mode:** When milestones disabled, flat task list with sorting
@@ -130,6 +131,6 @@
 - **Unified Schedule:** Integrates with unified schedule domain types
 - **Calendar Sync:** Goal-level sync settings integration
 - **Life Areas:** Uses life area types for categorization
-- **Date Picker:** Uses date picker for deadline selection
+- **GranularDatePicker:** Uses granular date picker for start date and target date selection (Day/Month/Quarter)
 
 **Total Files:** 7 (5 component files, 1 example file, 1 public API)
