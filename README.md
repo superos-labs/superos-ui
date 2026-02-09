@@ -21,6 +21,12 @@ SuperOS UI is a modern, type-safe React application built with Next.js that prov
 - **class-variance-authority** - Component variant management
 - **Remix Icon** - Icon library
 
+### AI
+- **Vercel AI SDK 6** (`ai`, `@ai-sdk/react`, `@ai-sdk/openai`) - Streaming AI responses, chat hooks, OpenAI provider
+- **OpenAI SDK** (`openai`) - Direct OpenAI API access
+- **OpenAI Agents SDK** (`@openai/agents`) - Multi-agent workflows (available for future use)
+- **Zod** - Structured output schemas and tool parameter definitions
+
 ### Utilities & Tools
 - **date-fns** - Date manipulation and formatting
 - **recharts** - Data visualization
