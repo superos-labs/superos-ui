@@ -53,7 +53,12 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { getIconColorClass, getIconBgClass } from "@/lib/colors";
-import { RiArrowDownSLine, RiCheckLine, RiAddLine } from "@remixicon/react";
+import {
+  RiArrowDownSLine,
+  RiCheckLine,
+  RiAddLine,
+  RiArrowRightSLine,
+} from "@remixicon/react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -376,6 +381,11 @@ export function GoalDetailHeader({
             disabled
           />
         ) : null}
+
+        {/* Arrow separator (only show when both dates present) */}
+        {(startDate || onStartDateChange) && (deadline || onDeadlineChange) && (
+          <RiArrowRightSLine className="size-3.5 text-muted-foreground/50" />
+        )}
 
         {/* Target date pill */}
         {onDeadlineChange ? (
