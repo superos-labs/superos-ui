@@ -36,12 +36,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  RiAddLine,
-  RiArrowDownSLine,
-  RiFocusLine,
-  RiPencilLine,
-} from "@remixicon/react";
+import { RiAddLine, RiArrowDownSLine } from "@remixicon/react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -50,7 +45,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { ScheduleTask } from "@/lib/unified-schedule";
 import type { GoalSelectorOption } from "../block-types";
-import { formatFocusTime, parseFocusTimeInput } from "./sidebar-utils";
 
 // =============================================================================
 // Section header component
@@ -77,106 +71,6 @@ export function BlockSidebarSection({
       </div>
       {children}
     </div>
-  );
-}
-
-// =============================================================================
-// Focus Time Section (editable focus time display)
-// =============================================================================
-
-interface FocusTimeSectionProps {
-  /** Total focus time in minutes */
-  focusedMinutes: number;
-  /** Callback when focus time is edited (minutes) */
-  onFocusedMinutesChange?: (minutes: number) => void;
-}
-
-export function FocusTimeSection({
-  focusedMinutes,
-  onFocusedMinutesChange,
-}: FocusTimeSectionProps) {
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  // Focus input when entering edit mode
-  React.useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const handleStartEdit = () => {
-    if (!onFocusedMinutesChange) return;
-    setInputValue(Math.round(focusedMinutes).toString());
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    const parsed = parseFocusTimeInput(inputValue);
-    if (
-      parsed !== null &&
-      onFocusedMinutesChange &&
-      parsed !== Math.round(focusedMinutes)
-    ) {
-      onFocusedMinutesChange(parsed);
-    }
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSave();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      setIsEditing(false);
-    }
-  };
-
-  return (
-    <BlockSidebarSection
-      icon={<RiFocusLine className="size-3.5" />}
-      label="Focus Time"
-    >
-      {isEditing ? (
-        <div className="flex items-center gap-2">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleSave}
-            placeholder="e.g., 90 or 1h 30m"
-            className={cn(
-              "flex-1 rounded-lg bg-muted/60 px-3 py-2 text-sm text-foreground",
-              "outline-none focus:bg-muted",
-            )}
-          />
-          <span className="text-xs text-muted-foreground">min</span>
-        </div>
-      ) : (
-        <button
-          onClick={handleStartEdit}
-          disabled={!onFocusedMinutesChange}
-          className={cn(
-            "group flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors",
-            onFocusedMinutesChange
-              ? "hover:bg-muted/60 cursor-pointer"
-              : "cursor-default",
-          )}
-        >
-          <span className="text-sm font-medium tabular-nums text-foreground">
-            {formatFocusTime(focusedMinutes)}
-          </span>
-          {onFocusedMinutesChange && (
-            <RiPencilLine className="size-3 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" />
-          )}
-        </button>
-      )}
-    </BlockSidebarSection>
   );
 }
 

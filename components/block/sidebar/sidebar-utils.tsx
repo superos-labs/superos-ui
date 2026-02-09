@@ -102,6 +102,17 @@ export function formatDateDisplay(dateStr: string): string {
   });
 }
 
+/** Format date string for compact property display (e.g. "Feb 9, 2026") */
+export function formatDateShort(dateStr: string): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr + "T00:00:00");
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 /** Check if block spans overnight (ends on a different day) */
 export function isOvernightBlock(block: BlockSidebarData): boolean {
   return !!block.endDate && block.endDate !== block.date;
@@ -165,18 +176,29 @@ export function AutoResizeTextarea({
 }: AutoResizeTextareaProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  React.useEffect(() => {
+  const resize = React.useCallback(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = "auto";
+      textarea.style.height = "0";
       textarea.style.height = `${textarea.scrollHeight}px`;
     }
-  }, [value]);
+  }, []);
+
+  // Resize when value changes
+  React.useEffect(() => {
+    resize();
+  }, [value, resize]);
+
+  // Resize on mount (handles placeholder / initial content)
+  React.useEffect(() => {
+    resize();
+  }, [resize]);
 
   return (
     <textarea
       ref={textareaRef}
       value={value}
+      rows={1}
       className={cn("resize-none overflow-hidden", className)}
       {...props}
     />

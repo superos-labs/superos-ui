@@ -61,14 +61,16 @@ import {
 import { BlockGoalTaskRow } from "./sidebar/goal-task-row";
 import {
   BlockSidebarSection,
-  FocusTimeSection,
   InlineBlockTaskCreator,
   AvailableTasksList,
   GoalSelector,
 } from "./sidebar/sidebar-sections";
 import { ExternalCalendarSyncSection } from "./sidebar/external-sync-section";
 import {
-  DateTimeSection,
+  PropertyRow,
+  DatePropertyRow,
+  TimePropertyRow,
+  FocusTimePropertyRow,
   NotesSubtasksSection,
 } from "./sidebar/content-sections";
 
@@ -294,7 +296,7 @@ function BlockSidebar({
       {...props}
     >
       {/* Header */}
-      <div className="flex flex-col gap-3 px-4 pt-4 pb-2">
+      <div className="flex flex-col gap-4 px-5 pt-5 pb-3">
         {/* Header actions row */}
         {(onClose ||
           onDelete ||
@@ -362,148 +364,101 @@ function BlockSidebar({
           </h2>
         )}
 
-        {/* Associated goal or essential / Goal selector / External source */}
-        {isExternalBlock && block.sourceProvider ? (
-          <div className="flex items-center gap-2">
-            <ProviderBadge provider={block.sourceProvider} size="md" />
-            <span className="text-sm text-muted-foreground">
-              {block.sourceCalendarName ?? "External Calendar"}
-            </span>
-          </div>
-        ) : sourceInfo ? (
-          <div className="flex items-center gap-2">
-            <div className="flex size-5 shrink-0 items-center justify-center rounded bg-muted/60">
-              <sourceInfo.icon className={cn("size-3", sourceInfo.color)} />
-            </div>
-            <span className={cn("text-sm font-medium", sourceInfo.color)}>
-              {sourceInfo.label}
-            </span>
-          </div>
-        ) : (
-          isGoalBlock &&
-          availableGoals &&
-          availableGoals.length > 0 &&
-          onGoalSelect && (
-            <GoalSelector goals={availableGoals} onSelect={onGoalSelect} />
-          )
-        )}
-
-        {/* Mark Complete action - for goal, task, and external blocks (not essentials) */}
-        {!isEssentialBlock &&
-          block.status !== "completed" &&
-          onMarkComplete && (
-            <button
-              onClick={onMarkComplete}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
-            >
-              <RiCheckLine className="size-4" />
-              <span>Mark complete</span>
-            </button>
-          )}
-
-        {/* Focus mode: show timer when focused, or start button when not */}
-        {!isEssentialBlock &&
-          (isFocused ? (
-            <FocusTimer
-              elapsedMs={focusElapsedMs ?? 0}
-              isRunning={focusIsRunning ?? false}
-              color={block.color}
-              onPause={onPauseFocus}
-              onResume={onResumeFocus}
-              onStop={onEndFocus}
-            />
-          ) : onStartFocus && block.status !== "completed" ? (
-            <StartFocusButton onClick={onStartFocus} disabled={focusDisabled} />
-          ) : null)}
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-col gap-5 p-4">
-        {/* Date & Time */}
-        <DateTimeSection
-          block={block}
-          onDateChange={onDateChange}
-          onStartTimeChange={onStartTimeChange}
-          onEndTimeChange={onEndTimeChange}
-        />
-
-        {/* Focus Time (for goal, task, and external blocks - not essentials) */}
-        {!isEssentialBlock && totalFocusedMinutes !== undefined && (
-          <FocusTimeSection
-            focusedMinutes={totalFocusedMinutes}
-            onFocusedMinutesChange={onFocusedMinutesChange}
-          />
-        )}
-
-        {/* Goal Tasks (only for goal blocks with assigned goal) */}
-        {isGoalBlock && block.goal && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              <RiCheckLine className="size-3.5" />
-              <span>Tasks</span>
-            </div>
-
-            <div className="flex flex-col">
-              {block.goalTasks.length > 0 ? (
-                block.goalTasks.map((task) => (
-                  <BlockGoalTaskRow
-                    key={task.id}
-                    task={task}
-                    isExpanded={expandedGoalTaskId === task.id}
-                    onExpand={handleGoalTaskExpand}
-                    onToggle={onToggleGoalTask}
-                    onUnassign={onUnassignTask}
-                    onUpdateTask={
-                      onUpdateGoalTask
-                        ? (updates) => onUpdateGoalTask(task.id, updates)
-                        : undefined
-                    }
-                    onAddSubtask={
-                      onAddGoalTaskSubtask
-                        ? (label) => onAddGoalTaskSubtask(task.id, label)
-                        : undefined
-                    }
-                    onToggleSubtask={
-                      onToggleGoalTaskSubtask
-                        ? (subtaskId) =>
-                            onToggleGoalTaskSubtask(task.id, subtaskId)
-                        : undefined
-                    }
-                    onUpdateSubtask={
-                      onUpdateGoalTaskSubtask
-                        ? (subtaskId, label) =>
-                            onUpdateGoalTaskSubtask(task.id, subtaskId, label)
-                        : undefined
-                    }
-                    onDeleteSubtask={
-                      onDeleteGoalTaskSubtask
-                        ? (subtaskId) =>
-                            onDeleteGoalTaskSubtask(task.id, subtaskId)
-                        : undefined
-                    }
+        {/* Properties – Notion/Linear 2-column layout */}
+        <div className="flex flex-col gap-0.5 pt-1">
+          {/* Goal */}
+          <PropertyRow label="Goal">
+            {isExternalBlock && block.sourceProvider ? (
+              <div className="flex items-center gap-2 px-2 py-1">
+                <ProviderBadge provider={block.sourceProvider} size="md" />
+                <span className="text-sm text-foreground">
+                  {block.sourceCalendarName ?? "External Calendar"}
+                </span>
+              </div>
+            ) : sourceInfo ? (
+              <div className="flex items-center gap-2 px-2 py-1">
+                <div className="flex size-4 shrink-0 items-center justify-center rounded bg-muted/60">
+                  <sourceInfo.icon
+                    className={cn("size-2.5", sourceInfo.color)}
                   />
-                ))
-              ) : (
-                <p className="px-2 py-1 text-xs text-muted-foreground/60">
-                  No tasks assigned yet
-                </p>
-              )}
+                </div>
+                <span className={cn("text-sm", sourceInfo.color)}>
+                  {sourceInfo.label}
+                </span>
+              </div>
+            ) : isGoalBlock &&
+              availableGoals &&
+              availableGoals.length > 0 &&
+              onGoalSelect ? (
+              <GoalSelector goals={availableGoals} onSelect={onGoalSelect} />
+            ) : (
+              <span className="px-2 py-1 text-sm text-muted-foreground/60">
+                None
+              </span>
+            )}
+          </PropertyRow>
 
-              {onCreateTask && <InlineBlockTaskCreator onSave={onCreateTask} />}
+          {/* Date */}
+          <DatePropertyRow block={block} onDateChange={onDateChange} />
 
-              {availableGoalTasks &&
-                availableGoalTasks.length > 0 &&
-                onAssignTask && (
-                  <AvailableTasksList
-                    tasks={availableGoalTasks}
-                    onAssign={onAssignTask}
+          {/* Time */}
+          <TimePropertyRow
+            block={block}
+            onStartTimeChange={onStartTimeChange}
+            onEndTimeChange={onEndTimeChange}
+          />
+
+          {/* Focus time (non-essential blocks only) */}
+          {!isEssentialBlock && totalFocusedMinutes !== undefined && (
+            <FocusTimePropertyRow
+              focusedMinutes={totalFocusedMinutes}
+              onFocusedMinutesChange={onFocusedMinutesChange}
+            />
+          )}
+        </div>
+
+        {/* Action buttons row – Complete & Start Focus side by side */}
+        {!isEssentialBlock && (
+          <>
+            {isFocused ? (
+              <FocusTimer
+                elapsedMs={focusElapsedMs ?? 0}
+                isRunning={focusIsRunning ?? false}
+                color={block.color}
+                onPause={onPauseFocus}
+                onResume={onResumeFocus}
+                onStop={onEndFocus}
+              />
+            ) : block.status !== "completed" ? (
+              <div className="flex gap-2">
+                {onMarkComplete && (
+                  <button
+                    onClick={onMarkComplete}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
+                  >
+                    <RiCheckLine className="size-4" />
+                    <span>Complete</span>
+                  </button>
+                )}
+                {onStartFocus && (
+                  <StartFocusButton
+                    onClick={onStartFocus}
+                    disabled={focusDisabled}
+                    className="flex-1 w-auto"
                   />
                 )}
-            </div>
-          </div>
+              </div>
+            ) : null}
+          </>
         )}
+      </div>
 
-        {/* Notes & Subtasks */}
+      {/* Divider */}
+      <div className="mx-5 border-t border-border/60" />
+
+      {/* Content – notes then tasks, no section titles */}
+      <div className="flex flex-col gap-5 px-5 pb-5 pt-4">
+        {/* Notes / description */}
         <NotesSubtasksSection
           block={block}
           isTaskBlock={isTaskBlock}
@@ -513,6 +468,62 @@ function BlockSidebar({
           onUpdateSubtask={onUpdateSubtask}
           onDeleteSubtask={onDeleteSubtask}
         />
+
+        {/* Goal Tasks (only for goal blocks with assigned goal) */}
+        {isGoalBlock && block.goal && (
+          <div className="flex flex-col">
+            {block.goalTasks.length > 0 &&
+              block.goalTasks.map((task) => (
+                <BlockGoalTaskRow
+                  key={task.id}
+                  task={task}
+                  isExpanded={expandedGoalTaskId === task.id}
+                  onExpand={handleGoalTaskExpand}
+                  onToggle={onToggleGoalTask}
+                  onUnassign={onUnassignTask}
+                  onUpdateTask={
+                    onUpdateGoalTask
+                      ? (updates) => onUpdateGoalTask(task.id, updates)
+                      : undefined
+                  }
+                  onAddSubtask={
+                    onAddGoalTaskSubtask
+                      ? (label) => onAddGoalTaskSubtask(task.id, label)
+                      : undefined
+                  }
+                  onToggleSubtask={
+                    onToggleGoalTaskSubtask
+                      ? (subtaskId) =>
+                          onToggleGoalTaskSubtask(task.id, subtaskId)
+                      : undefined
+                  }
+                  onUpdateSubtask={
+                    onUpdateGoalTaskSubtask
+                      ? (subtaskId, label) =>
+                          onUpdateGoalTaskSubtask(task.id, subtaskId, label)
+                      : undefined
+                  }
+                  onDeleteSubtask={
+                    onDeleteGoalTaskSubtask
+                      ? (subtaskId) =>
+                          onDeleteGoalTaskSubtask(task.id, subtaskId)
+                      : undefined
+                  }
+                />
+              ))}
+
+            {onCreateTask && <InlineBlockTaskCreator onSave={onCreateTask} />}
+
+            {availableGoalTasks &&
+              availableGoalTasks.length > 0 &&
+              onAssignTask && (
+                <AvailableTasksList
+                  tasks={availableGoalTasks}
+                  onAssign={onAssignTask}
+                />
+              )}
+          </div>
+        )}
 
         {/* External Calendar Sync Section */}
         {(isGoalBlock || isTaskBlock) &&
