@@ -8,7 +8,7 @@
  * Provides a dedicated, distraction-minimized environment to:
  * - View and control the focus timer.
  * - See the focused block’s title and color context.
- * - Capture notes.
+ * - Capture notes (description-style, no section title).
  * - Progress tasks or subtasks related to the focused block.
  *
  * Adapts its content based on block type (goal block vs task block).
@@ -17,14 +17,15 @@
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
  * - Render hero timer, title, and focus controls (pause, resume, end).
- * - Display and edit notes for the focused block.
+ * - Display and edit notes (shown as "Add description..." placeholder, no
+ *   section header) — uses shared AutoResizeTextarea from sidebar-utils.
  * - For goal blocks:
- *   - List assigned goal tasks.
+ *   - List assigned goal tasks (no "No tasks" empty state).
  *   - Toggle, unassign, and expand goal tasks.
  *   - Edit task details and manage subtasks.
  *   - Create new tasks inline.
  * - For task blocks:
- *   - List and manage subtasks.
+ *   - List and manage subtasks (no "No subtasks" empty state).
  *   - Create new subtasks inline.
  *
  * -----------------------------------------------------------------------------
@@ -38,9 +39,12 @@
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
+ * - Spacing matches BlockSidebar: px-5 paddings, mx-5 divider, border/60.
+ * - Section titles removed — notes and tasks flow inline, description first.
+ * - Empty-state messages removed; only creators shown when lists are empty.
  * - Desktop-first vertical layout.
  * - Animated color dot reflects running state.
- * - Auto-resizing notes textarea for comfortable writing.
+ * - Auto-resizing notes textarea imported from sidebar-utils (no local copy).
  * - Inline creators favor keyboard-first flows.
  * - Goal task expansion behaves like a single-open accordion.
  *
@@ -60,8 +64,6 @@ import {
   RiPauseFill,
   RiPlayFill,
   RiStopFill,
-  RiFileTextLine,
-  RiCheckLine,
   RiAddLine,
   RiCloseLine,
 } from "@remixicon/react";
@@ -69,35 +71,7 @@ import { BLOCK_COLORS, BlockGoalTaskRow } from "@/components/block";
 import type { BlockSidebarData } from "@/components/block";
 import type { ScheduleTask } from "@/lib/unified-schedule";
 import { SubtaskRow, type SubtaskRowData } from "@/components/ui/subtask-row";
-
-// =============================================================================
-// Auto-resizing textarea (copied from block-sidebar for self-containment)
-// =============================================================================
-
-function AutoResizeTextarea({
-  className,
-  value,
-  ...props
-}: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  React.useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [value]);
-
-  return (
-    <textarea
-      ref={textareaRef}
-      value={value}
-      className={cn("resize-none overflow-hidden", className)}
-      {...props}
-    />
-  );
-}
+import { AutoResizeTextarea } from "@/components/block/sidebar/sidebar-utils";
 
 // =============================================================================
 // Inline Task Creator (for focus mode)
@@ -295,7 +269,7 @@ export function FocusSidebarContent({
     <div className="flex h-full flex-col">
       {/* Close button */}
       {onClose && (
-        <div className="flex justify-end px-4 pt-4">
+        <div className="flex justify-end px-5 pt-5">
           <button
             onClick={onClose}
             aria-label="Close"
@@ -307,7 +281,7 @@ export function FocusSidebarContent({
       )}
 
       {/* Hero Timer Section */}
-      <div className="flex flex-col items-center gap-4 px-4 pb-6 pt-2">
+      <div className="flex flex-col items-center gap-4 px-5 pb-5 pt-2">
         {/* Timer */}
         <div className="flex items-center gap-3">
           <div
@@ -367,100 +341,81 @@ export function FocusSidebarContent({
       </div>
 
       {/* Divider */}
-      <div className="mx-4 border-t border-border" />
+      <div className="mx-5 border-t border-border/60" />
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-4">
-        {/* Notes Section */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            <RiFileTextLine className="size-3.5" />
-            <span>Notes</span>
-          </div>
-          {onNotesChange ? (
-            <AutoResizeTextarea
-              value={block.notes || ""}
-              onChange={(e) => onNotesChange(e.target.value)}
-              placeholder="Add notes..."
-              className={cn(
-                "w-full min-h-[60px] bg-transparent text-sm text-foreground leading-relaxed",
-                "outline-none placeholder:text-muted-foreground/60",
-              )}
-            />
-          ) : (
+      {/* Content – notes first, then tasks, no section titles */}
+      <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 pb-5 pt-4">
+        {/* Notes / description */}
+        {onNotesChange ? (
+          <AutoResizeTextarea
+            value={block.notes || ""}
+            onChange={(e) => onNotesChange(e.target.value)}
+            placeholder="Add description..."
+            className={cn(
+              "w-full bg-transparent text-sm text-foreground leading-relaxed",
+              "outline-none placeholder:text-muted-foreground/60",
+            )}
+          />
+        ) : (
+          block.notes && (
             <p className="text-sm text-foreground leading-relaxed">
-              {block.notes || "No notes"}
+              {block.notes}
             </p>
-          )}
-        </div>
+          )
+        )}
 
-        {/* Tasks Section (for goal blocks) */}
+        {/* Goal Tasks (for goal blocks) */}
         {isGoalBlock && block.goal && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              <RiCheckLine className="size-3.5" />
-              <span>Tasks</span>
-            </div>
-            <div className="flex flex-col">
-              {block.goalTasks.length > 0 ? (
-                block.goalTasks.map((task) => (
-                  <BlockGoalTaskRow
-                    key={task.id}
-                    task={task}
-                    isExpanded={expandedGoalTaskId === task.id}
-                    onExpand={handleGoalTaskExpand}
-                    onToggle={onToggleGoalTask}
-                    onUnassign={onUnassignTask}
-                    onUpdateTask={
-                      onUpdateGoalTask
-                        ? (updates) => onUpdateGoalTask(task.id, updates)
-                        : undefined
-                    }
-                    onAddSubtask={
-                      onAddGoalTaskSubtask
-                        ? (label) => onAddGoalTaskSubtask(task.id, label)
-                        : undefined
-                    }
-                    onToggleSubtask={
-                      onToggleGoalTaskSubtask
-                        ? (subtaskId) =>
-                            onToggleGoalTaskSubtask(task.id, subtaskId)
-                        : undefined
-                    }
-                    onUpdateSubtask={
-                      onUpdateGoalTaskSubtask
-                        ? (subtaskId, label) =>
-                            onUpdateGoalTaskSubtask(task.id, subtaskId, label)
-                        : undefined
-                    }
-                    onDeleteSubtask={
-                      onDeleteGoalTaskSubtask
-                        ? (subtaskId) =>
-                            onDeleteGoalTaskSubtask(task.id, subtaskId)
-                        : undefined
-                    }
-                  />
-                ))
-              ) : (
-                <p className="px-2 py-1 text-xs text-muted-foreground/60">
-                  No tasks assigned
-                </p>
-              )}
-              {onCreateTask && <InlineFocusTaskCreator onSave={onCreateTask} />}
-            </div>
+          <div className="flex flex-col">
+            {block.goalTasks.length > 0 &&
+              block.goalTasks.map((task) => (
+                <BlockGoalTaskRow
+                  key={task.id}
+                  task={task}
+                  isExpanded={expandedGoalTaskId === task.id}
+                  onExpand={handleGoalTaskExpand}
+                  onToggle={onToggleGoalTask}
+                  onUnassign={onUnassignTask}
+                  onUpdateTask={
+                    onUpdateGoalTask
+                      ? (updates) => onUpdateGoalTask(task.id, updates)
+                      : undefined
+                  }
+                  onAddSubtask={
+                    onAddGoalTaskSubtask
+                      ? (label) => onAddGoalTaskSubtask(task.id, label)
+                      : undefined
+                  }
+                  onToggleSubtask={
+                    onToggleGoalTaskSubtask
+                      ? (subtaskId) =>
+                          onToggleGoalTaskSubtask(task.id, subtaskId)
+                      : undefined
+                  }
+                  onUpdateSubtask={
+                    onUpdateGoalTaskSubtask
+                      ? (subtaskId, label) =>
+                          onUpdateGoalTaskSubtask(task.id, subtaskId, label)
+                      : undefined
+                  }
+                  onDeleteSubtask={
+                    onDeleteGoalTaskSubtask
+                      ? (subtaskId) =>
+                          onDeleteGoalTaskSubtask(task.id, subtaskId)
+                      : undefined
+                  }
+                />
+              ))}
+            {onCreateTask && <InlineFocusTaskCreator onSave={onCreateTask} />}
           </div>
         )}
 
-        {/* Subtasks Section (for task blocks) */}
+        {/* Subtasks (for task blocks) */}
         {isTaskBlock && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              <RiCheckLine className="size-3.5" />
-              <span>Subtasks</span>
-            </div>
-            <div className="flex flex-col gap-0.5">
-              {block.subtasks.length > 0 ? (
-                block.subtasks.map((subtask) => {
+          <div className="flex flex-col gap-3">
+            {block.subtasks.length > 0 && (
+              <div className="flex flex-col gap-0.5">
+                {block.subtasks.map((subtask) => {
                   const rowData: SubtaskRowData = {
                     id: subtask.id,
                     label: subtask.text,
@@ -475,37 +430,33 @@ export function FocusSidebarContent({
                       onDelete={onDeleteSubtask}
                     />
                   );
-                })
+                })}
+              </div>
+            )}
+            {onAddSubtask &&
+              (isCreatingSubtask ? (
+                <div className="flex items-center gap-2 py-0.5">
+                  <div className="flex size-4 shrink-0 items-center justify-center rounded border border-muted-foreground/40" />
+                  <input
+                    ref={subtaskInputRef}
+                    type="text"
+                    value={newSubtaskLabel}
+                    onChange={(e) => setNewSubtaskLabel(e.target.value)}
+                    onKeyDown={handleSubtaskKeyDown}
+                    onBlur={handleSubtaskBlur}
+                    placeholder="Subtask..."
+                    className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+                  />
+                </div>
               ) : (
-                <p className="px-2 py-1 text-xs text-muted-foreground/60">
-                  No subtasks
-                </p>
-              )}
-              {onAddSubtask &&
-                (isCreatingSubtask ? (
-                  <div className="flex items-center gap-2 py-0.5">
-                    <div className="flex size-4 shrink-0 items-center justify-center rounded border border-muted-foreground/40" />
-                    <input
-                      ref={subtaskInputRef}
-                      type="text"
-                      value={newSubtaskLabel}
-                      onChange={(e) => setNewSubtaskLabel(e.target.value)}
-                      onKeyDown={handleSubtaskKeyDown}
-                      onBlur={handleSubtaskBlur}
-                      placeholder="Subtask..."
-                      className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
-                    />
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setIsCreatingSubtask(true)}
-                    className="flex items-center gap-1.5 py-1 text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground"
-                  >
-                    <RiAddLine className="size-3.5" />
-                    <span>Add subtask</span>
-                  </button>
-                ))}
-            </div>
+                <button
+                  onClick={() => setIsCreatingSubtask(true)}
+                  className="flex items-center gap-1.5 py-1 text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground"
+                >
+                  <RiAddLine className="size-3.5" />
+                  <span>Add subtask</span>
+                </button>
+              ))}
           </div>
         )}
       </div>

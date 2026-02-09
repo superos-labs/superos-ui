@@ -36,16 +36,18 @@
   - Provides dedicated, distraction-minimized environment
   - View and control focus timer
   - See focused block's title and color context
-  - Capture notes
+  - Capture notes (description-style, no section title, "Add description..." placeholder)
   - Progress tasks or subtasks related to focused block
   - Adapts content based on block type (goal block vs task block)
   - Renders hero timer, title, and focus controls (pause, resume, end)
-  - Displays and edits notes for focused block
+  - Notes and tasks flow inline without section headers, description first
+  - Empty-state messages removed; only creators shown when lists are empty
   - For goal blocks: lists assigned goal tasks, toggles/unassigns/expands tasks, edits task details, manages subtasks, creates new tasks inline
   - For task blocks: lists and manages subtasks, creates new subtasks inline
+  - Spacing matches BlockSidebar: px-5 paddings, mx-5 divider, border/60
   - Desktop-first vertical layout
   - Animated color dot reflects running state
-  - Auto-resizing notes textarea for comfortable writing
+  - Uses shared AutoResizeTextarea from sidebar-utils (no local copy)
   - Inline creators favor keyboard-first flows
   - Goal task expansion behaves like single-open accordion
 
