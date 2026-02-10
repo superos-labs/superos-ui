@@ -257,9 +257,9 @@ export function Backlog({
       className={cn("flex w-full max-w-sm flex-col gap-3", className)}
       {...props}
     >
-      {/* Next Block Card - shown when there's a next block and not in onboarding */}
-      <AnimatePresence mode="sync">
-        {nextBlock && !onboardingStep && (
+      {/* Next Block Card - shown when there are blocks today and not in onboarding */}
+      {nextBlock && nextBlock.totalBlocksToday > 0 && !onboardingStep && (
+        <AnimatePresence mode="sync">
           <motion.div
             key="next-block-card"
             initial={{ opacity: 0, height: 0, marginBottom: -12 }}
@@ -279,8 +279,8 @@ export function Backlog({
               onClick={onNextBlockClick}
             />
           </motion.div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+      )}
 
       {/* Essentials Card - hidden during goals onboarding step, animates in/out */}
       <AnimatePresence mode="sync">
