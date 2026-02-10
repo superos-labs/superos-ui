@@ -44,6 +44,7 @@
 
 "use client";
 
+import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
 import { Calendar } from "@/components/calendar";
@@ -62,6 +63,7 @@ import {
   PlanWeekPromptCard,
 } from "@/components/weekly-planning";
 import { cn } from "@/lib/utils";
+import { useNextBlock } from "@/lib/unified-schedule";
 import type { ShellContentProps } from "./shell-types";
 import type { ShellWiring } from "./use-shell-wiring";
 import { FeedbackButton } from "./feedback-button";
@@ -191,6 +193,31 @@ export function ShellDesktopLayout({
     isOnboardingGoalsCentered,
     onboardingStep,
   } = layout;
+
+  // -------------------------------------------------------------------------
+  // Next Block Card
+  // -------------------------------------------------------------------------
+  const nextBlock = useNextBlock(events, goals);
+
+  // Start focus for a specific block (not tied to sidebar selection)
+  const handleStartBlockFocus = React.useCallback(
+    (blockId: string, title: string, color: string) => {
+      shellProps.onStartFocus(
+        blockId,
+        title,
+        color as import("@/lib/colors").GoalColor,
+      );
+    },
+    [shellProps],
+  );
+
+  // Open block sidebar when clicking the next block card
+  const handleNextBlockClick = React.useCallback(
+    (blockId: string) => {
+      layout.setSelectedEventId(blockId);
+    },
+    [layout],
+  );
 
   // Onboarding centered goals view
   if (isOnboardingGoalsCentered) {
@@ -357,6 +384,15 @@ export function ShellDesktopLayout({
               onboardingStep={onboardingStep}
               onOnboardingContinue={onContinueFromGoals}
               currentWeekStart={planningIntegration.weekStartDate}
+              // Next Block Card
+              nextBlock={nextBlock}
+              calendarEvents={events}
+              scheduleGoals={goals}
+              weekDates={weekDates}
+              focusedBlockId={shellProps.focusSession?.blockId ?? null}
+              onStartBlockFocus={handleStartBlockFocus}
+              onUpdateBlockEvent={shellProps.onUpdateEvent}
+              onNextBlockClick={handleNextBlockClick}
             />
           )}
         </div>
