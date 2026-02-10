@@ -177,17 +177,15 @@ export function ShellContentComponent({
   return (
     <>
       <Shell>
-        {/* Dev skip button - top-right during onboarding goals step */}
-        {isOnboardingGoalsCentered &&
-          process.env.NODE_ENV === "development" &&
-          shellProps.onSkipOnboarding && (
-            <button
-              onClick={shellProps.onSkipOnboarding}
-              className="absolute right-6 top-6 z-50 rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-            >
-              Skip onboarding (Dev)
-            </button>
-          )}
+        {/* Skip onboarding button - top-right during onboarding goals step */}
+        {isOnboardingGoalsCentered && shellProps.onSkipOnboarding && (
+          <button
+            onClick={shellProps.onSkipOnboarding}
+            className="absolute right-6 top-6 z-50 rounded-md px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          >
+            Skip onboarding
+          </button>
+        )}
 
         {/* Toolbars */}
         {!isOnboardingGoalsCentered &&

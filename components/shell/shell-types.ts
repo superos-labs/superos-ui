@@ -495,7 +495,7 @@ export interface UseShellStateOptions {
   lifeAreas: LifeArea[];
   /** Goal icons for goal creation */
   goalIcons: GoalIconOption[];
-  /** Dev-only: Skip onboarding and mark week as planned */
+  /** Skip onboarding and mark week as planned */
   skipOnboarding?: boolean;
 }
 
