@@ -127,6 +127,8 @@ export function ShellContentComponent({
     isOnboardingBlueprint,
     isOnboarding,
     isOnboardingGoalsCentered,
+    isQuarterView,
+    handleQuarterViewToggle,
     handlePlanWeekClick,
     handleAnalyticsToggle,
   } = layout;
@@ -230,6 +232,8 @@ export function ShellContentComponent({
               onToggleSidebar={() => setShowSidebar(!showSidebar)}
               isEssentialsHidden={isEssentialsHidden}
               onShowEssentials={() => setIsEssentialsHidden(false)}
+              isQuarterView={isQuarterView}
+              onQuarterViewToggle={handleQuarterViewToggle}
               onPreviousWeek={shellProps.onPreviousWeek}
               onNextWeek={shellProps.onNextWeek}
               onToday={handleTodayClick}

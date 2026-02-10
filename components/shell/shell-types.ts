@@ -106,6 +106,8 @@ export interface ShellContentProps {
   allEssentials: ScheduleEssential[];
   /** Calendar events for the current week */
   events: CalendarEvent[];
+  /** All events across all dates (unfiltered by week, for quarter view) */
+  allEvents: CalendarEvent[];
   /** Week dates array (7 dates) */
   weekDates: Date[];
   /** Deadlines for the current week (Map of date string to deadline tasks) */

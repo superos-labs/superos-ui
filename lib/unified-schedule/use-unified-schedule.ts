@@ -508,6 +508,7 @@ export function useUnifiedSchedule({
     essentials,
     allEssentials,
     events: filteredEvents,
+    allEvents,
     // Essential visibility management
     enabledEssentialIds,
     draftEnabledEssentialIds,

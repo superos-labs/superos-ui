@@ -64,11 +64,11 @@
   - Exposes unified wiring surface consumed by layout components
   - Contains inlined helper hooks (useShellFocus, useToastAggregator, useMobileNavigation) to reduce file count
 - **`use-shell-layout.ts`** — Central shell layout and mode orchestration hook
-  - Owns UI visibility flags, high-level modes (planning, onboarding, blueprint edit)
+  - Owns UI visibility flags, high-level modes (planning, onboarding, blueprint edit, quarter view)
   - Manages selection state and right-sidebar routing logic
   - Acts as shell's layout state machine
   - Orchestrates onboarding steps and transitions
-  - Controls planning mode and blueprint edit mode
+  - Controls planning mode, blueprint edit mode, and quarter view mode
 
 ## Domain-Specific Handler Hooks
 
@@ -156,6 +156,7 @@
 - **Onboarding flow:** Guided setup for new users
 - **Blueprint editing:** Template-based week planning
 - **Planning mode:** Weekly planning flow with budget tracking
+- **Quarter view:** Orientation-focused quarterly planning surface
 - **Focus sessions:** Timer integration with calendar blocks
 - **Undo system:** Comprehensive undo support for user actions
 - **Keyboard shortcuts:** Extensive keyboard-driven interactions

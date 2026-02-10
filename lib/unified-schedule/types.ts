@@ -374,8 +374,10 @@ export interface UseUnifiedScheduleReturn {
   essentials: ScheduleEssential[];
   /** All available essentials (for edit mode) */
   allEssentials: ScheduleEssential[];
-  /** Filtered events (excludes disabled essential blocks) */
+  /** Filtered events (excludes disabled essential blocks, scoped to current week) */
   events: CalendarEvent[];
+  /** All events across all dates (unfiltered by week, for quarter view etc.) */
+  allEvents: CalendarEvent[];
 
   // Essential visibility management
   /** Current set of enabled essential IDs */

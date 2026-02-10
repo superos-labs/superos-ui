@@ -16,7 +16,7 @@
  * - Manage visibility of calendar, sidebars, tasks, and inspiration gallery.
  * - Manage selection of events and goals.
  * - Orchestrate onboarding steps and transitions.
- * - Control planning mode and blueprint edit mode.
+ * - Control planning mode, blueprint edit mode, and quarter view mode.
  * - Determine which right sidebar content is rendered.
  *
  * -----------------------------------------------------------------------------
@@ -127,6 +127,11 @@ export interface UseShellLayoutReturn {
     data: UseBlockSidebarHandlersReturn["sidebarData"],
   ) => void;
 
+  // Quarter view
+  isQuarterView: boolean;
+  setIsQuarterView: React.Dispatch<React.SetStateAction<boolean>>;
+  handleQuarterViewToggle: () => void;
+
   // Computed values
   isPlanning: boolean;
   isGoalDetailMode: boolean;
@@ -184,6 +189,7 @@ export function useShellLayout(
   const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view");
   const [isPlanningMode, setIsPlanningMode] = React.useState(false);
   const [isBlueprintEditMode, setIsBlueprintEditMode] = React.useState(false);
+  const [isQuarterView, setIsQuarterView] = React.useState(false);
 
   // -------------------------------------------------------------------------
   // Selection State
@@ -339,6 +345,8 @@ export function useShellLayout(
     // Close any open right sidebar content
     setSelectedEventId(null);
     setShowRightSidebar(false);
+    // Exit quarter view when navigating to goal detail
+    setIsQuarterView(false);
   }, []);
 
   const handleCloseGoalDetail = React.useCallback(() => {
@@ -389,6 +397,23 @@ export function useShellLayout(
       setShowRightSidebar((prev) => !prev);
     }
   }, [selectedEventId]);
+
+  // -------------------------------------------------------------------------
+  // Quarter View Toggle
+  // -------------------------------------------------------------------------
+  const handleQuarterViewToggle = React.useCallback(() => {
+    setIsQuarterView((prev) => {
+      if (!prev) {
+        // Entering quarter view: close competing panels
+        setSelectedEventId(null);
+        setShowRightSidebar(false);
+        setSelectedGoalId(null);
+        setBacklogMode("view");
+        setShowInspirationGallery(false);
+      }
+      return !prev;
+    });
+  }, []);
 
   return {
     // Visibility toggles
@@ -445,6 +470,11 @@ export function useShellLayout(
     frozenSidebarData,
     isRightSidebarOpen,
     updateFrozenSidebarData,
+
+    // Quarter view
+    isQuarterView,
+    setIsQuarterView,
+    handleQuarterViewToggle,
 
     // Computed values
     isPlanning,

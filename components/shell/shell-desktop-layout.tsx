@@ -7,7 +7,7 @@
  *
  * Implements the primary three-panel desktop experience:
  * - Left: Backlog / Planning / Blueprint panels
- * - Center: Calendar, Goal Detail, or Inspiration Gallery
+ * - Center: Calendar, Goal Detail, Quarter View, or Inspiration Gallery
  * - Right: Block details, analytics, or integrations
  *
  * Also handles special full-screen states such as onboarding and
@@ -57,6 +57,7 @@ import {
 } from "@/components/backlog";
 import { ONBOARDING_GOAL_SUGGESTIONS } from "@/lib/fixtures/onboarding-goals";
 import { GoalDetail } from "@/components/goal-detail";
+import { QuarterView } from "@/components/quarter-view";
 import {
   PlanningPanel,
   BlueprintBacklog,
@@ -104,6 +105,7 @@ export function ShellDesktopLayout({
     goals,
     essentials,
     events,
+    allEvents,
     weekDates,
     weekDeadlines,
     weekGoalDeadlines,
@@ -178,6 +180,7 @@ export function ShellDesktopLayout({
     isOnboardingBlueprint,
     isOnboarding,
     isGoalDetailMode,
+    isQuarterView,
     selectedGoalId,
     goalNotes,
     handleEventClick,
@@ -404,6 +407,14 @@ export function ShellDesktopLayout({
               categories={inspirationCategories}
               onAddGoal={goalHandlers.handleCreateGoal}
               onClose={handleCloseInspiration}
+              className="h-full"
+            />
+          ) : isQuarterView ? (
+            <QuarterView
+              goals={goals}
+              events={allEvents}
+              lifeAreas={lifeAreas}
+              onGoalClick={handleSelectGoal}
               className="h-full"
             />
           ) : isGoalDetailMode && selectedGoal ? (

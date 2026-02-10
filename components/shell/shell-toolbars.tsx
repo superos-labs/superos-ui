@@ -72,6 +72,7 @@ import {
   RiShapesLine,
   RiLayoutGridLine,
   RiApps2Line,
+  RiRoadMapLine,
 } from "@remixicon/react";
 import { FocusIndicator } from "@/components/focus";
 import { cn } from "@/lib/utils";
@@ -259,6 +260,9 @@ export interface ShellDesktopToolbarProps {
   onToggleSidebar: () => void;
   isEssentialsHidden: boolean;
   onShowEssentials: () => void;
+  // Quarter view
+  isQuarterView: boolean;
+  onQuarterViewToggle: () => void;
   // Navigation
   onPreviousWeek: () => void;
   onNextWeek: () => void;
@@ -298,6 +302,8 @@ export function ShellDesktopToolbar({
   onToggleSidebar,
   isEssentialsHidden,
   onShowEssentials,
+  isQuarterView,
+  onQuarterViewToggle,
   onPreviousWeek,
   onNextWeek,
   onToday,
@@ -346,6 +352,19 @@ export function ShellDesktopToolbar({
             title="Show essentials"
           >
             <RiShapesLine className="size-4" />
+          </button>
+        )}
+        {/* Quarter view toggle (not during onboarding or planning) */}
+        {!isOnboarding && !isPlanning && !isBlueprintEditMode && (
+          <button
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+              isQuarterView ? "text-foreground" : "text-muted-foreground",
+            )}
+            onClick={onQuarterViewToggle}
+            title={isQuarterView ? "Back to week view" : "Quarter overview"}
+          >
+            <RiRoadMapLine className="size-4" />
           </button>
         )}
       </div>

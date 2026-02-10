@@ -60,6 +60,17 @@ See [`shell/README.md`](./shell/README.md) for detailed documentation.
 
 ### Specialized Feature Components
 
+#### Quarter View
+See [`quarter-view/README.md`](./quarter-view/README.md) for detailed documentation.
+
+**Purpose:** Read-only, orientation-focused planning surface showing goal and milestone pacing across the current quarter.
+
+**Key Components:**
+- QuarterView (main composition root — 3-column layout)
+- QuarterMonthColumn (single month with distribution + milestones)
+
+**Features:** Per-month time distribution (Goals / Life Areas toggle), stacked color bar, milestone list with date pills, completed/upcoming visual states
+
 #### Focus Mode
 See [`focus/README.md`](./focus/README.md) for detailed documentation.
 
@@ -163,6 +174,7 @@ components/
 │   ├── goals/                  # Goals subsystem
 │   └── essentials/             # Essentials subsystem
 ├── shell/                      # Shell orchestration
+├── quarter-view/               # Quarterly planning surface
 ├── focus/                      # Focus mode
 ├── goal-detail/                # Goal detail view
 ├── weekly-planning/            # Weekly planning flow
@@ -180,4 +192,4 @@ components/
 - **Composition:** Build complex features by composing smaller components
 - **Documentation:** Refer to domain-specific READMEs for detailed information
 
-**Total Subdirectories:** 12 major feature domains + UI primitives
+**Total Subdirectories:** 13 major feature domains + UI primitives

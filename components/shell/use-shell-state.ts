@@ -351,6 +351,7 @@ export function useShellState(
     essentials: schedule.essentials,
     allEssentials: schedule.allEssentials,
     events: mergedEvents, // Includes external events
+    allEvents: schedule.allEvents, // Unfiltered events for quarter view
     weekDates,
     weekDeadlines,
     weekGoalDeadlines,

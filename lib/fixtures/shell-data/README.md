@@ -8,9 +8,9 @@
 - **`goals.ts`** — Fixture goal definitions for shell/sample and complete data sets
   - Provides realistic example goals, including milestones and tasks
   - Populates demos, onboarding previews, and shell experience
-  - Includes minimal goal set used when skipping onboarding
+  - Includes rich goal set with milestones spanning Q1 2026 for skipping onboarding
   - Defines sample goals with milestones, tasks, and subtasks
-  - Defines clean set of goals without tasks/milestones for dev flows
+  - Defines rich goals with milestones and date ranges for dev flows
   - Exposes empty goals array for initialization and resets
   - Sample goals mirror common life areas (career, health, creativity, growth)
   - IDs are stable and referenced by fixture calendar events
@@ -32,7 +32,7 @@
   - Realistic, navigable schedules for demos and previews
   - Used by shell experience, onboarding previews, and dev shortcuts (e.g., skipping onboarding)
   - Generates sample calendar events for shell experience
-  - Generates fuller "complete" event set for dev/skip-onboarding flows
+  - Generates rich "complete" event set spanning Q1 2026 for quarter view demo
   - Exposes empty events array for initialization and resets
   - Dates derived from current week at runtime
   - All events represent goal blocks (not tasks) for clarity in demos
@@ -59,7 +59,7 @@
   - Re-exports commonly used types for convenience
   - Defines strongly-typed fixture data sets
   - "sample" = rich demo data with tasks and milestones
-  - "complete" = clean goals + events for skip-onboarding flows
+  - "complete" = rich goals with milestones + events spanning Q1 2026 for skip-onboarding
   - "empty" = blank state for fresh users
 
 ## Data Sets
@@ -70,8 +70,8 @@
 - **DEFAULT_ENABLED_ESSENTIAL_IDS:** Default essentials for sample mode
 
 ### Complete Data Set
-- **COMPLETE_GOALS:** Clean goals without tasks/milestones
-- **COMPLETE_CALENDAR_EVENTS:** Fuller event set for skip-onboarding
+- **COMPLETE_GOALS:** Rich goals with milestones spanning Q1 2026
+- **COMPLETE_CALENDAR_EVENTS:** Events spanning Jan-Feb 2026 for quarter view demo
 - **COMPLETE_ENABLED_ESSENTIAL_IDS:** Complete essentials configuration
 
 ### Empty Data Set
