@@ -56,6 +56,7 @@ import {
 import { ONBOARDING_GOAL_SUGGESTIONS } from "@/lib/fixtures/onboarding-goals";
 import { GoalDetail } from "@/components/goal-detail";
 import { QuarterView } from "@/components/quarter-view";
+import { StatsView } from "@/components/stats-view";
 import {
   PlanningPanel,
   BlueprintBacklog,
@@ -175,6 +176,7 @@ export function ShellDesktopLayout({
     isOnboarding,
     isGoalDetailMode,
     isQuarterView,
+    isStatsView,
     selectedGoalId,
     goalNotes,
     handleEventClick,
@@ -391,9 +393,17 @@ export function ShellDesktopLayout({
           )}
         </div>
 
-        {/* Main Content - Calendar, Goal Detail, or Quarter View */}
+        {/* Main Content - Calendar, Goal Detail, Quarter View, or Stats View */}
         <ShellContentPrimitive className="overflow-hidden">
-          {isQuarterView ? (
+          {isStatsView ? (
+            <StatsView
+              goals={goals}
+              events={allEvents}
+              lifeAreas={lifeAreas}
+              weekDates={weekDates}
+              className="h-full"
+            />
+          ) : isQuarterView ? (
             <QuarterView
               goals={goals}
               events={allEvents}

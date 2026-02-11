@@ -120,6 +120,8 @@ export function useShellState(
     setShowQuarterlyViewButton,
     showNextBlockCard,
     setShowNextBlockCard,
+    showStatsViewButton,
+    setShowStatsViewButton,
   } = usePreferences();
 
   // -------------------------------------------------------------------------
@@ -473,6 +475,8 @@ export function useShellState(
     onShowQuarterlyViewButtonChange: setShowQuarterlyViewButton,
     showNextBlockCard,
     onShowNextBlockCardChange: setShowNextBlockCard,
+    showStatsViewButton,
+    onShowStatsViewButtonChange: setShowStatsViewButton,
 
     // Navigation
     selectedDate,

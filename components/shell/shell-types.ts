@@ -375,6 +375,10 @@ export interface ShellContentProps {
   showNextBlockCard: boolean;
   /** Set next block card visibility */
   onShowNextBlockCardChange: (enabled: boolean) => void;
+  /** Show stats view button in toolbar */
+  showStatsViewButton: boolean;
+  /** Set stats view button visibility */
+  onShowStatsViewButtonChange: (enabled: boolean) => void;
 
   // -------------------------------------------------------------------------
   // Navigation

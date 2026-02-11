@@ -122,6 +122,8 @@ export function ShellContentComponent({
     isOnboardingGoalsCentered,
     isQuarterView,
     handleQuarterViewToggle,
+    isStatsView,
+    handleStatsViewToggle,
     handlePlanWeekClick,
     handleAnalyticsToggle,
   } = layout;
@@ -235,6 +237,8 @@ export function ShellContentComponent({
               onShowEssentials={() => setIsEssentialsHidden(false)}
               isQuarterView={isQuarterView}
               onQuarterViewToggle={handleQuarterViewToggle}
+              isStatsView={isStatsView}
+              onStatsViewToggle={handleStatsViewToggle}
               onPreviousWeek={shellProps.onPreviousWeek}
               onNextWeek={shellProps.onNextWeek}
               onToday={handleTodayClick}
@@ -265,6 +269,10 @@ export function ShellContentComponent({
               }
               showNextBlockCard={shellProps.showNextBlockCard}
               onShowNextBlockCardChange={shellProps.onShowNextBlockCardChange}
+              showStatsViewButton={shellProps.showStatsViewButton}
+              onShowStatsViewButtonChange={
+                shellProps.onShowStatsViewButtonChange
+              }
             />
           ))}
 

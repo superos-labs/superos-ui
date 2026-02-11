@@ -75,6 +75,7 @@ import {
   RiLayoutGridLine,
   RiApps2Line,
   RiRoadMapLine,
+  RiBarChartBoxLine,
 } from "@remixicon/react";
 import { FocusIndicator } from "@/components/focus";
 import { cn } from "@/lib/utils";
@@ -265,6 +266,9 @@ export interface ShellDesktopToolbarProps {
   // Quarter view
   isQuarterView: boolean;
   onQuarterViewToggle: () => void;
+  // Stats view
+  isStatsView: boolean;
+  onStatsViewToggle: () => void;
   // Navigation
   onPreviousWeek: () => void;
   onNextWeek: () => void;
@@ -299,6 +303,8 @@ export interface ShellDesktopToolbarProps {
   onShowQuarterlyViewButtonChange: (enabled: boolean) => void;
   showNextBlockCard: boolean;
   onShowNextBlockCardChange: (enabled: boolean) => void;
+  showStatsViewButton: boolean;
+  onShowStatsViewButtonChange: (enabled: boolean) => void;
 }
 
 export function ShellDesktopToolbar({
@@ -311,6 +317,8 @@ export function ShellDesktopToolbar({
   onShowEssentials,
   isQuarterView,
   onQuarterViewToggle,
+  isStatsView,
+  onStatsViewToggle,
   onPreviousWeek,
   onNextWeek,
   onToday,
@@ -339,6 +347,8 @@ export function ShellDesktopToolbar({
   onShowQuarterlyViewButtonChange,
   showNextBlockCard,
   onShowNextBlockCardChange,
+  showStatsViewButton,
+  onShowStatsViewButtonChange,
 }: ShellDesktopToolbarProps) {
   return (
     <ShellToolbar>
@@ -376,6 +386,19 @@ export function ShellDesktopToolbar({
             title={isQuarterView ? "Back to week view" : "Quarter overview"}
           >
             <RiRoadMapLine className="size-4" />
+          </button>
+        )}
+        {/* Stats view toggle (not during onboarding or planning) */}
+        {!isOnboarding && !isPlanning && !isBlueprintEditMode && showStatsViewButton && (
+          <button
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+              isStatsView ? "text-foreground" : "text-muted-foreground",
+            )}
+            onClick={onStatsViewToggle}
+            title={isStatsView ? "Back to week view" : "Stats overview"}
+          >
+            <RiBarChartBoxLine className="size-4" />
           </button>
         )}
       </div>
@@ -506,6 +529,12 @@ export function ShellDesktopToolbar({
               onCheckedChange={onShowNextBlockCardChange}
             >
               Next block card
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={showStatsViewButton}
+              onCheckedChange={onShowStatsViewButtonChange}
+            >
+              Stats view
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>

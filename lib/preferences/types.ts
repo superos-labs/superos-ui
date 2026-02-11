@@ -114,4 +114,7 @@ export interface UserPreferences {
 
   /** Whether to show the next block card in the sidebar (default: false) */
   showNextBlockCard: boolean;
+
+  /** Whether to show the stats view button in the toolbar (default: false) */
+  showStatsViewButton: boolean;
 }

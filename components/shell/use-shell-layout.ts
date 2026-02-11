@@ -16,7 +16,7 @@
  * - Manage visibility of calendar, sidebars, tasks, and inspiration gallery.
  * - Manage selection of events and goals.
  * - Orchestrate onboarding steps and transitions.
- * - Control planning mode, blueprint edit mode, and quarter view mode.
+ * - Control planning mode, blueprint edit mode, quarter view, and stats view modes.
  * - Determine which right sidebar content is rendered.
  *
  * -----------------------------------------------------------------------------
@@ -130,6 +130,11 @@ export interface UseShellLayoutReturn {
   setIsQuarterView: React.Dispatch<React.SetStateAction<boolean>>;
   handleQuarterViewToggle: () => void;
 
+  // Stats view
+  isStatsView: boolean;
+  setIsStatsView: React.Dispatch<React.SetStateAction<boolean>>;
+  handleStatsViewToggle: () => void;
+
   // Computed values
   isPlanning: boolean;
   isGoalDetailMode: boolean;
@@ -184,6 +189,7 @@ export function useShellLayout(
   const [isPlanningMode, setIsPlanningMode] = React.useState(false);
   const [isBlueprintEditMode, setIsBlueprintEditMode] = React.useState(false);
   const [isQuarterView, setIsQuarterView] = React.useState(false);
+  const [isStatsView, setIsStatsView] = React.useState(false);
 
   // -------------------------------------------------------------------------
   // Selection State
@@ -334,8 +340,9 @@ export function useShellLayout(
     // Close any open right sidebar content
     setSelectedEventId(null);
     setShowRightSidebar(false);
-    // Exit quarter view when navigating to goal detail
+    // Exit quarter/stats view when navigating to goal detail
     setIsQuarterView(false);
+    setIsStatsView(false);
   }, []);
 
   const handleCloseGoalDetail = React.useCallback(() => {
@@ -385,6 +392,28 @@ export function useShellLayout(
         setShowRightSidebar(false);
         setSelectedGoalId(null);
         setBacklogMode("view");
+        setIsStatsView(false);
+      }
+      return !prev;
+    });
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Stats View Toggle
+  // -------------------------------------------------------------------------
+  const handleStatsViewToggle = React.useCallback(() => {
+    setIsStatsView((prev) => {
+      if (!prev) {
+        // Entering stats view: close competing panels, hide both sidebars
+        setSelectedEventId(null);
+        setShowRightSidebar(false);
+        setSelectedGoalId(null);
+        setBacklogMode("view");
+        setShowSidebar(false);
+        setIsQuarterView(false);
+      } else {
+        // Exiting stats view: restore sidebar to open
+        setShowSidebar(true);
       }
       return !prev;
     });
@@ -448,6 +477,11 @@ export function useShellLayout(
     isQuarterView,
     setIsQuarterView,
     handleQuarterViewToggle,
+
+    // Stats view
+    isStatsView,
+    setIsStatsView,
+    handleStatsViewToggle,
 
     // Computed values
     isPlanning,

@@ -65,6 +65,7 @@ interface PreferencesContextValue extends UserPreferences {
   setDayBoundaries: (startMinutes: number, endMinutes: number) => void;
   setShowQuarterlyViewButton: (enabled: boolean) => void;
   setShowNextBlockCard: (enabled: boolean) => void;
+  setShowStatsViewButton: (enabled: boolean) => void;
 }
 
 const PreferencesContext = React.createContext<PreferencesContextValue | null>(
@@ -97,6 +98,8 @@ export interface PreferencesProviderProps {
   defaultShowQuarterlyViewButton?: boolean;
   /** Override whether to show next block card */
   defaultShowNextBlockCard?: boolean;
+  /** Override whether to show stats view button */
+  defaultShowStatsViewButton?: boolean;
 }
 
 /**
@@ -117,6 +120,7 @@ export function PreferencesProvider({
   defaultDayEndMinutes,
   defaultShowQuarterlyViewButton,
   defaultShowNextBlockCard,
+  defaultShowStatsViewButton,
 }: PreferencesProviderProps) {
   // Week starts on Monday by default
   const [weekStartsOn, setWeekStartsOn] = React.useState<WeekStartDay>(
@@ -161,6 +165,8 @@ export function PreferencesProvider({
   const [showNextBlockCard, setShowNextBlockCard] = React.useState<boolean>(
     defaultShowNextBlockCard ?? false
   );
+  const [showStatsViewButton, setShowStatsViewButton] =
+    React.useState<boolean>(defaultShowStatsViewButton ?? false);
 
   // Clamped setter for calendar zoom
   const setCalendarZoom = React.useCallback((zoom: CalendarZoom) => {
@@ -210,6 +216,8 @@ export function PreferencesProvider({
       setShowQuarterlyViewButton,
       showNextBlockCard,
       setShowNextBlockCard,
+      showStatsViewButton,
+      setShowStatsViewButton,
     }),
     [
       weekStartsOn,
@@ -226,6 +234,7 @@ export function PreferencesProvider({
       setDayBoundaries,
       showQuarterlyViewButton,
       showNextBlockCard,
+      showStatsViewButton,
     ]
   );
 

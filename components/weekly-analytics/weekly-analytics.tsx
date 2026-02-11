@@ -50,6 +50,9 @@
  * - WeeklyAnalyticsSection
  * - WeeklyAnalyticsItemRow
  * - WeeklyAnalyticsHeader
+ * - ProgressBar
+ * - DistributionProgressBar
+ * - getProgress
  */
 
 "use client";
@@ -77,7 +80,7 @@ export interface WeeklyAnalyticsItem {
   completedHours: number;
 }
 
-type DistributionMode = "goals" | "life-areas";
+export type DistributionMode = "goals" | "life-areas";
 
 export interface WeeklyAnalyticsSectionData {
   title: string;
@@ -88,7 +91,7 @@ export interface WeeklyAnalyticsSectionData {
 // Helpers
 // =============================================================================
 
-function getProgress(completed: number, planned: number): number {
+export function getProgress(completed: number, planned: number): number {
   if (planned === 0) return 0;
   return Math.min(Math.round((completed / planned) * 100), 100);
 }
@@ -103,7 +106,7 @@ interface ProgressBarProps {
   className?: string;
 }
 
-function ProgressBar({ progress, colorClass, className }: ProgressBarProps) {
+export function ProgressBar({ progress, colorClass, className }: ProgressBarProps) {
   const isComplete = progress >= 100;
 
   return (
@@ -135,7 +138,7 @@ interface DistributionProgressBarProps {
   className?: string;
 }
 
-function DistributionProgressBar({
+export function DistributionProgressBar({
   items,
   totalPlanned,
   onHoverItem,
