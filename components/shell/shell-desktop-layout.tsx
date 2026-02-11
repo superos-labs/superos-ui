@@ -7,7 +7,7 @@
  *
  * Implements the primary three-panel desktop experience:
  * - Left: Backlog / Planning / Blueprint panels
- * - Center: Calendar, Goal Detail, or Inspiration Gallery
+ * - Center: Calendar, Goal Detail, Quarter View, or Inspiration Gallery
  * - Right: Block details, analytics, or integrations
  *
  * Also handles special full-screen states such as onboarding and
@@ -44,24 +44,26 @@
 
 "use client";
 
+import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
 import { Calendar } from "@/components/calendar";
 import {
   Backlog,
-  GoalInspirationGallery,
   OnboardingGoalsCard,
   type BacklogItem,
-  type InspirationCategory,
 } from "@/components/backlog";
 import { ONBOARDING_GOAL_SUGGESTIONS } from "@/lib/fixtures/onboarding-goals";
 import { GoalDetail } from "@/components/goal-detail";
+import { QuarterView } from "@/components/quarter-view";
+import { StatsView } from "@/components/stats-view";
 import {
   PlanningPanel,
   BlueprintBacklog,
   PlanWeekPromptCard,
 } from "@/components/weekly-planning";
 import { cn } from "@/lib/utils";
+import { useNextBlock } from "@/lib/unified-schedule";
 import type { ShellContentProps } from "./shell-types";
 import type { ShellWiring } from "./use-shell-wiring";
 import { FeedbackButton } from "./feedback-button";
@@ -80,10 +82,8 @@ export interface ShellDesktopLayoutProps {
   isEssentialsHidden: boolean;
   /** Hide essentials */
   onEssentialsHide: () => void;
-  /** Open life area creator (optionally linked to a goal) */
-  onOpenLifeAreaCreator: (goalId?: string) => void;
-  /** Inspiration category data */
-  inspirationCategories?: InspirationCategory[];
+  /** Open life area manager (optionally with creator pre-expanded for a goal) */
+  onOpenLifeAreaManager: (goalId?: string) => void;
 }
 
 // =============================================================================
@@ -95,13 +95,13 @@ export function ShellDesktopLayout({
   wiring,
   isEssentialsHidden,
   onEssentialsHide,
-  onOpenLifeAreaCreator,
-  inspirationCategories,
+  onOpenLifeAreaManager,
 }: ShellDesktopLayoutProps) {
   const {
     goals,
     essentials,
     events,
+    allEvents,
     weekDates,
     weekDeadlines,
     weekGoalDeadlines,
@@ -168,7 +168,6 @@ export function ShellDesktopLayout({
   const {
     showSidebar,
     showCalendar,
-    showInspirationGallery,
     showTasks,
     isRightSidebarOpen,
     isPlanning,
@@ -176,13 +175,13 @@ export function ShellDesktopLayout({
     isOnboardingBlueprint,
     isOnboarding,
     isGoalDetailMode,
+    isQuarterView,
+    isStatsView,
     selectedGoalId,
     goalNotes,
     handleEventClick,
     handleSelectGoal,
     handleCloseGoalDetail,
-    handleCloseInspiration,
-    handleBrowseInspiration,
     handleGoalNotesChange,
     showPlanWeekPrompt,
     onDismissPlanWeekPrompt,
@@ -191,6 +190,31 @@ export function ShellDesktopLayout({
     isOnboardingGoalsCentered,
     onboardingStep,
   } = layout;
+
+  // -------------------------------------------------------------------------
+  // Next Block Card
+  // -------------------------------------------------------------------------
+  const nextBlock = useNextBlock(events, goals);
+
+  // Start focus for a specific block (not tied to sidebar selection)
+  const handleStartBlockFocus = React.useCallback(
+    (blockId: string, title: string, color: string) => {
+      shellProps.onStartFocus(
+        blockId,
+        title,
+        color as import("@/lib/colors").GoalColor,
+      );
+    },
+    [shellProps],
+  );
+
+  // Open block sidebar when clicking the next block card
+  const handleNextBlockClick = React.useCallback(
+    (blockId: string) => {
+      layout.setSelectedEventId(blockId);
+    },
+    [layout],
+  );
 
   // Onboarding centered goals view
   if (isOnboardingGoalsCentered) {
@@ -352,22 +376,39 @@ export function ShellDesktopLayout({
               onCreateAndSelectGoal={goalHandlers.handleCreateAndSelectGoal}
               selectedGoalId={selectedGoalId}
               onSelectGoal={handleSelectGoal}
-              onBrowseInspiration={handleBrowseInspiration}
-              isInspirationActive={showInspirationGallery}
               onboardingStep={onboardingStep}
               onOnboardingContinue={onContinueFromGoals}
               currentWeekStart={planningIntegration.weekStartDate}
+              // Next Block Card
+              nextBlock={nextBlock}
+              calendarEvents={events}
+              scheduleGoals={goals}
+              weekDates={weekDates}
+              focusedBlockId={shellProps.focusSession?.blockId ?? null}
+              onStartBlockFocus={handleStartBlockFocus}
+              onUpdateBlockEvent={shellProps.onUpdateEvent}
+              onNextBlockClick={handleNextBlockClick}
+              showNextBlockCard={shellProps.showNextBlockCard}
             />
           )}
         </div>
 
-        {/* Main Content - Calendar, Goal Detail, or Inspiration Gallery */}
+        {/* Main Content - Calendar, Goal Detail, Quarter View, or Stats View */}
         <ShellContentPrimitive className="overflow-hidden">
-          {showInspirationGallery && inspirationCategories ? (
-            <GoalInspirationGallery
-              categories={inspirationCategories}
-              onAddGoal={goalHandlers.handleCreateGoal}
-              onClose={handleCloseInspiration}
+          {isStatsView ? (
+            <StatsView
+              goals={goals}
+              events={allEvents}
+              lifeAreas={lifeAreas}
+              weekDates={weekDates}
+              className="h-full"
+            />
+          ) : isQuarterView ? (
+            <QuarterView
+              goals={goals}
+              events={allEvents}
+              lifeAreas={lifeAreas}
+              onGoalClick={handleSelectGoal}
               className="h-full"
             />
           ) : isGoalDetailMode && selectedGoal ? (
@@ -379,12 +420,6 @@ export function ShellDesktopLayout({
               onNotesChange={handleGoalNotesChange}
               onTitleChange={(title) =>
                 onUpdateGoal(selectedGoal.id, { label: title })
-              }
-              onStartDateChange={(startDate, startDateGranularity) =>
-                onUpdateGoal(selectedGoal.id, {
-                  startDate,
-                  startDateGranularity,
-                })
               }
               onDeadlineChange={(deadline, deadlineGranularity) =>
                 onUpdateGoal(selectedGoal.id, {
@@ -450,7 +485,7 @@ export function ShellDesktopLayout({
               onLifeAreaChange={(lifeAreaId) =>
                 onUpdateGoal(selectedGoal.id, { lifeAreaId })
               }
-              onAddLifeArea={() => onOpenLifeAreaCreator(selectedGoal.id)}
+              onAddLifeArea={() => onOpenLifeAreaManager(selectedGoal.id)}
               onSyncSettingsChange={(settings) =>
                 onUpdateGoalSyncSettings(selectedGoal.id, settings)
               }

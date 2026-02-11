@@ -383,7 +383,6 @@ export function useShellWiring(props: ShellContentProps) {
     setBacklogMode: layout.setBacklogMode,
     selectedGoalId: layout.selectedGoalId,
     setSelectedGoalId: layout.setSelectedGoalId,
-    handleCloseInspiration: layout.handleCloseInspiration,
   });
 
   const planningIntegration = usePlanningIntegration({

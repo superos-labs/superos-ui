@@ -16,7 +16,7 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Display goal label, icon, color, life area, optional start date, and optional target date.
+ * - Display goal label, icon, color, life area, and optional target date.
  * - Toggle between display and inline edit modes.
  * - Forward save, cancel, and delete events.
  *
@@ -70,10 +70,6 @@ export interface AddedGoal {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
-  /** Optional start date (ISO date string) */
-  startDate?: string;
-  /** Granularity of the start date */
-  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
   /** Granularity of the target date */
@@ -124,8 +120,6 @@ export function AddedGoalRow({
           icon: goal.icon,
           color: goal.color,
           lifeAreaId: goal.lifeAreaId,
-          startDate: goal.startDate,
-          startDateGranularity: goal.startDateGranularity,
           deadline: goal.deadline,
           deadlineGranularity: goal.deadlineGranularity,
         }}
@@ -166,24 +160,12 @@ export function AddedGoalRow({
         </span>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {lifeArea && <span>{lifeArea.label}</span>}
-          {lifeArea && (goal.startDate || goal.deadline) && (
+          {lifeArea && goal.deadline && (
             <span className="text-muted-foreground/40">·</span>
-          )}
-          {goal.startDate && (
-            <span className="flex items-center gap-1">
-              <RiCalendarLine className="size-3" />
-              {formatGranularDate(
-                goal.startDate,
-                goal.startDateGranularity ?? "day",
-              )}
-            </span>
-          )}
-          {goal.startDate && goal.deadline && (
-            <span className="text-muted-foreground/40">–</span>
           )}
           {goal.deadline && (
             <span className="flex items-center gap-1">
-              {!goal.startDate && <RiCalendarLine className="size-3" />}
+              <RiCalendarLine className="size-3" />
               {formatGranularDate(
                 goal.deadline,
                 goal.deadlineGranularity ?? "day",

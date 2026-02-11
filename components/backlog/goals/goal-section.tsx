@@ -50,7 +50,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { RiAddLine, RiSparklingLine } from "@remixicon/react";
+import { RiAddLine } from "@remixicon/react";
 import type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
@@ -101,10 +101,6 @@ export interface GoalSectionProps {
   draggable?: boolean;
   /** Callback to create a new goal and immediately select it */
   onCreateAndSelectGoal?: () => void;
-  /** Callback to browse inspiration gallery */
-  onBrowseInspiration?: () => void;
-  /** Whether the inspiration gallery is currently active */
-  isInspirationActive?: boolean;
   /** Whether we're in the goals onboarding step */
   isOnboardingGoalsStep?: boolean;
   /** Callback when user clicks Continue during onboarding */
@@ -134,8 +130,6 @@ export function GoalSection({
   getTaskDeadline,
   draggable = false,
   onCreateAndSelectGoal,
-  onBrowseInspiration,
-  isInspirationActive,
   isOnboardingGoalsStep = false,
   onOnboardingContinue,
   currentWeekStart,
@@ -215,36 +209,6 @@ export function GoalSection({
               <RiAddLine className="size-4 text-muted-foreground" />
             </div>
             <span className="text-sm text-muted-foreground">New goal</span>
-          </button>
-        )}
-
-        {/* Browse inspiration button */}
-        {onBrowseInspiration && (
-          <button
-            onClick={onBrowseInspiration}
-            className={cn(
-              "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all",
-              isInspirationActive ? "bg-muted" : "hover:bg-muted/60",
-            )}
-          >
-            <div
-              className={cn(
-                "flex size-8 shrink-0 items-center justify-center rounded-lg",
-                isInspirationActive ? "bg-muted" : "bg-muted/60",
-              )}
-            >
-              <RiSparklingLine className="size-4 text-muted-foreground" />
-            </div>
-            <span
-              className={cn(
-                "text-sm",
-                isInspirationActive
-                  ? "font-medium text-foreground"
-                  : "text-muted-foreground",
-              )}
-            >
-              Browse inspiration
-            </span>
           </button>
         )}
       </div>

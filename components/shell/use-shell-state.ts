@@ -116,6 +116,12 @@ export function useShellState(
     dayStartMinutes,
     dayEndMinutes,
     setDayBoundaries,
+    showQuarterlyViewButton,
+    setShowQuarterlyViewButton,
+    showNextBlockCard,
+    setShowNextBlockCard,
+    showStatsViewButton,
+    setShowStatsViewButton,
   } = usePreferences();
 
   // -------------------------------------------------------------------------
@@ -351,6 +357,7 @@ export function useShellState(
     essentials: schedule.essentials,
     allEssentials: schedule.allEssentials,
     events: mergedEvents, // Includes external events
+    allEvents: schedule.allEvents, // Unfiltered events for quarter view
     weekDates,
     weekDeadlines,
     weekGoalDeadlines,
@@ -464,6 +471,12 @@ export function useShellState(
     onProgressMetricChange: setProgressMetric,
     calendarZoom,
     onCalendarZoomChange: setCalendarZoom,
+    showQuarterlyViewButton,
+    onShowQuarterlyViewButtonChange: setShowQuarterlyViewButton,
+    showNextBlockCard,
+    onShowNextBlockCardChange: setShowNextBlockCard,
+    showStatsViewButton,
+    onShowStatsViewButtonChange: setShowStatsViewButton,
 
     // Navigation
     selectedDate,

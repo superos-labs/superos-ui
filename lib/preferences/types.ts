@@ -108,4 +108,13 @@ export interface UserPreferences {
 
   /** Day end time in minutes from midnight (e.g., 1380 = 11:00 PM). Hours after this are dimmed/hidden. */
   dayEndMinutes: number;
+
+  /** Whether to show the quarterly view button in the toolbar (default: false) */
+  showQuarterlyViewButton: boolean;
+
+  /** Whether to show the next block card in the sidebar (default: false) */
+  showNextBlockCard: boolean;
+
+  /** Whether to show the stats view button in the toolbar (default: false) */
+  showStatsViewButton: boolean;
 }

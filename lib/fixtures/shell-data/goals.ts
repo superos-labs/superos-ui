@@ -13,7 +13,7 @@
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
  * - Define sample goals with milestones, tasks, subtasks, and granular dates.
- * - Define a clean set of goals without tasks/milestones for dev flows.
+ * - Define a rich set of goals with milestones spanning Q1 2026 for dev flows.
  * - Expose an empty goals array for initialization and resets.
  *
  * -----------------------------------------------------------------------------
@@ -49,9 +49,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Get SuperOS to $1M ARR",
     icon: RiRocketLine,
     color: "violet",
-    lifeAreaId: "career",
-    startDate: "2026-01-01",
-    startDateGranularity: "quarter",
+    lifeAreaId: "work",
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -102,9 +100,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Run a marathon",
     icon: RiMedalLine,
     color: "rose",
-    lifeAreaId: "health",
-    startDate: "2026-07-01",
-    startDateGranularity: "quarter",
+    lifeAreaId: "life",
     deadline: "2026-09-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -133,9 +129,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Write a book",
     icon: RiPenNibLine,
     color: "teal",
-    lifeAreaId: "creativity",
-    startDate: "2026-03-01",
-    startDateGranularity: "month",
+    lifeAreaId: "life",
     deadline: "2026-06-30",
     deadlineGranularity: "month",
     milestones: [
@@ -174,7 +168,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Become fluent in Spanish",
     icon: RiCodeLine,
     color: "blue",
-    lifeAreaId: "personal-growth",
+    lifeAreaId: "life",
     milestones: [
       { id: "spanish-m1", label: "Complete A1 basics", completed: true },
       {
@@ -206,7 +200,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
 ];
 
 // =============================================================================
-// Complete Goals (clean goals without tasks/milestones for skip onboarding)
+// Complete Goals (rich goals with milestones spanning Q1 2026 for skip onboarding)
 // =============================================================================
 
 export const COMPLETE_GOALS: ScheduleGoal[] = [
@@ -215,32 +209,77 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     label: "Get SuperOS to $1M ARR",
     icon: RiRocketLine,
     color: "violet",
-    lifeAreaId: "career",
-    tasks: [],
+    lifeAreaId: "work",
+    deadline: "2026-06-30",
+    deadlineGranularity: "quarter",
+    milestones: [
+      { id: "c-superos-m1", label: "Finalize pricing model", completed: true, deadline: "2026-01-15" },
+      { id: "c-superos-m2", label: "Launch landing page v2", completed: true, deadline: "2026-01-31", deadlineGranularity: "month" },
+      { id: "c-superos-m3", label: "Ship billing integration", completed: false, deadline: "2026-02-28", deadlineGranularity: "month" },
+      { id: "c-superos-m4", label: "Onboard 10 beta customers", completed: false, deadline: "2026-03-15" },
+      { id: "c-superos-m5", label: "Hit $10K MRR", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
+    ],
+    tasks: [
+      { id: "c-superos-t1", label: "Set up Stripe webhook handlers", completed: true },
+      { id: "c-superos-t2", label: "Build subscription management UI", completed: false },
+      { id: "c-superos-t3", label: "Add invoice generation", completed: false },
+    ],
   },
   {
     id: "marathon",
     label: "Run a marathon",
     icon: RiMedalLine,
     color: "rose",
-    lifeAreaId: "health",
-    tasks: [],
+    lifeAreaId: "life",
+    deadline: "2026-05-31",
+    deadlineGranularity: "month",
+    milestones: [
+      { id: "c-marathon-m1", label: "Run 5K without stopping", completed: true, deadline: "2026-01-31", deadlineGranularity: "month" },
+      { id: "c-marathon-m2", label: "Complete 10K under 55min", completed: false, deadline: "2026-02-28", deadlineGranularity: "month" },
+      { id: "c-marathon-m3", label: "Run half marathon", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
+    ],
+    tasks: [
+      { id: "c-marathon-t1", label: "Run 5K three times this week", completed: true },
+      { id: "c-marathon-t2", label: "Do interval training on Saturday", completed: false },
+    ],
   },
   {
     id: "book",
     label: "Write a book",
     icon: RiPenNibLine,
     color: "teal",
-    lifeAreaId: "creativity",
-    tasks: [],
+    lifeAreaId: "life",
+    deadline: "2026-06-30",
+    deadlineGranularity: "quarter",
+    milestones: [
+      { id: "c-book-m1", label: "Complete outline", completed: true, deadline: "2026-01-20" },
+      { id: "c-book-m2", label: "Finish first three chapters", completed: false, deadline: "2026-02-28", deadlineGranularity: "month" },
+      { id: "c-book-m3", label: "Complete first draft", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
+    ],
+    tasks: [
+      { id: "c-book-t1", label: "Outline the main conflict", completed: true },
+      { id: "c-book-t2", label: "Write the opening scene", completed: true },
+      { id: "c-book-t3", label: "Develop supporting characters", completed: false },
+    ],
   },
   {
     id: "spanish",
     label: "Become fluent in Spanish",
     icon: RiGlobeLine,
     color: "lime",
-    lifeAreaId: "personal-growth",
-    tasks: [],
+    lifeAreaId: "life",
+    deadline: "2026-12-31",
+    deadlineGranularity: "quarter",
+    milestones: [
+      { id: "c-spanish-m1", label: "Complete A1 basics", completed: true, deadline: "2026-01-31", deadlineGranularity: "month" },
+      { id: "c-spanish-m2", label: "Pass A2 mock exam", completed: false, deadline: "2026-03-15" },
+      { id: "c-spanish-m3", label: "Hold 10-min conversation", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
+    ],
+    tasks: [
+      { id: "c-spanish-t1", label: "Complete Duolingo lesson", completed: true },
+      { id: "c-spanish-t2", label: "Watch Spanish movie with subtitles", completed: false },
+      { id: "c-spanish-t3", label: "Practice conversation with tutor", completed: false },
+    ],
   },
 ];
 

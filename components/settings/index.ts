@@ -5,14 +5,13 @@
  *
  * Barrel file for Life Area settings components.
  *
- * Centralizes exports for modal-based Life Area creation and management
- * surfaces used in settings and onboarding flows.
+ * Centralizes exports for the Life Area manager modal used in settings
+ * and goal-detail flows.
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Re-export Life Area modal components.
- * - Re-export associated public prop types.
+ * - Re-export Life Area manager modal and its prop types.
  *
  * -----------------------------------------------------------------------------
  * NON-RESPONSIBILITIES
@@ -28,14 +27,9 @@
  * -----------------------------------------------------------------------------
  * EXPORTS
  * -----------------------------------------------------------------------------
- * - LifeAreaCreatorModal
- * - LifeAreaCreatorModalProps
  * - LifeAreaManagerModal
  * - LifeAreaManagerModalProps
  */
-
-export { LifeAreaCreatorModal } from "./life-area-creator-modal";
-export type { LifeAreaCreatorModalProps } from "./life-area-creator-modal";
 
 export { LifeAreaManagerModal } from "./life-area-manager-modal";
 export type { LifeAreaManagerModalProps } from "./life-area-manager-modal";

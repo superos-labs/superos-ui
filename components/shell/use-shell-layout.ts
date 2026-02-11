@@ -16,7 +16,7 @@
  * - Manage visibility of calendar, sidebars, tasks, and inspiration gallery.
  * - Manage selection of events and goals.
  * - Orchestrate onboarding steps and transitions.
- * - Control planning mode and blueprint edit mode.
+ * - Control planning mode, blueprint edit mode, quarter view, and stats view modes.
  * - Determine which right sidebar content is rendered.
  *
  * -----------------------------------------------------------------------------
@@ -75,8 +75,6 @@ export interface UseShellLayoutReturn {
   setShowRightSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   showTasks: boolean;
   setShowTasks: React.Dispatch<React.SetStateAction<boolean>>;
-  showInspirationGallery: boolean;
-  setShowInspirationGallery: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Mode state
   backlogMode: BacklogMode;
@@ -127,6 +125,16 @@ export interface UseShellLayoutReturn {
     data: UseBlockSidebarHandlersReturn["sidebarData"],
   ) => void;
 
+  // Quarter view
+  isQuarterView: boolean;
+  setIsQuarterView: React.Dispatch<React.SetStateAction<boolean>>;
+  handleQuarterViewToggle: () => void;
+
+  // Stats view
+  isStatsView: boolean;
+  setIsStatsView: React.Dispatch<React.SetStateAction<boolean>>;
+  handleStatsViewToggle: () => void;
+
   // Computed values
   isPlanning: boolean;
   isGoalDetailMode: boolean;
@@ -136,8 +144,6 @@ export interface UseShellLayoutReturn {
   handleCloseSidebar: () => void;
   handleSelectGoal: (goalId: string) => void;
   handleCloseGoalDetail: () => void;
-  handleBrowseInspiration: () => void;
-  handleCloseInspiration: () => void;
   handlePlanWeekClick: () => void;
   handleGoalNotesChange: (notes: string) => void;
   handleAnalyticsToggle: () => void;
@@ -160,8 +166,6 @@ export function useShellLayout(
   const [showSidebar, setShowSidebar] = React.useState(true);
   const [showRightSidebar, setShowRightSidebar] = React.useState(false);
   const [showTasks, setShowTasks] = React.useState(true);
-  const [showInspirationGallery, setShowInspirationGallery] =
-    React.useState(false);
 
   // -------------------------------------------------------------------------
   // Onboarding State
@@ -184,6 +188,8 @@ export function useShellLayout(
   const [backlogMode, setBacklogMode] = React.useState<BacklogMode>("view");
   const [isPlanningMode, setIsPlanningMode] = React.useState(false);
   const [isBlueprintEditMode, setIsBlueprintEditMode] = React.useState(false);
+  const [isQuarterView, setIsQuarterView] = React.useState(false);
+  const [isStatsView, setIsStatsView] = React.useState(false);
 
   // -------------------------------------------------------------------------
   // Selection State
@@ -201,8 +207,6 @@ export function useShellLayout(
   // Handler to advance from goals step directly to blueprint creation
   const onContinueFromGoals = React.useCallback(() => {
     setOnboardingStep("blueprint");
-    // Close inspiration gallery if open
-    setShowInspirationGallery(false);
     // Close goal detail view if open
     setSelectedGoalId(null);
     setBacklogMode("view");
@@ -250,7 +254,6 @@ export function useShellLayout(
     setShowRightSidebar(false);
     setSelectedGoalId(null);
     setBacklogMode("view");
-    setShowInspirationGallery(false);
     setIsBlueprintEditMode(true);
   }, []);
 
@@ -334,11 +337,12 @@ export function useShellLayout(
   const handleSelectGoal = React.useCallback((goalId: string) => {
     setSelectedGoalId(goalId);
     setBacklogMode("goal-detail");
-    // Close inspiration gallery if open
-    setShowInspirationGallery(false);
     // Close any open right sidebar content
     setSelectedEventId(null);
     setShowRightSidebar(false);
+    // Exit quarter/stats view when navigating to goal detail
+    setIsQuarterView(false);
+    setIsStatsView(false);
   }, []);
 
   const handleCloseGoalDetail = React.useCallback(() => {
@@ -359,19 +363,6 @@ export function useShellLayout(
   );
 
   // -------------------------------------------------------------------------
-  // Inspiration Gallery Handlers
-  // -------------------------------------------------------------------------
-  const handleBrowseInspiration = React.useCallback(() => {
-    setShowInspirationGallery(true);
-    // Clear selected goal so nothing appears active in the goal list
-    setSelectedGoalId(null);
-  }, []);
-
-  const handleCloseInspiration = React.useCallback(() => {
-    setShowInspirationGallery(false);
-  }, []);
-
-  // -------------------------------------------------------------------------
   // Plan Week Toggle
   // -------------------------------------------------------------------------
   const handlePlanWeekClick = React.useCallback(() => {
@@ -390,6 +381,44 @@ export function useShellLayout(
     }
   }, [selectedEventId]);
 
+  // -------------------------------------------------------------------------
+  // Quarter View Toggle
+  // -------------------------------------------------------------------------
+  const handleQuarterViewToggle = React.useCallback(() => {
+    setIsQuarterView((prev) => {
+      if (!prev) {
+        // Entering quarter view: close competing panels
+        setSelectedEventId(null);
+        setShowRightSidebar(false);
+        setSelectedGoalId(null);
+        setBacklogMode("view");
+        setIsStatsView(false);
+      }
+      return !prev;
+    });
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Stats View Toggle
+  // -------------------------------------------------------------------------
+  const handleStatsViewToggle = React.useCallback(() => {
+    setIsStatsView((prev) => {
+      if (!prev) {
+        // Entering stats view: close competing panels, hide both sidebars
+        setSelectedEventId(null);
+        setShowRightSidebar(false);
+        setSelectedGoalId(null);
+        setBacklogMode("view");
+        setShowSidebar(false);
+        setIsQuarterView(false);
+      } else {
+        // Exiting stats view: restore sidebar to open
+        setShowSidebar(true);
+      }
+      return !prev;
+    });
+  }, []);
+
   return {
     // Visibility toggles
     showPlanWeek,
@@ -402,8 +431,6 @@ export function useShellLayout(
     setShowRightSidebar,
     showTasks,
     setShowTasks,
-    showInspirationGallery,
-    setShowInspirationGallery,
 
     // Mode state
     backlogMode,
@@ -446,6 +473,16 @@ export function useShellLayout(
     isRightSidebarOpen,
     updateFrozenSidebarData,
 
+    // Quarter view
+    isQuarterView,
+    setIsQuarterView,
+    handleQuarterViewToggle,
+
+    // Stats view
+    isStatsView,
+    setIsStatsView,
+    handleStatsViewToggle,
+
     // Computed values
     isPlanning,
     isGoalDetailMode,
@@ -455,8 +492,6 @@ export function useShellLayout(
     handleCloseSidebar,
     handleSelectGoal,
     handleCloseGoalDetail,
-    handleBrowseInspiration,
-    handleCloseInspiration,
     handlePlanWeekClick,
     handleGoalNotesChange,
     handleAnalyticsToggle,

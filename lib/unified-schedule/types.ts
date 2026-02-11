@@ -33,10 +33,10 @@
  * -----------------------------------------------------------------------------
  * - DateGranularity
  * - CalendarEvent, HoverPosition, BlockStatus
- * - ScheduleGoal (with startDate, deadline, and granularity fields), ScheduleTask, Subtask, Milestone, ScheduleEssential
+ * - ScheduleGoal (with deadline and granularity fields), ScheduleTask, Subtask, Milestone, ScheduleEssential
  * - Sync-related types (GoalSyncSettings, BlockSyncSettings, BlockSyncState)
  * - Computed/derived types and hook option/return types
- * - NewGoalData, InspirationGoal, InspirationCategory
+ * - NewGoalData
  */
 
 import type { GoalColor } from "@/lib/colors";
@@ -235,10 +235,6 @@ export interface ScheduleGoal {
   color: GoalColor;
   /** Life area this goal belongs to */
   lifeAreaId: string;
-  /** Optional start date for the goal's active period (ISO date string, e.g., "2026-04-01") */
-  startDate?: string;
-  /** Granularity of the start date. Defaults to "day" when absent. */
-  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string, e.g., "2026-03-15") */
   deadline?: string;
   /** Granularity of the target date. Defaults to "day" when absent. */
@@ -374,8 +370,10 @@ export interface UseUnifiedScheduleReturn {
   essentials: ScheduleEssential[];
   /** All available essentials (for edit mode) */
   allEssentials: ScheduleEssential[];
-  /** Filtered events (excludes disabled essential blocks) */
+  /** Filtered events (excludes disabled essential blocks, scoped to current week) */
   events: CalendarEvent[];
+  /** All events across all dates (unfiltered by week, for quarter view etc.) */
+  allEvents: CalendarEvent[];
 
   // Essential visibility management
   /** Current set of enabled essential IDs */
@@ -572,31 +570,8 @@ export interface NewGoalData {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
-  /** Optional start date (ISO date string) */
-  startDate?: string;
-  /** Granularity of the start date */
-  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
   /** Granularity of the target date */
   deadlineGranularity?: DateGranularity;
-}
-
-/**
- * A goal suggestion in the inspiration gallery.
- */
-export interface InspirationGoal {
-  id: string;
-  label: string;
-  icon: IconComponent;
-  /** Optional description shown on hover */
-  description?: string;
-}
-
-/**
- * A category of inspiration goals grouped by life area.
- */
-export interface InspirationCategory {
-  lifeArea: import("@/lib/types").LifeArea;
-  goals: InspirationGoal[];
 }

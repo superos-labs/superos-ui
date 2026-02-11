@@ -29,11 +29,12 @@
  * -----------------------------------------------------------------------------
  * EXPORTS
  * -----------------------------------------------------------------------------
- * - Hooks (useUnifiedSchedule, useGoalState, useScheduling, etc.)
+ * - Hooks (useUnifiedSchedule, useGoalState, useScheduling, useNextBlock, etc.)
  * - State utilities from goal-state-utils
  * - Time range utilities (resolve, format, query helpers)
+ * - Next block derivation (useNextBlock, NextBlockInfo)
  * - Unified schedule types (including DateGranularity)
- * - Goal creation types (NewGoalData, InspirationGoal, InspirationCategory)
+ * - Goal creation types (NewGoalData)
  */
 
 // Main orchestration hook
@@ -73,6 +74,10 @@ export type { UseEssentialAutoCompleteOptions } from "./use-essential-auto-compl
 // Week navigation hook
 export { useWeekNavigation } from "./use-week-navigation";
 export type { UseWeekNavigationOptions } from "./use-week-navigation";
+
+// Next block derivation hook
+export { useNextBlock } from "./use-next-block";
+export type { NextBlockInfo, NextBlockStatus } from "./use-next-block";
 
 // State update utilities (for direct state manipulation or testing)
 export {
@@ -147,8 +152,6 @@ export type {
   // Hook types
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
-  // Goal creation & inspiration types (merged from lib/goals)
+  // Goal creation type (merged from lib/goals)
   NewGoalData,
-  InspirationGoal,
-  InspirationCategory,
 } from "./types";

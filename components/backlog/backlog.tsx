@@ -6,6 +6,7 @@
  * Backlog composition root for Goals and Essentials.
  *
  * This component orchestrates:
+ * - Rendering the Next Block Card (execution companion).
  * - Rendering and layout of Essentials and Goals sections.
  * - Onboarding-specific behavior (goals first, then essentials/blueprint).
  * - Wiring of callbacks between higher-level shell state and leaf components.
@@ -17,7 +18,7 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Compose EssentialsSection and GoalSection.
+ * - Compose NextBlockCard, EssentialsSection, and GoalSection.
  * - Gate visibility based on onboarding step and blueprint edit mode.
  * - Forward scheduling, deadline, and mutation callbacks.
  * - Provide animated mount/unmount for major sections.
@@ -45,6 +46,9 @@ import type {
   TaskScheduleInfo,
   TaskDeadlineInfo,
   ScheduleTask,
+  NextBlockInfo,
+  CalendarEvent,
+  ScheduleGoal,
 } from "@/lib/unified-schedule";
 import type { LifeArea, GoalIconOption } from "@/lib/types";
 import type { EssentialSlot, EssentialTemplate } from "@/lib/essentials";
@@ -52,6 +56,7 @@ import type { GoalItem, NewGoalData } from "./goals";
 import type { EssentialItem, NewEssentialData } from "./essentials";
 import { GoalSection } from "./goals";
 import { EssentialsSection } from "./essentials";
+import { NextBlockCard } from "./next-block-card";
 
 export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of essential items to display (should include Sleep) */
@@ -135,10 +140,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   selectedGoalId?: string | null;
   /** Callback when a goal is selected */
   onSelectGoal?: (goalId: string) => void;
-  /** Callback to browse inspiration gallery */
-  onBrowseInspiration?: () => void;
-  /** Whether the inspiration gallery is currently active */
-  isInspirationActive?: boolean;
 
   // Onboarding props
   /** Current onboarding step (null if not in onboarding) */
@@ -151,6 +152,29 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   // Weekly focus props
   /** Current week start date for sectioning tasks by "This Week" (ISO string, e.g. "2026-01-26") */
   currentWeekStart?: string;
+
+  // Next Block Card props
+  /** Derived next block info (null hides the card entirely) */
+  nextBlock?: NextBlockInfo | null;
+  /** All calendar events for the current week */
+  calendarEvents?: CalendarEvent[];
+  /** All schedule goals */
+  scheduleGoals?: ScheduleGoal[];
+  /** Week date objects */
+  weekDates?: Date[];
+  /** ID of the block currently in a focus session */
+  focusedBlockId?: string | null;
+  /** Start a focus session for a block */
+  onStartBlockFocus?: (blockId: string, title: string, color: string) => void;
+  /** Move a block to a new start time (for "Focus now") */
+  onUpdateBlockEvent?: (
+    eventId: string,
+    updates: Partial<CalendarEvent>,
+  ) => void;
+  /** Open the block detail sidebar */
+  onNextBlockClick?: (blockId: string) => void;
+  /** Whether to show the next block card */
+  showNextBlockCard?: boolean;
 }
 
 export function Backlog({
@@ -190,14 +214,22 @@ export function Backlog({
   // Goal selection props
   selectedGoalId,
   onSelectGoal,
-  onBrowseInspiration,
-  isInspirationActive,
   // Onboarding props
   onboardingStep,
   onOnboardingContinue,
   onOnboardingComplete,
   // Weekly focus props
   currentWeekStart,
+  // Next Block Card props
+  nextBlock,
+  calendarEvents,
+  scheduleGoals,
+  weekDates,
+  focusedBlockId,
+  onStartBlockFocus,
+  onUpdateBlockEvent,
+  onNextBlockClick,
+  showNextBlockCard = false,
   className,
   ...props
 }: BacklogProps) {
@@ -222,6 +254,34 @@ export function Backlog({
       className={cn("flex w-full max-w-sm flex-col gap-3", className)}
       {...props}
     >
+      {/* Next Block Card - shown when there are blocks today and not in onboarding */}
+      {showNextBlockCard &&
+        nextBlock &&
+        nextBlock.totalBlocksToday > 0 &&
+        !onboardingStep && (
+          <AnimatePresence mode="sync">
+            <motion.div
+              key="next-block-card"
+              initial={{ opacity: 0, height: 0, marginBottom: -12 }}
+              animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
+              exit={{ opacity: 0, height: 0, marginBottom: -12 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="shrink-0"
+            >
+              <NextBlockCard
+                nextBlock={nextBlock}
+                events={calendarEvents ?? []}
+                goals={scheduleGoals ?? []}
+                weekDates={weekDates ?? []}
+                focusedBlockId={focusedBlockId}
+                onStartFocus={onStartBlockFocus}
+                onUpdateEvent={onUpdateBlockEvent}
+                onClick={onNextBlockClick}
+              />
+            </motion.div>
+          </AnimatePresence>
+        )}
+
       {/* Essentials Card - hidden during goals onboarding step, animates in/out */}
       <AnimatePresence mode="sync">
         {showEssentialsCard && (
@@ -277,8 +337,8 @@ export function Backlog({
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
             onCreateAndSelectGoal={onCreateAndSelectGoal}
-            onBrowseInspiration={onBrowseInspiration}
-            isInspirationActive={isInspirationActive}
+            selectedGoalId={selectedGoalId}
+            onSelectGoal={onSelectGoal}
             isOnboardingGoalsStep={isOnboardingGoalsStep}
             onOnboardingContinue={onOnboardingContinue}
             currentWeekStart={currentWeekStart}

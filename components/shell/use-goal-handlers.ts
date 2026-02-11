@@ -76,8 +76,6 @@ export interface UseGoalHandlersOptions {
   selectedGoalId: string | null;
   /** Set selected goal ID */
   setSelectedGoalId: (id: string | null) => void;
-  /** Close the inspiration gallery */
-  handleCloseInspiration: () => void;
 }
 
 export interface UseGoalHandlersReturn {
@@ -117,7 +115,6 @@ export function useGoalHandlers({
   setBacklogMode,
   selectedGoalId,
   setSelectedGoalId,
-  handleCloseInspiration,
 }: UseGoalHandlersOptions): UseGoalHandlersReturn {
   // -------------------------------------------------------------------------
   // Goal Creation
@@ -132,8 +129,6 @@ export function useGoalHandlers({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
-        startDate: data.startDate,
-        startDateGranularity: data.startDateGranularity,
         deadline: data.deadline,
         deadlineGranularity: data.deadlineGranularity,
         tasks: [],
@@ -159,15 +154,12 @@ export function useGoalHandlers({
       tasks: [],
     });
 
-    // Close inspiration gallery if open
-    handleCloseInspiration();
     setBacklogMode("goal-detail");
     setSelectedGoalId(newGoalId);
   }, [
     onAddGoal,
     goalIcons,
     lifeAreas,
-    handleCloseInspiration,
     setBacklogMode,
     setSelectedGoalId,
   ]);
@@ -208,8 +200,6 @@ export function useGoalHandlers({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
-        startDate: data.startDate,
-        startDateGranularity: data.startDateGranularity,
         deadline: data.deadline,
         deadlineGranularity: data.deadlineGranularity,
         tasks: [],
@@ -225,8 +215,6 @@ export function useGoalHandlers({
         icon: data.icon,
         color: data.color,
         lifeAreaId: data.lifeAreaId,
-        startDate: data.startDate,
-        startDateGranularity: data.startDateGranularity,
         deadline: data.deadline,
         deadlineGranularity: data.deadlineGranularity,
       });
@@ -250,8 +238,6 @@ export function useGoalHandlers({
         icon: g.icon,
         color: g.color,
         lifeAreaId: g.lifeAreaId ?? "",
-        startDate: g.startDate,
-        startDateGranularity: g.startDateGranularity,
         deadline: g.deadline,
         deadlineGranularity: g.deadlineGranularity,
       })),

@@ -57,6 +57,7 @@ export interface AnalyticsSource {
   label: string;
   icon: IconComponent;
   color: GoalColor;
+  lifeAreaId: string;
 }
 
 /** Options for analytics conversion */
@@ -88,6 +89,7 @@ export function toAnalyticsItems(
       label: item.label,
       icon: item.icon,
       color: getIconColorClass(item.color),
+      lifeAreaId: item.lifeAreaId,
       plannedHours: stats.plannedHours,
       // Use focusedHours for progress if available and requested, otherwise completedHours
       completedHours:

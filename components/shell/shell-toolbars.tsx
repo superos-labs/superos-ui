@@ -19,6 +19,7 @@
  * - Render navigation and action controls for the shell.
  * - Surface focus session indicator and controls.
  * - Expose minimal settings (week start, blueprint, life areas, shortcuts).
+ * - Expose prototype-only feature toggles (quarterly view, next block card).
  * - Reflect shell mode (planning, onboarding, blueprint editing).
  *
  * -----------------------------------------------------------------------------
@@ -58,6 +59,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuItem,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
   RiArrowLeftSLine,
@@ -72,6 +74,8 @@ import {
   RiShapesLine,
   RiLayoutGridLine,
   RiApps2Line,
+  RiRoadMapLine,
+  RiBarChartBoxLine,
 } from "@remixicon/react";
 import { FocusIndicator } from "@/components/focus";
 import { cn } from "@/lib/utils";
@@ -259,6 +263,12 @@ export interface ShellDesktopToolbarProps {
   onToggleSidebar: () => void;
   isEssentialsHidden: boolean;
   onShowEssentials: () => void;
+  // Quarter view
+  isQuarterView: boolean;
+  onQuarterViewToggle: () => void;
+  // Stats view
+  isStatsView: boolean;
+  onStatsViewToggle: () => void;
   // Navigation
   onPreviousWeek: () => void;
   onNextWeek: () => void;
@@ -288,6 +298,13 @@ export interface ShellDesktopToolbarProps {
   onEditBlueprint: () => void;
   onOpenLifeAreaManager: () => void;
   onOpenKeyboardShortcuts: () => void;
+  // Prototype-only features
+  showQuarterlyViewButton: boolean;
+  onShowQuarterlyViewButtonChange: (enabled: boolean) => void;
+  showNextBlockCard: boolean;
+  onShowNextBlockCardChange: (enabled: boolean) => void;
+  showStatsViewButton: boolean;
+  onShowStatsViewButtonChange: (enabled: boolean) => void;
 }
 
 export function ShellDesktopToolbar({
@@ -298,6 +315,10 @@ export function ShellDesktopToolbar({
   onToggleSidebar,
   isEssentialsHidden,
   onShowEssentials,
+  isQuarterView,
+  onQuarterViewToggle,
+  isStatsView,
+  onStatsViewToggle,
   onPreviousWeek,
   onNextWeek,
   onToday,
@@ -322,6 +343,12 @@ export function ShellDesktopToolbar({
   onEditBlueprint,
   onOpenLifeAreaManager,
   onOpenKeyboardShortcuts,
+  showQuarterlyViewButton,
+  onShowQuarterlyViewButtonChange,
+  showNextBlockCard,
+  onShowNextBlockCardChange,
+  showStatsViewButton,
+  onShowStatsViewButtonChange,
 }: ShellDesktopToolbarProps) {
   return (
     <ShellToolbar>
@@ -346,6 +373,32 @@ export function ShellDesktopToolbar({
             title="Show essentials"
           >
             <RiShapesLine className="size-4" />
+          </button>
+        )}
+        {/* Quarter view toggle (not during onboarding or planning) */}
+        {!isOnboarding && !isPlanning && !isBlueprintEditMode && showQuarterlyViewButton && (
+          <button
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+              isQuarterView ? "text-foreground" : "text-muted-foreground",
+            )}
+            onClick={onQuarterViewToggle}
+            title={isQuarterView ? "Back to week view" : "Quarter overview"}
+          >
+            <RiRoadMapLine className="size-4" />
+          </button>
+        )}
+        {/* Stats view toggle (not during onboarding or planning) */}
+        {!isOnboarding && !isPlanning && !isBlueprintEditMode && showStatsViewButton && (
+          <button
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
+              isStatsView ? "text-foreground" : "text-muted-foreground",
+            )}
+            onClick={onStatsViewToggle}
+            title={isStatsView ? "Back to week view" : "Stats overview"}
+          >
+            <RiBarChartBoxLine className="size-4" />
           </button>
         )}
       </div>
@@ -463,6 +516,26 @@ export function ShellDesktopToolbar({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Prototype-only features</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem
+              checked={showQuarterlyViewButton}
+              onCheckedChange={onShowQuarterlyViewButtonChange}
+            >
+              Quarterly view
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={showNextBlockCard}
+              onCheckedChange={onShowNextBlockCardChange}
+            >
+              Next block card
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={showStatsViewButton}
+              onCheckedChange={onShowStatsViewButtonChange}
+            >
+              Stats view
+            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

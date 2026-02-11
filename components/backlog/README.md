@@ -5,17 +5,26 @@
 ## Core Components
 
 ### Main Backlog Component
-- **`backlog.tsx`** — Backlog composition root for Goals and Essentials
-  - Orchestrates rendering and layout of Essentials and Goals sections
+- **`backlog.tsx`** — Backlog composition root for Next Block Card, Goals, and Essentials
+  - Orchestrates rendering and layout of Next Block Card, Essentials, and Goals sections
   - Onboarding-specific behavior (goals first, then essentials/blueprint)
   - Wires callbacks between higher-level shell state and leaf components
   - Optional drag-and-drop enablement
   - Intentionally a composition + wiring layer
   - Does not fetch data and does not own domain state
-  - Composes EssentialsSection and GoalSection
+  - Composes NextBlockCard, EssentialsSection, and GoalSection
   - Gates visibility based on onboarding step and blueprint edit mode
   - Forwards scheduling, deadline, and mutation callbacks
   - Provides animated mount/unmount for major sections
+
+### Next Block Card
+- **`next-block-card.tsx`** — Lightweight execution companion card for the week view left sidebar
+  - Surfaces the currently active or next upcoming goal/task block
+  - Shows block title, goal label, time context, and scope indicator
+  - Provides Start Focus and on-demand AI Briefing actions
+  - Three visual states: active (NOW), upcoming (NEXT), done for today
+  - Reuses existing `useBlockBriefing` infrastructure for inline briefings
+  - Clicking the card opens the block detail sidebar
 
 ### Types
 - **`backlog-types.ts`** — Shared type definitions for items rendered in the Backlog
@@ -46,7 +55,6 @@ See [`goals/README.md`](./goals/README.md) for detailed documentation.
 - TaskRow — Task display and interaction
 - InlineGoalEditor — Goal creation and editing
 - OnboardingGoalsCard — Onboarding goal setup
-- GoalInspirationGallery — Browse and add inspirational goals
 
 **Features:**
 - Goal creation, editing, and deletion
@@ -76,6 +84,7 @@ See [`essentials/README.md`](./essentials/README.md) for detailed documentation.
 
 ## Key Features
 
+- **Next Block Context:** Always-visible card showing the active or upcoming block with quick actions
 - **Dual Management:** Unified interface for Goals and Essentials
 - **Onboarding Flow:** Guided setup for new users (goals → essentials → blueprint)
 - **Drag & Drop:** Goals and tasks can be dragged to calendar for scheduling
@@ -118,6 +127,7 @@ See [`essentials/README.md`](./essentials/README.md) for detailed documentation.
 ```
 backlog/
 ├── backlog.tsx              # Main composition root
+├── next-block-card.tsx      # Execution companion card
 ├── backlog-types.ts         # Shared type definitions
 ├── index.ts                 # Public API
 ├── goals/                   # Goals subsystem
@@ -133,4 +143,4 @@ backlog/
     └── ...
 ```
 
-**Total Files:** 3 main files + 2 subsystems (goals: 12 files, essentials: 8 files)
+**Total Files:** 4 main files + 2 subsystems (goals: 11 files, essentials: 8 files)

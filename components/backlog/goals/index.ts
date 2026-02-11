@@ -33,7 +33,6 @@
  * Components:
  * - GoalSection
  * - GoalItemRow
- * - GoalInspirationGallery
  * - TaskRow, SubtaskRow
  * - InlineTaskCreator, InlineGoalCreator
  * - OnboardingGoalsCard
@@ -45,7 +44,7 @@
  * - GoalItem, BacklogItem
  * - GoalTask, Milestone, Subtask
  * - NewGoalData, GoalIconOption
- * - InspirationGoal, InspirationCategory, LifeArea
+ * - LifeArea
  *
  * Utilities:
  * - formatScheduledTime
@@ -61,9 +60,6 @@ export type { GoalSectionProps } from "./goal-section";
 
 export { GoalItemRow } from "./goal-item-row";
 export type { GoalItemRowProps } from "./goal-item-row";
-
-export { GoalInspirationGallery } from "./goal-inspiration-gallery";
-export type { GoalInspirationGalleryProps } from "./goal-inspiration-gallery";
 
 export { TaskRow, SubtaskRow } from "./task-row";
 export type { TaskRowProps } from "./task-row";
@@ -102,8 +98,6 @@ export type {
   Subtask,
   NewGoalData,
   GoalIconOption,
-  InspirationGoal,
-  InspirationCategory,
   LifeArea,
 } from "./goal-types";
 

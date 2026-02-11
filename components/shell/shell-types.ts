@@ -106,6 +106,8 @@ export interface ShellContentProps {
   allEssentials: ScheduleEssential[];
   /** Calendar events for the current week */
   events: CalendarEvent[];
+  /** All events across all dates (unfiltered by week, for quarter view) */
+  allEvents: CalendarEvent[];
   /** Week dates array (7 dates) */
   weekDates: Date[];
   /** Deadlines for the current week (Map of date string to deadline tasks) */
@@ -365,6 +367,18 @@ export interface ShellContentProps {
   calendarZoom: CalendarZoom;
   /** Set calendar zoom level */
   onCalendarZoomChange: (zoom: CalendarZoom) => void;
+  /** Show quarterly view button in toolbar */
+  showQuarterlyViewButton: boolean;
+  /** Set quarterly view button visibility */
+  onShowQuarterlyViewButtonChange: (enabled: boolean) => void;
+  /** Show next block card in sidebar */
+  showNextBlockCard: boolean;
+  /** Set next block card visibility */
+  onShowNextBlockCardChange: (enabled: boolean) => void;
+  /** Show stats view button in toolbar */
+  showStatsViewButton: boolean;
+  /** Set stats view button visibility */
+  onShowStatsViewButtonChange: (enabled: boolean) => void;
 
   // -------------------------------------------------------------------------
   // Navigation
@@ -493,7 +507,7 @@ export interface UseShellStateOptions {
   lifeAreas: LifeArea[];
   /** Goal icons for goal creation */
   goalIcons: GoalIconOption[];
-  /** Dev-only: Skip onboarding and mark week as planned */
+  /** Skip onboarding and mark week as planned */
   skipOnboarding?: boolean;
 }
 
@@ -521,8 +535,6 @@ export interface ShellLayoutState {
   showRightSidebar: boolean;
   /** Whether to show tasks in the backlog */
   showTasks: boolean;
-  /** Whether to show the inspiration gallery */
-  showInspirationGallery: boolean;
   /** Current backlog mode */
   backlogMode: BacklogMode;
   /** Whether planning mode is active */

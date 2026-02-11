@@ -14,7 +14,7 @@
 - **`goal-state-utils.ts`** — Pure immutable helper functions for nested goal/task/subtask/milestone updates (no React dependencies)
 
 ### Time Range Utilities
-- **`time-range-utils.ts`** — Pure helper functions for resolving, formatting, and querying granular (lazy) dates used on goal start dates and target dates. Includes month/quarter resolution, display formatting, and overlap checking for future horizon views
+- **`time-range-utils.ts`** — Pure helper functions for resolving, formatting, and querying granular (lazy) dates used on goal target dates. Includes month/quarter resolution, display formatting, and overlap checking for future horizon views
 
 ## React Hooks (Composable)
 
@@ -32,6 +32,9 @@
 ### Derived Data
 - **`use-schedule-stats.ts`** — Computes statistics (planned/completed time, deadlines, task scheduling info, quarter aggregations)
 
+### Derived Context
+- **`use-next-block.ts`** — Derives the currently active or next upcoming goal/task block from today's events. Re-evaluates every 60 seconds. Returns `NextBlockInfo` with block, goal, status, remaining time, scope type, and daily completion counts
+
 ### Behaviors
 - **`use-essential-auto-complete.ts`** — Auto-completes essential blocks after their end time passes
 - **`use-week-navigation.ts`** — Keyboard shortcuts for week navigation (ArrowLeft/Right, T for today)
@@ -44,4 +47,4 @@
 - **No persistence:** Callers own saving/loading
 - **UI-agnostic:** Domain logic separated from rendering
 
-**Total Files:** 12 (1 entry point, 1 types file, 2 utility modules, 8 React hooks)
+**Total Files:** 13 (1 entry point, 1 types file, 2 utility modules, 9 React hooks)

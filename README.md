@@ -53,6 +53,7 @@ superos-ui/
 │   ├── block/            # Calendar block components
 │   ├── backlog/          # Goals and essentials backlog
 │   ├── shell/            # Application shell and layout
+│   ├── quarter-view/     # Quarterly planning surface
 │   ├── weekly-planning/  # Weekly planning flow
 │   ├── focus/            # Focus mode components
 │   ├── integrations/     # Calendar integration UI
@@ -121,6 +122,12 @@ The application will be available at `http://localhost:3000`.
 - **Task Tracking** - Manage tasks within goals with subtasks and deadlines
 - **Backlog System** - Centralized view of goals and essentials
 - **Goal Detail Views** - Comprehensive goal inspection and editing
+
+### Quarter View
+- **Quarterly Overview** - Read-only surface showing goal and milestone pacing across the current quarter
+- **Life Area Grouping** - Goals organized by life area as vertical anchors
+- **Month Columns** - Milestones positioned in three month columns with "now" indicator
+- **Calm Navigation** - Click to inspect goals, no editing or scheduling pressure
 
 ### Weekly Planning
 - **Two-Step Flow** - Prioritize goals, then schedule them

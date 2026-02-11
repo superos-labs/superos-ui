@@ -7,6 +7,7 @@
  *
  * Centralizes and re-exports:
  * - Backlog composition root.
+ * - Next Block Card (execution companion).
  * - Goals and Essentials components.
  * - Shared backlog types.
  * - Onboarding helpers.
@@ -44,6 +45,13 @@ export { Backlog } from "./backlog";
 export type { BacklogProps } from "./backlog";
 
 // =============================================================================
+// Next Block Card
+// =============================================================================
+
+export { NextBlockCard } from "./next-block-card";
+export type { NextBlockCardProps } from "./next-block-card";
+
+// =============================================================================
 // Shared Types
 // =============================================================================
 
@@ -61,7 +69,6 @@ export type {
 export {
   GoalSection,
   GoalItemRow,
-  GoalInspirationGallery,
   TaskRow,
   SubtaskRow,
   InlineTaskCreator,
@@ -82,12 +89,9 @@ export type {
   Subtask,
   NewGoalData,
   GoalIconOption,
-  InspirationGoal,
-  InspirationCategory,
   LifeArea,
   GoalSectionProps,
   GoalItemRowProps,
-  GoalInspirationGalleryProps,
   TaskRowProps,
   InlineTaskCreatorProps,
   InlineGoalCreatorProps,

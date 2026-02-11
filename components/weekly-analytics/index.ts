@@ -5,12 +5,16 @@ export {
   WeeklyAnalyticsSection,
   WeeklyAnalyticsItemRow,
   WeeklyAnalyticsHeader,
+  ProgressBar,
+  DistributionProgressBar,
+  getProgress,
 } from "./weekly-analytics";
 
 export type {
   WeeklyAnalyticsProps,
   WeeklyAnalyticsItem,
   WeeklyAnalyticsSectionData,
+  DistributionMode,
 } from "./weekly-analytics";
 
 // Planning Budget (for weekly planning mode)
