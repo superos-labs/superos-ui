@@ -13,7 +13,7 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Render a subset of available icon options.
+ * - Render icon options from provided set (optionally truncated via maxIcons).
  * - Display current selection state.
  * - Emit selected icon index via callback.
  *
@@ -28,7 +28,7 @@
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
  * - Selection is index-based to keep component stateless.
- * - maxIcons allows lightweight truncation for dense UIs.
+ * - maxIcons allows optional truncation for dense UIs (defaults to showing all).
  * - Visual selection uses foreground/background inversion.
  *
  * -----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ export interface IconPickerProps {
   selectedIndex: number | null;
   /** Called when an icon is selected */
   onSelect: (index: number) => void;
-  /** Maximum number of icons to display (default: 40) */
+  /** Maximum number of icons to display (default: Infinity - shows all) */
   maxIcons?: number;
   /** Additional class names for the container */
   className?: string;
@@ -73,7 +73,7 @@ export function IconPicker({
   goalIcons,
   selectedIndex,
   onSelect,
-  maxIcons = 40,
+  maxIcons = Infinity,
   className,
 }: IconPickerProps) {
   return (

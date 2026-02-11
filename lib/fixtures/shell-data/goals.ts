@@ -32,10 +32,10 @@
 
 import {
   RiRocketLine,
-  RiMedalLine,
-  RiPenNibLine,
-  RiCodeLine,
-  RiGlobeLine,
+  RiRunLine,
+  RiPencilLine,
+  RiTranslate,
+  RiEarthLine,
 } from "@remixicon/react";
 import type { ScheduleGoal } from "@/lib/unified-schedule";
 
@@ -98,7 +98,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
   {
     id: "marathon",
     label: "Run a marathon",
-    icon: RiMedalLine,
+    icon: RiRunLine,
     color: "rose",
     lifeAreaId: "life",
     deadline: "2026-09-30",
@@ -127,7 +127,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
   {
     id: "book",
     label: "Write a book",
-    icon: RiPenNibLine,
+    icon: RiPencilLine,
     color: "teal",
     lifeAreaId: "life",
     deadline: "2026-06-30",
@@ -166,7 +166,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
   {
     id: "spanish",
     label: "Become fluent in Spanish",
-    icon: RiCodeLine,
+    icon: RiTranslate,
     color: "blue",
     lifeAreaId: "life",
     milestones: [
@@ -228,7 +228,7 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
   {
     id: "marathon",
     label: "Run a marathon",
-    icon: RiMedalLine,
+    icon: RiRunLine,
     color: "rose",
     lifeAreaId: "life",
     deadline: "2026-05-31",
@@ -246,7 +246,7 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
   {
     id: "book",
     label: "Write a book",
-    icon: RiPenNibLine,
+    icon: RiPencilLine,
     color: "teal",
     lifeAreaId: "life",
     deadline: "2026-06-30",
@@ -265,7 +265,7 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
   {
     id: "spanish",
     label: "Become fluent in Spanish",
-    icon: RiGlobeLine,
+    icon: RiTranslate,
     color: "lime",
     lifeAreaId: "life",
     deadline: "2026-12-31",

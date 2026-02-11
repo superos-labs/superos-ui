@@ -1,17 +1,42 @@
 /**
+ * =============================================================================
+ * File: onboarding-goals.ts
+ * =============================================================================
+ *
  * Curated goal suggestions for the onboarding experience.
- * A focused subset of goals that represent common use cases.
+ *
+ * Provides a focused subset of goal suggestions that represent common use
+ * cases across different life areas to help users get started quickly.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define onboarding goal suggestion templates with icons, colors, and areas.
+ * - Provide representative examples across diverse life domains.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Suggestions are editable — users can modify label, icon, color before adding.
+ * - Colors are hardcoded to match LIFE_AREAS for visual consistency.
+ * - Icon selection represents the new curated goal icon set.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - OnboardingGoalSuggestion
+ * - ONBOARDING_GOAL_SUGGESTIONS
  */
 
 import {
   RiRunLine,
-  RiHeart2Line,
-  RiMedalLine,
+  RiHeartLine,
+  RiGraduationCapLine,
   RiMoneyDollarCircleLine,
-  RiGlobeLine,
+  RiTranslate,
   RiRocketLine,
-  RiHandHeartLine,
-  RiCompass3Line,
+  RiUserHeartLine,
+  RiCompassLine,
 } from "@remixicon/react";
 import type { IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
@@ -56,7 +81,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "certification",
     label: "Complete a certification",
-    icon: RiMedalLine,
+    icon: RiGraduationCapLine,
     color: "violet",
     lifeAreaId: "work",
   },
@@ -65,7 +90,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "quality-time",
     label: "Prioritize quality time",
-    icon: RiHeart2Line,
+    icon: RiHeartLine,
     color: "pink",
     lifeAreaId: "life",
   },
@@ -83,7 +108,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "learn-language",
     label: "Learn a new language",
-    icon: RiGlobeLine,
+    icon: RiTranslate,
     color: "lime",
     lifeAreaId: "life",
   },
@@ -101,7 +126,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "volunteer",
     label: "Volunteer locally",
-    icon: RiHandHeartLine,
+    icon: RiUserHeartLine,
     color: "amber",
     lifeAreaId: "life",
   },
@@ -110,7 +135,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "explore-local",
     label: "Explore local hidden gems",
-    icon: RiCompass3Line,
+    icon: RiCompassLine,
     color: "cyan",
     lifeAreaId: "life",
   },
