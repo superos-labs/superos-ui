@@ -337,8 +337,6 @@ export function Backlog({
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
             onCreateAndSelectGoal={onCreateAndSelectGoal}
-            selectedGoalId={selectedGoalId}
-            onSelectGoal={onSelectGoal}
             isOnboardingGoalsStep={isOnboardingGoalsStep}
             onOnboardingContinue={onOnboardingContinue}
             currentWeekStart={currentWeekStart}
