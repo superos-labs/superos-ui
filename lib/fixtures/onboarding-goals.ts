@@ -5,13 +5,13 @@
 
 import {
   RiRunLine,
-  RiHeart2Line,
-  RiMedalLine,
+  RiHeartLine,
+  RiGraduationCapLine,
   RiMoneyDollarCircleLine,
-  RiGlobeLine,
+  RiTranslate,
   RiRocketLine,
-  RiHandHeartLine,
-  RiCompass3Line,
+  RiUserHeartLine,
+  RiCompassLine,
 } from "@remixicon/react";
 import type { IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
@@ -56,7 +56,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "certification",
     label: "Complete a certification",
-    icon: RiMedalLine,
+    icon: RiGraduationCapLine,
     color: "violet",
     lifeAreaId: "work",
   },
@@ -65,7 +65,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "quality-time",
     label: "Prioritize quality time",
-    icon: RiHeart2Line,
+    icon: RiHeartLine,
     color: "pink",
     lifeAreaId: "life",
   },
@@ -83,7 +83,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "learn-language",
     label: "Learn a new language",
-    icon: RiGlobeLine,
+    icon: RiTranslate,
     color: "lime",
     lifeAreaId: "life",
   },
@@ -101,7 +101,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "volunteer",
     label: "Volunteer locally",
-    icon: RiHandHeartLine,
+    icon: RiUserHeartLine,
     color: "amber",
     lifeAreaId: "life",
   },
@@ -110,7 +110,7 @@ export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
   {
     id: "explore-local",
     label: "Explore local hidden gems",
-    icon: RiCompass3Line,
+    icon: RiCompassLine,
     color: "cyan",
     lifeAreaId: "life",
   },

@@ -73,7 +73,7 @@ export function IconPicker({
   goalIcons,
   selectedIndex,
   onSelect,
-  maxIcons = 40,
+  maxIcons = Infinity,
   className,
 }: IconPickerProps) {
   return (

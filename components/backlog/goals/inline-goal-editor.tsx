@@ -242,7 +242,7 @@ export function InlineGoalEditor({
             <DropdownMenuContent align="start" className="w-56 p-2">
               <DropdownMenuLabel className="px-1 py-1">Icon</DropdownMenuLabel>
               <div className="flex flex-wrap gap-1 px-1 pb-2">
-                {goalIcons.slice(0, 40).map((iconOption) => {
+                {goalIcons.map((iconOption) => {
                   const IconComp = iconOption.icon;
                   const isSelected = icon === iconOption.icon;
                   return (
