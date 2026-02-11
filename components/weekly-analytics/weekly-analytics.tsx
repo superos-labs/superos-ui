@@ -226,34 +226,41 @@ export function WeeklyAnalyticsItemRow({
     );
   }
 
-  // Active row with % and progress bar
+  // Active row with %, progress bar, and hours detail
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors",
+        "flex gap-3 rounded-lg px-2 py-1.5 transition-colors",
         isHighlighted && "bg-muted/50",
         className
       )}
     >
-      <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted/60">
+      <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted/60 mt-0.5">
         <IconComponent className={cn("size-3", item.color)} />
       </div>
 
-      <span className="flex-1 truncate text-sm text-foreground">
-        {item.label}
-      </span>
-
-      <div className="flex shrink-0 items-center gap-2">
-        <span
-          className={cn(
-            "w-8 text-right text-xs tabular-nums",
-            isComplete ? "font-medium text-green-600" : "text-foreground"
-          )}
-        >
-          {progress}%
-        </span>
-        <div className="w-20">
-          <ProgressBar progress={progress} />
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-sm text-foreground">
+            {item.label}
+          </span>
+          <span
+            className={cn(
+              "shrink-0 text-right text-xs tabular-nums",
+              isComplete ? "font-medium text-green-600" : "text-foreground"
+            )}
+          >
+            {progress}%
+          </span>
+        </div>
+        <ProgressBar progress={progress} />
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] tabular-nums text-muted-foreground">
+            {formatHours(item.completedHours)}h completed
+          </span>
+          <span className="text-[11px] tabular-nums text-muted-foreground">
+            {formatHours(item.plannedHours)}h planned
+          </span>
         </div>
       </div>
     </div>
