@@ -71,6 +71,17 @@ See [`quarter-view/README.md`](./quarter-view/README.md) for detailed documentat
 
 **Features:** Per-month time distribution (Goals / Life Areas toggle), stacked color bar, milestone list with date pills, completed/upcoming visual states
 
+#### Stats View
+See [`stats-view/README.md`](./stats-view/README.md) for detailed documentation.
+
+**Purpose:** Full-screen analytics dashboard for visualizing completed vs planned time distribution across configurable time horizons.
+
+**Key Components:**
+- StatsView (main dashboard with tabs and ranked list)
+- StatsPieChart (Recharts donut visualization)
+
+**Features:** Time horizon tabs (All time / This week / This month), distribution mode tabs (Goals / Life Areas), pie chart visualization, progress tracking with distribution bar
+
 #### Focus Mode
 See [`focus/README.md`](./focus/README.md) for detailed documentation.
 
@@ -175,6 +186,7 @@ components/
 │   └── essentials/             # Essentials subsystem
 ├── shell/                      # Shell orchestration
 ├── quarter-view/               # Quarterly planning surface
+├── stats-view/                 # Stats analytics dashboard
 ├── focus/                      # Focus mode
 ├── goal-detail/                # Goal detail view
 ├── weekly-planning/            # Weekly planning flow
@@ -192,4 +204,4 @@ components/
 - **Composition:** Build complex features by composing smaller components
 - **Documentation:** Refer to domain-specific READMEs for detailed information
 
-**Total Subdirectories:** 13 major feature domains + UI primitives
+**Total Subdirectories:** 14 major feature domains + UI primitives
