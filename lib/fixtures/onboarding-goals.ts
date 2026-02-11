@@ -1,6 +1,31 @@
 /**
+ * =============================================================================
+ * File: onboarding-goals.ts
+ * =============================================================================
+ *
  * Curated goal suggestions for the onboarding experience.
- * A focused subset of goals that represent common use cases.
+ *
+ * Provides a focused subset of goal suggestions that represent common use
+ * cases across different life areas to help users get started quickly.
+ *
+ * -----------------------------------------------------------------------------
+ * RESPONSIBILITIES
+ * -----------------------------------------------------------------------------
+ * - Define onboarding goal suggestion templates with icons, colors, and areas.
+ * - Provide representative examples across diverse life domains.
+ *
+ * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Suggestions are editable — users can modify label, icon, color before adding.
+ * - Colors are hardcoded to match LIFE_AREAS for visual consistency.
+ * - Icon selection represents the new curated goal icon set.
+ *
+ * -----------------------------------------------------------------------------
+ * EXPORTS
+ * -----------------------------------------------------------------------------
+ * - OnboardingGoalSuggestion
+ * - ONBOARDING_GOAL_SUGGESTIONS
  */
 
 import {
