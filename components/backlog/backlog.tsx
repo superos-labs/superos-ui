@@ -173,6 +173,8 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   ) => void;
   /** Open the block detail sidebar */
   onNextBlockClick?: (blockId: string) => void;
+  /** Whether to show the next block card */
+  showNextBlockCard?: boolean;
 }
 
 export function Backlog({
@@ -227,6 +229,7 @@ export function Backlog({
   onStartBlockFocus,
   onUpdateBlockEvent,
   onNextBlockClick,
+  showNextBlockCard = false,
   className,
   ...props
 }: BacklogProps) {
@@ -252,29 +255,32 @@ export function Backlog({
       {...props}
     >
       {/* Next Block Card - shown when there are blocks today and not in onboarding */}
-      {nextBlock && nextBlock.totalBlocksToday > 0 && !onboardingStep && (
-        <AnimatePresence mode="sync">
-          <motion.div
-            key="next-block-card"
-            initial={{ opacity: 0, height: 0, marginBottom: -12 }}
-            animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
-            exit={{ opacity: 0, height: 0, marginBottom: -12 }}
-            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-            className="shrink-0"
-          >
-            <NextBlockCard
-              nextBlock={nextBlock}
-              events={calendarEvents ?? []}
-              goals={scheduleGoals ?? []}
-              weekDates={weekDates ?? []}
-              focusedBlockId={focusedBlockId}
-              onStartFocus={onStartBlockFocus}
-              onUpdateEvent={onUpdateBlockEvent}
-              onClick={onNextBlockClick}
-            />
-          </motion.div>
-        </AnimatePresence>
-      )}
+      {showNextBlockCard &&
+        nextBlock &&
+        nextBlock.totalBlocksToday > 0 &&
+        !onboardingStep && (
+          <AnimatePresence mode="sync">
+            <motion.div
+              key="next-block-card"
+              initial={{ opacity: 0, height: 0, marginBottom: -12 }}
+              animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
+              exit={{ opacity: 0, height: 0, marginBottom: -12 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="shrink-0"
+            >
+              <NextBlockCard
+                nextBlock={nextBlock}
+                events={calendarEvents ?? []}
+                goals={scheduleGoals ?? []}
+                weekDates={weekDates ?? []}
+                focusedBlockId={focusedBlockId}
+                onStartFocus={onStartBlockFocus}
+                onUpdateEvent={onUpdateBlockEvent}
+                onClick={onNextBlockClick}
+              />
+            </motion.div>
+          </AnimatePresence>
+        )}
 
       {/* Essentials Card - hidden during goals onboarding step, animates in/out */}
       <AnimatePresence mode="sync">

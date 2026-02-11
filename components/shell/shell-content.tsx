@@ -252,6 +252,12 @@ export function ShellContentComponent({
               onEditBlueprint={blueprintHandlers.handleEnterBlueprintEdit}
               onOpenLifeAreaManager={() => setShowLifeAreaManager(true)}
               onOpenKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+              showQuarterlyViewButton={shellProps.showQuarterlyViewButton}
+              onShowQuarterlyViewButtonChange={
+                shellProps.onShowQuarterlyViewButtonChange
+              }
+              showNextBlockCard={shellProps.showNextBlockCard}
+              onShowNextBlockCardChange={shellProps.onShowNextBlockCardChange}
             />
           ))}
 

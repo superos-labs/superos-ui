@@ -116,6 +116,10 @@ export function useShellState(
     dayStartMinutes,
     dayEndMinutes,
     setDayBoundaries,
+    showQuarterlyViewButton,
+    setShowQuarterlyViewButton,
+    showNextBlockCard,
+    setShowNextBlockCard,
   } = usePreferences();
 
   // -------------------------------------------------------------------------
@@ -465,6 +469,10 @@ export function useShellState(
     onProgressMetricChange: setProgressMetric,
     calendarZoom,
     onCalendarZoomChange: setCalendarZoom,
+    showQuarterlyViewButton,
+    onShowQuarterlyViewButtonChange: setShowQuarterlyViewButton,
+    showNextBlockCard,
+    onShowNextBlockCardChange: setShowNextBlockCard,
 
     // Navigation
     selectedDate,

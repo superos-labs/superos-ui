@@ -1,12 +1,12 @@
 # Preferences Library
 
-**Purpose:** Client-side context and provider for managing user-configurable settings related to calendar behavior, progress measurement, and day-boundary visualization.
+**Purpose:** Client-side context and provider for managing user-configurable settings related to calendar behavior, progress measurement, day-boundary visualization, and prototype-only feature toggles.
 
 ## Core Components
 
 ### Preferences Context
 - **`preferences-context.tsx`** — Client-side context and provider for user preferences
-  - Manages user-configurable settings related to calendar behavior, progress measurement, and day-boundary display
+  - Manages user-configurable settings related to calendar behavior, progress measurement, day-boundary display, and prototype-only feature toggles
   - Exposes setters to update preferences
   - Stores user preference state
   - Provides clamped setters for constrained values (zoom, minutes)
@@ -55,6 +55,7 @@
 - **UserPreferences** — Complete user preferences object
   - Includes weekStartDay, progressMetric, calendarZoom, dayBoundariesDisplay
   - May include day start/end minutes
+  - Includes prototype-only feature toggles (showQuarterlyViewButton, showNextBlockCard)
 
 ## Constants
 
@@ -71,6 +72,7 @@
 - **Progress Metric:** Choose between completed hours or focused hours for analytics
 - **Calendar Zoom:** Adjustable zoom level with min/max constraints
 - **Day Boundaries:** Configurable day start/end times
+- **Prototype-only Features:** Toggle visibility of quarterly view button and next block card (default: hidden)
 - **Clamped Setters:** Setters automatically clamp values to valid ranges
 - **Context-Based:** Preferences accessible via React context throughout app
 - **Optional Usage:** `usePreferencesOptional` allows graceful degradation when provider not present

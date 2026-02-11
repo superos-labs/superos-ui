@@ -6,7 +6,8 @@
  * Client-side context and provider for user preferences.
  *
  * Manages user-configurable settings related to calendar behavior, progress
- * measurement, and day-boundary display, and exposes setters to update them.
+ * measurement, day-boundary display, and prototype-only feature toggles.
+ * Exposes setters to update them.
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
@@ -62,6 +63,8 @@ interface PreferencesContextValue extends UserPreferences {
   setDayStartMinutes: (minutes: number) => void;
   setDayEndMinutes: (minutes: number) => void;
   setDayBoundaries: (startMinutes: number, endMinutes: number) => void;
+  setShowQuarterlyViewButton: (enabled: boolean) => void;
+  setShowNextBlockCard: (enabled: boolean) => void;
 }
 
 const PreferencesContext = React.createContext<PreferencesContextValue | null>(
@@ -90,6 +93,10 @@ export interface PreferencesProviderProps {
   defaultDayStartMinutes?: number;
   /** Override the default day end time (minutes from midnight) */
   defaultDayEndMinutes?: number;
+  /** Override whether to show quarterly view button */
+  defaultShowQuarterlyViewButton?: boolean;
+  /** Override whether to show next block card */
+  defaultShowNextBlockCard?: boolean;
 }
 
 /**
@@ -108,6 +115,8 @@ export function PreferencesProvider({
   defaultDayBoundariesDisplay,
   defaultDayStartMinutes,
   defaultDayEndMinutes,
+  defaultShowQuarterlyViewButton,
+  defaultShowNextBlockCard,
 }: PreferencesProviderProps) {
   // Week starts on Monday by default
   const [weekStartsOn, setWeekStartsOn] = React.useState<WeekStartDay>(
@@ -144,6 +153,13 @@ export function PreferencesProvider({
   );
   const [dayEndMinutes, setDayEndMinutesState] = React.useState<number>(
     defaultDayEndMinutes ?? DEFAULT_DAY_END_MINUTES
+  );
+
+  // Prototype-only features: default to false
+  const [showQuarterlyViewButton, setShowQuarterlyViewButton] =
+    React.useState<boolean>(defaultShowQuarterlyViewButton ?? false);
+  const [showNextBlockCard, setShowNextBlockCard] = React.useState<boolean>(
+    defaultShowNextBlockCard ?? false
   );
 
   // Clamped setter for calendar zoom
@@ -190,6 +206,10 @@ export function PreferencesProvider({
       dayEndMinutes,
       setDayEndMinutes,
       setDayBoundaries,
+      showQuarterlyViewButton,
+      setShowQuarterlyViewButton,
+      showNextBlockCard,
+      setShowNextBlockCard,
     }),
     [
       weekStartsOn,
@@ -204,6 +224,8 @@ export function PreferencesProvider({
       dayEndMinutes,
       setDayEndMinutes,
       setDayBoundaries,
+      showQuarterlyViewButton,
+      showNextBlockCard,
     ]
   );
 

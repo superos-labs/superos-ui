@@ -19,6 +19,7 @@
  * - Render navigation and action controls for the shell.
  * - Surface focus session indicator and controls.
  * - Expose minimal settings (week start, blueprint, life areas, shortcuts).
+ * - Expose prototype-only feature toggles (quarterly view, next block card).
  * - Reflect shell mode (planning, onboarding, blueprint editing).
  *
  * -----------------------------------------------------------------------------
@@ -58,6 +59,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuItem,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import {
   RiArrowLeftSLine,
@@ -292,6 +294,11 @@ export interface ShellDesktopToolbarProps {
   onEditBlueprint: () => void;
   onOpenLifeAreaManager: () => void;
   onOpenKeyboardShortcuts: () => void;
+  // Prototype-only features
+  showQuarterlyViewButton: boolean;
+  onShowQuarterlyViewButtonChange: (enabled: boolean) => void;
+  showNextBlockCard: boolean;
+  onShowNextBlockCardChange: (enabled: boolean) => void;
 }
 
 export function ShellDesktopToolbar({
@@ -328,6 +335,10 @@ export function ShellDesktopToolbar({
   onEditBlueprint,
   onOpenLifeAreaManager,
   onOpenKeyboardShortcuts,
+  showQuarterlyViewButton,
+  onShowQuarterlyViewButtonChange,
+  showNextBlockCard,
+  onShowNextBlockCardChange,
 }: ShellDesktopToolbarProps) {
   return (
     <ShellToolbar>
@@ -355,7 +366,7 @@ export function ShellDesktopToolbar({
           </button>
         )}
         {/* Quarter view toggle (not during onboarding or planning) */}
-        {!isOnboarding && !isPlanning && !isBlueprintEditMode && (
+        {!isOnboarding && !isPlanning && !isBlueprintEditMode && showQuarterlyViewButton && (
           <button
             className={cn(
               "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-background hover:text-foreground",
@@ -482,6 +493,20 @@ export function ShellDesktopToolbar({
               <RiKeyboardLine className="size-4" />
               Keyboard shortcuts
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Prototype-only features</DropdownMenuLabel>
+            <DropdownMenuCheckboxItem
+              checked={showQuarterlyViewButton}
+              onCheckedChange={onShowQuarterlyViewButtonChange}
+            >
+              Quarterly view
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={showNextBlockCard}
+              onCheckedChange={onShowNextBlockCardChange}
+            >
+              Next block card
+            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

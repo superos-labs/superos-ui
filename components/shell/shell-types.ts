@@ -367,6 +367,14 @@ export interface ShellContentProps {
   calendarZoom: CalendarZoom;
   /** Set calendar zoom level */
   onCalendarZoomChange: (zoom: CalendarZoom) => void;
+  /** Show quarterly view button in toolbar */
+  showQuarterlyViewButton: boolean;
+  /** Set quarterly view button visibility */
+  onShowQuarterlyViewButtonChange: (enabled: boolean) => void;
+  /** Show next block card in sidebar */
+  showNextBlockCard: boolean;
+  /** Set next block card visibility */
+  onShowNextBlockCardChange: (enabled: boolean) => void;
 
   // -------------------------------------------------------------------------
   // Navigation

@@ -386,6 +386,7 @@ export function ShellDesktopLayout({
               onStartBlockFocus={handleStartBlockFocus}
               onUpdateBlockEvent={shellProps.onUpdateEvent}
               onNextBlockClick={handleNextBlockClick}
+              showNextBlockCard={shellProps.showNextBlockCard}
             />
           )}
         </div>
