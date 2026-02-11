@@ -50,8 +50,6 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiRocketLine,
     color: "violet",
     lifeAreaId: "career",
-    startDate: "2026-01-01",
-    startDateGranularity: "quarter",
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -103,8 +101,6 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiMedalLine,
     color: "rose",
     lifeAreaId: "health",
-    startDate: "2026-07-01",
-    startDateGranularity: "quarter",
     deadline: "2026-09-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -134,8 +130,6 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     icon: RiPenNibLine,
     color: "teal",
     lifeAreaId: "creativity",
-    startDate: "2026-03-01",
-    startDateGranularity: "month",
     deadline: "2026-06-30",
     deadlineGranularity: "month",
     milestones: [
@@ -216,8 +210,6 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     icon: RiRocketLine,
     color: "violet",
     lifeAreaId: "career",
-    startDate: "2026-01-01",
-    startDateGranularity: "quarter",
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -239,8 +231,6 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     icon: RiMedalLine,
     color: "rose",
     lifeAreaId: "health",
-    startDate: "2026-01-01",
-    startDateGranularity: "month",
     deadline: "2026-05-31",
     deadlineGranularity: "month",
     milestones: [
@@ -259,8 +249,6 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     icon: RiPenNibLine,
     color: "teal",
     lifeAreaId: "creativity",
-    startDate: "2026-01-01",
-    startDateGranularity: "month",
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -280,8 +268,6 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     icon: RiGlobeLine,
     color: "lime",
     lifeAreaId: "personal-growth",
-    startDate: "2026-01-01",
-    startDateGranularity: "month",
     deadline: "2026-12-31",
     deadlineGranularity: "quarter",
     milestones: [

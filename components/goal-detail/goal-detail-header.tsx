@@ -22,7 +22,7 @@
  * - Render goal icon, title, and metadata pills.
  * - Provide inline editing for title.
  * - Provide dropdown pickers for icon, color, and life area.
- * - Provide granular date pickers for start date and target date.
+ * - Provide granular date picker for target date.
  * - Surface "add life area" affordance when supported.
  *
  * -----------------------------------------------------------------------------
@@ -39,7 +39,7 @@
  * - Icon and color are edited together via a single dropdown.
  * - Subset of distinct colors is used for faster scanning.
  * - Pills provide compact, glanceable metadata.
- * - Start and target dates use GranularDatePicker (Day/Month/Quarter).
+ * - Target date uses GranularDatePicker (Day/Month/Quarter).
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -57,7 +57,6 @@ import {
   RiArrowDownSLine,
   RiCheckLine,
   RiAddLine,
-  RiArrowRightSLine,
 } from "@remixicon/react";
 import {
   DropdownMenu,
@@ -84,10 +83,6 @@ export interface GoalDetailHeaderProps {
   color: GoalColor;
   /** Associated life area */
   lifeArea?: LifeArea;
-  /** Optional start date (ISO date string) */
-  startDate?: string;
-  /** Granularity of the start date */
-  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
   /** Granularity of the target date */
@@ -104,11 +99,6 @@ export interface GoalDetailHeaderProps {
   onColorChange?: (color: GoalColor) => void;
   /** Callback when life area is changed */
   onLifeAreaChange?: (lifeAreaId: string) => void;
-  /** Callback when start date is changed (undefined to clear) */
-  onStartDateChange?: (
-    startDate: string | undefined,
-    granularity: DateGranularity | undefined,
-  ) => void;
   /** Callback when deadline is changed (undefined to clear) */
   onDeadlineChange?: (
     deadline: string | undefined,
@@ -141,8 +131,6 @@ export function GoalDetailHeader({
   title,
   color,
   lifeArea,
-  startDate,
-  startDateGranularity,
   deadline,
   deadlineGranularity,
   lifeAreas,
@@ -151,7 +139,6 @@ export function GoalDetailHeader({
   onIconChange,
   onColorChange,
   onLifeAreaChange,
-  onStartDateChange,
   onDeadlineChange,
   onAddLifeArea,
   className,
@@ -350,42 +337,6 @@ export function GoalDetailHeader({
             <span>{lifeArea.label}</span>
           </div>
         ) : null}
-
-        {/* Start date pill */}
-        {onStartDateChange ? (
-          <GranularDatePicker
-            value={
-              startDate
-                ? {
-                    date: startDate,
-                    granularity: startDateGranularity ?? "day",
-                  }
-                : undefined
-            }
-            onChange={(v: GranularDateValue | undefined) =>
-              onStartDateChange(v?.date, v?.granularity)
-            }
-            role="start"
-            placeholder="Start date"
-            className="bg-muted hover:bg-muted/80"
-          />
-        ) : startDate ? (
-          <GranularDatePicker
-            value={{
-              date: startDate,
-              granularity: startDateGranularity ?? "day",
-            }}
-            role="start"
-            placeholder="Start date"
-            className="bg-muted pointer-events-none"
-            disabled
-          />
-        ) : null}
-
-        {/* Arrow separator (only show when both dates present) */}
-        {(startDate || onStartDateChange) && (deadline || onDeadlineChange) && (
-          <RiArrowRightSLine className="size-3.5 text-muted-foreground/50" />
-        )}
 
         {/* Target date pill */}
         {onDeadlineChange ? (

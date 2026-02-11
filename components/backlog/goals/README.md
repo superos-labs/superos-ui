@@ -37,7 +37,7 @@
   - Used in backlog and onboarding goal lists
   - Renders either compact, clickable summary row or InlineGoalEditor when editing
   - Owns no persistence logic; bridges user actions to parent handlers
-  - Displays goal label, icon, color, life area, optional start date, and optional target date
+  - Displays goal label, icon, color, life area, and optional target date
   - Toggles between display and inline edit modes
   - Forwards save, cancel, and delete events
   - Clicking row enters edit mode
@@ -67,7 +67,7 @@
 ### Creation & Editing Components
 - **`inline-goal-editor.tsx`** — Inline editor for creating and editing Goals
   - Used by onboarding flows, inspiration pickers, and backlog goal rows
-  - Supports editing core goal metadata: label, icon, color, life area, start date, target date (all with Day/Month/Quarter granularity)
+  - Supports editing core goal metadata: label, icon, color, life area, and target date (with Day/Month/Quarter granularity)
   - Manages only form state; delegates persistence upward
   - Renders editable goal fields
   - Provides icon, color, life area, and granular date pickers

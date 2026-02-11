@@ -11,7 +11,6 @@
  * - Icon
  * - Color
  * - Life area
- * - Optional start date (with Day/Month/Quarter granularity)
  * - Optional target date (with Day/Month/Quarter granularity)
  *
  * This component manages only form state and delegates persistence upward.
@@ -85,10 +84,6 @@ export interface InlineGoalEditorData {
   icon: IconComponent;
   color: GoalColor;
   lifeAreaId: string;
-  /** Optional start date (ISO date string) */
-  startDate?: string;
-  /** Granularity of the start date */
-  startDateGranularity?: DateGranularity;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
   /** Granularity of the target date */
@@ -165,12 +160,6 @@ export function InlineGoalEditor({
   const [lifeAreaId, setLifeAreaId] = React.useState(
     initialData?.lifeAreaId ?? fallbackLifeAreaId,
   );
-  const [startDate, setStartDate] = React.useState<string | undefined>(
-    initialData?.startDate,
-  );
-  const [startDateGranularity, setStartDateGranularity] = React.useState<
-    DateGranularity | undefined
-  >(initialData?.startDateGranularity);
   const [deadline, setDeadline] = React.useState<string | undefined>(
     initialData?.deadline,
   );
@@ -189,20 +178,10 @@ export function InlineGoalEditor({
   // Get the current life area
   const currentLifeArea = lifeAreas.find((a) => a.id === lifeAreaId);
 
-  // Handle save
-  // Granular date picker handlers
-  const startDateValue: GranularDateValue | undefined = startDate
-    ? { date: startDate, granularity: startDateGranularity ?? "day" }
-    : undefined;
-
+  // Granular date picker handler
   const deadlineValue: GranularDateValue | undefined = deadline
     ? { date: deadline, granularity: deadlineGranularity ?? "day" }
     : undefined;
-
-  const handleStartDateChange = (v: GranularDateValue | undefined) => {
-    setStartDate(v?.date);
-    setStartDateGranularity(v?.granularity);
-  };
 
   const handleDeadlineChange = (v: GranularDateValue | undefined) => {
     setDeadline(v?.date);
@@ -216,8 +195,6 @@ export function InlineGoalEditor({
       icon,
       color,
       lifeAreaId,
-      startDate,
-      startDateGranularity,
       deadline,
       deadlineGranularity,
     });
@@ -383,15 +360,6 @@ export function InlineGoalEditor({
               })}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Start date picker */}
-          <GranularDatePicker
-            value={startDateValue}
-            onChange={handleStartDateChange}
-            role="start"
-            placeholder="Start date"
-            className="bg-background hover:bg-background/80"
-          />
 
           {/* Target date picker */}
           <GranularDatePicker

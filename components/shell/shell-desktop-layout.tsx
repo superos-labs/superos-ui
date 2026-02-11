@@ -427,12 +427,6 @@ export function ShellDesktopLayout({
               onTitleChange={(title) =>
                 onUpdateGoal(selectedGoal.id, { label: title })
               }
-              onStartDateChange={(startDate, startDateGranularity) =>
-                onUpdateGoal(selectedGoal.id, {
-                  startDate,
-                  startDateGranularity,
-                })
-              }
               onDeadlineChange={(deadline, deadlineGranularity) =>
                 onUpdateGoal(selectedGoal.id, {
                   deadline,

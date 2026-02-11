@@ -14,7 +14,7 @@
 - **`goal-state-utils.ts`** — Pure immutable helper functions for nested goal/task/subtask/milestone updates (no React dependencies)
 
 ### Time Range Utilities
-- **`time-range-utils.ts`** — Pure helper functions for resolving, formatting, and querying granular (lazy) dates used on goal start dates and target dates. Includes month/quarter resolution, display formatting, and overlap checking for future horizon views
+- **`time-range-utils.ts`** — Pure helper functions for resolving, formatting, and querying granular (lazy) dates used on goal target dates. Includes month/quarter resolution, display formatting, and overlap checking for future horizon views
 
 ## React Hooks (Composable)
 

@@ -21,12 +21,12 @@
 
 ### Header Section
 - **`goal-detail-header.tsx`** — Header section for the Goal Detail view
-  - Presents and optionally allows editing of goal's core identity: icon, color, title, life area, start date, and target date
+  - Presents and optionally allows editing of goal's core identity: icon, color, title, life area, and target date
   - Designed to work in both read-only and editable modes depending on which callbacks are provided
   - Renders goal icon, title, and metadata pills
   - Provides inline editing for title
   - Provides dropdown pickers for icon, color, and life area
-  - Provides granular date pickers for start date and target date (Day/Month/Quarter)
+  - Provides granular date picker for target date (Day/Month/Quarter)
   - Surfaces "add life area" affordance when supported
   - Title editing is optimistic and commits on blur or Enter
   - Icon and color edited together via single dropdown
@@ -120,7 +120,7 @@
 ## Usage Patterns
 
 1. **View Goal:** GoalDetail renders comprehensive goal view with all sections
-2. **Edit Identity:** Click header to edit icon, color, title, life area, start date, target date
+2. **Edit Identity:** Click header to edit icon, color, title, life area, and target date
 3. **Manage Tasks:** Create, edit, complete, and delete tasks inline
 4. **Milestone Mode:** When enabled, tasks organized by milestone phases
 5. **Flat Mode:** When milestones disabled, flat task list with sorting
@@ -134,6 +134,6 @@
 - **Unified Schedule:** Integrates with unified schedule domain types
 - **Calendar Sync:** Goal-level sync settings integration
 - **Life Areas:** Uses life area types for categorization
-- **GranularDatePicker:** Uses granular date picker for start date, target date, and milestone deadline selection (Day/Month/Quarter)
+- **GranularDatePicker:** Uses granular date picker for target date and milestone deadline selection (Day/Month/Quarter)
 
 **Total Files:** 7 (5 component files, 1 example file, 1 public API)

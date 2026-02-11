@@ -310,10 +310,9 @@ function buildGoalContext(
   return {
     label: goal.label,
     lifeArea: lifeArea?.label ?? "Unknown",
-    timeRange:
-      goal.startDate || goal.deadline
-        ? { start: goal.startDate, end: goal.deadline }
-        : undefined,
+    timeRange: goal.deadline
+      ? { start: undefined, end: goal.deadline }
+      : undefined,
     currentMilestone: milestoneContext,
     tasks,
     taskSummary,

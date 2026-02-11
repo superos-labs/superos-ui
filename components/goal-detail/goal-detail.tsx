@@ -7,7 +7,7 @@
  *
  * Provides a comprehensive, vertically-scrolled surface for viewing and
  * editing a single goal, including:
- * - Core identity (icon, color, title, life area, start date, target date).
+ * - Core identity (icon, color, title, life area, target date).
  * - Notes.
  * - Tasks and subtasks.
  * - Optional milestone-based structure.
@@ -361,11 +361,6 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onNotesChange?: (notes: string) => void;
   /** Callback when title is edited */
   onTitleChange?: (title: string) => void;
-  /** Callback when start date is changed */
-  onStartDateChange?: (
-    startDate: string | undefined,
-    granularity: DateGranularity | undefined,
-  ) => void;
   /** Callback when deadline is changed (undefined to clear) */
   onDeadlineChange?: (
     deadline: string | undefined,
@@ -432,7 +427,6 @@ export function GoalDetail({
   notes = "",
   onNotesChange,
   onTitleChange,
-  onStartDateChange,
   onDeadlineChange,
   lifeAreas,
   goalIcons,
@@ -563,14 +557,11 @@ export function GoalDetail({
               title={goal.label}
               color={goal.color}
               lifeArea={lifeArea}
-              startDate={goal.startDate}
-              startDateGranularity={goal.startDateGranularity}
               deadline={deadline}
               deadlineGranularity={goal.deadlineGranularity}
               lifeAreas={lifeAreas}
               goalIcons={goalIcons}
               onTitleChange={onTitleChange}
-              onStartDateChange={onStartDateChange}
               onDeadlineChange={onDeadlineChange}
               onIconChange={onIconChange}
               onColorChange={onColorChange}
