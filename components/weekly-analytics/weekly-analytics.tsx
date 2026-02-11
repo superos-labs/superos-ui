@@ -7,6 +7,7 @@
  *
  * Shows how much of the user's planned goal time has been completed (or focused),
  * both in aggregate and per-goal, with ranked rows and lightweight progress bars.
+ * Supports viewing by individual goals or aggregated by life areas.
  *
  * Designed to support fast reflection on weekly execution quality.
  *
@@ -15,8 +16,11 @@
  * -----------------------------------------------------------------------------
  * - Define WeeklyAnalytics data types.
  * - Compute progress percentages from planned vs completed hours.
+ * - Render title bar with close button for dismissing the analytics panel.
  * - Render an optional summary header with unified progress and distribution.
- * - Render a ranked list of goals with per-item progress.
+ * - Render a ranked list of goals or life areas with per-item progress.
+ * - Support toggling between "Goals" and "Life Areas" distribution modes.
+ * - Aggregate goal data by life area when in life-areas mode.
  * - Coordinate hover state between distribution bar and rows.
  * - Support toggling between "completed" and "focused" progress metrics.
  *
@@ -34,6 +38,8 @@
  * - Distribution bar segments represent contribution to total completed time,
  *   scaled against total planned hours.
  * - Over-100% progress is clamped.
+ * - Goals/Life Areas toggle is positioned above the list for visual association.
+ * - Title bar and close button match IntegrationsSidebar pattern.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
