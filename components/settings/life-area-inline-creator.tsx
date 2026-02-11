@@ -3,15 +3,16 @@
  * File: life-area-inline-creator.tsx
  * =============================================================================
  *
- * Inline creator for adding a new Life Area.
+ * Expanded inline creator for adding a new Life Area.
  *
- * Compact form used inside the Life Area manager modal to quickly create
- * a Life Area without opening a separate dialog.
+ * Card-style form used inside the Life Area manager modal to create a
+ * Life Area with icon, name, and color in a spacious layout.
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Render inline inputs for label, icon, and color.
+ * - Render an expanded card form with icon button + name input, color palette,
+ *   and Cancel / Create action buttons.
  * - Manage local creation form state.
  * - Validate against duplicate Life Area labels.
  * - Emit create event with normalized data.
@@ -27,9 +28,10 @@
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
  * - Auto-focuses label input on mount.
- * - Toggles icon and color pickers inline.
+ * - Icon picker toggles inline with height animation.
+ * - Color palette is always visible as a horizontal row.
  * - Enter submits, Escape cancels.
- * - Optimized for fast, keyboard-driven creation.
+ * - Card visual matches the edit-mode card in LifeAreaRow.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -41,9 +43,10 @@
 "use client";
 
 import * as React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { RiCheckLine, RiCloseFill, RiStarLine } from "@remixicon/react";
-import { getIconColorClass, getIconBgClass } from "@/lib/colors";
+import { RiStarLine } from "@remixicon/react";
+import { getIconColorClass, getIconBgSoftClass } from "@/lib/colors";
 import type { GoalColor } from "@/lib/colors";
 import type { IconComponent, GoalIconOption, LifeArea } from "@/lib/types";
 import { IconPicker } from "./icon-picker";
@@ -81,7 +84,6 @@ export function LifeAreaInlineCreator({
   );
   const [selectedColor, setSelectedColor] = React.useState<GoalColor>("violet");
   const [showIconPicker, setShowIconPicker] = React.useState(false);
-  const [showColorPicker, setShowColorPicker] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Get the selected icon component safely
@@ -119,16 +121,17 @@ export function LifeAreaInlineCreator({
   const SelectedIconComp = selectedIcon;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/30 p-3">
+      {/* Top row: icon button + name input */}
       <div className="flex items-center gap-2">
-        {/* Icon button */}
         <button
           type="button"
-          onClick={() => {
-            setShowIconPicker(!showIconPicker);
-            setShowColorPicker(false);
-          }}
-          className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted transition-colors hover:ring-2 hover:ring-foreground/20"
+          onClick={() => setShowIconPicker(!showIconPicker)}
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-lg transition-all",
+            getIconBgSoftClass(selectedColor),
+            "hover:ring-2 hover:ring-foreground/20",
+          )}
           title="Choose icon"
         >
           <SelectedIconComp
@@ -136,7 +139,6 @@ export function LifeAreaInlineCreator({
           />
         </button>
 
-        {/* Label input */}
         <input
           ref={inputRef}
           type="text"
@@ -144,82 +146,71 @@ export function LifeAreaInlineCreator({
           onChange={(e) => setLabel(e.target.value)}
           placeholder="Life area name..."
           className={cn(
-            "h-8 flex-1 rounded-md border bg-background px-2 text-sm",
+            "h-8 flex-1 rounded-md border border-border bg-background px-2.5 text-sm text-foreground",
             "placeholder:text-muted-foreground/50",
-            "focus:outline-none focus:ring-2 focus:ring-foreground/20",
-            isDuplicate && "border-red-500",
+            "focus:outline-none focus:ring-2 focus:ring-ring/30",
+            isDuplicate && "border-red-500 focus:ring-red-500/30",
           )}
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSubmit();
             if (e.key === "Escape") onCancel();
           }}
         />
+      </div>
 
-        {/* Color button */}
+      {/* Duplicate error */}
+      {isDuplicate && (
+        <p className="text-xs text-red-500 px-1 -mt-1">Name already exists</p>
+      )}
+
+      {/* Icon picker — animated expand/collapse */}
+      <AnimatePresence>
+        {showIconPicker && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.12, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <IconPicker
+              className="max-h-32 overflow-y-auto rounded-lg border border-border bg-background p-2"
+              goalIcons={goalIcons}
+              selectedIndex={selectedIconIndex}
+              onSelect={(index) => {
+                setSelectedIconIndex(index);
+                setShowIconPicker(false);
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Color palette — always visible */}
+      <ColorPicker
+        className="gap-1.5"
+        selectedColor={selectedColor}
+        onSelect={(color) => setSelectedColor(color)}
+      />
+
+      {/* Action buttons */}
+      <div className="flex items-center justify-end gap-2">
         <button
           type="button"
-          onClick={() => {
-            setShowColorPicker(!showColorPicker);
-            setShowIconPicker(false);
-          }}
-          className="flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted"
-          title="Choose color"
+          onClick={onCancel}
+          className="h-7 rounded-md px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
-          <div
-            className={cn("size-4 rounded-full", getIconBgClass(selectedColor))}
-          />
+          Cancel
         </button>
-
-        {/* Add button */}
         <button
           type="button"
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className="flex size-8 items-center justify-center rounded-md bg-foreground text-background transition-colors hover:bg-foreground/90 disabled:opacity-50 disabled:pointer-events-none"
-          title="Add"
+          className="h-7 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/80 disabled:opacity-50 disabled:pointer-events-none"
         >
-          <RiCheckLine className="size-4" />
-        </button>
-
-        {/* Cancel button */}
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          title="Cancel"
-        >
-          <RiCloseFill className="size-4" />
+          Create
         </button>
       </div>
-
-      {isDuplicate && (
-        <p className="text-xs text-red-500 px-1">Name already exists</p>
-      )}
-
-      {/* Icon picker */}
-      {showIconPicker && (
-        <IconPicker
-          className="rounded-md border bg-background p-2"
-          goalIcons={goalIcons}
-          selectedIndex={selectedIconIndex}
-          onSelect={(index) => {
-            setSelectedIconIndex(index);
-            setShowIconPicker(false);
-          }}
-        />
-      )}
-
-      {/* Color picker */}
-      {showColorPicker && (
-        <ColorPicker
-          className="rounded-md border bg-background p-2"
-          selectedColor={selectedColor}
-          onSelect={(color) => {
-            setSelectedColor(color);
-            setShowColorPicker(false);
-          }}
-        />
-      )}
     </div>
   );
 }

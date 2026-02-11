@@ -20,7 +20,7 @@
  * - Invoke useShellWiring to derive shell orchestration state.
  * - Choose and render the correct toolbar variant.
  * - Choose and render desktop or mobile layout.
- * - Host global modals (keyboard shortcuts, life area modals).
+ * - Host global modals (keyboard shortcuts, life area manager).
  * - Host global overlays (backlog overlay, drag ghost, toasts).
  * - Bridge layout changes to external consumers (onLayoutChange).
  *
@@ -54,10 +54,7 @@ import { Shell } from "@/components/ui/shell";
 import { KeyboardShortcuts } from "@/components/ui";
 import { UndoToast, SimpleToast } from "@/components/ui";
 import { DragGhost } from "@/components/drag";
-import {
-  LifeAreaCreatorModal,
-  LifeAreaManagerModal,
-} from "@/components/settings";
+import { LifeAreaManagerModal } from "@/components/settings";
 import type { ShellContentProps } from "./shell-types";
 import { useShellWiring } from "./use-shell-wiring";
 import { ShellDesktopLayout } from "./shell-desktop-layout";
@@ -136,8 +133,9 @@ export function ShellContentComponent({
   const [isEssentialsHidden, setIsEssentialsHidden] = React.useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] =
     React.useState(false);
-  const [showLifeAreaCreator, setShowLifeAreaCreator] = React.useState(false);
   const [showLifeAreaManager, setShowLifeAreaManager] = React.useState(false);
+  const [lifeAreaManagerShowCreator, setLifeAreaManagerShowCreator] =
+    React.useState(false);
   const [lifeAreaCreatorForGoalId, setLifeAreaCreatorForGoalId] =
     React.useState<string | null>(null);
 
@@ -161,11 +159,20 @@ export function ShellContentComponent({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Life area creator handler (used by desktop layout)
-  const handleOpenLifeAreaCreator = React.useCallback((goalId?: string) => {
-    if (goalId) setLifeAreaCreatorForGoalId(goalId);
-    setShowLifeAreaCreator(true);
-  }, []);
+  // Life area manager handler — opens manager with creator pre-expanded
+  // when triggered from goal detail (optionally links new area to goal)
+  const handleOpenLifeAreaManager = React.useCallback(
+    (goalId?: string) => {
+      if (goalId) {
+        setLifeAreaCreatorForGoalId(goalId);
+        setLifeAreaManagerShowCreator(true);
+      } else {
+        setLifeAreaManagerShowCreator(true);
+      }
+      setShowLifeAreaManager(true);
+    },
+    [],
+  );
 
   // ---------------------------------------------------------------------------
   // Render
@@ -278,7 +285,7 @@ export function ShellContentComponent({
             wiring={wiring}
             isEssentialsHidden={isEssentialsHidden}
             onEssentialsHide={() => setIsEssentialsHidden(true)}
-            onOpenLifeAreaCreator={handleOpenLifeAreaCreator}
+            onOpenLifeAreaManager={handleOpenLifeAreaManager}
           />
         )}
       </Shell>
@@ -307,36 +314,30 @@ export function ShellContentComponent({
         onClose={() => setShowKeyboardShortcuts(false)}
       />
 
-      {/* Life area creator modal */}
-      <LifeAreaCreatorModal
-        open={showLifeAreaCreator}
-        onClose={() => {
-          setShowLifeAreaCreator(false);
-          setLifeAreaCreatorForGoalId(null);
-        }}
-        goalIcons={shellProps.goalIcons}
-        existingLifeAreas={shellProps.lifeAreas}
-        onCreateLifeArea={(data) => {
-          const newLifeAreaId = shellProps.onAddLifeArea(data);
-          if (newLifeAreaId && lifeAreaCreatorForGoalId) {
-            shellProps.onUpdateGoal(lifeAreaCreatorForGoalId, {
-              lifeAreaId: newLifeAreaId,
-            });
-          }
-          setLifeAreaCreatorForGoalId(null);
-        }}
-      />
-
       {/* Life area manager modal */}
       <LifeAreaManagerModal
         open={showLifeAreaManager}
-        onClose={() => setShowLifeAreaManager(false)}
+        onClose={() => {
+          setShowLifeAreaManager(false);
+          setLifeAreaManagerShowCreator(false);
+          setLifeAreaCreatorForGoalId(null);
+        }}
         customLifeAreas={shellProps.customLifeAreas}
         goalIcons={shellProps.goalIcons}
         goals={shellProps.goals}
         onAddLifeArea={shellProps.onAddLifeArea}
         onUpdateLifeArea={shellProps.onUpdateLifeArea}
         onRemoveLifeArea={shellProps.onRemoveLifeArea}
+        initialShowCreator={lifeAreaManagerShowCreator}
+        onLifeAreaCreated={(newId) => {
+          if (lifeAreaCreatorForGoalId) {
+            shellProps.onUpdateGoal(lifeAreaCreatorForGoalId, {
+              lifeAreaId: newId,
+            });
+          }
+          setLifeAreaCreatorForGoalId(null);
+          setLifeAreaManagerShowCreator(false);
+        }}
       />
     </>
   );

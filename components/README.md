@@ -128,7 +128,7 @@ See [`settings/README.md`](./settings/README.md) for detailed documentation.
 
 **Key Components:**
 - ColorPicker, IconPicker
-- LifeAreaCreatorModal, LifeAreaManagerModal
+- LifeAreaManagerModal
 - LifeAreaRow, LifeAreaInlineCreator
 
 ### Cross-Cutting Systems

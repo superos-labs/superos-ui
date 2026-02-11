@@ -81,8 +81,8 @@ export interface ShellDesktopLayoutProps {
   isEssentialsHidden: boolean;
   /** Hide essentials */
   onEssentialsHide: () => void;
-  /** Open life area creator (optionally linked to a goal) */
-  onOpenLifeAreaCreator: (goalId?: string) => void;
+  /** Open life area manager (optionally with creator pre-expanded for a goal) */
+  onOpenLifeAreaManager: (goalId?: string) => void;
 }
 
 // =============================================================================
@@ -94,7 +94,7 @@ export function ShellDesktopLayout({
   wiring,
   isEssentialsHidden,
   onEssentialsHide,
-  onOpenLifeAreaCreator,
+  onOpenLifeAreaManager,
 }: ShellDesktopLayoutProps) {
   const {
     goals,
@@ -475,7 +475,7 @@ export function ShellDesktopLayout({
               onLifeAreaChange={(lifeAreaId) =>
                 onUpdateGoal(selectedGoal.id, { lifeAreaId })
               }
-              onAddLifeArea={() => onOpenLifeAreaCreator(selectedGoal.id)}
+              onAddLifeArea={() => onOpenLifeAreaManager(selectedGoal.id)}
               onSyncSettingsChange={(settings) =>
                 onUpdateGoalSyncSettings(selectedGoal.id, settings)
               }
