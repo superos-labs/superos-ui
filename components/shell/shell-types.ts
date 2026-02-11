@@ -523,8 +523,6 @@ export interface ShellLayoutState {
   showRightSidebar: boolean;
   /** Whether to show tasks in the backlog */
   showTasks: boolean;
-  /** Whether to show the inspiration gallery */
-  showInspirationGallery: boolean;
   /** Current backlog mode */
   backlogMode: BacklogMode;
   /** Whether planning mode is active */

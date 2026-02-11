@@ -140,10 +140,6 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   selectedGoalId?: string | null;
   /** Callback when a goal is selected */
   onSelectGoal?: (goalId: string) => void;
-  /** Callback to browse inspiration gallery */
-  onBrowseInspiration?: () => void;
-  /** Whether the inspiration gallery is currently active */
-  isInspirationActive?: boolean;
 
   // Onboarding props
   /** Current onboarding step (null if not in onboarding) */
@@ -216,8 +212,6 @@ export function Backlog({
   // Goal selection props
   selectedGoalId,
   onSelectGoal,
-  onBrowseInspiration,
-  isInspirationActive,
   // Onboarding props
   onboardingStep,
   onOnboardingContinue,
@@ -337,8 +331,8 @@ export function Backlog({
             getTaskDeadline={getTaskDeadline}
             draggable={draggable}
             onCreateAndSelectGoal={onCreateAndSelectGoal}
-            onBrowseInspiration={onBrowseInspiration}
-            isInspirationActive={isInspirationActive}
+            selectedGoalId={selectedGoalId}
+            onSelectGoal={onSelectGoal}
             isOnboardingGoalsStep={isOnboardingGoalsStep}
             onOnboardingContinue={onOnboardingContinue}
             currentWeekStart={currentWeekStart}

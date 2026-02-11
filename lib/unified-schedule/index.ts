@@ -34,7 +34,7 @@
  * - Time range utilities (resolve, format, query helpers)
  * - Next block derivation (useNextBlock, NextBlockInfo)
  * - Unified schedule types (including DateGranularity)
- * - Goal creation types (NewGoalData, InspirationGoal, InspirationCategory)
+ * - Goal creation types (NewGoalData)
  */
 
 // Main orchestration hook
@@ -152,8 +152,6 @@ export type {
   // Hook types
   UseUnifiedScheduleOptions,
   UseUnifiedScheduleReturn,
-  // Goal creation & inspiration types (merged from lib/goals)
+  // Goal creation type (merged from lib/goals)
   NewGoalData,
-  InspirationGoal,
-  InspirationCategory,
 } from "./types";

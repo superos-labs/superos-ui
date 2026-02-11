@@ -36,7 +36,7 @@
  * - ScheduleGoal (with deadline and granularity fields), ScheduleTask, Subtask, Milestone, ScheduleEssential
  * - Sync-related types (GoalSyncSettings, BlockSyncSettings, BlockSyncState)
  * - Computed/derived types and hook option/return types
- * - NewGoalData, InspirationGoal, InspirationCategory
+ * - NewGoalData
  */
 
 import type { GoalColor } from "@/lib/colors";
@@ -574,23 +574,4 @@ export interface NewGoalData {
   deadline?: string;
   /** Granularity of the target date */
   deadlineGranularity?: DateGranularity;
-}
-
-/**
- * A goal suggestion in the inspiration gallery.
- */
-export interface InspirationGoal {
-  id: string;
-  label: string;
-  icon: IconComponent;
-  /** Optional description shown on hover */
-  description?: string;
-}
-
-/**
- * A category of inspiration goals grouped by life area.
- */
-export interface InspirationCategory {
-  lifeArea: import("@/lib/types").LifeArea;
-  goals: InspirationGoal[];
 }

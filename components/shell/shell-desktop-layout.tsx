@@ -50,10 +50,8 @@ import { ShellContent as ShellContentPrimitive } from "@/components/ui/shell";
 import { Calendar } from "@/components/calendar";
 import {
   Backlog,
-  GoalInspirationGallery,
   OnboardingGoalsCard,
   type BacklogItem,
-  type InspirationCategory,
 } from "@/components/backlog";
 import { ONBOARDING_GOAL_SUGGESTIONS } from "@/lib/fixtures/onboarding-goals";
 import { GoalDetail } from "@/components/goal-detail";
@@ -85,8 +83,6 @@ export interface ShellDesktopLayoutProps {
   onEssentialsHide: () => void;
   /** Open life area creator (optionally linked to a goal) */
   onOpenLifeAreaCreator: (goalId?: string) => void;
-  /** Inspiration category data */
-  inspirationCategories?: InspirationCategory[];
 }
 
 // =============================================================================
@@ -99,7 +95,6 @@ export function ShellDesktopLayout({
   isEssentialsHidden,
   onEssentialsHide,
   onOpenLifeAreaCreator,
-  inspirationCategories,
 }: ShellDesktopLayoutProps) {
   const {
     goals,
@@ -172,7 +167,6 @@ export function ShellDesktopLayout({
   const {
     showSidebar,
     showCalendar,
-    showInspirationGallery,
     showTasks,
     isRightSidebarOpen,
     isPlanning,
@@ -186,8 +180,6 @@ export function ShellDesktopLayout({
     handleEventClick,
     handleSelectGoal,
     handleCloseGoalDetail,
-    handleCloseInspiration,
-    handleBrowseInspiration,
     handleGoalNotesChange,
     showPlanWeekPrompt,
     onDismissPlanWeekPrompt,
@@ -382,8 +374,6 @@ export function ShellDesktopLayout({
               onCreateAndSelectGoal={goalHandlers.handleCreateAndSelectGoal}
               selectedGoalId={selectedGoalId}
               onSelectGoal={handleSelectGoal}
-              onBrowseInspiration={handleBrowseInspiration}
-              isInspirationActive={showInspirationGallery}
               onboardingStep={onboardingStep}
               onOnboardingContinue={onContinueFromGoals}
               currentWeekStart={planningIntegration.weekStartDate}
@@ -400,16 +390,9 @@ export function ShellDesktopLayout({
           )}
         </div>
 
-        {/* Main Content - Calendar, Goal Detail, or Inspiration Gallery */}
+        {/* Main Content - Calendar, Goal Detail, or Quarter View */}
         <ShellContentPrimitive className="overflow-hidden">
-          {showInspirationGallery && inspirationCategories ? (
-            <GoalInspirationGallery
-              categories={inspirationCategories}
-              onAddGoal={goalHandlers.handleCreateGoal}
-              onClose={handleCloseInspiration}
-              className="h-full"
-            />
-          ) : isQuarterView ? (
+          {isQuarterView ? (
             <QuarterView
               goals={goals}
               events={allEvents}

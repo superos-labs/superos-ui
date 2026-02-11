@@ -47,7 +47,6 @@ import {
   COMPLETE_ENABLED_ESSENTIAL_IDS,
   type DataSetId,
 } from "@/lib/fixtures/shell-data";
-import { INSPIRATION_CATEGORIES } from "@/lib/fixtures/goal-inspiration-data";
 
 interface ShellContentInnerProps {
   dataSetId: DataSetId;
@@ -82,7 +81,6 @@ function ShellContentInner({
   return (
     <ShellContentComponent
       {...state}
-      inspirationCategories={INSPIRATION_CATEGORIES}
       onSkipOnboarding={onSkipOnboarding}
     />
   );

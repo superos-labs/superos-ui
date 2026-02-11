@@ -8,12 +8,12 @@
 - **`goal-section.tsx`** — Section component for rendering a list of Goals inside the backlog
   - Provides section header (title + optional description)
   - List of GoalItemRow entries
-  - Optional actions for creating goals and browsing inspiration
+  - Optional actions for creating goals
   - Special behavior when used inside onboarding
   - Coordinates layout and high-level flow but does not own domain state
   - Renders goals and passes through task-related callbacks
   - Highlights selected goal
-  - Surfaces creation and inspiration entry points
+  - Surfaces creation entry points
   - Adapts copy and controls for onboarding mode
   - Inline task creation hidden during onboarding
   - Continue button appears only after at least one goal exists
@@ -96,20 +96,10 @@
   - Suggestions filtered once added
   - Custom goal entry placed at top for visibility
 
-- **`goal-inspiration-gallery.tsx`** — Gallery-style surface for browsing and adding inspirational goals
-  - Displays goals grouped by life area
-  - Allows users to quickly seed backlog with pre-defined ideas aligned with personal priorities
-  - Renders categories of inspiration goals
-  - Visually indicates which goals have already been added
-  - Allows adding goals with single action
-  - Bridges selections to parent via NewGoalData
-  - Tracks locally added goals to provide immediate feedback
-  - Merges local and external added IDs for consistent UI
-
 ### Types & Utilities
 - **`goal-types.ts`** — Shared type definitions for backlog Goals
   - Defines UI-facing GoalItem shape used by backlog components
-  - Re-exports goal creation and inspiration types from lib/unified-schedule
+  - Re-exports goal creation type from lib/unified-schedule
   - Re-exports shared types (LifeArea, GoalIconOption) from lib/types
   - Re-exports task and milestone types used by goals
   - plannedHours and completedHours deprecated in favor of derived stats
@@ -133,7 +123,6 @@
 - **Goal Management:** Create, edit, delete, and display goals with metadata
 - **Task Management:** Inline task creation, editing, completion, and drag-and-drop
 - **Onboarding Flow:** Guided goal setup with suggestions and custom creation
-- **Inspiration Gallery:** Browse and add pre-defined inspirational goals by life area
 - **Drag & Drop:** Goals and tasks can be dragged to calendar or other containers
 - **Inline Editing:** Quick inline editing for goals and tasks
 - **Milestone Support:** Filter tasks by current milestone when enabled
@@ -155,10 +144,9 @@
 
 1. **Standard Backlog:** GoalSection renders GoalItemRow entries with inline task creation
 2. **Onboarding:** OnboardingGoalsCard combines suggestions, custom creation, and editing
-3. **Inspiration:** GoalInspirationGallery allows browsing and adding inspirational goals
-4. **Editing:** Click goal/task row to enter inline edit mode
-5. **Task Management:** Expand task rows to see details and manage subtasks
-6. **Drag Scheduling:** Drag goals or tasks to calendar to schedule them
+3. **Editing:** Click goal/task row to enter inline edit mode
+4. **Task Management:** Expand task rows to see details and manage subtasks
+5. **Drag Scheduling:** Drag goals or tasks to calendar to schedule them
 
 ## Integration Points
 
@@ -168,4 +156,4 @@
 - **Life Areas:** Uses life area types for goal categorization
 - **Date Formatting:** Uses formatGranularDate from lib/unified-schedule for granular date display
 
-**Total Files:** 12 (10 component files, 1 types file, 1 utilities file, 1 public API)
+**Total Files:** 11 (9 component files, 1 types file, 1 utilities file, 1 public API)

@@ -4,16 +4,6 @@
 
 ## Core Fixtures
 
-### Goal Inspiration Data
-- **`goal-inspiration-data.ts`** — Seed data for the Goal Inspiration Gallery
-  - Defines curated goal ideas grouped by life area
-  - Helps users quickly discover goals that benefit from time allocation and weekly recurrence
-  - Used during onboarding and in backlog when browsing or adding new goals
-  - Defines inspiration categories mapped to life areas
-  - Provides goal templates with id, label, and icon
-  - Goals phrased as simple, action-oriented labels
-  - List intentionally inspirational, not prescriptive
-
 ### Onboarding Goals
 - **`onboarding-goals.ts`** — Curated goal suggestions for the onboarding experience
   - Focused subset of goals representing common use cases
@@ -36,7 +26,6 @@ See [`shell-data/README.md`](./shell-data/README.md) for detailed documentation.
 
 ## Key Features
 
-- **Inspiration Catalog:** Curated goal ideas grouped by life area
 - **Onboarding Seeds:** Goal suggestions for new user onboarding
 - **Shell Fixtures:** Complete data sets for shell experience
 - **Multiple Presets:** Sample, complete, and empty data sets
@@ -48,25 +37,23 @@ See [`shell-data/README.md`](./shell-data/README.md) for detailed documentation.
 
 - **Prototyping Focus:** Designed for demos, previews, and development
 - **Inspirational:** Goal suggestions inspire rather than prescribe
-- **Life Area Alignment:** Goals and inspiration organized by life areas
+- **Life Area Alignment:** Goals organized by life areas
 - **Curated Options:** Intentionally curated to reduce choice overload
 - **Realistic Patterns:** Data patterns mirror believable user behavior
 - **Empty States:** Provides empty data sets for initialization
 
 ## Usage Patterns
 
-1. **Goal Inspiration:** Use INSPIRATION_CATEGORIES in Goal Inspiration Gallery
-2. **Onboarding:** Use ONBOARDING_GOAL_SUGGESTIONS in onboarding flows
-3. **Shell Experience:** Use shell-data fixtures for rich demo experience
-4. **Development:** Switch between data sets for testing different states
-5. **Icon Selection:** Use GOAL_ICONS catalog in goal creation UI
+1. **Onboarding:** Use ONBOARDING_GOAL_SUGGESTIONS in onboarding flows
+2. **Shell Experience:** Use shell-data fixtures for rich demo experience
+3. **Development:** Switch between data sets for testing different states
+4. **Icon Selection:** Use GOAL_ICONS catalog in goal creation UI
 
 ## Integration Points
 
-- **Onboarding:** Goal suggestions and inspiration used in onboarding flows
-- **Backlog:** Inspiration gallery uses inspiration categories
+- **Onboarding:** Goal suggestions used in onboarding flows
 - **Shell:** Shell fixtures used for main application initialization
 - **Goal Creation:** Icon catalog and suggestions used in goal creation UI
 - **Life Areas:** Fixtures align with life area system
 
-**Total Files:** 2 root-level files + 1 subdirectory (shell-data with 5 files)
+**Total Files:** 1 root-level file + 1 subdirectory (shell-data with 5 files)

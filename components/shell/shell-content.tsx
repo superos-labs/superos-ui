@@ -54,7 +54,6 @@ import { Shell } from "@/components/ui/shell";
 import { KeyboardShortcuts } from "@/components/ui";
 import { UndoToast, SimpleToast } from "@/components/ui";
 import { DragGhost } from "@/components/drag";
-import type { InspirationCategory } from "@/components/backlog";
 import {
   LifeAreaCreatorModal,
   LifeAreaManagerModal,
@@ -78,8 +77,6 @@ export type { ShellContentProps };
 // =============================================================================
 
 export interface ShellContentComponentProps extends ShellContentProps {
-  /** Categories for goal inspiration gallery */
-  inspirationCategories?: InspirationCategory[];
   /** Callback when UI layout changes (for persistence) */
   onLayoutChange?: (layout: {
     showSidebar: boolean;
@@ -92,7 +89,6 @@ export interface ShellContentComponentProps extends ShellContentProps {
 // =============================================================================
 
 export function ShellContentComponent({
-  inspirationCategories,
   onLayoutChange,
   ...shellProps
 }: ShellContentComponentProps) {
@@ -277,7 +273,6 @@ export function ShellContentComponent({
             isEssentialsHidden={isEssentialsHidden}
             onEssentialsHide={() => setIsEssentialsHidden(true)}
             onOpenLifeAreaCreator={handleOpenLifeAreaCreator}
-            inspirationCategories={inspirationCategories}
           />
         )}
       </Shell>

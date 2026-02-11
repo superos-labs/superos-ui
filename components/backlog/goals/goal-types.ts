@@ -35,8 +35,6 @@
  * - GoalItem
  * - BacklogItem (deprecated alias)
  * - NewGoalData (re-export from unified-schedule)
- * - InspirationGoal (re-export from unified-schedule)
- * - InspirationCategory (re-export from unified-schedule)
  * - GoalIconOption (re-export from lib/types)
  * - LifeArea (re-export from lib/types)
  * - GoalTask (re-export)
@@ -47,12 +45,8 @@
 import type { ScheduleTask, Milestone } from "@/lib/unified-schedule";
 import type { BacklogItemBase } from "../backlog-types";
 
-// Re-export goal creation and inspiration types
-export type {
-  NewGoalData,
-  InspirationGoal,
-  InspirationCategory,
-} from "@/lib/unified-schedule";
+// Re-export goal creation type
+export type { NewGoalData } from "@/lib/unified-schedule";
 
 // Re-export shared types
 export type { GoalIconOption, LifeArea } from "@/lib/types";

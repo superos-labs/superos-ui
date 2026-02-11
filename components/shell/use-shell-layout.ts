@@ -75,8 +75,6 @@ export interface UseShellLayoutReturn {
   setShowRightSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   showTasks: boolean;
   setShowTasks: React.Dispatch<React.SetStateAction<boolean>>;
-  showInspirationGallery: boolean;
-  setShowInspirationGallery: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Mode state
   backlogMode: BacklogMode;
@@ -141,8 +139,6 @@ export interface UseShellLayoutReturn {
   handleCloseSidebar: () => void;
   handleSelectGoal: (goalId: string) => void;
   handleCloseGoalDetail: () => void;
-  handleBrowseInspiration: () => void;
-  handleCloseInspiration: () => void;
   handlePlanWeekClick: () => void;
   handleGoalNotesChange: (notes: string) => void;
   handleAnalyticsToggle: () => void;
@@ -165,8 +161,6 @@ export function useShellLayout(
   const [showSidebar, setShowSidebar] = React.useState(true);
   const [showRightSidebar, setShowRightSidebar] = React.useState(false);
   const [showTasks, setShowTasks] = React.useState(true);
-  const [showInspirationGallery, setShowInspirationGallery] =
-    React.useState(false);
 
   // -------------------------------------------------------------------------
   // Onboarding State
@@ -207,8 +201,6 @@ export function useShellLayout(
   // Handler to advance from goals step directly to blueprint creation
   const onContinueFromGoals = React.useCallback(() => {
     setOnboardingStep("blueprint");
-    // Close inspiration gallery if open
-    setShowInspirationGallery(false);
     // Close goal detail view if open
     setSelectedGoalId(null);
     setBacklogMode("view");
@@ -256,7 +248,6 @@ export function useShellLayout(
     setShowRightSidebar(false);
     setSelectedGoalId(null);
     setBacklogMode("view");
-    setShowInspirationGallery(false);
     setIsBlueprintEditMode(true);
   }, []);
 
@@ -340,8 +331,6 @@ export function useShellLayout(
   const handleSelectGoal = React.useCallback((goalId: string) => {
     setSelectedGoalId(goalId);
     setBacklogMode("goal-detail");
-    // Close inspiration gallery if open
-    setShowInspirationGallery(false);
     // Close any open right sidebar content
     setSelectedEventId(null);
     setShowRightSidebar(false);
@@ -365,19 +354,6 @@ export function useShellLayout(
     },
     [selectedGoalId],
   );
-
-  // -------------------------------------------------------------------------
-  // Inspiration Gallery Handlers
-  // -------------------------------------------------------------------------
-  const handleBrowseInspiration = React.useCallback(() => {
-    setShowInspirationGallery(true);
-    // Clear selected goal so nothing appears active in the goal list
-    setSelectedGoalId(null);
-  }, []);
-
-  const handleCloseInspiration = React.useCallback(() => {
-    setShowInspirationGallery(false);
-  }, []);
 
   // -------------------------------------------------------------------------
   // Plan Week Toggle
@@ -409,7 +385,6 @@ export function useShellLayout(
         setShowRightSidebar(false);
         setSelectedGoalId(null);
         setBacklogMode("view");
-        setShowInspirationGallery(false);
       }
       return !prev;
     });
@@ -427,8 +402,6 @@ export function useShellLayout(
     setShowRightSidebar,
     showTasks,
     setShowTasks,
-    showInspirationGallery,
-    setShowInspirationGallery,
 
     // Mode state
     backlogMode,
@@ -485,8 +458,6 @@ export function useShellLayout(
     handleCloseSidebar,
     handleSelectGoal,
     handleCloseGoalDetail,
-    handleBrowseInspiration,
-    handleCloseInspiration,
     handlePlanWeekClick,
     handleGoalNotesChange,
     handleAnalyticsToggle,

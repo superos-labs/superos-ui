@@ -55,7 +55,6 @@ See [`goals/README.md`](./goals/README.md) for detailed documentation.
 - TaskRow — Task display and interaction
 - InlineGoalEditor — Goal creation and editing
 - OnboardingGoalsCard — Onboarding goal setup
-- GoalInspirationGallery — Browse and add inspirational goals
 
 **Features:**
 - Goal creation, editing, and deletion
@@ -144,4 +143,4 @@ backlog/
     └── ...
 ```
 
-**Total Files:** 4 main files + 2 subsystems (goals: 12 files, essentials: 8 files)
+**Total Files:** 4 main files + 2 subsystems (goals: 11 files, essentials: 8 files)

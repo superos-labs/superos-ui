@@ -76,8 +76,6 @@ export interface UseGoalHandlersOptions {
   selectedGoalId: string | null;
   /** Set selected goal ID */
   setSelectedGoalId: (id: string | null) => void;
-  /** Close the inspiration gallery */
-  handleCloseInspiration: () => void;
 }
 
 export interface UseGoalHandlersReturn {
@@ -117,7 +115,6 @@ export function useGoalHandlers({
   setBacklogMode,
   selectedGoalId,
   setSelectedGoalId,
-  handleCloseInspiration,
 }: UseGoalHandlersOptions): UseGoalHandlersReturn {
   // -------------------------------------------------------------------------
   // Goal Creation
@@ -157,15 +154,12 @@ export function useGoalHandlers({
       tasks: [],
     });
 
-    // Close inspiration gallery if open
-    handleCloseInspiration();
     setBacklogMode("goal-detail");
     setSelectedGoalId(newGoalId);
   }, [
     onAddGoal,
     goalIcons,
     lifeAreas,
-    handleCloseInspiration,
     setBacklogMode,
     setSelectedGoalId,
   ]);
