@@ -6,23 +6,23 @@
 
 ### Weekly Analytics
 - **`weekly-analytics.tsx`** — Weekly progress analytics card for goals
-  - Shows how much of planned goal time has been completed (or focused)
+  - Shows how much of planned goal time has been completed
   - Displays aggregate and per-goal progress with ranked rows and lightweight progress bars
   - Supports viewing by individual goals or aggregated by life areas
   - Designed to support fast reflection on weekly execution quality
   - Defines WeeklyAnalytics data types
   - Computes progress percentages from planned vs completed hours
-  - Renders title bar with close button for dismissing the analytics panel
+  - Renders title bar with icon and close button for dismissing the analytics panel
   - Renders optional summary header with unified progress and distribution
   - Renders ranked list of goals or life areas with per-item progress
   - Supports toggling between "Goals" and "Life Areas" distribution modes
   - Aggregates goal data by life area when in life-areas mode
   - Coordinates hover state between distribution bar and rows
-  - Supports toggling between "completed" and "focused" progress metrics
   - Items with no planned hours are visually muted and listed last
   - Distribution bar segments represent contribution to total completed time, scaled against total planned hours
   - Over-100% progress is clamped
   - Goals/Life Areas toggle positioned above list for visual association
+  - Title bar icon (RiPieChartLine) matches the analytics toggle in toolbar
   - Title bar and close button match IntegrationsSidebar pattern
 
 ### Planning Budget
@@ -80,7 +80,7 @@
 
 ## Key Features
 
-- **Progress Tracking:** Shows planned vs completed/focused hours with progress percentages
+- **Progress Tracking:** Shows planned vs completed hours with progress percentages
 - **Goals/Life Areas Toggle:** Switch between viewing by individual goals or aggregated by life area
 - **Life Area Aggregation:** Automatically groups goals by life area for higher-level view
 - **Time Budget:** Breaks down 168 weekly hours into sleep, essentials, goals, and unallocated time
@@ -88,8 +88,7 @@
 - **Ranked Lists:** Goals sorted by hours for quick scanning
 - **Hover Coordination:** Interactive hover states between distribution bars and list rows
 - **Over-Budget Detection:** Visual emphasis when scheduled time exceeds available budget
-- **Dual Metrics:** Toggle between "completed" and "focused" progress metrics
-- **Closeable Panel:** Title bar with close button to dismiss analytics panel
+- **Closeable Panel:** Title bar with icon and close button to dismiss analytics panel
 - **Visual Encoding:** Uses goal/life-area colors for visual consistency
 
 ## Design Principles
@@ -109,8 +108,7 @@
 2. **Planning Budget:** PlanningBudget helps users understand time constraints before planning
 3. **Distribution Analysis:** DistributionSection shows where scheduled time is allocated
 4. **Goal vs Life Area:** Toggle between viewing by individual goals or life area groupings
-5. **Progress Metrics:** Switch between completed hours and focused hours metrics
-6. **Budget Awareness:** Visual feedback when scheduled time exceeds available budget
+5. **Budget Awareness:** Visual feedback when scheduled time exceeds available budget
 
 ## Integration Points
 

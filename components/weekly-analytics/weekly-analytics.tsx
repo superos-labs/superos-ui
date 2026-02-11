@@ -5,7 +5,7 @@
  *
  * Weekly progress analytics card for goals.
  *
- * Shows how much of the user's planned goal time has been completed (or focused),
+ * Shows how much of the user's planned goal time has been completed,
  * both in aggregate and per-goal, with ranked rows and lightweight progress bars.
  * Supports viewing by individual goals or aggregated by life areas.
  *
@@ -16,13 +16,12 @@
  * -----------------------------------------------------------------------------
  * - Define WeeklyAnalytics data types.
  * - Compute progress percentages from planned vs completed hours.
- * - Render title bar with close button for dismissing the analytics panel.
+ * - Render title bar with icon and close button for dismissing the analytics panel.
  * - Render an optional summary header with unified progress and distribution.
  * - Render a ranked list of goals or life areas with per-item progress.
  * - Support toggling between "Goals" and "Life Areas" distribution modes.
  * - Aggregate goal data by life area when in life-areas mode.
  * - Coordinate hover state between distribution bar and rows.
- * - Support toggling between "completed" and "focused" progress metrics.
  *
  * -----------------------------------------------------------------------------
  * NON-RESPONSIBILITIES
@@ -39,6 +38,7 @@
  *   scaled against total planned hours.
  * - Over-100% progress is clamped.
  * - Goals/Life Areas toggle is positioned above the list for visual association.
+ * - Title bar icon (RiPieChartLine) matches the analytics toggle in toolbar.
  * - Title bar and close button match IntegrationsSidebar pattern.
  *
  * -----------------------------------------------------------------------------
@@ -58,8 +58,7 @@ import * as React from "react";
 import { cn, formatHours, formatHoursWithUnit } from "@/lib/utils";
 import type { IconComponent, LifeArea } from "@/lib/types";
 import { getIconColorClass } from "@/lib/colors";
-import type { ProgressMetric } from "@/lib/preferences";
-import { RiCloseLine } from "@remixicon/react";
+import { RiCloseLine, RiPieChartLine } from "@remixicon/react";
 
 // =============================================================================
 // Types
@@ -230,7 +229,7 @@ export function WeeklyAnalyticsItemRow({
   return (
     <div
       className={cn(
-        "flex gap-3 rounded-lg px-2 py-1.5 transition-colors",
+        "flex gap-3 rounded-lg px-2 py-2.5 transition-colors",
         isHighlighted && "bg-muted/50",
         className
       )}
@@ -239,7 +238,7 @@ export function WeeklyAnalyticsItemRow({
         <IconComponent className={cn("size-3", item.color)} />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-sm text-foreground">
             {item.label}
@@ -345,10 +344,6 @@ interface WeeklyAnalyticsHeaderProps {
   allItems: WeeklyAnalyticsItem[];
   weekLabel?: string;
   onHoverItem?: (id: string | null) => void;
-  /** Current progress metric being displayed */
-  progressMetric?: ProgressMetric;
-  /** Callback when user toggles the metric */
-  onProgressMetricChange?: (metric: ProgressMetric) => void;
   className?: string;
 }
 
@@ -358,19 +353,9 @@ export function WeeklyAnalyticsHeader({
   allItems,
   weekLabel = "This Week",
   onHoverItem,
-  progressMetric = "completed",
-  onProgressMetricChange,
   className,
 }: WeeklyAnalyticsHeaderProps) {
   const progress = getProgress(totalCompleted, totalPlanned);
-  const metricLabel = progressMetric === "focused" ? "focused" : "completed";
-
-  const handleToggleMetric = () => {
-    if (!onProgressMetricChange) return;
-    onProgressMetricChange(
-      progressMetric === "completed" ? "focused" : "completed"
-    );
-  };
 
   return (
     <div className={cn("flex flex-col gap-3 px-4 py-4", className)}>
@@ -390,18 +375,12 @@ export function WeeklyAnalyticsHeader({
           onHoverItem={onHoverItem}
         />
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            {formatHours(totalCompleted)} {metricLabel} ·{" "}
-            {formatHours(totalPlanned)} planned
-          </p>
-          {onProgressMetricChange && (
-            <button
-              onClick={handleToggleMetric}
-              className="text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-            >
-              Show {progressMetric === "completed" ? "focused" : "completed"}
-            </button>
-          )}
+          <span className="text-[11px] tabular-nums text-muted-foreground">
+            {formatHours(totalCompleted)}h completed
+          </span>
+          <span className="text-[11px] tabular-nums text-muted-foreground">
+            {formatHours(totalPlanned)}h planned
+          </span>
         </div>
       </div>
     </div>
@@ -422,10 +401,6 @@ export interface WeeklyAnalyticsProps
   weekLabel?: string;
   /** Whether to show the summary header */
   showSummary?: boolean;
-  /** Current progress metric being displayed */
-  progressMetric?: ProgressMetric;
-  /** Callback when user toggles the metric */
-  onProgressMetricChange?: (metric: ProgressMetric) => void;
   /** Callback when user closes the analytics panel */
   onClose?: () => void;
 }
@@ -435,8 +410,6 @@ export function WeeklyAnalytics({
   lifeAreas = [],
   weekLabel = "This Week",
   showSummary = true,
-  progressMetric,
-  onProgressMetricChange,
   onClose,
   className,
   ...props
@@ -532,9 +505,14 @@ export function WeeklyAnalytics({
     >
       {/* Title bar */}
       <div className="flex shrink-0 items-center justify-between border-b border-border/60 px-4 py-3">
-        <h2 className="text-sm font-semibold text-foreground">
-          Weekly analytics
-        </h2>
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-7 items-center justify-center rounded-lg bg-muted">
+            <RiPieChartLine className="size-4 text-muted-foreground" />
+          </div>
+          <h2 className="text-sm font-semibold text-foreground">
+            Weekly analytics
+          </h2>
+        </div>
         {onClose && (
           <button
             onClick={onClose}
@@ -558,8 +536,6 @@ export function WeeklyAnalytics({
           allItems={mode === "goals" ? goals : lifeAreaItems}
           weekLabel={weekLabel}
           onHoverItem={setHoveredItemId}
-          progressMetric={progressMetric}
-          onProgressMetricChange={onProgressMetricChange}
         />
       )}
 

@@ -83,8 +83,6 @@ export function ShellRightPanel({ shellProps, wiring }: ShellRightPanelProps) {
     onResumeFocus,
     onEndFocus,
     onUpdateEvent,
-    progressMetric,
-    onProgressMetricChange,
     dayStartMinutes,
     dayEndMinutes,
     dayBoundariesEnabled,
@@ -227,8 +225,6 @@ export function ShellRightPanel({ shellProps, wiring }: ShellRightPanelProps) {
         goals={analyticsGoals}
         lifeAreas={lifeAreas}
         weekLabel={formatWeekRange(weekDates)}
-        progressMetric={progressMetric}
-        onProgressMetricChange={onProgressMetricChange}
         onClose={handleAnalyticsToggle}
         className="h-full w-[380px] max-w-none overflow-y-auto"
       />
