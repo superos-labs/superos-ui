@@ -43,75 +43,75 @@ export interface OnboardingGoalSuggestion {
  * Colors are hardcoded to match LIFE_AREAS in lib/life-areas.ts.
  */
 export const ONBOARDING_GOAL_SUGGESTIONS: OnboardingGoalSuggestion[] = [
-  // Health (color: rose)
+  // Life (color: rose)
   {
     id: "train-5k",
     label: "Train for a 5K race",
     icon: RiRunLine,
     color: "rose",
-    lifeAreaId: "health",
+    lifeAreaId: "life",
   },
 
-  // Career (color: violet)
+  // Work (color: violet)
   {
     id: "certification",
     label: "Complete a certification",
     icon: RiMedalLine,
     color: "violet",
-    lifeAreaId: "career",
+    lifeAreaId: "work",
   },
 
-  // Relationships (color: pink)
+  // Life (color: pink)
   {
     id: "quality-time",
     label: "Prioritize quality time",
     icon: RiHeart2Line,
     color: "pink",
-    lifeAreaId: "relationships",
+    lifeAreaId: "life",
   },
 
-  // Finance (color: emerald)
+  // Life (color: emerald)
   {
     id: "budget",
     label: "Master my personal budget",
     icon: RiMoneyDollarCircleLine,
     color: "emerald",
-    lifeAreaId: "finance",
+    lifeAreaId: "life",
   },
 
-  // Personal Growth (color: lime)
+  // Life (color: lime)
   {
     id: "learn-language",
     label: "Learn a new language",
     icon: RiGlobeLine,
     color: "lime",
-    lifeAreaId: "personal-growth",
+    lifeAreaId: "life",
   },
 
-  // Creativity (color: teal)
+  // Work (color: teal)
   {
     id: "passion-project",
     label: "Launch a passion project",
     icon: RiRocketLine,
     color: "teal",
-    lifeAreaId: "creativity",
+    lifeAreaId: "work",
   },
 
-  // Community (color: amber)
+  // Life (color: amber)
   {
     id: "volunteer",
     label: "Volunteer locally",
     icon: RiHandHeartLine,
     color: "amber",
-    lifeAreaId: "community",
+    lifeAreaId: "life",
   },
 
-  // Recreation (color: cyan)
+  // Life (color: cyan)
   {
     id: "explore-local",
     label: "Explore local hidden gems",
     icon: RiCompass3Line,
     color: "cyan",
-    lifeAreaId: "recreation",
+    lifeAreaId: "life",
   },
 ];

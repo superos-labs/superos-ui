@@ -50,8 +50,10 @@
 
 import * as React from "react";
 import { cn, formatHours, formatHoursWithUnit } from "@/lib/utils";
-import type { IconComponent } from "@/lib/types";
+import type { IconComponent, LifeArea } from "@/lib/types";
+import { getIconColorClass } from "@/lib/colors";
 import type { ProgressMetric } from "@/lib/preferences";
+import { RiCloseLine } from "@remixicon/react";
 
 // =============================================================================
 // Types
@@ -62,11 +64,15 @@ export interface WeeklyAnalyticsItem {
   label: string;
   icon: IconComponent;
   color: string;
+  /** Life area this goal belongs to */
+  lifeAreaId: string;
   /** Planned hours for this week */
   plannedHours: number;
   /** Completed hours (or focused hours, depending on metric) */
   completedHours: number;
 }
+
+type DistributionMode = "goals" | "life-areas";
 
 export interface WeeklyAnalyticsSectionData {
   title: string;
@@ -357,7 +363,7 @@ export function WeeklyAnalyticsHeader({
     <div className={cn("flex flex-col gap-3 px-4 py-4", className)}>
       {/* Hero: Week label + % */}
       <div className="flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold text-foreground">{weekLabel}</h2>
+        <span className="text-sm font-medium text-foreground">{weekLabel}</span>
         <span className="text-2xl font-semibold tabular-nums text-foreground">
           {progress}%
         </span>
@@ -397,6 +403,8 @@ export interface WeeklyAnalyticsProps
   extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of goal items */
   goals: WeeklyAnalyticsItem[];
+  /** Available life areas for aggregation in the life-areas distribution view */
+  lifeAreas?: LifeArea[];
   /** Label for the week (e.g., "This Week", "Jan 20-26") */
   weekLabel?: string;
   /** Whether to show the summary header */
@@ -405,19 +413,25 @@ export interface WeeklyAnalyticsProps
   progressMetric?: ProgressMetric;
   /** Callback when user toggles the metric */
   onProgressMetricChange?: (metric: ProgressMetric) => void;
+  /** Callback when user closes the analytics panel */
+  onClose?: () => void;
 }
 
 export function WeeklyAnalytics({
   goals,
+  lifeAreas = [],
   weekLabel = "This Week",
   showSummary = true,
   progressMetric,
   onProgressMetricChange,
+  onClose,
   className,
   ...props
 }: WeeklyAnalyticsProps) {
   // Hover state for distribution bar → row highlighting
   const [hoveredItemId, setHoveredItemId] = React.useState<string | null>(null);
+  // Toggle between goals and life-areas distribution
+  const [mode, setMode] = React.useState<DistributionMode>("goals");
 
   // Calculate totals only from goals with planned hours
   // (Essentials excluded — they provide no actionable insight for weekly progress)
@@ -445,6 +459,56 @@ export function WeeklyAnalytics({
     return [...planned, ...notPlanned];
   }, [goals]);
 
+  // Aggregate goals into life-area-level items
+  const lifeAreaItems: WeeklyAnalyticsItem[] = React.useMemo(() => {
+    const areaStats = new Map<
+      string,
+      { planned: number; completed: number }
+    >();
+    for (const g of goals) {
+      const current = areaStats.get(g.lifeAreaId) ?? {
+        planned: 0,
+        completed: 0,
+      };
+      areaStats.set(g.lifeAreaId, {
+        planned: current.planned + g.plannedHours,
+        completed: current.completed + g.completedHours,
+      });
+    }
+    const laMap = new Map(lifeAreas.map((la) => [la.id, la]));
+    return Array.from(areaStats.entries()).flatMap(([areaId, hours]) => {
+      const la = laMap.get(areaId);
+      if (!la) return [];
+      return [
+        {
+          id: areaId,
+          label: la.label,
+          icon: la.icon,
+          color: getIconColorClass(la.color),
+          lifeAreaId: areaId,
+          plannedHours: hours.planned,
+          completedHours: hours.completed,
+        },
+      ];
+    });
+  }, [goals, lifeAreas]);
+
+  // Sort life area items: planned first (by % desc), then not planned
+  const sortedLifeAreaItems = React.useMemo(() => {
+    const planned = lifeAreaItems
+      .filter((i) => i.plannedHours > 0)
+      .sort(
+        (a, b) =>
+          getProgress(b.completedHours, b.plannedHours) -
+          getProgress(a.completedHours, a.plannedHours)
+      );
+    const notPlanned = lifeAreaItems.filter((i) => i.plannedHours === 0);
+    return [...planned, ...notPlanned];
+  }, [lifeAreaItems]);
+
+  const displayItems = mode === "goals" ? sortedGoals : sortedLifeAreaItems;
+  const showToggle = lifeAreas.length > 0;
+
   return (
     <div
       className={cn(
@@ -453,11 +517,32 @@ export function WeeklyAnalytics({
       )}
       {...props}
     >
+      {/* Title bar */}
+      <div className="flex shrink-0 items-center justify-between border-b border-border/60 px-4 py-3">
+        <h2 className="text-sm font-semibold text-foreground">
+          Weekly analytics
+        </h2>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className={cn(
+              "flex size-7 items-center justify-center rounded-lg",
+              "text-muted-foreground transition-colors duration-150",
+              "hover:bg-muted hover:text-foreground",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            )}
+            aria-label="Close"
+          >
+            <RiCloseLine className="size-4" />
+          </button>
+        )}
+      </div>
+
       {showSummary && (
         <WeeklyAnalyticsHeader
           totalPlanned={totalPlanned}
           totalCompleted={totalCompleted}
-          allItems={goals}
+          allItems={mode === "goals" ? goals : lifeAreaItems}
           weekLabel={weekLabel}
           onHoverItem={setHoveredItemId}
           progressMetric={progressMetric}
@@ -465,14 +550,50 @@ export function WeeklyAnalytics({
         />
       )}
 
-      <div className="flex flex-col gap-0.5 px-2 py-3">
-        {sortedGoals.map((item) => (
-          <WeeklyAnalyticsItemRow
-            key={item.id}
-            item={item}
-            isHighlighted={hoveredItemId === item.id}
-          />
-        ))}
+      {/* Goal / life-area list with optional mode toggle */}
+      <div className="flex flex-col gap-1 px-2 pb-3 pt-1">
+        {/* Goals / Life Areas toggle */}
+        {showToggle && (
+          <div className="flex items-center justify-between px-2 pb-1">
+            <span className="text-[11px] font-medium text-muted-foreground">
+              Show by
+            </span>
+            <div className="flex rounded-md bg-muted p-0.5">
+              <button
+                onClick={() => setMode("goals")}
+                className={cn(
+                  "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                  mode === "goals"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Goals
+              </button>
+              <button
+                onClick={() => setMode("life-areas")}
+                className={cn(
+                  "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                  mode === "life-areas"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Life Areas
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-0.5">
+          {displayItems.map((item) => (
+            <WeeklyAnalyticsItemRow
+              key={item.id}
+              item={item}
+              isHighlighted={hoveredItemId === item.id}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

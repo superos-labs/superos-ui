@@ -49,7 +49,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Get SuperOS to $1M ARR",
     icon: RiRocketLine,
     color: "violet",
-    lifeAreaId: "career",
+    lifeAreaId: "work",
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -100,7 +100,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Run a marathon",
     icon: RiMedalLine,
     color: "rose",
-    lifeAreaId: "health",
+    lifeAreaId: "life",
     deadline: "2026-09-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -129,7 +129,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Write a book",
     icon: RiPenNibLine,
     color: "teal",
-    lifeAreaId: "creativity",
+    lifeAreaId: "life",
     deadline: "2026-06-30",
     deadlineGranularity: "month",
     milestones: [
@@ -168,7 +168,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     label: "Become fluent in Spanish",
     icon: RiCodeLine,
     color: "blue",
-    lifeAreaId: "personal-growth",
+    lifeAreaId: "life",
     milestones: [
       { id: "spanish-m1", label: "Complete A1 basics", completed: true },
       {
@@ -209,7 +209,7 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     label: "Get SuperOS to $1M ARR",
     icon: RiRocketLine,
     color: "violet",
-    lifeAreaId: "career",
+    lifeAreaId: "work",
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -230,7 +230,7 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     label: "Run a marathon",
     icon: RiMedalLine,
     color: "rose",
-    lifeAreaId: "health",
+    lifeAreaId: "life",
     deadline: "2026-05-31",
     deadlineGranularity: "month",
     milestones: [
@@ -248,7 +248,7 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     label: "Write a book",
     icon: RiPenNibLine,
     color: "teal",
-    lifeAreaId: "creativity",
+    lifeAreaId: "life",
     deadline: "2026-06-30",
     deadlineGranularity: "quarter",
     milestones: [
@@ -267,7 +267,7 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
     label: "Become fluent in Spanish",
     icon: RiGlobeLine,
     color: "lime",
-    lifeAreaId: "personal-growth",
+    lifeAreaId: "life",
     deadline: "2026-12-31",
     deadlineGranularity: "quarter",
     milestones: [
