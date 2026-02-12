@@ -67,6 +67,7 @@ import type {
 import type { AppearanceOverride } from "@/lib/calendar-sync";
 import type { LifeArea, GoalIconOption, IconComponent } from "@/lib/types";
 import type { GoalColor } from "@/lib/colors";
+import type { JSONContent } from "@tiptap/react";
 import type { BacklogItem } from "@/components/backlog";
 import {
   DropdownMenu,
@@ -78,6 +79,7 @@ import {
 import { GoalDetailHeader } from "./goal-detail-header";
 import { GoalDetailMilestones } from "./goal-detail-milestones";
 import { GoalDetailTasks } from "./goal-detail-tasks";
+import { GoalDetailNotesEditor } from "./goal-detail-notes-editor";
 
 // =============================================================================
 // Collapsible Section
@@ -123,45 +125,22 @@ function CollapsibleSection({
 }
 
 // =============================================================================
-// Notes Section (borderless, auto-expanding)
+// Notes Section (rich text via Tiptap)
 // =============================================================================
 
 interface GoalDetailNotesProps {
-  notes: string;
-  onChange?: (notes: string) => void;
+  notes: JSONContent | string;
+  onChange?: (notes: JSONContent) => void;
   className?: string;
 }
 
 function GoalDetailNotes({ notes, onChange, className }: GoalDetailNotesProps) {
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
-
-  // Auto-resize textarea based on content
-  React.useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      // Minimum height of one line (~20px), grows with content
-      textarea.style.height = `${Math.max(textarea.scrollHeight, 20)}px`;
-    }
-  }, [notes]);
-
   return (
-    <div className={cn("flex flex-col", className)}>
-      <textarea
-        ref={textareaRef}
-        value={notes}
-        onChange={(e) => onChange?.(e.target.value)}
-        placeholder="Add notes..."
-        rows={1}
-        className={cn(
-          "w-full resize-none bg-transparent text-sm text-muted-foreground leading-relaxed",
-          "placeholder:text-muted-foreground/40",
-          "focus:outline-none",
-          !onChange && "cursor-default",
-        )}
-        readOnly={!onChange}
-      />
-    </div>
+    <GoalDetailNotesEditor
+      content={notes}
+      onChange={onChange}
+      className={className}
+    />
   );
 }
 
@@ -355,10 +334,10 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   lifeArea?: LifeArea;
   /** Optional target completion date (ISO date string) */
   deadline?: string;
-  /** Local notes state (demo only, not persisted) */
-  notes?: string;
-  /** Callback when notes change */
-  onNotesChange?: (notes: string) => void;
+  /** Local notes state (demo only, not persisted) — JSONContent or legacy string */
+  notes?: JSONContent | string;
+  /** Callback when notes change (emits structured JSON) */
+  onNotesChange?: (notes: JSONContent) => void;
   /** Callback when title is edited */
   onTitleChange?: (title: string) => void;
   /** Callback when deadline is changed (undefined to clear) */
@@ -426,6 +405,7 @@ export function GoalDetail({
   lifeArea,
   deadline,
   notes = "",
+  // notes accepts JSONContent | string; the editor normalizes internally
   onNotesChange,
   onTitleChange,
   onDeadlineChange,

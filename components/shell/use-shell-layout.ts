@@ -45,6 +45,7 @@
 "use client";
 
 import * as React from "react";
+import type { JSONContent } from "@tiptap/react";
 import type { CalendarEvent } from "@/components/calendar";
 import type { BacklogMode } from "@/components/backlog";
 import type { UseBlockSidebarHandlersReturn } from "@/components/block";
@@ -115,8 +116,10 @@ export interface UseShellLayoutReturn {
   setSelectedGoalId: React.Dispatch<React.SetStateAction<string | null>>;
 
   // Goal notes (local state for demo)
-  goalNotes: Record<string, string>;
-  setGoalNotes: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  goalNotes: Record<string, JSONContent | string>;
+  setGoalNotes: React.Dispatch<
+    React.SetStateAction<Record<string, JSONContent | string>>
+  >;
 
   // Right sidebar content management
   renderedContent: "block" | "analytics" | "integrations" | null;
@@ -149,7 +152,7 @@ export interface UseShellLayoutReturn {
   handleSelectGoal: (goalId: string) => void;
   handleCloseGoalDetail: () => void;
   handlePlanWeekClick: () => void;
-  handleGoalNotesChange: (notes: string) => void;
+  handleGoalNotesChange: (notes: JSONContent) => void;
   handleAnalyticsToggle: () => void;
 }
 
@@ -287,7 +290,9 @@ export function useShellLayout(
   // -------------------------------------------------------------------------
   // Goal Notes (local state for demo)
   // -------------------------------------------------------------------------
-  const [goalNotes, setGoalNotes] = React.useState<Record<string, string>>({});
+  const [goalNotes, setGoalNotes] = React.useState<
+    Record<string, JSONContent | string>
+  >({});
 
   // -------------------------------------------------------------------------
   // Right Sidebar Content State
@@ -374,7 +379,7 @@ export function useShellLayout(
   }, []);
 
   const handleGoalNotesChange = React.useCallback(
-    (notes: string) => {
+    (notes: JSONContent) => {
       setGoalNotes((prev) => {
         if (selectedGoalId) {
           return { ...prev, [selectedGoalId]: notes };

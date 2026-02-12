@@ -45,6 +45,7 @@ import type {
   CalendarEvent,
   HoverPosition,
 } from "@/components/calendar";
+import type { JSONContent } from "@tiptap/react";
 import type {
   BacklogMode,
   NewEssentialData,
@@ -549,6 +550,6 @@ export interface ShellLayoutState {
   selectedEventId: string | null;
   /** Selected goal ID */
   selectedGoalId: string | null;
-  /** Goal notes (keyed by goal ID) */
-  goalNotes: Record<string, string>;
+  /** Goal notes (keyed by goal ID) — JSONContent or legacy plain string */
+  goalNotes: Record<string, JSONContent | string>;
 }

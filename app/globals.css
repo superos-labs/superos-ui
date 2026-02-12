@@ -191,4 +191,88 @@
       transform: translate(-50%, -50%);
     }
   }
+
+  /* =========================================================================
+   * Goal Notes — Tiptap Details/Toggle (Notion-style)
+   *
+   * DOM structure rendered by @tiptap/extension-details NodeView:
+   *   div[data-type="details"]          — outer wrapper (gets .is-open)
+   *     button                          — toggle trigger (empty by default)
+   *     div                             — contentDOM
+   *       summary                       — editable summary text
+   *       div[data-type="detailsContent" hidden]  — collapsible content
+   * ========================================================================= */
+
+  /* Wrapper — flex row so button + content sit side-by-side */
+  .goal-notes-prose .tiptap div[data-type="details"] {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin: 0.25rem 0;
+  }
+
+  /* Toggle button — styled as a Notion-style chevron */
+  .goal-notes-prose .tiptap div[data-type="details"] > button {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: background-color 150ms ease;
+  }
+
+  .goal-notes-prose .tiptap div[data-type="details"] > button:hover {
+    background-color: var(--color-muted);
+  }
+
+  /* Chevron triangle — CSS border trick */
+  .goal-notes-prose .tiptap div[data-type="details"] > button::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 4px 0 4px 6px;
+    border-color: transparent transparent transparent var(--color-muted-foreground);
+    opacity: 0.65;
+    transition: transform 150ms ease;
+  }
+
+  /* Chevron rotates when open */
+  .goal-notes-prose .tiptap div[data-type="details"].is-open > button::after {
+    transform: rotate(90deg);
+  }
+
+  /* Content column — takes remaining width */
+  .goal-notes-prose .tiptap div[data-type="details"] > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Summary text — the toggle label */
+  .goal-notes-prose .tiptap div[data-type="details"] summary {
+    display: block;
+    list-style: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+    color: var(--color-foreground);
+  }
+
+  .goal-notes-prose .tiptap div[data-type="details"] summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Content area */
+  .goal-notes-prose .tiptap div[data-type="detailsContent"] {
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    padding: 0.125rem 0;
+  }
 }
