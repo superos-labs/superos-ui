@@ -3,18 +3,19 @@
  * File: use-goal-state.ts
  * =============================================================================
  *
- * React hook for managing backlog goal, task, subtask, and milestone state.
+ * React hook for managing backlog goal, task, subtask, milestone, and
+ * initiative state.
  *
  * Owns in-memory goal hierarchy and exposes high-level CRUD operations and
- * behaviors (completion toggles, milestone enablement, weekly focus, etc.).
+ * behaviors (completion toggles, initiative management, weekly focus, etc.).
  * Built on top of pure immutable helpers from goal-state-utils.
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
  * - Store and update ScheduleGoal[] state.
- * - Provide CRUD for goals, tasks, subtasks, and milestones.
- * - Handle milestone enable/disable semantics and task reassignment.
+ * - Provide CRUD for goals, tasks, subtasks, milestones, and initiatives.
+ * - Handle initiative auto-creation ("General" initiative) for ungrouped tasks.
  * - Expose weekly focus batch updates.
  * - Provide cross-goal task lookup.
  *
@@ -24,6 +25,7 @@
  * - No persistence or side effects; caller owns saving.
  * - All updates are immutable and functional.
  * - Encapsulates domain behavior, not UI concerns.
+ * - Initiatives provide structural grouping; milestones are purely temporal.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -39,6 +41,7 @@ import * as React from "react";
 import type {
   Subtask,
   Milestone,
+  Initiative,
   ScheduleTask,
   ScheduleGoal,
   DateGranularity,
@@ -53,15 +56,15 @@ import {
   addMilestoneToGoal,
   updateMilestoneById,
   removeMilestoneFromGoal,
+  addInitiativeToGoal,
+  removeInitiativeFromGoal,
   updateTaskInGoals,
   updateSubtaskInGoals,
   updateMilestoneInGoals,
+  updateInitiativeInGoals,
   findTaskAcrossGoals,
   setWeeklyFocusOnTasks,
-  getCurrentMilestone,
-  assignAllTasksToMilestone,
-  clearTaskMilestoneAssignments,
-  completeTasksInMilestone,
+  ensureGeneralInitiative,
 } from "./goal-state-utils";
 
 // ============================================================================
@@ -79,7 +82,7 @@ export interface UseGoalStateReturn {
   deleteGoal: (goalId: string) => void;
   updateGoal: (goalId: string, updates: Partial<ScheduleGoal>) => void;
   toggleTaskComplete: (goalId: string, taskId: string) => boolean | undefined;
-  addTask: (goalId: string, label: string, milestoneId?: string) => string;
+  addTask: (goalId: string, label: string, initiativeId?: string) => string;
   updateTask: (
     goalId: string,
     taskId: string,
@@ -103,6 +106,17 @@ export interface UseGoalStateReturn {
   findTask: (
     taskId: string,
   ) => { goal: ScheduleGoal; task: ScheduleTask } | null;
+  // Initiative CRUD
+  addInitiative: (goalId: string, label: string) => string;
+  updateInitiative: (
+    goalId: string,
+    initiativeId: string,
+    updates: Partial<Initiative>,
+  ) => void;
+  deleteInitiative: (goalId: string, initiativeId: string) => void;
+  // Visibility toggles
+  toggleMilestonesEnabled: (goalId: string) => void;
+  toggleInitiativesEnabled: (goalId: string) => void;
   // Milestone CRUD
   addMilestone: (goalId: string, label: string) => string;
   updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
@@ -114,8 +128,6 @@ export interface UseGoalStateReturn {
   ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
-  /** Toggle whether milestones are enabled for a goal */
-  toggleMilestonesEnabled: (goalId: string) => void;
   /** Set weekly focus on multiple tasks at once (persists weeklyFocusWeek) */
   setWeeklyFocus: (taskIds: Set<string>, weekStartDate: string) => void;
 }
@@ -177,27 +189,27 @@ export function useGoalState({
   );
 
   const addTask = React.useCallback(
-    (goalId: string, label: string, milestoneId?: string): string => {
+    (goalId: string, label: string, initiativeId?: string): string => {
       const newTaskId = crypto.randomUUID();
 
       setGoals((prev) =>
         updateGoalById(prev, goalId, (goal) => {
-          // If milestones are enabled, auto-assign to current milestone if none specified
-          let finalMilestoneId = milestoneId;
-          const milestonesEnabled =
-            goal.milestonesEnabled ??
-            (goal.milestones && goal.milestones.length > 0);
+          // If an initiative is specified, use it directly
+          let finalInitiativeId = initiativeId;
 
-          if (milestonesEnabled && !finalMilestoneId) {
-            const currentMilestone = getCurrentMilestone(goal);
-            finalMilestoneId = currentMilestone?.id;
+          // If no initiative specified and goal has initiatives, assign to General
+          if (!finalInitiativeId && goal.initiatives && goal.initiatives.length > 0) {
+            const { goal: updatedGoal, generalInitiativeId } =
+              ensureGeneralInitiative(goal, crypto.randomUUID.bind(crypto));
+            goal = updatedGoal;
+            finalInitiativeId = generalInitiativeId;
           }
 
           const newTask: ScheduleTask = {
             id: newTaskId,
             label,
             completed: false,
-            milestoneId: finalMilestoneId,
+            initiativeId: finalInitiativeId,
           };
 
           return addTaskToGoal(goal, newTask);
@@ -297,6 +309,79 @@ export function useGoalState({
   );
 
   // -------------------------------------------------------------------------
+  // Visibility toggles
+  // -------------------------------------------------------------------------
+
+  const toggleMilestonesEnabled = React.useCallback(
+    (goalId: string) => {
+      setGoals((prev) =>
+        updateGoalById(prev, goalId, (goal) => ({
+          ...goal,
+          milestonesEnabled: goal.milestonesEnabled === false ? true : false,
+        })),
+      );
+    },
+    [],
+  );
+
+  const toggleInitiativesEnabled = React.useCallback(
+    (goalId: string) => {
+      setGoals((prev) =>
+        updateGoalById(prev, goalId, (goal) => ({
+          ...goal,
+          initiativesEnabled: goal.initiativesEnabled === false ? true : false,
+        })),
+      );
+    },
+    [],
+  );
+
+  // -------------------------------------------------------------------------
+  // Initiative CRUD
+  // -------------------------------------------------------------------------
+
+  const addInitiative = React.useCallback(
+    (goalId: string, label: string): string => {
+      const newInitiative: Initiative = {
+        id: crypto.randomUUID(),
+        label,
+      };
+
+      setGoals((prev) =>
+        updateGoalById(prev, goalId, (goal) =>
+          addInitiativeToGoal(goal, newInitiative),
+        ),
+      );
+
+      return newInitiative.id;
+    },
+    [],
+  );
+
+  const updateInitiative = React.useCallback(
+    (goalId: string, initiativeId: string, updates: Partial<Initiative>) => {
+      setGoals((prev) =>
+        updateInitiativeInGoals(prev, goalId, initiativeId, (initiative) => ({
+          ...initiative,
+          ...updates,
+        })),
+      );
+    },
+    [],
+  );
+
+  const deleteInitiative = React.useCallback(
+    (goalId: string, initiativeId: string) => {
+      setGoals((prev) =>
+        updateGoalById(prev, goalId, (goal) =>
+          removeInitiativeFromGoal(goal, initiativeId),
+        ),
+      );
+    },
+    [],
+  );
+
+  // -------------------------------------------------------------------------
   // Milestone CRUD
   // -------------------------------------------------------------------------
 
@@ -356,20 +441,11 @@ export function useGoalState({
           const milestone = goal.milestones?.find((m) => m.id === milestoneId);
           if (!milestone) return goal;
 
-          const newCompletedState = !milestone.completed;
-
-          // Update the milestone
-          let updatedGoal = updateMilestoneById(goal, milestoneId, (m) => ({
+          // Pure temporal marker — toggle completion with no task side effects
+          return updateMilestoneById(goal, milestoneId, (m) => ({
             ...m,
-            completed: newCompletedState,
+            completed: !m.completed,
           }));
-
-          // If marking as complete, also complete all tasks in this milestone
-          if (newCompletedState) {
-            updatedGoal = completeTasksInMilestone(updatedGoal, milestoneId);
-          }
-
-          return updatedGoal;
         }),
       );
     },
@@ -386,52 +462,6 @@ export function useGoalState({
     },
     [],
   );
-
-  const toggleMilestonesEnabled = React.useCallback((goalId: string) => {
-    setGoals((prev) =>
-      updateGoalById(prev, goalId, (goal) => {
-        // If milestonesEnabled is undefined, treat it as enabled (true) if milestones exist
-        const currentlyEnabled =
-          goal.milestonesEnabled ??
-          (goal.milestones && goal.milestones.length > 0);
-
-        if (!currentlyEnabled) {
-          // Enabling milestones: create "Phase 1" if no milestones exist, assign all tasks
-          const hasExistingMilestones =
-            goal.milestones && goal.milestones.length > 0;
-
-          if (hasExistingMilestones) {
-            // Use first milestone to assign tasks
-            const firstMilestoneId = goal.milestones![0].id;
-            const updatedGoal = assignAllTasksToMilestone(
-              goal,
-              firstMilestoneId,
-            );
-            return { ...updatedGoal, milestonesEnabled: true };
-          } else {
-            // Create "Phase 1" milestone and assign all tasks to it
-            const phase1Id = crypto.randomUUID();
-            const newMilestone: Milestone = {
-              id: phase1Id,
-              label: "Phase 1",
-              completed: false,
-            };
-            let updatedGoal: ScheduleGoal = {
-              ...goal,
-              milestones: [newMilestone],
-              milestonesEnabled: true,
-            };
-            updatedGoal = assignAllTasksToMilestone(updatedGoal, phase1Id);
-            return updatedGoal;
-          }
-        } else {
-          // Disabling milestones: clear task milestone assignments
-          const updatedGoal = clearTaskMilestoneAssignments(goal);
-          return { ...updatedGoal, milestonesEnabled: false };
-        }
-      }),
-    );
-  }, []);
 
   // -------------------------------------------------------------------------
   // Weekly Focus
@@ -474,13 +504,19 @@ export function useGoalState({
     toggleSubtaskComplete,
     deleteSubtask,
     findTask,
+    // Visibility toggles
+    toggleMilestonesEnabled,
+    toggleInitiativesEnabled,
+    // Initiative CRUD
+    addInitiative,
+    updateInitiative,
+    deleteInitiative,
     // Milestone CRUD
     addMilestone,
     updateMilestone,
     updateMilestoneDeadline,
     toggleMilestoneComplete,
     deleteMilestone,
-    toggleMilestonesEnabled,
     // Weekly focus
     setWeeklyFocus,
   };

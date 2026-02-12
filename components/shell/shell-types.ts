@@ -53,6 +53,7 @@ import type {
   ScheduleGoal,
   ScheduleEssential,
   ScheduleTask,
+  Initiative,
   DateGranularity,
   GoalStats,
   TaskScheduleInfo,
@@ -202,7 +203,7 @@ export interface ShellContentProps {
   /** Toggle task completion */
   onToggleTaskComplete: (goalId: string, taskId: string) => void;
   /** Add a task to a goal (returns the new task ID) */
-  onAddTask: (goalId: string, label: string, milestoneId?: string) => string;
+  onAddTask: (goalId: string, label: string, initiativeId?: string) => string;
   /** Update a task */
   onUpdateTask: (
     goalId: string,
@@ -234,6 +235,28 @@ export interface ShellContentProps {
   onDeleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
   // -------------------------------------------------------------------------
+  // Visibility toggles
+  // -------------------------------------------------------------------------
+  /** Toggle milestone timeline visibility for a goal */
+  onToggleMilestonesEnabled: (goalId: string) => void;
+  /** Toggle initiative grouping visibility for a goal */
+  onToggleInitiativesEnabled: (goalId: string) => void;
+
+  // -------------------------------------------------------------------------
+  // Initiative CRUD
+  // -------------------------------------------------------------------------
+  /** Add an initiative (returns the new initiative ID) */
+  onAddInitiative: (goalId: string, label: string) => string;
+  /** Update an initiative */
+  onUpdateInitiative: (
+    goalId: string,
+    initiativeId: string,
+    updates: Partial<Initiative>,
+  ) => void;
+  /** Delete an initiative */
+  onDeleteInitiative: (goalId: string, initiativeId: string) => void;
+
+  // -------------------------------------------------------------------------
   // Milestone CRUD
   // -------------------------------------------------------------------------
   /** Add a milestone (returns the new milestone ID) */
@@ -255,8 +278,6 @@ export interface ShellContentProps {
   ) => void;
   /** Delete a milestone */
   onDeleteMilestone: (goalId: string, milestoneId: string) => void;
-  /** Toggle whether milestones are enabled for a goal */
-  onToggleMilestonesEnabled: (goalId: string) => void;
 
   // -------------------------------------------------------------------------
   // Deadline Management

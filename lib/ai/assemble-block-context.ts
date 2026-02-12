@@ -255,18 +255,15 @@ function buildGoalContext(
     }
   }
 
-  // ── Milestone context ────────────────────────────────────────────────
+  // ── Milestone context (next upcoming checkpoint) ─────────────────────
   const currentMilestone = goal.milestones?.find((m) => !m.completed);
   let milestoneContext: GoalContext["currentMilestone"];
 
-  if (currentMilestone && goal.tasks) {
-    const milestoneTasks = goal.tasks.filter(
-      (t) => t.milestoneId === currentMilestone.id,
-    );
-    const completedCount = milestoneTasks.filter(
-      (t) => t.completed,
-    ).length;
-    const totalCount = milestoneTasks.length;
+  if (currentMilestone) {
+    // Milestones are purely temporal — compute overall task completion for context
+    const allTasks = goal.tasks ?? [];
+    const completedCount = allTasks.filter((t) => t.completed).length;
+    const totalCount = allTasks.length;
     milestoneContext = {
       label: currentMilestone.label,
       deadline: currentMilestone.deadline,

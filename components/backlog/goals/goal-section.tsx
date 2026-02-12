@@ -71,7 +71,7 @@ export interface GoalSectionProps {
   onItemClick?: (itemId: string) => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
   /** Callback to add a new task to a goal */
-  onAddTask?: (goalId: string, label: string, milestoneId?: string) => void;
+  onAddTask?: (goalId: string, label: string, initiativeId?: string) => void;
   /** Callback to update a task's properties */
   onUpdateTask?: (
     goalId: string,

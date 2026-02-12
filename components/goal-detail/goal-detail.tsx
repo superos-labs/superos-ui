@@ -9,8 +9,8 @@
  * editing a single goal, including:
  * - Core identity (icon, color, title, life area, target date).
  * - Notes.
- * - Tasks and subtasks.
- * - Optional milestone-based structure.
+ * - Milestone timeline (time-based checkpoints).
+ * - Initiative-grouped tasks and subtasks.
  * - Goal-level sync and advanced options.
  *
  * Acts as a composition root for multiple goal-detail subcomponents.
@@ -18,16 +18,15 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Compose header, notes, tasks, and milestone sections.
- * - Switch between milestone and flat-task modes.
+ * - Compose header, notes, milestone timeline, and initiative sections.
  * - Wire user interactions to callback props.
- * - Host goal-level actions (back, delete, sync settings, toggle milestones).
+ * - Host goal-level actions (back, delete, sync settings).
  * - Manage local UI state for sync settings dialog.
  *
  * -----------------------------------------------------------------------------
  * NON-RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Persisting goal, task, or milestone changes.
+ * - Persisting goal, task, milestone, or initiative changes.
  * - Fetching data.
  * - Computing schedule or deadline info.
  *
@@ -35,8 +34,9 @@
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
  * - Scrollable content area with fixed outer shell.
- * - Milestones enabled when explicitly flagged or present.
- * - Uses collapsible sections only when milestones are disabled.
+ * - Milestones always available as a timeline section above tasks.
+ * - Initiatives always available as collapsible task groupings.
+ * - Both milestone and initiative sections use empty-state CTAs.
  * - Subcomponents remain mostly presentational.
  *
  * -----------------------------------------------------------------------------
@@ -52,13 +52,13 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import {
   RiArrowLeftSLine,
-  RiArrowRightSLine,
   RiMoreFill,
   RiCloseLine,
 } from "@remixicon/react";
 import type {
   ScheduleGoal,
   ScheduleTask,
+  Initiative,
   TaskScheduleInfo,
   TaskDeadlineInfo,
   GoalSyncSettings,
@@ -77,50 +77,7 @@ import {
 } from "@/components/ui";
 import { GoalDetailHeader } from "./goal-detail-header";
 import { GoalDetailMilestones } from "./goal-detail-milestones";
-import { GoalDetailTasks } from "./goal-detail-tasks";
-
-// =============================================================================
-// Collapsible Section
-// =============================================================================
-
-interface CollapsibleSectionProps {
-  label: string;
-  count?: { completed: number; total: number };
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}
-
-function CollapsibleSection({
-  label,
-  count,
-  defaultOpen = true,
-  children,
-}: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = React.useState(defaultOpen);
-
-  return (
-    <div className="flex flex-col">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 py-1.5 text-left transition-colors hover:text-foreground"
-      >
-        <RiArrowRightSLine
-          className={cn(
-            "size-4 text-muted-foreground/50 transition-transform",
-            isOpen && "rotate-90",
-          )}
-        />
-        <span className="text-xs text-muted-foreground/70">{label}</span>
-        {count && count.total > 0 && (
-          <span className="text-xs text-muted-foreground/40">
-            {count.completed}/{count.total}
-          </span>
-        )}
-      </button>
-      {isOpen && <div className="flex flex-col">{children}</div>}
-    </div>
-  );
-}
+import { GoalDetailInitiatives } from "./goal-detail-initiatives";
 
 // =============================================================================
 // Notes Section (borderless, auto-expanding)
@@ -385,7 +342,7 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
 
   // Task callbacks
   onToggleTask?: (taskId: string) => void;
-  onAddTask?: (label: string, milestoneId?: string) => void;
+  onAddTask?: (label: string, initiativeId?: string) => void;
   onUpdateTask?: (taskId: string, updates: Partial<ScheduleTask>) => void;
   onDeleteTask?: (taskId: string) => void;
 
@@ -394,6 +351,14 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   onToggleSubtask?: (taskId: string, subtaskId: string) => void;
   onUpdateSubtask?: (taskId: string, subtaskId: string, label: string) => void;
   onDeleteSubtask?: (taskId: string, subtaskId: string) => void;
+
+  // Initiative callbacks
+  onAddInitiative?: (label: string) => void;
+  onUpdateInitiative?: (
+    initiativeId: string,
+    updates: Partial<Initiative>,
+  ) => void;
+  onDeleteInitiative?: (initiativeId: string) => void;
 
   // Milestone callbacks
   onAddMilestone?: (label: string) => void;
@@ -405,8 +370,10 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
     deadlineGranularity: DateGranularity | undefined,
   ) => void;
   onDeleteMilestone?: (milestoneId: string) => void;
-  /** Callback to toggle milestones enabled/disabled */
+  /** Callback to toggle milestone timeline visibility */
   onToggleMilestones?: () => void;
+  /** Callback to toggle initiative grouping visibility */
+  onToggleInitiatives?: () => void;
 
   /** Callback when goal is deleted */
   onDelete?: () => void;
@@ -444,12 +411,16 @@ export function GoalDetail({
   onToggleSubtask,
   onUpdateSubtask,
   onDeleteSubtask,
+  onAddInitiative,
+  onUpdateInitiative,
+  onDeleteInitiative,
   onAddMilestone,
   onToggleMilestone,
   onUpdateMilestone,
   onUpdateMilestoneDeadline,
   onDeleteMilestone,
   onToggleMilestones,
+  onToggleInitiatives,
   onDelete,
   onBack,
   onSyncSettingsChange,
@@ -466,21 +437,16 @@ export function GoalDetail({
     label: goal.label,
     icon: goal.icon,
     color: goal.color,
+    initiatives: goal.initiatives,
     milestones: goal.milestones,
-    milestonesEnabled: goal.milestonesEnabled,
     tasks: goal.tasks,
   };
 
-  // Compute milestone and task counts for collapsible headers
   const milestones = goal.milestones ?? [];
+  const initiatives = goal.initiatives ?? [];
   const tasks = goal.tasks ?? [];
-  const taskCount = {
-    completed: tasks.filter((t) => t.completed).length,
-    total: tasks.length,
-  };
-
-  // Check if milestones are enabled for this goal
-  const milestonesEnabled = goal.milestonesEnabled ?? milestones.length > 0;
+  const milestonesEnabled = goal.milestonesEnabled !== false;
+  const initiativesEnabled = goal.initiativesEnabled !== false;
 
   return (
     <div
@@ -510,7 +476,7 @@ export function GoalDetail({
             <div className="flex-1" />
 
             {/* More options menu */}
-            {(onSyncSettingsChange || onToggleMilestones || onDelete) && (
+            {(onToggleMilestones || onToggleInitiatives || onSyncSettingsChange || onDelete) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -521,24 +487,27 @@ export function GoalDetail({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-[160px]">
+                  {onToggleMilestones && (
+                    <DropdownMenuItem onClick={onToggleMilestones}>
+                      {milestonesEnabled ? "Hide milestones" : "Show milestones"}
+                    </DropdownMenuItem>
+                  )}
+                  {onToggleInitiatives && (
+                    <DropdownMenuItem onClick={onToggleInitiatives}>
+                      {initiativesEnabled ? "Hide initiatives" : "Show initiatives"}
+                    </DropdownMenuItem>
+                  )}
+                  {(onToggleMilestones || onToggleInitiatives) && (onSyncSettingsChange || onDelete) && (
+                    <DropdownMenuSeparator />
+                  )}
                   {onSyncSettingsChange && hasSyncAvailable && (
                     <DropdownMenuItem onClick={() => setSyncSettingsOpen(true)}>
                       Sync settings
                     </DropdownMenuItem>
                   )}
-                  {onSyncSettingsChange &&
-                    hasSyncAvailable &&
-                    onToggleMilestones && <DropdownMenuSeparator />}
-                  {onToggleMilestones && (
-                    <DropdownMenuItem onClick={onToggleMilestones}>
-                      {milestonesEnabled
-                        ? "Disable milestones"
-                        : "Enable milestones"}
-                    </DropdownMenuItem>
+                  {onSyncSettingsChange && hasSyncAvailable && onDelete && (
+                    <DropdownMenuSeparator />
                   )}
-                  {((onSyncSettingsChange && hasSyncAvailable) ||
-                    onToggleMilestones) &&
-                    onDelete && <DropdownMenuSeparator />}
                   {onDelete && (
                     <DropdownMenuItem variant="destructive" onClick={onDelete}>
                       Delete goal
@@ -572,51 +541,37 @@ export function GoalDetail({
             {/* Notes (inline, borderless) */}
             <GoalDetailNotes notes={notes} onChange={onNotesChange} />
 
-            {/* When milestones are enabled, show hierarchical milestone/task view */}
-            {milestonesEnabled ? (
+            {/* Milestone timeline (toggleable via ··· menu) */}
+            {milestonesEnabled && (
               <GoalDetailMilestones
                 milestones={milestones}
-                tasks={tasks}
-                parentGoal={goalAsBacklogItem}
-                getTaskSchedule={getTaskSchedule}
-                getTaskDeadline={getTaskDeadline}
                 onAddMilestone={onAddMilestone}
                 onToggleMilestone={onToggleMilestone}
                 onUpdateMilestone={onUpdateMilestone}
                 onUpdateMilestoneDeadline={onUpdateMilestoneDeadline}
                 onDeleteMilestone={onDeleteMilestone}
-                onToggleTask={onToggleTask}
-                onAddTask={onAddTask}
-                onUpdateTask={onUpdateTask}
-                onAddSubtask={onAddSubtask}
-                onToggleSubtask={onToggleSubtask}
-                onUpdateSubtask={onUpdateSubtask}
-                onDeleteSubtask={onDeleteSubtask}
-                onDeleteTask={onDeleteTask}
               />
-            ) : (
-              /* When milestones disabled, show flat tasks list */
-              <CollapsibleSection
-                label="Tasks"
-                count={taskCount}
-                defaultOpen={true}
-              >
-                <GoalDetailTasks
-                  tasks={tasks}
-                  parentGoal={goalAsBacklogItem}
-                  getTaskSchedule={getTaskSchedule}
-                  getTaskDeadline={getTaskDeadline}
-                  onToggleTask={onToggleTask}
-                  onAddTask={onAddTask}
-                  onUpdateTask={onUpdateTask}
-                  onAddSubtask={onAddSubtask}
-                  onToggleSubtask={onToggleSubtask}
-                  onUpdateSubtask={onUpdateSubtask}
-                  onDeleteSubtask={onDeleteSubtask}
-                  onDeleteTask={onDeleteTask}
-                />
-              </CollapsibleSection>
             )}
+
+            {/* Initiatives and tasks (initiatives toggleable via ··· menu) */}
+            <GoalDetailInitiatives
+              initiatives={initiativesEnabled ? initiatives : []}
+              tasks={tasks}
+              parentGoal={goalAsBacklogItem}
+              getTaskSchedule={getTaskSchedule}
+              getTaskDeadline={getTaskDeadline}
+              onAddInitiative={initiativesEnabled ? onAddInitiative : undefined}
+              onUpdateInitiative={initiativesEnabled ? onUpdateInitiative : undefined}
+              onDeleteInitiative={initiativesEnabled ? onDeleteInitiative : undefined}
+              onToggleTask={onToggleTask}
+              onAddTask={onAddTask}
+              onUpdateTask={onUpdateTask}
+              onAddSubtask={onAddSubtask}
+              onToggleSubtask={onToggleSubtask}
+              onUpdateSubtask={onUpdateSubtask}
+              onDeleteSubtask={onDeleteSubtask}
+              onDeleteTask={onDeleteTask}
+            />
           </div>
         </div>
       </div>

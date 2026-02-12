@@ -5,14 +5,15 @@
  *
  * Fixture goal definitions for shell/sample and complete data sets.
  *
- * Provides realistic example goals, including milestones and tasks, to populate
- * demos, onboarding previews, and the shell experience. Also includes a minimal
- * goal set used when skipping onboarding.
+ * Provides realistic example goals, including milestones, initiatives, and tasks,
+ * to populate demos, onboarding previews, and the shell experience. Also includes
+ * a minimal goal set used when skipping onboarding.
  *
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Define sample goals with milestones, tasks, subtasks, and granular dates.
+ * - Define sample goals with milestones, initiatives, tasks, subtasks, and
+ *   granular dates.
  * - Define a rich set of goals with milestones spanning Q1 2026 for dev flows.
  * - Expose an empty goals array for initialization and resets.
  *
@@ -21,6 +22,9 @@
  * -----------------------------------------------------------------------------
  * - Sample goals mirror common life areas (career, health, creativity, growth).
  * - IDs are stable and referenced by fixture calendar events.
+ * - Milestones are pure temporal checkpoints (not task containers).
+ * - Initiatives provide structural grouping for tasks.
+ * - Tasks reference initiatives via initiativeId.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -35,12 +39,11 @@ import {
   RiRunLine,
   RiPencilLine,
   RiTranslate,
-  RiEarthLine,
 } from "@remixicon/react";
 import type { ScheduleGoal } from "@/lib/unified-schedule";
 
 // =============================================================================
-// Sample Goals (with tasks and milestones for demo)
+// Sample Goals (with milestones, initiatives, and tasks for demo)
 // =============================================================================
 
 export const SHELL_GOALS: ScheduleGoal[] = [
@@ -59,11 +62,17 @@ export const SHELL_GOALS: ScheduleGoal[] = [
       { id: "superos-m4", label: "Ship billing integration", completed: false, deadline: "2026-06-30", deadlineGranularity: "quarter" },
       { id: "superos-m5", label: "Launch to beta users", completed: false, deadline: "2026-06-30", deadlineGranularity: "quarter" },
     ],
+    initiatives: [
+      { id: "superos-i1", label: "Backend Integration", startDate: "2026-01-01", endDate: "2026-03-31" },
+      { id: "superos-i2", label: "Launch Prep", startDate: "2026-02-01", endDate: "2026-03-31" },
+      { id: "superos-i-general", label: "General" },
+    ],
     tasks: [
       {
         id: "superos-1",
         label: "Set up Stripe webhook handlers",
         completed: true,
+        initiativeId: "superos-i1",
         scheduledBlockId: "shell-superos-task-1",
         description:
           "Handle subscription.created, subscription.updated, and payment_failed events.",
@@ -72,6 +81,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
         id: "superos-2",
         label: "Build subscription management UI",
         completed: false,
+        initiativeId: "superos-i1",
         description:
           "Allow users to view their current plan, upgrade/downgrade, and cancel.",
         subtasks: [
@@ -92,7 +102,7 @@ export const SHELL_GOALS: ScheduleGoal[] = [
           },
         ],
       },
-      { id: "superos-3", label: "Add invoice generation", completed: false },
+      { id: "superos-3", label: "Add invoice generation", completed: false, initiativeId: "superos-i-general" },
     ],
   },
   {
@@ -109,16 +119,21 @@ export const SHELL_GOALS: ScheduleGoal[] = [
       { id: "marathon-m3", label: "Run half marathon", completed: false, deadline: "2026-09-15" },
       { id: "marathon-m4", label: "Complete full marathon", completed: false, deadline: "2026-09-30", deadlineGranularity: "quarter" },
     ],
+    initiatives: [
+      { id: "marathon-i-general", label: "General" },
+    ],
     tasks: [
       {
         id: "marathon-1",
         label: "Run 5K three times this week",
         completed: true,
+        initiativeId: "marathon-i-general",
       },
       {
         id: "marathon-2",
         label: "Do interval training on Saturday",
         completed: false,
+        initiativeId: "marathon-i-general",
         description:
           "8x400m repeats with 90s recovery. Target pace: 1:45 per 400m.",
       },
@@ -139,13 +154,18 @@ export const SHELL_GOALS: ScheduleGoal[] = [
       { id: "book-m4", label: "Finish chapter 3 draft", completed: false, deadline: "2026-05-31", deadlineGranularity: "month" },
       { id: "book-m5", label: "Complete first draft", completed: false, deadline: "2026-06-30", deadlineGranularity: "month" },
     ],
+    initiatives: [
+      { id: "book-i1", label: "Story Structure" },
+      { id: "book-i2", label: "Characters" },
+    ],
     tasks: [
-      { id: "book-1", label: "Outline the main conflict", completed: true },
-      { id: "book-2", label: "Write the opening scene", completed: true },
+      { id: "book-1", label: "Outline the main conflict", completed: true, initiativeId: "book-i1" },
+      { id: "book-2", label: "Write the opening scene", completed: true, initiativeId: "book-i1" },
       {
         id: "book-3",
         label: "Develop supporting characters",
         completed: false,
+        initiativeId: "book-i2",
         description:
           "Focus on the mentor figure and the antagonist's backstory.",
         subtasks: [
@@ -171,30 +191,17 @@ export const SHELL_GOALS: ScheduleGoal[] = [
     lifeAreaId: "life",
     milestones: [
       { id: "spanish-m1", label: "Complete A1 basics", completed: true },
-      {
-        id: "spanish-m2",
-        label: "Complete A2 certification",
-        completed: false,
-      },
+      { id: "spanish-m2", label: "Complete A2 certification", completed: false },
       { id: "spanish-m3", label: "Pass B1 exam", completed: false },
-      {
-        id: "spanish-m4",
-        label: "Achieve conversational fluency",
-        completed: false,
-      },
+      { id: "spanish-m4", label: "Achieve conversational fluency", completed: false },
+    ],
+    initiatives: [
+      { id: "spanish-i-general", label: "General" },
     ],
     tasks: [
-      { id: "spanish-1", label: "Complete Duolingo lesson", completed: true },
-      {
-        id: "spanish-2",
-        label: "Watch Spanish movie with subtitles",
-        completed: false,
-      },
-      {
-        id: "spanish-3",
-        label: "Practice conversation with tutor",
-        completed: false,
-      },
+      { id: "spanish-1", label: "Complete Duolingo lesson", completed: true, initiativeId: "spanish-i-general" },
+      { id: "spanish-2", label: "Watch Spanish movie with subtitles", completed: false, initiativeId: "spanish-i-general" },
+      { id: "spanish-3", label: "Practice conversation with tutor", completed: false, initiativeId: "spanish-i-general" },
     ],
   },
 ];
@@ -219,10 +226,14 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
       { id: "c-superos-m4", label: "Onboard 10 beta customers", completed: false, deadline: "2026-03-15" },
       { id: "c-superos-m5", label: "Hit $10K MRR", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
     ],
+    initiatives: [
+      { id: "c-superos-i1", label: "Billing", startDate: "2026-01-01", endDate: "2026-02-28" },
+      { id: "c-superos-i-general", label: "General" },
+    ],
     tasks: [
-      { id: "c-superos-t1", label: "Set up Stripe webhook handlers", completed: true },
-      { id: "c-superos-t2", label: "Build subscription management UI", completed: false },
-      { id: "c-superos-t3", label: "Add invoice generation", completed: false },
+      { id: "c-superos-t1", label: "Set up Stripe webhook handlers", completed: true, initiativeId: "c-superos-i1" },
+      { id: "c-superos-t2", label: "Build subscription management UI", completed: false, initiativeId: "c-superos-i1" },
+      { id: "c-superos-t3", label: "Add invoice generation", completed: false, initiativeId: "c-superos-i-general" },
     ],
   },
   {
@@ -238,9 +249,12 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
       { id: "c-marathon-m2", label: "Complete 10K under 55min", completed: false, deadline: "2026-02-28", deadlineGranularity: "month" },
       { id: "c-marathon-m3", label: "Run half marathon", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
     ],
+    initiatives: [
+      { id: "c-marathon-i-general", label: "General" },
+    ],
     tasks: [
-      { id: "c-marathon-t1", label: "Run 5K three times this week", completed: true },
-      { id: "c-marathon-t2", label: "Do interval training on Saturday", completed: false },
+      { id: "c-marathon-t1", label: "Run 5K three times this week", completed: true, initiativeId: "c-marathon-i-general" },
+      { id: "c-marathon-t2", label: "Do interval training on Saturday", completed: false, initiativeId: "c-marathon-i-general" },
     ],
   },
   {
@@ -256,10 +270,13 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
       { id: "c-book-m2", label: "Finish first three chapters", completed: false, deadline: "2026-02-28", deadlineGranularity: "month" },
       { id: "c-book-m3", label: "Complete first draft", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
     ],
+    initiatives: [
+      { id: "c-book-i-general", label: "General" },
+    ],
     tasks: [
-      { id: "c-book-t1", label: "Outline the main conflict", completed: true },
-      { id: "c-book-t2", label: "Write the opening scene", completed: true },
-      { id: "c-book-t3", label: "Develop supporting characters", completed: false },
+      { id: "c-book-t1", label: "Outline the main conflict", completed: true, initiativeId: "c-book-i-general" },
+      { id: "c-book-t2", label: "Write the opening scene", completed: true, initiativeId: "c-book-i-general" },
+      { id: "c-book-t3", label: "Develop supporting characters", completed: false, initiativeId: "c-book-i-general" },
     ],
   },
   {
@@ -275,10 +292,13 @@ export const COMPLETE_GOALS: ScheduleGoal[] = [
       { id: "c-spanish-m2", label: "Pass A2 mock exam", completed: false, deadline: "2026-03-15" },
       { id: "c-spanish-m3", label: "Hold 10-min conversation", completed: false, deadline: "2026-03-31", deadlineGranularity: "month" },
     ],
+    initiatives: [
+      { id: "c-spanish-i-general", label: "General" },
+    ],
     tasks: [
-      { id: "c-spanish-t1", label: "Complete Duolingo lesson", completed: true },
-      { id: "c-spanish-t2", label: "Watch Spanish movie with subtitles", completed: false },
-      { id: "c-spanish-t3", label: "Practice conversation with tutor", completed: false },
+      { id: "c-spanish-t1", label: "Complete Duolingo lesson", completed: true, initiativeId: "c-spanish-i-general" },
+      { id: "c-spanish-t2", label: "Watch Spanish movie with subtitles", completed: false, initiativeId: "c-spanish-i-general" },
+      { id: "c-spanish-t3", label: "Practice conversation with tutor", completed: false, initiativeId: "c-spanish-i-general" },
     ],
   },
 ];

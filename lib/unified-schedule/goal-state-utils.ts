@@ -3,11 +3,12 @@
  * File: goal-state-utils.ts
  * =============================================================================
  *
- * Pure immutable update helpers for goal, task, subtask, and milestone state.
+ * Pure immutable update helpers for goal, task, subtask, milestone, and
+ * initiative state.
  *
  * Centralizes common nested-update patterns for the unified schedule data model
- * (goals → tasks → subtasks / milestones) to avoid repetitive and error-prone
- * spread logic throughout hooks and reducers.
+ * (goals → tasks → subtasks / milestones / initiatives) to avoid repetitive and
+ * error-prone spread logic throughout hooks and reducers.
  *
  * All functions:
  * - Are pure and side-effect free.
@@ -17,10 +18,11 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Update, add, remove, and find goals, tasks, subtasks, and milestones.
+ * - Update, add, remove, and find goals, tasks, subtasks, milestones, and
+ *   initiatives.
  * - Provide composed helpers for multi-level updates (e.g. subtask inside task
  *   inside goal).
- * - Support milestone-task associations and milestone-based batch operations.
+ * - Support initiative-task associations and initiative-based operations.
  *
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
@@ -29,15 +31,24 @@
  * - Safe to use inside reducers, Zustand stores, or React state setters.
  * - Prefer composing these utilities rather than introducing new ad-hoc
  *   immutable update logic elsewhere.
+ * - Initiatives provide structural grouping for tasks; milestones are
+ *   purely temporal checkpoints (no task-container semantics).
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
  * -----------------------------------------------------------------------------
- * - Goal-level, task-level, subtask-level, and milestone-level update helpers.
+ * - Goal-level, task-level, subtask-level, milestone-level, and
+ *   initiative-level update helpers.
  * - Cross-goal finders and batch update utilities.
  */
 
-import type { ScheduleGoal, ScheduleTask, Subtask, Milestone } from "./types";
+import type {
+  ScheduleGoal,
+  ScheduleTask,
+  Subtask,
+  Milestone,
+  Initiative,
+} from "./types";
 
 // ============================================================================
 // Goal-Level Utilities
@@ -216,6 +227,66 @@ export function removeMilestoneFromGoal(
 }
 
 // ============================================================================
+// Initiative-Level Utilities
+// ============================================================================
+
+/**
+ * Update an initiative within a goal's initiatives array.
+ */
+export function updateInitiativeById(
+  goal: ScheduleGoal,
+  initiativeId: string,
+  updater: (initiative: Initiative) => Initiative,
+): ScheduleGoal {
+  return {
+    ...goal,
+    initiatives: goal.initiatives?.map((initiative) =>
+      initiative.id === initiativeId ? updater(initiative) : initiative,
+    ),
+  };
+}
+
+/**
+ * Add an initiative to a goal's initiatives array.
+ */
+export function addInitiativeToGoal(
+  goal: ScheduleGoal,
+  initiative: Initiative,
+): ScheduleGoal {
+  return {
+    ...goal,
+    initiatives: [...(goal.initiatives ?? []), initiative],
+  };
+}
+
+/**
+ * Remove an initiative from a goal's initiatives array.
+ * Also clears initiativeId from any tasks referencing the removed initiative.
+ */
+export function removeInitiativeFromGoal(
+  goal: ScheduleGoal,
+  initiativeId: string,
+): ScheduleGoal {
+  return {
+    ...goal,
+    initiatives: goal.initiatives?.filter((i) => i.id !== initiativeId),
+    tasks: goal.tasks?.map((t) =>
+      t.initiativeId === initiativeId ? { ...t, initiativeId: undefined } : t,
+    ),
+  };
+}
+
+/**
+ * Find an initiative within a goal.
+ */
+export function findInitiativeInGoal(
+  goal: ScheduleGoal,
+  initiativeId: string,
+): Initiative | undefined {
+  return goal.initiatives?.find((i) => i.id === initiativeId);
+}
+
+// ============================================================================
 // Composed Utilities (Multi-Level Updates)
 // ============================================================================
 
@@ -268,6 +339,21 @@ export function updateMilestoneInGoals(
 }
 
 /**
+ * Update an initiative within a goals array.
+ * Finds the goal by ID, then updates the initiative within it.
+ */
+export function updateInitiativeInGoals(
+  goals: ScheduleGoal[],
+  goalId: string,
+  initiativeId: string,
+  updater: (initiative: Initiative) => Initiative,
+): ScheduleGoal[] {
+  return updateGoalById(goals, goalId, (goal) =>
+    updateInitiativeById(goal, initiativeId, updater),
+  );
+}
+
+/**
  * Find a task across all goals.
  * Returns both the goal and task if found.
  */
@@ -305,62 +391,64 @@ export function setWeeklyFocusOnTasks(
 }
 
 // ============================================================================
-// Milestone-Task Association Utilities
+// Initiative-Task Association Utilities
 // ============================================================================
 
 /**
- * Get tasks for a specific milestone.
+ * Get tasks for a specific initiative.
  */
-export function getTasksForMilestone(
+export function getTasksForInitiative(
   goal: ScheduleGoal,
-  milestoneId: string,
+  initiativeId: string,
 ): ScheduleTask[] {
-  return (goal.tasks ?? []).filter((t) => t.milestoneId === milestoneId);
+  return (goal.tasks ?? []).filter((t) => t.initiativeId === initiativeId);
 }
 
 /**
- * Get the current (first incomplete) milestone.
+ * Get the "General" (default) initiative for a goal, or undefined if none exists.
  */
-export function getCurrentMilestone(goal: ScheduleGoal): Milestone | undefined {
-  return goal.milestones?.find((m) => !m.completed);
-}
-
-/**
- * Assign all tasks to a milestone (used when enabling milestones).
- */
-export function assignAllTasksToMilestone(
+export function getGeneralInitiative(
   goal: ScheduleGoal,
-  milestoneId: string,
-): ScheduleGoal {
+): Initiative | undefined {
+  return goal.initiatives?.find((i) => i.label === "General");
+}
+
+/**
+ * Ensure a goal has a "General" initiative, creating one if needed.
+ * Returns the updated goal and the General initiative's ID.
+ */
+export function ensureGeneralInitiative(
+  goal: ScheduleGoal,
+  generateId: () => string,
+): { goal: ScheduleGoal; generalInitiativeId: string } {
+  const existing = getGeneralInitiative(goal);
+  if (existing) {
+    return { goal, generalInitiativeId: existing.id };
+  }
+
+  const generalId = generateId();
+  const generalInitiative: Initiative = {
+    id: generalId,
+    label: "General",
+  };
+
   return {
-    ...goal,
-    tasks: goal.tasks?.map((t) => ({ ...t, milestoneId })),
+    goal: addInitiativeToGoal(goal, generalInitiative),
+    generalInitiativeId: generalId,
   };
 }
 
 /**
- * Clear milestone assignments from all tasks (used when disabling milestones).
+ * Assign all tasks without an initiative to a specific initiative.
  */
-export function clearTaskMilestoneAssignments(
+export function assignUngroupedTasksToInitiative(
   goal: ScheduleGoal,
-): ScheduleGoal {
-  return {
-    ...goal,
-    tasks: goal.tasks?.map((t) => ({ ...t, milestoneId: undefined })),
-  };
-}
-
-/**
- * Complete all tasks in a milestone.
- */
-export function completeTasksInMilestone(
-  goal: ScheduleGoal,
-  milestoneId: string,
+  initiativeId: string,
 ): ScheduleGoal {
   return {
     ...goal,
     tasks: goal.tasks?.map((t) =>
-      t.milestoneId === milestoneId ? { ...t, completed: true } : t,
+      !t.initiativeId ? { ...t, initiativeId } : t,
     ),
   };
 }

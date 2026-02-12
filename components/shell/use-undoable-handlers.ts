@@ -103,7 +103,7 @@ interface UndoableHandlersOptions {
   onDeleteTask: (goalId: string, taskId: string) => void;
   onUnassignTaskFromBlock: (blockId: string, taskId: string) => void;
   onAssignTaskToBlock: (blockId: string, taskId: string) => void;
-  onAddTask: (goalId: string, label: string, milestoneId?: string) => string;
+  onAddTask: (goalId: string, label: string, initiativeId?: string) => string;
   onUpdateTask: (
     goalId: string,
     taskId: string,
@@ -242,7 +242,7 @@ export function useUndoableHandlers(
             const newTaskId = onAddTask(
               goalId,
               taskCopy.label,
-              taskCopy.milestoneId,
+              taskCopy.initiativeId,
             );
 
             // Update with remaining properties (completed status, description, deadline, etc.)

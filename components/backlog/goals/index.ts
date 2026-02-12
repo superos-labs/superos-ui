@@ -42,7 +42,7 @@
  *
  * Types:
  * - GoalItem, BacklogItem
- * - GoalTask, Milestone, Subtask
+ * - GoalTask, Milestone, Initiative, Subtask
  * - NewGoalData, GoalIconOption
  * - LifeArea
  *
@@ -95,6 +95,7 @@ export type {
   BacklogItem,
   GoalTask,
   Milestone,
+  Initiative,
   Subtask,
   NewGoalData,
   GoalIconOption,

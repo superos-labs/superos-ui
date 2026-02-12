@@ -6,7 +6,7 @@
  * Row component for rendering a Goal and its associated Tasks inside the backlog.
  *
  * Supports:
- * - Displaying goal metadata (icon, label, current milestone).
+ * - Displaying goal metadata (icon, label).
  * - Optional navigation to goal detail.
  * - Optional drag-and-drop of the goal.
  * - Inline rendering and editing of tasks.
@@ -39,7 +39,7 @@
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
- * - When milestones are enabled, only tasks for the current milestone are shown.
+ * - Shows all incomplete tasks regardless of initiative (initiatives are detail-view only).
  * - Tasks can be visually prioritized by weekly focus (This Week).
  * - Chevron navigation is isolated from drag interactions.
  *
@@ -54,7 +54,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiArrowRightSLine, RiShiningLine } from "@remixicon/react";
+import { RiArrowRightSLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
@@ -76,7 +76,7 @@ export interface GoalItemRowProps {
   onItemClick?: (itemId: string) => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
   /** Callback to add a new task to this goal */
-  onAddTask?: (goalId: string, label: string, milestoneId?: string) => void;
+  onAddTask?: (goalId: string, label: string, initiativeId?: string) => void;
   /** Callback to update a task's properties */
   onUpdateTask?: (
     goalId: string,
@@ -155,16 +155,6 @@ export function GoalItemRow({
     disabled: !canDrag,
   });
 
-  // Compute current milestone (first incomplete) and progress
-  // Only show if milestones are enabled (default to true if milestones exist)
-  const milestonesEnabled =
-    item.milestonesEnabled ?? (item.milestones && item.milestones.length > 0);
-  const currentMilestone = milestonesEnabled
-    ? item.milestones?.find((m) => !m.completed)
-    : undefined;
-  const totalMilestones = item.milestones?.length ?? 0;
-  const showMilestones = milestonesEnabled && totalMilestones > 0;
-
   // Handle chevron click to navigate to goal detail
   const handleChevronClick = React.useCallback(
     (e: React.MouseEvent) => {
@@ -197,12 +187,6 @@ export function GoalItemRow({
           <span className="truncate text-sm font-medium text-foreground">
             {item.label}
           </span>
-          {showMilestones && currentMilestone && (
-            <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-              <RiShiningLine className="size-3 shrink-0" />
-              <span className="truncate">{currentMilestone.label}</span>
-            </span>
-          )}
         </div>
 
         {showChevron && (
@@ -219,13 +203,8 @@ export function GoalItemRow({
       {showTasks && (
         <div className="flex flex-col gap-0.5">
           {(() => {
-            const allTasks = item.tasks ?? [];
-
-            // When milestones are enabled, filter to only show tasks for the current milestone
-            const tasks =
-              milestonesEnabled && currentMilestone
-                ? allTasks.filter((t) => t.milestoneId === currentMilestone.id)
-                : allTasks;
+            // Show all tasks regardless of initiative (initiatives are detail-view only)
+            const tasks = item.tasks ?? [];
 
             // Partition tasks into "This Week" and "Other"
             const thisWeekTasks = currentWeekStart
@@ -296,7 +275,6 @@ export function GoalItemRow({
           {onAddTask && !hideTaskCreator && (
             <InlineTaskCreator
               goalId={item.id}
-              milestoneId={milestonesEnabled ? currentMilestone?.id : undefined}
               onSave={onAddTask}
             />
           )}

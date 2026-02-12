@@ -16,7 +16,7 @@
  * -----------------------------------------------------------------------------
  * - Expose the main `useUnifiedSchedule` orchestration hook.
  * - Expose composable sub-hooks for advanced or partial integrations.
- * - Re-export immutable goal/task/milestone state utilities.
+ * - Re-export immutable goal/task/milestone/initiative state utilities.
  * - Re-export core domain and derived types.
  * - Re-export goal creation and inspiration types (merged from lib/goals).
  *
@@ -97,17 +97,22 @@ export {
   updateMilestoneById,
   addMilestoneToGoal,
   removeMilestoneFromGoal,
+  // Initiative-level
+  updateInitiativeById,
+  addInitiativeToGoal,
+  removeInitiativeFromGoal,
+  findInitiativeInGoal,
   // Composed (multi-level)
   updateTaskInGoals,
   updateSubtaskInGoals,
   updateMilestoneInGoals,
+  updateInitiativeInGoals,
   findTaskAcrossGoals,
-  // Milestone-task association utilities
-  getTasksForMilestone,
-  getCurrentMilestone,
-  assignAllTasksToMilestone,
-  clearTaskMilestoneAssignments,
-  completeTasksInMilestone,
+  // Initiative-task association utilities
+  getTasksForInitiative,
+  getGeneralInitiative,
+  ensureGeneralInitiative,
+  assignUngroupedTasksToInitiative,
 } from "./goal-state-utils";
 
 // Time range utilities
@@ -128,6 +133,7 @@ export type {
   DateGranularity,
   // Core data types
   Subtask,
+  Initiative,
   Milestone,
   ScheduleTask,
   ScheduleGoal,

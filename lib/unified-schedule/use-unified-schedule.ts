@@ -94,13 +94,19 @@ export function useUnifiedSchedule({
     toggleSubtaskComplete,
     deleteSubtask,
     findTask,
+    // Visibility toggles
+    toggleMilestonesEnabled,
+    toggleInitiativesEnabled,
+    // Initiative CRUD
+    addInitiative,
+    updateInitiative,
+    deleteInitiative,
     // Milestone CRUD
     addMilestone,
     updateMilestone,
     updateMilestoneDeadline,
     toggleMilestoneComplete,
     deleteMilestone,
-    toggleMilestonesEnabled,
     // Weekly focus
     setWeeklyFocus,
   } = useGoalState({ initialGoals });
@@ -542,13 +548,19 @@ export function useUnifiedSchedule({
     updateSubtask,
     toggleSubtaskComplete,
     deleteSubtask,
+    // Visibility toggles
+    toggleMilestonesEnabled,
+    toggleInitiativesEnabled,
+    // Initiative CRUD
+    addInitiative,
+    updateInitiative,
+    deleteInitiative,
     // Milestone CRUD
     addMilestone,
     updateMilestone,
     updateMilestoneDeadline,
     toggleMilestoneComplete,
     deleteMilestone,
-    toggleMilestonesEnabled,
     // Weekly focus
     setWeeklyFocus,
     scheduleGoal,

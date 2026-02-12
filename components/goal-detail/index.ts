@@ -35,6 +35,8 @@
  * - GoalDetailHeaderProps
  * - GoalDetailMilestones
  * - GoalDetailMilestonesProps
+ * - GoalDetailInitiatives
+ * - GoalDetailInitiativesProps
  * - GoalDetailTasks
  * - GoalDetailTasksProps
  */
@@ -47,6 +49,9 @@ export type { GoalDetailHeaderProps } from "./goal-detail-header";
 
 export { GoalDetailMilestones } from "./goal-detail-milestones";
 export type { GoalDetailMilestonesProps } from "./goal-detail-milestones";
+
+export { GoalDetailInitiatives } from "./goal-detail-initiatives";
+export type { GoalDetailInitiativesProps } from "./goal-detail-initiatives";
 
 export { GoalDetailTasks } from "./goal-detail-tasks";
 export type { GoalDetailTasksProps } from "./goal-detail-tasks";

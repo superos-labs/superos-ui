@@ -13,7 +13,7 @@
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
  * - Define core calendar event and hover/grid positioning types.
- * - Define goal, task, subtask, milestone, and essential domain models.
+ * - Define goal, task, subtask, milestone, initiative, and essential domain models.
  * - Define external calendar sync configuration and computed sync state.
  * - Define computed/derived data shapes (stats, deadlines, schedule info).
  * - Define option and return types for unified schedule hooks.
@@ -33,7 +33,7 @@
  * -----------------------------------------------------------------------------
  * - DateGranularity
  * - CalendarEvent, HoverPosition, BlockStatus
- * - ScheduleGoal (with deadline and granularity fields), ScheduleTask, Subtask, Milestone, ScheduleEssential
+ * - ScheduleGoal (with deadline and granularity fields), ScheduleTask, Subtask, Milestone, Initiative, ScheduleEssential
  * - Sync-related types (GoalSyncSettings, BlockSyncSettings, BlockSyncState)
  * - Computed/derived types and hook option/return types
  * - NewGoalData
@@ -197,12 +197,22 @@ export interface Subtask {
   completed: boolean;
 }
 
-/** Milestone within a goal (ordered sequential steps) */
+/** Initiative within a goal — groups related tasks into a collapsible sub-effort */
+export interface Initiative {
+  id: string;
+  label: string;
+  /** Optional start date (ISO date string, e.g., "2026-01-15") */
+  startDate?: string;
+  /** Optional end date (ISO date string, e.g., "2026-03-31") */
+  endDate?: string;
+}
+
+/** Milestone — pure time-based checkpoint attached to a goal (not a task container) */
 export interface Milestone {
   id: string;
   label: string;
   completed: boolean;
-  /** Optional target completion date (ISO date string, e.g., "2026-03-15") */
+  /** Optional target date for this checkpoint (ISO date string, e.g., "2026-03-15") */
   deadline?: string;
   /** Granularity of the deadline. Defaults to "day" when absent. */
   deadlineGranularity?: DateGranularity;
@@ -213,8 +223,8 @@ export interface ScheduleTask {
   id: string;
   label: string;
   completed?: boolean;
-  /** Milestone this task belongs to (required when milestones are enabled) */
-  milestoneId?: string;
+  /** Initiative this task is grouped under (optional structural grouping) */
+  initiativeId?: string;
   /** Reference to the calendar block if scheduled (mutually exclusive with deadline) */
   scheduledBlockId?: string;
   /** ISO date string for deadline (e.g., "2026-01-25") - mutually exclusive with scheduledBlockId */
@@ -239,9 +249,13 @@ export interface ScheduleGoal {
   deadline?: string;
   /** Granularity of the target date. Defaults to "day" when absent. */
   deadlineGranularity?: DateGranularity;
-  /** Ordered milestones (sequential steps toward the goal) */
+  /** Collapsible sub-efforts for organizing tasks */
+  initiatives?: Initiative[];
+  /** Whether initiative grouping is visible in the goal detail (defaults to true) */
+  initiativesEnabled?: boolean;
+  /** Time-based checkpoints (decoupled from task grouping) */
   milestones?: Milestone[];
-  /** Whether milestones are enabled for this goal (defaults to true if milestones exist) */
+  /** Whether the milestone timeline is visible in the goal detail (defaults to true) */
   milestonesEnabled?: boolean;
   tasks?: ScheduleTask[];
   /** External calendar sync settings for this goal */
@@ -423,7 +437,7 @@ export interface UseUnifiedScheduleReturn {
   toggleTaskComplete: (goalId: string, taskId: string) => void;
 
   // Task CRUD actions
-  addTask: (goalId: string, label: string, milestoneId?: string) => string;
+  addTask: (goalId: string, label: string, initiativeId?: string) => string;
   updateTask: (
     goalId: string,
     taskId: string,
@@ -446,6 +460,19 @@ export interface UseUnifiedScheduleReturn {
   ) => void;
   deleteSubtask: (goalId: string, taskId: string, subtaskId: string) => void;
 
+  // Visibility toggles
+  toggleMilestonesEnabled: (goalId: string) => void;
+  toggleInitiativesEnabled: (goalId: string) => void;
+
+  // Initiative CRUD actions
+  addInitiative: (goalId: string, label: string) => string;
+  updateInitiative: (
+    goalId: string,
+    initiativeId: string,
+    updates: Partial<Initiative>,
+  ) => void;
+  deleteInitiative: (goalId: string, initiativeId: string) => void;
+
   // Milestone CRUD actions
   addMilestone: (goalId: string, label: string) => string;
   updateMilestone: (goalId: string, milestoneId: string, label: string) => void;
@@ -457,8 +484,6 @@ export interface UseUnifiedScheduleReturn {
   ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
-  /** Toggle whether milestones are enabled for a goal */
-  toggleMilestonesEnabled: (goalId: string) => void;
 
   // Weekly focus
   /** Set weekly focus on multiple tasks at once (persists weeklyFocusWeek) */

@@ -414,13 +414,21 @@ export function useShellState(
     onUpdateSubtask: schedule.updateSubtask,
     onDeleteSubtask: schedule.deleteSubtask,
 
+    // Visibility toggles
+    onToggleMilestonesEnabled: schedule.toggleMilestonesEnabled,
+    onToggleInitiativesEnabled: schedule.toggleInitiativesEnabled,
+
+    // Initiative CRUD
+    onAddInitiative: schedule.addInitiative,
+    onUpdateInitiative: schedule.updateInitiative,
+    onDeleteInitiative: schedule.deleteInitiative,
+
     // Milestone CRUD
     onAddMilestone: schedule.addMilestone,
     onToggleMilestoneComplete: schedule.toggleMilestoneComplete,
     onUpdateMilestone: schedule.updateMilestone,
     onUpdateMilestoneDeadline: schedule.updateMilestoneDeadline,
     onDeleteMilestone: schedule.deleteMilestone,
-    onToggleMilestonesEnabled: schedule.toggleMilestonesEnabled,
 
     // Deadline management
     onClearTaskDeadline: schedule.clearTaskDeadline,

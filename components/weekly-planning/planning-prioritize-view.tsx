@@ -47,7 +47,6 @@ import { cn } from "@/lib/utils";
 import { RiCheckLine, RiAddLine, RiSubtractLine } from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import type { ScheduleGoal, ScheduleTask } from "@/lib/unified-schedule";
-import { getCurrentMilestone } from "@/lib/unified-schedule";
 
 // =============================================================================
 // Types
@@ -231,16 +230,8 @@ function GoalWithSubsections({
   const IconComponent = goal.icon;
   const allTasks = goal.tasks ?? [];
 
-  // When milestones are enabled, filter to only show tasks for the current milestone
-  const milestonesEnabled =
-    goal.milestonesEnabled ?? (goal.milestones && goal.milestones.length > 0);
-  const currentMilestone = milestonesEnabled
-    ? getCurrentMilestone(goal)
-    : undefined;
-  const tasks =
-    milestonesEnabled && currentMilestone
-      ? allTasks.filter((t) => t.milestoneId === currentMilestone.id)
-      : allTasks;
+  // Show all tasks regardless of initiative (initiatives are detail-view only)
+  const tasks = allTasks;
 
   // Split tasks into focus and other (focus tasks render first)
   const focusTasks = tasks.filter((t) => weeklyFocusTaskIds.has(t.id));

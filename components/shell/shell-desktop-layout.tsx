@@ -125,6 +125,10 @@ export function ShellDesktopLayout({
     onUpdateMilestoneDeadline,
     onDeleteMilestone,
     onToggleMilestonesEnabled,
+    onToggleInitiativesEnabled,
+    onAddInitiative,
+    onUpdateInitiative,
+    onDeleteInitiative,
     getGoalStats,
     getTaskSchedule,
     getTaskDeadline,
@@ -432,8 +436,8 @@ export function ShellDesktopLayout({
               onToggleTask={(taskId) =>
                 enhancedToggleTaskComplete(selectedGoal.id, taskId)
               }
-              onAddTask={(label, milestoneId) =>
-                onAddTask(selectedGoal.id, label, milestoneId)
+              onAddTask={(label, initiativeId) =>
+                onAddTask(selectedGoal.id, label, initiativeId)
               }
               onUpdateTask={(taskId, updates) =>
                 onUpdateTask(selectedGoal.id, taskId, updates)
@@ -473,6 +477,18 @@ export function ShellDesktopLayout({
               }
               onToggleMilestones={() =>
                 onToggleMilestonesEnabled(selectedGoal.id)
+              }
+              onToggleInitiatives={() =>
+                onToggleInitiativesEnabled(selectedGoal.id)
+              }
+              onAddInitiative={(label) =>
+                onAddInitiative(selectedGoal.id, label)
+              }
+              onUpdateInitiative={(initiativeId, updates) =>
+                onUpdateInitiative(selectedGoal.id, initiativeId, updates)
+              }
+              onDeleteInitiative={(initiativeId) =>
+                onDeleteInitiative(selectedGoal.id, initiativeId)
               }
               onDelete={goalHandlers.handleDeleteGoal}
               onBack={handleCloseGoalDetail}

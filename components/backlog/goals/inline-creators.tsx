@@ -70,14 +70,14 @@ import type { LifeArea, GoalIconOption, NewGoalData } from "./goal-types";
 
 export interface InlineTaskCreatorProps {
   goalId: string;
-  /** Optional milestone ID to assign the task to */
-  milestoneId?: string;
-  onSave: (goalId: string, label: string, milestoneId?: string) => void;
+  /** Optional initiative ID to assign the task to */
+  initiativeId?: string;
+  onSave: (goalId: string, label: string, initiativeId?: string) => void;
 }
 
 export function InlineTaskCreator({
   goalId,
-  milestoneId,
+  initiativeId,
   onSave,
 }: InlineTaskCreatorProps) {
   const [isEditing, setIsEditing] = React.useState(false);
@@ -94,7 +94,7 @@ export function InlineTaskCreator({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && value.trim()) {
       e.preventDefault();
-      onSave(goalId, value.trim(), milestoneId);
+      onSave(goalId, value.trim(), initiativeId);
       setValue(""); // Clear for next task (rapid entry)
       // Keep focus for rapid entry
       inputRef.current?.focus();
@@ -108,7 +108,7 @@ export function InlineTaskCreator({
   const handleBlur = () => {
     // Save if there's content, otherwise just close
     if (value.trim()) {
-      onSave(goalId, value.trim(), milestoneId);
+      onSave(goalId, value.trim(), initiativeId);
     }
     setValue("");
     setIsEditing(false);

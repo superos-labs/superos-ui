@@ -86,6 +86,7 @@ export type {
   BacklogItem,
   GoalTask,
   Milestone,
+  Initiative,
   Subtask,
   NewGoalData,
   GoalIconOption,
