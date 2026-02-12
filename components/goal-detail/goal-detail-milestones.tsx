@@ -8,6 +8,7 @@
  * Renders a vertical list of milestones, each containing its associated tasks,
  * with support for:
  * - Creating, editing, completing, and deleting milestones.
+ * - Toggling milestones between active and inactive states.
  * - Creating, editing, completing, and deleting tasks within milestones.
  * - Managing subtasks inside individual tasks.
  *
@@ -58,6 +59,8 @@ import {
   RiDeleteBinLine,
   RiArrowRightSLine,
   RiCalendarLine,
+  RiFlashlightLine,
+  RiFlashlightFill,
 } from "@remixicon/react";
 import type {
   Milestone,
@@ -253,6 +256,7 @@ interface MilestoneSectionProps {
   getTaskSchedule?: (taskId: string) => TaskScheduleInfo | null;
   getTaskDeadline?: (taskId: string) => TaskDeadlineInfo | null;
   onToggleMilestone?: () => void;
+  onToggleActive?: () => void;
   onUpdateMilestone?: (label: string) => void;
   onUpdateMilestoneDeadline?: (
     deadline: string | undefined,
@@ -279,6 +283,7 @@ function MilestoneSection({
   getTaskSchedule,
   getTaskDeadline,
   onToggleMilestone,
+  onToggleActive,
   onUpdateMilestone,
   onUpdateMilestoneDeadline,
   onDeleteMilestone,
@@ -332,14 +337,21 @@ function MilestoneSection({
     }
   };
 
+  const isActive = milestone.active ?? true;
+
   return (
     <div className="flex flex-col">
       {/* Milestone header */}
       <div
         className={cn(
           "group flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all",
-          isCurrent && !milestone.completed && "bg-muted/40",
-          !isCurrent && !milestone.completed && "opacity-70",
+          milestone.completed
+            ? ""
+            : isActive
+              ? isCurrent
+                ? "bg-muted/40"
+                : ""
+              : "opacity-50",
         )}
       >
         {/* Checkbox */}
@@ -434,6 +446,26 @@ function MilestoneSection({
           </span>
         ) : null}
 
+        {/* Active toggle */}
+        {onToggleActive && !milestone.completed && (
+          <button
+            onClick={onToggleActive}
+            title={isActive ? "Deactivate milestone" : "Activate milestone"}
+            className={cn(
+              "flex size-5 shrink-0 items-center justify-center rounded-md transition-all",
+              isActive
+                ? "text-amber-500/70 hover:text-amber-500"
+                : "text-muted-foreground/30 hover:text-muted-foreground/60",
+            )}
+          >
+            {isActive ? (
+              <RiFlashlightFill className="size-3" />
+            ) : (
+              <RiFlashlightLine className="size-3" />
+            )}
+          </button>
+        )}
+
         {/* Delete button */}
         {onDeleteMilestone && (
           <button
@@ -520,6 +552,8 @@ export interface GoalDetailMilestonesProps {
   onAddMilestone?: (label: string) => void;
   /** Callback to toggle a milestone's completion */
   onToggleMilestone?: (milestoneId: string) => void;
+  /** Callback to toggle a milestone's active state */
+  onToggleMilestoneActive?: (milestoneId: string) => void;
   /** Callback to update a milestone's label */
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
   /** Callback to update a milestone's deadline */
@@ -557,6 +591,7 @@ export function GoalDetailMilestones({
   getTaskDeadline,
   onAddMilestone,
   onToggleMilestone,
+  onToggleMilestoneActive,
   onUpdateMilestone,
   onUpdateMilestoneDeadline,
   onDeleteMilestone,
@@ -633,6 +668,11 @@ export function GoalDetailMilestones({
           onToggleMilestone={
             onToggleMilestone
               ? () => onToggleMilestone(milestone.id)
+              : undefined
+          }
+          onToggleActive={
+            onToggleMilestoneActive
+              ? () => onToggleMilestoneActive(milestone.id)
               : undefined
           }
           onUpdateMilestone={

@@ -76,6 +76,10 @@ export interface UseShellLayoutReturn {
   showTasks: boolean;
   setShowTasks: React.Dispatch<React.SetStateAction<boolean>>;
 
+  // Goal expand/collapse
+  expandedGoalIds: Set<string>;
+  toggleGoalExpanded: (goalId: string) => void;
+
   // Mode state
   backlogMode: BacklogMode;
   setBacklogMode: React.Dispatch<React.SetStateAction<BacklogMode>>;
@@ -166,6 +170,25 @@ export function useShellLayout(
   const [showSidebar, setShowSidebar] = React.useState(true);
   const [showRightSidebar, setShowRightSidebar] = React.useState(false);
   const [showTasks, setShowTasks] = React.useState(true);
+
+  // -------------------------------------------------------------------------
+  // Goal Expand/Collapse State (ephemeral — resets on page load)
+  // -------------------------------------------------------------------------
+  const [expandedGoalIds, setExpandedGoalIds] = React.useState<Set<string>>(
+    new Set(),
+  );
+
+  const toggleGoalExpanded = React.useCallback((goalId: string) => {
+    setExpandedGoalIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(goalId)) {
+        next.delete(goalId);
+      } else {
+        next.add(goalId);
+      }
+      return next;
+    });
+  }, []);
 
   // -------------------------------------------------------------------------
   // Onboarding State
@@ -431,6 +454,10 @@ export function useShellLayout(
     setShowRightSidebar,
     showTasks,
     setShowTasks,
+
+    // Goal expand/collapse
+    expandedGoalIds,
+    toggleGoalExpanded,
 
     // Mode state
     backlogMode,

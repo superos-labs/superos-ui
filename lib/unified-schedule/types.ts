@@ -202,6 +202,8 @@ export interface Milestone {
   id: string;
   label: string;
   completed: boolean;
+  /** Whether this milestone is actively being worked on. Defaults to true. */
+  active?: boolean;
   /** Optional target completion date (ISO date string, e.g., "2026-03-15") */
   deadline?: string;
   /** Granularity of the deadline. Defaults to "day" when absent. */
@@ -456,6 +458,8 @@ export interface UseUnifiedScheduleReturn {
     deadlineGranularity: DateGranularity | undefined,
   ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
+  /** Toggle whether a milestone is actively being worked on */
+  toggleMilestoneActive: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */
   toggleMilestonesEnabled: (goalId: string) => void;

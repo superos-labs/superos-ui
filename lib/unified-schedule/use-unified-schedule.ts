@@ -99,6 +99,7 @@ export function useUnifiedSchedule({
     updateMilestone,
     updateMilestoneDeadline,
     toggleMilestoneComplete,
+    toggleMilestoneActive,
     deleteMilestone,
     toggleMilestonesEnabled,
     // Weekly focus
@@ -547,6 +548,7 @@ export function useUnifiedSchedule({
     updateMilestone,
     updateMilestoneDeadline,
     toggleMilestoneComplete,
+    toggleMilestoneActive,
     deleteMilestone,
     toggleMilestonesEnabled,
     // Weekly focus

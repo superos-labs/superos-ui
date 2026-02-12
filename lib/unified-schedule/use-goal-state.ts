@@ -113,6 +113,8 @@ export interface UseGoalStateReturn {
     deadlineGranularity: DateGranularity | undefined,
   ) => void;
   toggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
+  /** Toggle whether a milestone is actively being worked on */
+  toggleMilestoneActive: (goalId: string, milestoneId: string) => void;
   deleteMilestone: (goalId: string, milestoneId: string) => void;
   /** Toggle whether milestones are enabled for a goal */
   toggleMilestonesEnabled: (goalId: string) => void;
@@ -306,6 +308,7 @@ export function useGoalState({
         id: crypto.randomUUID(),
         label,
         completed: false,
+        active: true,
       };
 
       setGoals((prev) =>
@@ -358,10 +361,11 @@ export function useGoalState({
 
           const newCompletedState = !milestone.completed;
 
-          // Update the milestone
+          // Update the milestone (deactivate when completing)
           let updatedGoal = updateMilestoneById(goal, milestoneId, (m) => ({
             ...m,
             completed: newCompletedState,
+            ...(newCompletedState ? { active: false } : {}),
           }));
 
           // If marking as complete, also complete all tasks in this milestone
@@ -371,6 +375,18 @@ export function useGoalState({
 
           return updatedGoal;
         }),
+      );
+    },
+    [],
+  );
+
+  const toggleMilestoneActive = React.useCallback(
+    (goalId: string, milestoneId: string) => {
+      setGoals((prev) =>
+        updateMilestoneInGoals(prev, goalId, milestoneId, (milestone) => ({
+          ...milestone,
+          active: !(milestone.active ?? true),
+        })),
       );
     },
     [],
@@ -415,6 +431,7 @@ export function useGoalState({
               id: phase1Id,
               label: "Phase 1",
               completed: false,
+              active: true,
             };
             let updatedGoal: ScheduleGoal = {
               ...goal,
@@ -479,6 +496,7 @@ export function useGoalState({
     updateMilestone,
     updateMilestoneDeadline,
     toggleMilestoneComplete,
+    toggleMilestoneActive,
     deleteMilestone,
     toggleMilestonesEnabled,
     // Weekly focus

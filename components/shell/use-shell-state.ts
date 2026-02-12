@@ -417,6 +417,7 @@ export function useShellState(
     // Milestone CRUD
     onAddMilestone: schedule.addMilestone,
     onToggleMilestoneComplete: schedule.toggleMilestoneComplete,
+    onToggleMilestoneActive: schedule.toggleMilestoneActive,
     onUpdateMilestone: schedule.updateMilestone,
     onUpdateMilestoneDeadline: schedule.updateMilestoneDeadline,
     onDeleteMilestone: schedule.deleteMilestone,

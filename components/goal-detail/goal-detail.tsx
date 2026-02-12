@@ -398,6 +398,7 @@ export interface GoalDetailProps extends React.HTMLAttributes<HTMLDivElement> {
   // Milestone callbacks
   onAddMilestone?: (label: string) => void;
   onToggleMilestone?: (milestoneId: string) => void;
+  onToggleMilestoneActive?: (milestoneId: string) => void;
   onUpdateMilestone?: (milestoneId: string, label: string) => void;
   onUpdateMilestoneDeadline?: (
     milestoneId: string,
@@ -446,6 +447,7 @@ export function GoalDetail({
   onDeleteSubtask,
   onAddMilestone,
   onToggleMilestone,
+  onToggleMilestoneActive,
   onUpdateMilestone,
   onUpdateMilestoneDeadline,
   onDeleteMilestone,
@@ -582,6 +584,7 @@ export function GoalDetail({
                 getTaskDeadline={getTaskDeadline}
                 onAddMilestone={onAddMilestone}
                 onToggleMilestone={onToggleMilestone}
+                onToggleMilestoneActive={onToggleMilestoneActive}
                 onUpdateMilestone={onUpdateMilestone}
                 onUpdateMilestoneDeadline={onUpdateMilestoneDeadline}
                 onDeleteMilestone={onDeleteMilestone}
