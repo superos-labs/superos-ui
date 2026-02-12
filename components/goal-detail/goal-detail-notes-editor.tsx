@@ -570,7 +570,7 @@ export function GoalDetailNotesEditor({
       const currentContent = editor.getJSON();
       // Only update if content actually changed to avoid unnecessary re-renders
       if (JSON.stringify(currentContent) !== JSON.stringify(normalizedContent)) {
-        editor.commands.setContent(normalizedContent, false); // false = don't emit update event
+        editor.commands.setContent(normalizedContent, { emitUpdate: false });
       }
     }
   }, [editor, normalizedContent]);
