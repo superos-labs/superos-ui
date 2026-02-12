@@ -19,6 +19,7 @@
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
  * - Compose header, notes, tasks, and milestone sections.
+ * - Two-column layout: notes (left 50%) and tasks/milestones (right 50%).
  * - Switch between milestone and flat-task modes.
  * - Wire user interactions to callback props.
  * - Host goal-level actions (back, delete, sync settings, toggle milestones).
@@ -34,7 +35,7 @@
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
- * - Scrollable content area with fixed outer shell.
+ * - Fixed header area with two independently-scrollable columns below.
  * - Milestones enabled when explicitly flagged or present.
  * - Uses collapsible sections only when milestones are disabled.
  * - Subcomponents remain mostly presentational.
@@ -472,102 +473,128 @@ export function GoalDetail({
       )}
       {...props}
     >
-      {/* Scrollable content */}
-      <div className="scrollbar-hidden flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <div className="w-full px-12 py-12">
-          {/* Action buttons row */}
-          <div className="mb-6 flex items-center justify-between">
-            {/* Back button */}
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                aria-label="Close goal detail"
-              >
-                <RiArrowLeftSLine className="size-5" />
-              </button>
-            )}
+      {/* Fixed top section: action bar + header */}
+      <div className="w-full shrink-0 px-12 pt-12">
+        {/* Action buttons row */}
+        <div className="mb-6 flex items-center justify-between">
+          {/* Back button */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="Close goal detail"
+            >
+              <RiArrowLeftSLine className="size-5" />
+            </button>
+          )}
 
-            {/* Spacer */}
-            <div className="flex-1" />
+          {/* Spacer */}
+          <div className="flex-1" />
 
-            {/* More options menu */}
-            {(onSyncSettingsChange || onToggleMilestones || onDelete) && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    aria-label="More options"
-                  >
-                    <RiMoreFill className="size-5" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[160px]">
-                  {onSyncSettingsChange && hasSyncAvailable && (
-                    <DropdownMenuItem onClick={() => setSyncSettingsOpen(true)}>
-                      Sync settings
-                    </DropdownMenuItem>
-                  )}
-                  {onSyncSettingsChange &&
-                    hasSyncAvailable &&
-                    onToggleMilestones && <DropdownMenuSeparator />}
-                  {onToggleMilestones && (
-                    <DropdownMenuItem onClick={onToggleMilestones}>
-                      {milestonesEnabled
-                        ? "Disable milestones"
-                        : "Enable milestones"}
-                    </DropdownMenuItem>
-                  )}
-                  {((onSyncSettingsChange && hasSyncAvailable) ||
-                    onToggleMilestones) &&
-                    onDelete && <DropdownMenuSeparator />}
-                  {onDelete && (
-                    <DropdownMenuItem variant="destructive" onClick={onDelete}>
-                      Delete goal
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
+          {/* More options menu */}
+          {(onSyncSettingsChange || onToggleMilestones || onDelete) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  aria-label="More options"
+                >
+                  <RiMoreFill className="size-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[160px]">
+                {onSyncSettingsChange && hasSyncAvailable && (
+                  <DropdownMenuItem onClick={() => setSyncSettingsOpen(true)}>
+                    Sync settings
+                  </DropdownMenuItem>
+                )}
+                {onSyncSettingsChange &&
+                  hasSyncAvailable &&
+                  onToggleMilestones && <DropdownMenuSeparator />}
+                {onToggleMilestones && (
+                  <DropdownMenuItem onClick={onToggleMilestones}>
+                    {milestonesEnabled
+                      ? "Disable milestones"
+                      : "Enable milestones"}
+                  </DropdownMenuItem>
+                )}
+                {((onSyncSettingsChange && hasSyncAvailable) ||
+                  onToggleMilestones) &&
+                  onDelete && <DropdownMenuSeparator />}
+                {onDelete && (
+                  <DropdownMenuItem variant="destructive" onClick={onDelete}>
+                    Delete goal
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
 
-          {/* Content flows vertically with consistent spacing */}
-          <div className="flex flex-col gap-6">
-            {/* Header */}
-            <GoalDetailHeader
-              icon={goal.icon}
-              title={goal.label}
-              color={goal.color}
-              lifeArea={lifeArea}
-              deadline={deadline}
-              deadlineGranularity={goal.deadlineGranularity}
-              lifeAreas={lifeAreas}
-              goalIcons={goalIcons}
-              onTitleChange={onTitleChange}
-              onDeadlineChange={onDeadlineChange}
-              onIconChange={onIconChange}
-              onColorChange={onColorChange}
-              onLifeAreaChange={onLifeAreaChange}
-              onAddLifeArea={onAddLifeArea}
+        {/* Header — full width above both columns */}
+        <GoalDetailHeader
+          icon={goal.icon}
+          title={goal.label}
+          color={goal.color}
+          lifeArea={lifeArea}
+          deadline={deadline}
+          deadlineGranularity={goal.deadlineGranularity}
+          lifeAreas={lifeAreas}
+          goalIcons={goalIcons}
+          onTitleChange={onTitleChange}
+          onDeadlineChange={onDeadlineChange}
+          onIconChange={onIconChange}
+          onColorChange={onColorChange}
+          onLifeAreaChange={onLifeAreaChange}
+          onAddLifeArea={onAddLifeArea}
+        />
+      </div>
+
+      {/* Two-column body: notes (left 50%) | tasks/milestones (right 50%) */}
+      <div className="flex min-h-0 flex-1 px-12 pb-12 pt-6">
+        {/* Left column — Notes (independently scrollable) */}
+        <div className="scrollbar-hidden flex w-1/2 flex-col overflow-y-auto pr-6">
+          <GoalDetailNotes notes={notes} onChange={onNotesChange} />
+        </div>
+
+        {/* Vertical divider */}
+        <div className="shrink-0 w-px bg-border" />
+
+        {/* Right column — Tasks / Milestones (independently scrollable) */}
+        <div className="scrollbar-hidden flex w-1/2 flex-col overflow-y-auto pl-6">
+          {milestonesEnabled ? (
+            <GoalDetailMilestones
+              milestones={milestones}
+              tasks={tasks}
+              parentGoal={goalAsBacklogItem}
+              getTaskSchedule={getTaskSchedule}
+              getTaskDeadline={getTaskDeadline}
+              onAddMilestone={onAddMilestone}
+              onToggleMilestone={onToggleMilestone}
+              onToggleMilestoneActive={onToggleMilestoneActive}
+              onUpdateMilestone={onUpdateMilestone}
+              onUpdateMilestoneDeadline={onUpdateMilestoneDeadline}
+              onDeleteMilestone={onDeleteMilestone}
+              onToggleTask={onToggleTask}
+              onAddTask={onAddTask}
+              onUpdateTask={onUpdateTask}
+              onAddSubtask={onAddSubtask}
+              onToggleSubtask={onToggleSubtask}
+              onUpdateSubtask={onUpdateSubtask}
+              onDeleteSubtask={onDeleteSubtask}
+              onDeleteTask={onDeleteTask}
             />
-
-            {/* Notes (inline, borderless) */}
-            <GoalDetailNotes notes={notes} onChange={onNotesChange} />
-
-            {/* When milestones are enabled, show hierarchical milestone/task view */}
-            {milestonesEnabled ? (
-              <GoalDetailMilestones
-                milestones={milestones}
+          ) : (
+            <CollapsibleSection
+              label="Tasks"
+              count={taskCount}
+              defaultOpen={true}
+            >
+              <GoalDetailTasks
                 tasks={tasks}
                 parentGoal={goalAsBacklogItem}
                 getTaskSchedule={getTaskSchedule}
                 getTaskDeadline={getTaskDeadline}
-                onAddMilestone={onAddMilestone}
-                onToggleMilestone={onToggleMilestone}
-                onToggleMilestoneActive={onToggleMilestoneActive}
-                onUpdateMilestone={onUpdateMilestone}
-                onUpdateMilestoneDeadline={onUpdateMilestoneDeadline}
-                onDeleteMilestone={onDeleteMilestone}
                 onToggleTask={onToggleTask}
                 onAddTask={onAddTask}
                 onUpdateTask={onUpdateTask}
@@ -577,30 +604,8 @@ export function GoalDetail({
                 onDeleteSubtask={onDeleteSubtask}
                 onDeleteTask={onDeleteTask}
               />
-            ) : (
-              /* When milestones disabled, show flat tasks list */
-              <CollapsibleSection
-                label="Tasks"
-                count={taskCount}
-                defaultOpen={true}
-              >
-                <GoalDetailTasks
-                  tasks={tasks}
-                  parentGoal={goalAsBacklogItem}
-                  getTaskSchedule={getTaskSchedule}
-                  getTaskDeadline={getTaskDeadline}
-                  onToggleTask={onToggleTask}
-                  onAddTask={onAddTask}
-                  onUpdateTask={onUpdateTask}
-                  onAddSubtask={onAddSubtask}
-                  onToggleSubtask={onToggleSubtask}
-                  onUpdateSubtask={onUpdateSubtask}
-                  onDeleteSubtask={onDeleteSubtask}
-                  onDeleteTask={onDeleteTask}
-                />
-              </CollapsibleSection>
-            )}
-          </div>
+            </CollapsibleSection>
+          )}
         </div>
       </div>
 
