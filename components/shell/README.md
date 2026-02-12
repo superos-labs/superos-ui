@@ -45,6 +45,11 @@
   - Displays current calendar zoom level with zoom in/out handlers
   - Surfaces links to feedback form, onboarding video, and Slack community
   - Renders as compact cluster in bottom-right of shell
+- **`invite-popover.tsx`** — Founding Member invite popover for the shell toolbar
+  - Displays remaining monthly invites with shareable invite link
+  - Shows accepted invites and empty invite slots
+  - Copy-to-clipboard functionality for invite link
+  - Hardcoded demo data for prototype purposes
 
 ## Core Orchestration Hooks
 
@@ -164,4 +169,4 @@
 - **Toast feedback:** Aggregated toast messages from multiple sources
 - **Life areas:** Customizable goal categorization
 
-**Total Files:** 20 (5 core components, 3 orchestration hooks, 4 domain handler hooks, 2 utility hooks, 2 types/API files, 4 supporting components)
+**Total Files:** 21 (5 core components, 3 orchestration hooks, 4 domain handler hooks, 2 utility hooks, 2 types/API files, 5 supporting components)

@@ -78,6 +78,7 @@ import {
   RiBarChartBoxLine,
 } from "@remixicon/react";
 import { FocusIndicator } from "@/components/focus";
+import { InvitePopover } from "./invite-popover";
 import { cn } from "@/lib/utils";
 import type { WeekStartDay } from "@/lib/preferences";
 import type { ActiveFocusSession } from "@/lib/focus";
@@ -450,6 +451,8 @@ export function ShellDesktopToolbar({
               Plan week
             </button>
           )}
+        {/* Founding Member invites */}
+        {!isOnboarding && <InvitePopover />}
         {/* Hide integrations and analytics buttons during onboarding */}
         {!isOnboarding && (
           <button

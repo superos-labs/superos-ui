@@ -31,6 +31,7 @@
  * - IconComponent
  * - LifeArea
  * - GoalIconOption
+ * - InviteAcceptance
  */
 
 import type React from "react";
@@ -87,4 +88,22 @@ export interface LifeArea {
 export interface GoalIconOption {
   icon: IconComponent;
   label: string;
+}
+
+// =============================================================================
+// Invite Types
+// =============================================================================
+
+/**
+ * Represents a user who accepted a founding-member invite.
+ * Used in the invite popover to display claimed invites.
+ */
+export interface InviteAcceptance {
+  name: string;
+  /** Display date string, e.g. "Feb 8" */
+  date: string;
+  /** Single character shown in avatar circle */
+  avatarInitial: string;
+  /** Tailwind bg class for the avatar, e.g. "bg-violet-500" */
+  avatarColor: string;
 }

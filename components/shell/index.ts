@@ -57,6 +57,9 @@ export type {
   BlueprintEditToolbarProps,
 } from "./shell-toolbars";
 
+// Invite popover
+export { InvitePopover } from "./invite-popover";
+
 // Feedback button
 export { FeedbackButton } from "./feedback-button";
 export type { FeedbackButtonProps } from "./feedback-button";
