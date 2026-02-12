@@ -30,7 +30,8 @@
  * -----------------------------------------------------------------------------
  * - Auto-focuses input when entering edit mode.
  * - Keeps focus after saving to allow rapid entry.
- * - Renders an empty checkbox for visual alignment with SubtaskRow.
+ * - Renders an empty circular checkbox for visual alignment with SubtaskRow.
+ * - Button has improved visibility (py-1 vs py-0.5) and hover opacity boost.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -114,7 +115,7 @@ export function InlineSubtaskCreator({
       <button
         onClick={() => setIsEditing(true)}
         className={cn(
-          "flex items-center gap-2 py-0.5 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground",
+          "flex items-center gap-2 py-1 text-xs text-muted-foreground/50 transition-colors hover:text-muted-foreground/80",
           className,
         )}
       >
@@ -129,7 +130,7 @@ export function InlineSubtaskCreator({
       {/* Empty checkbox to match SubtaskRow appearance */}
       <div
         className={cn(
-          "flex shrink-0 items-center justify-center rounded border",
+          "flex shrink-0 items-center justify-center rounded-full border",
           checkboxSize,
           borderStyle,
         )}

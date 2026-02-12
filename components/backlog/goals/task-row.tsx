@@ -38,6 +38,12 @@
  * -----------------------------------------------------------------------------
  * - Expanded state is controlled externally; this component mirrors it.
  * - Dragging is disabled for completed tasks.
+ * - Visual hierarchy:
+ *   - Task title gains font-medium weight when expanded.
+ *   - Expanded container has ring-1 ring-border/30 for definition.
+ *   - Notes textarea has hover/focus states for clear affordance.
+ *   - Subtasks use circular checkboxes vs. parent's rounded-square.
+ *   - Border divider separates notes from subtasks section.
  * - Keyboard shortcuts:
  *   - Enter: confirm label edit.
  *   - Escape: cancel edit or collapse.
@@ -113,19 +119,19 @@ function ExpandedTaskDetail({
   };
 
   return (
-    <div className="flex flex-col gap-1.5 pb-2 pl-12 pr-3">
+    <div className="flex flex-col pb-3 pl-12 pr-3">
       {/* Inline description */}
       <textarea
         value={descriptionValue}
         onChange={(e) => setDescriptionValue(e.target.value)}
         onBlur={handleDescriptionBlur}
         placeholder="Add notes..."
-        className="min-h-[24px] resize-none bg-transparent text-xs text-muted-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+        className="-ml-1.5 min-h-[28px] resize-none rounded-md bg-transparent px-1.5 py-1 text-xs text-muted-foreground placeholder:text-muted-foreground/50 transition-colors hover:bg-background/50 focus:bg-background/60 focus:outline-none"
       />
 
       {/* Subtasks */}
       {(task.subtasks?.length || onAddSubtask) && (
-        <div className="flex flex-col">
+        <div className="mt-1.5 flex flex-col border-t border-border/40 pt-2">
           {task.subtasks?.map((subtask) => (
             <SubtaskRow
               key={subtask.id}
@@ -354,7 +360,10 @@ export function TaskRow({
   return (
     <div
       ref={containerRef}
-      className={cn("flex flex-col", isExpanded && "rounded-lg bg-muted/40")}
+      className={cn(
+        "flex flex-col",
+        isExpanded && "rounded-lg bg-muted/40 ring-1 ring-border/30",
+      )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -397,7 +406,8 @@ export function TaskRow({
             onClick={(e) => e.stopPropagation()}
             className={cn(
               "flex-1 min-w-0 bg-transparent text-xs focus:outline-none",
-              task.completed ? "text-muted-foreground" : "text-foreground/80",
+              isExpanded && "font-medium",
+              task.completed ? "text-muted-foreground" : "text-foreground",
             )}
           />
         ) : (
@@ -406,9 +416,10 @@ export function TaskRow({
             onClick={handleLabelClick}
             className={cn(
               "flex-1 truncate text-xs",
+              isExpanded && "font-medium",
               task.completed
                 ? "text-muted-foreground line-through"
-                : "text-foreground/80",
+                : "text-foreground",
               isExpanded &&
                 onUpdateTask &&
                 "cursor-text hover:bg-muted/60 rounded px-1 -mx-1",

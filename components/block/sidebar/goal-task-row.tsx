@@ -27,6 +27,14 @@
  * - Computing scheduling or deadline metadata.
  *
  * -----------------------------------------------------------------------------
+ * DESIGN NOTES
+ * -----------------------------------------------------------------------------
+ * - Expanded container has ring-1 ring-border/30 for visual definition.
+ * - Notes textarea uses hover/focus backgrounds for clear interactive state.
+ * - Border divider separates notes from subtasks section.
+ * - Subtasks inherit circular checkbox style for hierarchy differentiation.
+ *
+ * -----------------------------------------------------------------------------
  * MENTAL MODEL
  * -----------------------------------------------------------------------------
  * "This block contains this specific task. Let me refine it in place."
@@ -77,19 +85,19 @@ function ExpandedGoalTaskDetail({
   };
 
   return (
-    <div className="flex flex-col gap-2 pb-2 pl-7 pr-2">
+    <div className="flex flex-col pb-2.5 pl-7 pr-2">
       {/* Notes textarea */}
       <textarea
         value={descriptionValue}
         onChange={(e) => setDescriptionValue(e.target.value)}
         onBlur={handleDescriptionBlur}
         placeholder="Add notes..."
-        className="min-h-[32px] resize-none rounded-md bg-muted/40 px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-border"
+        className="min-h-[32px] resize-none rounded-md bg-transparent px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 transition-colors hover:bg-background/50 focus:bg-background/60 focus:outline-none focus:ring-1 focus:ring-border/60"
       />
 
       {/* Subtasks list */}
       {(task.subtasks?.length || onAddSubtask) && (
-        <div className="flex flex-col gap-0.5">
+        <div className="mt-1 flex flex-col gap-0.5 border-t border-border/40 pt-2">
           {task.subtasks?.map((subtask) => (
             <SubtaskRow
               key={subtask.id}
@@ -234,7 +242,10 @@ export function BlockGoalTaskRow({
   return (
     <div
       ref={containerRef}
-      className={cn("flex flex-col", isExpanded && "rounded-lg bg-muted/30")}
+      className={cn(
+        "flex flex-col",
+        isExpanded && "rounded-lg bg-muted/30 ring-1 ring-border/30",
+      )}
     >
       {/* Task header row */}
       <div

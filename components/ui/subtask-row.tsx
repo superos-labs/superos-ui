@@ -28,6 +28,8 @@
  * -----------------------------------------------------------------------------
  * - Delete button appears on hover.
  * - Completed subtasks render with muted color and strikethrough.
+ * - Circular checkboxes (rounded-full) distinguish subtasks from parent tasks.
+ * - Non-completed subtasks use text-foreground/70 for subordinate weight.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -82,7 +84,7 @@ export function SubtaskRow({
       <button
         onClick={() => onToggle?.(subtask.id)}
         className={cn(
-          "flex shrink-0 items-center justify-center rounded border transition-colors",
+          "flex shrink-0 items-center justify-center rounded-full border transition-colors",
           checkboxSize,
           subtask.completed
             ? "border-muted-foreground/30 bg-muted text-muted-foreground"
@@ -99,7 +101,9 @@ export function SubtaskRow({
           className={cn(
             "flex-1 bg-transparent outline-none",
             textSize,
-            subtask.completed && "text-muted-foreground line-through",
+            subtask.completed
+              ? "text-muted-foreground line-through"
+              : "text-foreground/70",
           )}
           placeholder="Subtask..."
         />
@@ -108,7 +112,9 @@ export function SubtaskRow({
           className={cn(
             "flex-1",
             textSize,
-            subtask.completed && "text-muted-foreground line-through",
+            subtask.completed
+              ? "text-muted-foreground line-through"
+              : "text-foreground/70",
           )}
         >
           {subtask.label}
