@@ -544,11 +544,7 @@ export function GoalDetailNotesEditor({
         code: false,
         strike: false,
       }),
-      Markdown.configure({
-        // Enable markdown parsing and serialization
-        transformPastedText: true,
-        transformCopiedText: true,
-      }),
+      Markdown,
       Details.configure({
         persist: true,
         openClassName: "is-open",
