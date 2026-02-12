@@ -106,7 +106,7 @@ export function ShellMobileLayout({
     selectedEvent,
   } = wiring;
 
-  const { isBlueprintEditMode, selectedEventId } = layout;
+  const { isBlueprintEditMode, selectedEventId, expandedGoalIds, toggleGoalExpanded } = layout;
 
   return (
     <>
@@ -159,6 +159,8 @@ export function ShellMobileLayout({
           goals={goals as BacklogItem[]}
           className="h-full max-w-none border-0 rounded-none shadow-none"
           showTasks={true}
+          expandedGoalIds={expandedGoalIds}
+          onToggleGoalExpand={toggleGoalExpanded}
           onToggleGoalTask={onToggleTaskComplete}
           onAddTask={onAddTask}
           onUpdateTask={onUpdateTask}

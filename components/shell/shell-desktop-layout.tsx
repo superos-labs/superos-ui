@@ -121,6 +121,7 @@ export function ShellDesktopLayout({
     onUpdateGoal,
     onAddMilestone,
     onToggleMilestoneComplete,
+    onToggleMilestoneActive,
     onUpdateMilestone,
     onUpdateMilestoneDeadline,
     onDeleteMilestone,
@@ -169,6 +170,8 @@ export function ShellDesktopLayout({
     showSidebar,
     showCalendar,
     showTasks,
+    expandedGoalIds,
+    toggleGoalExpanded,
     isRightSidebarOpen,
     isPlanning,
     isBlueprintEditMode,
@@ -335,6 +338,8 @@ export function ShellDesktopLayout({
               goals={goals as BacklogItem[]}
               className="h-full w-[360px] max-w-none"
               showTasks={showTasks && !isBlueprintEditMode}
+              expandedGoalIds={expandedGoalIds}
+              onToggleGoalExpand={toggleGoalExpanded}
               onToggleGoalTask={enhancedToggleTaskComplete}
               onAddTask={onAddTask}
               onUpdateTask={onUpdateTask}
@@ -456,6 +461,9 @@ export function ShellDesktopLayout({
               onAddMilestone={(label) => onAddMilestone(selectedGoal.id, label)}
               onToggleMilestone={(milestoneId) =>
                 onToggleMilestoneComplete(selectedGoal.id, milestoneId)
+              }
+              onToggleMilestoneActive={(milestoneId) =>
+                onToggleMilestoneActive(selectedGoal.id, milestoneId)
               }
               onUpdateMilestone={(milestoneId, label) =>
                 onUpdateMilestone(selectedGoal.id, milestoneId, label)

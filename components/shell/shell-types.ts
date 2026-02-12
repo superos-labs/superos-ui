@@ -240,6 +240,8 @@ export interface ShellContentProps {
   onAddMilestone: (goalId: string, label: string) => string;
   /** Toggle milestone completion */
   onToggleMilestoneComplete: (goalId: string, milestoneId: string) => void;
+  /** Toggle whether a milestone is actively being worked on */
+  onToggleMilestoneActive: (goalId: string, milestoneId: string) => void;
   /** Update a milestone */
   onUpdateMilestone: (
     goalId: string,
@@ -535,6 +537,10 @@ export interface ShellLayoutState {
   showRightSidebar: boolean;
   /** Whether to show tasks in the backlog */
   showTasks: boolean;
+  /** Set of goal IDs that are currently expanded in the backlog */
+  expandedGoalIds: Set<string>;
+  /** Toggle a goal's expand/collapse state in the backlog */
+  toggleGoalExpanded: (goalId: string) => void;
   /** Current backlog mode */
   backlogMode: BacklogMode;
   /** Whether planning mode is active */

@@ -73,6 +73,7 @@ export {
   SubtaskRow,
   InlineTaskCreator,
   InlineGoalCreator,
+  MilestoneSubHeader,
   // Onboarding components
   OnboardingGoalsCard,
   InlineGoalEditor,
@@ -102,6 +103,7 @@ export type {
   GoalSuggestionRowProps,
   AddedGoalRowProps,
   AddedGoal,
+  MilestoneSubHeaderProps,
 } from "./goals";
 
 // Utilities

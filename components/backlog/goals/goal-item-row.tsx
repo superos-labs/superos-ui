@@ -6,8 +6,9 @@
  * Row component for rendering a Goal and its associated Tasks inside the backlog.
  *
  * Supports:
- * - Displaying goal metadata (icon, label, current milestone).
- * - Optional navigation to goal detail.
+ * - Displaying goal metadata (icon, label, active milestones summary).
+ * - Click-to-expand/collapse to reveal tasks grouped by active milestone.
+ * - Optional navigation to goal detail (chevron button).
  * - Optional drag-and-drop of the goal.
  * - Inline rendering and editing of tasks.
  *
@@ -17,8 +18,10 @@
  * -----------------------------------------------------------------------------
  * RESPONSIBILITIES
  * -----------------------------------------------------------------------------
- * - Render goal row and optional task list.
- * - Manage which task row is expanded.
+ * - Render goal row with expand/collapse toggle.
+ * - When expanded with milestones: render active milestone sub-headers + tasks.
+ * - When expanded without milestones: render tasks flat.
+ * - Manage which task row is expanded (accordion).
  * - Bridge task and subtask actions to parent callbacks.
  * - Integrate with drag system when enabled.
  *
@@ -28,20 +31,24 @@
  * - Persisting goals or tasks.
  * - Fetching schedule or deadline data.
  * - Enforcing business rules.
+ * - Managing per-goal expand/collapse state (owned by parent via props).
  *
  * -----------------------------------------------------------------------------
  * KEY DEPENDENCIES
  * -----------------------------------------------------------------------------
  * - TaskRow
  * - InlineTaskCreator
+ * - MilestoneSubHeader
  * - useDraggable / drag context
  *
  * -----------------------------------------------------------------------------
  * DESIGN NOTES
  * -----------------------------------------------------------------------------
- * - When milestones are enabled, only tasks for the current milestone are shown.
+ * - When milestones are enabled, only tasks under active milestones are shown.
+ * - Tasks under inactive milestones are hidden to keep the panel focused.
  * - Tasks can be visually prioritized by weekly focus (This Week).
- * - Chevron navigation is isolated from drag interactions.
+ * - Chevron navigation is isolated from expand/collapse and drag interactions.
+ * - Row body click toggles expand/collapse; chevron navigates to goal-detail.
  *
  * -----------------------------------------------------------------------------
  * EXPORTS
@@ -54,11 +61,15 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RiArrowRightSLine, RiShiningLine } from "@remixicon/react";
+import {
+  RiArrowRightSLine,
+  RiArrowDownSLine,
+} from "@remixicon/react";
 import { getIconColorClass } from "@/lib/colors";
 import { useDraggable, useDragContextOptional } from "@/components/drag";
 import type { DragItem } from "@/lib/drag-types";
 import type {
+  Milestone,
   TaskScheduleInfo,
   TaskDeadlineInfo,
   ScheduleTask,
@@ -66,12 +77,18 @@ import type {
 import type { GoalItem } from "./goal-types";
 import { TaskRow } from "./task-row";
 import { InlineTaskCreator } from "./inline-creators";
+import { MilestoneSubHeader } from "./milestone-sub-header";
 
 export interface GoalItemRowProps {
   item: GoalItem;
   /** Whether this goal is currently selected (for highlighting) */
   isSelected?: boolean;
+  /** Global master switch — when false, no tasks/milestones shown for any goal */
   showTasks?: boolean;
+  /** Whether this goal is expanded (controlled by parent) */
+  isExpanded?: boolean;
+  /** Callback to toggle this goal's expand/collapse state */
+  onToggleExpand?: (goalId: string) => void;
   /** Callback when the item row is clicked (for entering goal-detail mode) */
   onItemClick?: (itemId: string) => void;
   onToggleTask?: (itemId: string, taskId: string) => void;
@@ -115,6 +132,8 @@ export function GoalItemRow({
   item,
   isSelected = false,
   showTasks = true,
+  isExpanded = false,
+  onToggleExpand,
   onItemClick,
   onToggleTask,
   onAddTask,
@@ -155,20 +174,61 @@ export function GoalItemRow({
     disabled: !canDrag,
   });
 
-  // Compute current milestone (first incomplete) and progress
-  // Only show if milestones are enabled (default to true if milestones exist)
+  // ---------------------------------------------------------------------------
+  // Milestone computations
+  // ---------------------------------------------------------------------------
   const milestonesEnabled =
     item.milestonesEnabled ?? (item.milestones && item.milestones.length > 0);
-  const currentMilestone = milestonesEnabled
-    ? item.milestones?.find((m) => !m.completed)
-    : undefined;
   const totalMilestones = item.milestones?.length ?? 0;
-  const showMilestones = milestonesEnabled && totalMilestones > 0;
+  const hasMilestones = milestonesEnabled && totalMilestones > 0;
+
+  // Active milestones: active (defaults to true) and not completed
+  const activeMilestones = React.useMemo(() => {
+    if (!hasMilestones || !item.milestones) return [];
+    return item.milestones.filter(
+      (m) => (m.active ?? true) && !m.completed,
+    );
+  }, [hasMilestones, item.milestones]);
+
+  // Sort active milestones by deadline (earliest first, no deadline at end)
+  const sortedActiveMilestones = React.useMemo(() => {
+    return [...activeMilestones].sort((a, b) => {
+      if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
+      if (a.deadline && !b.deadline) return -1;
+      if (!a.deadline && b.deadline) return 1;
+      return 0;
+    });
+  }, [activeMilestones]);
+
+  // First active milestone for the add-task default assignment
+  const firstActiveMilestone = sortedActiveMilestones[0] as
+    | Milestone
+    | undefined;
+
+  // Subtitle for collapsed state
+  const subtitle = React.useMemo(() => {
+    if (!hasMilestones) return null;
+    const count = activeMilestones.length;
+    if (count === 0) return null;
+    if (count === 1) return activeMilestones[0].label;
+    return `${count} active milestones`;
+  }, [hasMilestones, activeMilestones]);
+
+  // ---------------------------------------------------------------------------
+  // Handlers
+  // ---------------------------------------------------------------------------
+
+  // Handle row body click to toggle expand/collapse
+  const handleRowClick = React.useCallback(() => {
+    if (onToggleExpand) {
+      onToggleExpand(item.id);
+    }
+  }, [onToggleExpand, item.id]);
 
   // Handle chevron click to navigate to goal detail
   const handleChevronClick = React.useCallback(
     (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent drag initiation
+      e.stopPropagation(); // Prevent row click from triggering
       onItemClick?.(item.id);
     },
     [onItemClick, item.id],
@@ -177,16 +237,119 @@ export function GoalItemRow({
   // Only show chevron for clickable items
   const showChevron = onItemClick;
 
+  // Whether to show the task/milestone area
+  const showContent = showTasks && isExpanded;
+
+  // ---------------------------------------------------------------------------
+  // Render helpers
+  // ---------------------------------------------------------------------------
+
+  const renderTaskRow = React.useCallback(
+    (task: ScheduleTask) => (
+      <TaskRow
+        key={task.id}
+        task={task}
+        parentGoal={item}
+        scheduleInfo={getTaskSchedule?.(task.id)}
+        deadlineInfo={getTaskDeadline?.(task.id)}
+        onToggle={(taskId) => onToggleTask?.(item.id, taskId)}
+        draggable={draggable}
+        isExpanded={expandedTaskId === task.id}
+        onExpand={(taskId) =>
+          setExpandedTaskId((prev) => (prev === taskId ? null : taskId))
+        }
+        onUpdateTask={
+          onUpdateTask
+            ? (updates) => onUpdateTask(item.id, task.id, updates)
+            : undefined
+        }
+        onAddSubtask={
+          onAddSubtask
+            ? (label) => onAddSubtask(item.id, task.id, label)
+            : undefined
+        }
+        onToggleSubtask={
+          onToggleSubtask
+            ? (subtaskId) => onToggleSubtask(item.id, task.id, subtaskId)
+            : undefined
+        }
+        onUpdateSubtask={
+          onUpdateSubtask
+            ? (subtaskId, label) =>
+                onUpdateSubtask(item.id, task.id, subtaskId, label)
+            : undefined
+        }
+        onDeleteSubtask={
+          onDeleteSubtask
+            ? (subtaskId) => onDeleteSubtask(item.id, task.id, subtaskId)
+            : undefined
+        }
+        onDeleteTask={
+          onDeleteTask ? () => onDeleteTask(item.id, task.id) : undefined
+        }
+      />
+    ),
+    [
+      item,
+      getTaskSchedule,
+      getTaskDeadline,
+      onToggleTask,
+      draggable,
+      expandedTaskId,
+      onUpdateTask,
+      onAddSubtask,
+      onToggleSubtask,
+      onUpdateSubtask,
+      onDeleteSubtask,
+      onDeleteTask,
+    ],
+  );
+
+  /**
+   * Partition tasks into "This Week" first, then "Other", preserving order.
+   */
+  const partitionByWeek = React.useCallback(
+    (tasks: ScheduleTask[]) => {
+      if (!currentWeekStart) return tasks;
+      const thisWeek = tasks.filter(
+        (t) => t.weeklyFocusWeek === currentWeekStart,
+      );
+      const other = tasks.filter(
+        (t) => t.weeklyFocusWeek !== currentWeekStart,
+      );
+      return [...thisWeek, ...other];
+    },
+    [currentWeekStart],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
   return (
     <div className={cn("flex flex-col", className)}>
+      {/* Goal row header */}
       <div
         className={cn(
           "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all",
+          onToggleExpand && "cursor-pointer",
           isSelected ? "bg-muted" : "hover:bg-muted/60",
           isDragging && "opacity-50",
         )}
+        onClick={handleRowClick}
         {...(canDrag ? draggableProps : {})}
       >
+        {/* Expand/collapse indicator */}
+        {onToggleExpand && (
+          <div className="flex size-4 shrink-0 items-center justify-center text-muted-foreground/40">
+            {isExpanded ? (
+              <RiArrowDownSLine className="size-4" />
+            ) : (
+              <RiArrowRightSLine className="size-4" />
+            )}
+          </div>
+        )}
+
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/60">
           <IconComponent
             className={cn("size-4", getIconColorClass(item.color))}
@@ -197,10 +360,9 @@ export function GoalItemRow({
           <span className="truncate text-sm font-medium text-foreground">
             {item.label}
           </span>
-          {showMilestones && currentMilestone && (
-            <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-              <RiShiningLine className="size-3 shrink-0" />
-              <span className="truncate">{currentMilestone.label}</span>
+          {subtitle && (
+            <span className="truncate text-xs text-muted-foreground/60">
+              {subtitle}
             </span>
           )}
         </div>
@@ -216,90 +378,63 @@ export function GoalItemRow({
         )}
       </div>
 
-      {showTasks && (
+      {/* Expanded content: tasks grouped by active milestones (or flat) */}
+      {showContent && (
         <div className="flex flex-col gap-0.5">
           {(() => {
             const allTasks = item.tasks ?? [];
 
-            // When milestones are enabled, filter to only show tasks for the current milestone
-            const tasks =
-              milestonesEnabled && currentMilestone
-                ? allTasks.filter((t) => t.milestoneId === currentMilestone.id)
-                : allTasks;
+            // ---------------------------------------------------------------
+            // Milestones enabled: show tasks grouped by active milestones
+            // ---------------------------------------------------------------
+            if (hasMilestones && sortedActiveMilestones.length > 0) {
+              return (
+                <>
+                  {sortedActiveMilestones.map((milestone) => {
+                    const milestoneTasks = partitionByWeek(
+                      allTasks.filter((t) => t.milestoneId === milestone.id),
+                    );
+                    return (
+                      <React.Fragment key={milestone.id}>
+                        <MilestoneSubHeader
+                          label={milestone.label}
+                          deadline={milestone.deadline}
+                          deadlineGranularity={milestone.deadlineGranularity}
+                        />
+                        {milestoneTasks.map(renderTaskRow)}
+                        {onAddTask && !hideTaskCreator && (
+                          <InlineTaskCreator
+                            goalId={item.id}
+                            milestoneId={milestone.id}
+                            onSave={onAddTask}
+                          />
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </>
+              );
+            }
 
-            // Partition tasks into "This Week" and "Other"
-            const thisWeekTasks = currentWeekStart
-              ? tasks.filter((t) => t.weeklyFocusWeek === currentWeekStart)
-              : [];
-            const otherTasks = currentWeekStart
-              ? tasks.filter((t) => t.weeklyFocusWeek !== currentWeekStart)
-              : tasks;
-
-            // Render helper for task rows
-            const renderTaskRow = (task: ScheduleTask) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                parentGoal={item}
-                scheduleInfo={getTaskSchedule?.(task.id)}
-                deadlineInfo={getTaskDeadline?.(task.id)}
-                onToggle={(taskId) => onToggleTask?.(item.id, taskId)}
-                draggable={draggable}
-                isExpanded={expandedTaskId === task.id}
-                onExpand={(taskId) =>
-                  setExpandedTaskId((prev) => (prev === taskId ? null : taskId))
-                }
-                onUpdateTask={
-                  onUpdateTask
-                    ? (updates) => onUpdateTask(item.id, task.id, updates)
-                    : undefined
-                }
-                onAddSubtask={
-                  onAddSubtask
-                    ? (label) => onAddSubtask(item.id, task.id, label)
-                    : undefined
-                }
-                onToggleSubtask={
-                  onToggleSubtask
-                    ? (subtaskId) =>
-                        onToggleSubtask(item.id, task.id, subtaskId)
-                    : undefined
-                }
-                onUpdateSubtask={
-                  onUpdateSubtask
-                    ? (subtaskId, label) =>
-                        onUpdateSubtask(item.id, task.id, subtaskId, label)
-                    : undefined
-                }
-                onDeleteSubtask={
-                  onDeleteSubtask
-                    ? (subtaskId) =>
-                        onDeleteSubtask(item.id, task.id, subtaskId)
-                    : undefined
-                }
-                onDeleteTask={
-                  onDeleteTask
-                    ? () => onDeleteTask(item.id, task.id)
-                    : undefined
-                }
-              />
-            );
-
-            // Render focus tasks first, then other tasks (no section headers)
+            // ---------------------------------------------------------------
+            // No milestones (or none active): flat task list
+            // ---------------------------------------------------------------
+            const tasks = partitionByWeek(allTasks);
             return (
               <>
-                {thisWeekTasks.map(renderTaskRow)}
-                {otherTasks.map(renderTaskRow)}
+                {tasks.map(renderTaskRow)}
+                {onAddTask && !hideTaskCreator && (
+                  <InlineTaskCreator
+                    goalId={item.id}
+                    milestoneId={
+                      milestonesEnabled ? firstActiveMilestone?.id : undefined
+                    }
+                    onSave={onAddTask}
+                  />
+                )}
               </>
             );
           })()}
-          {onAddTask && !hideTaskCreator && (
-            <InlineTaskCreator
-              goalId={item.id}
-              milestoneId={milestonesEnabled ? currentMilestone?.id : undefined}
-              onSave={onAddTask}
-            />
-          )}
         </div>
       )}
     </div>

@@ -319,10 +319,15 @@ export function getTasksForMilestone(
 }
 
 /**
- * Get the current (first incomplete) milestone.
+ * Get the current (first active, incomplete) milestone.
+ * Prefers milestones that are both active and incomplete.
+ * Falls back to the first incomplete milestone if none are explicitly active.
  */
 export function getCurrentMilestone(goal: ScheduleGoal): Milestone | undefined {
-  return goal.milestones?.find((m) => !m.completed);
+  const incomplete = goal.milestones?.filter((m) => !m.completed);
+  if (!incomplete || incomplete.length === 0) return undefined;
+  // Prefer active milestones (active defaults to true when absent)
+  return incomplete.find((m) => m.active ?? true) ?? incomplete[0];
 }
 
 /**

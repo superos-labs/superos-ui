@@ -64,6 +64,10 @@ export interface BacklogProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Array of goal items to display */
   goals: GoalItem[];
   showTasks?: boolean;
+  /** Set of goal IDs that are currently expanded */
+  expandedGoalIds?: Set<string>;
+  /** Callback to toggle a goal's expand/collapse state */
+  onToggleGoalExpand?: (goalId: string) => void;
   onAddGoal?: () => void;
   onToggleGoalTask?: (goalId: string, taskId: string) => void;
   /** Callback to add a new task to a goal */
@@ -181,6 +185,8 @@ export function Backlog({
   essentials,
   goals,
   showTasks = true,
+  expandedGoalIds,
+  onToggleGoalExpand,
   onAddGoal,
   onToggleGoalTask,
   onAddTask,
@@ -323,6 +329,8 @@ export function Backlog({
             items={goals}
             selectedGoalId={selectedGoalId}
             showTasks={showTasks}
+            expandedGoalIds={expandedGoalIds}
+            onToggleGoalExpand={onToggleGoalExpand}
             onAddItem={onAddGoal}
             onItemClick={onSelectGoal}
             onToggleTask={onToggleGoalTask}

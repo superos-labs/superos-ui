@@ -66,6 +66,10 @@ export interface GoalSectionProps {
   /** Currently selected goal ID (for highlighting) */
   selectedGoalId?: string | null;
   showTasks?: boolean;
+  /** Set of goal IDs that are currently expanded */
+  expandedGoalIds?: Set<string>;
+  /** Callback to toggle a goal's expand/collapse state */
+  onToggleGoalExpand?: (goalId: string) => void;
   onAddItem?: () => void;
   /** Callback when an item row is clicked (for entering goal-detail mode) */
   onItemClick?: (itemId: string) => void;
@@ -116,6 +120,8 @@ export function GoalSection({
   items,
   selectedGoalId,
   showTasks = true,
+  expandedGoalIds,
+  onToggleGoalExpand,
   onAddItem,
   onItemClick,
   onToggleTask,
@@ -182,6 +188,8 @@ export function GoalSection({
             item={item}
             isSelected={selectedGoalId === item.id}
             showTasks={showTasks}
+            isExpanded={expandedGoalIds?.has(item.id) ?? false}
+            onToggleExpand={onToggleGoalExpand}
             onItemClick={onItemClick}
             onToggleTask={onToggleTask}
             onAddTask={onAddTask}

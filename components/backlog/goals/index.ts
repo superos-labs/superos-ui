@@ -35,6 +35,7 @@
  * - GoalItemRow
  * - TaskRow, SubtaskRow
  * - InlineTaskCreator, InlineGoalCreator
+ * - MilestoneSubHeader
  * - OnboardingGoalsCard
  * - InlineGoalEditor
  * - GoalSuggestionRow
@@ -85,6 +86,9 @@ export type { GoalSuggestionRowProps } from "./goal-suggestion-row";
 
 export { AddedGoalRow } from "./added-goal-row";
 export type { AddedGoalRowProps, AddedGoal } from "./added-goal-row";
+
+export { MilestoneSubHeader } from "./milestone-sub-header";
+export type { MilestoneSubHeaderProps } from "./milestone-sub-header";
 
 // =============================================================================
 // Types
