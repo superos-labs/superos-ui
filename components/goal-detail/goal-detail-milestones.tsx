@@ -111,12 +111,12 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
     return (
       <button
         onClick={() => setIsEditing(true)}
-        className="group flex w-full items-center gap-2.5 rounded-lg py-1 pl-2 pr-3 text-left transition-all hover:bg-muted/60"
+        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 text-left transition-all hover:bg-muted/40"
       >
-        <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground/40 transition-colors group-hover:border-muted-foreground/50">
-          <RiAddLine className="size-2.5" />
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted/30 text-muted-foreground/30 transition-colors group-hover:bg-muted/50 group-hover:text-muted-foreground/50">
+          <RiAddLine className="size-3" />
         </div>
-        <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
+        <span className="text-xs text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/60">
           Add milestone
         </span>
       </button>
@@ -124,9 +124,9 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
   }
 
   return (
-    <div className="flex items-center gap-2.5 rounded-lg py-1 pl-2 pr-3">
-      <div className="flex size-4 shrink-0 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground/50">
-        <RiAddLine className="size-2.5" />
+    <div className="flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted/40 text-muted-foreground/40">
+        <RiAddLine className="size-3" />
       </div>
       <input
         ref={inputRef}
@@ -136,7 +136,7 @@ function InlineMilestoneCreator({ onSave }: InlineMilestoneCreatorProps) {
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder="Milestone name..."
-        className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none"
+        className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground/80 placeholder:text-muted-foreground/40 focus:outline-none"
       />
     </div>
   );
@@ -160,7 +160,7 @@ interface MilestoneRowProps {
 
 function MilestoneRow({
   milestone,
-  isLast,
+  isLast: _isLast,
   onToggle,
   onUpdate,
   onUpdateDeadline,
@@ -207,25 +207,20 @@ function MilestoneRow({
   };
 
   return (
-    <div className="group relative flex items-center gap-2.5 py-1 pl-2 pr-3">
-      {/* Timeline connector line */}
-      {!isLast && (
-        <div className="absolute left-[9.5px] top-[20px] h-[calc(100%)] w-px bg-border/60" />
-      )}
-
+    <div className="group flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-colors hover:bg-muted/40">
       {/* Checkpoint dot / toggle */}
       <button
         onClick={onToggle}
         disabled={!onToggle}
         className={cn(
-          "relative z-10 flex size-4 shrink-0 items-center justify-center rounded-full border transition-all",
+          "flex size-5 shrink-0 items-center justify-center rounded-full transition-all",
           milestone.completed
-            ? "border-green-500/50 bg-green-500/10 text-green-600"
-            : "border-border bg-background hover:border-muted-foreground/50 hover:bg-muted/60",
+            ? "bg-green-500/15 text-green-600"
+            : "bg-muted/60 text-muted-foreground/30 hover:bg-muted hover:text-muted-foreground/50",
           !onToggle && "cursor-default",
         )}
       >
-        {milestone.completed && <RiCheckLine className="size-2.5" />}
+        {milestone.completed && <RiCheckLine className="size-3" />}
       </button>
 
       {/* Label */}
@@ -270,10 +265,10 @@ function MilestoneRow({
           }
           role="end"
           placeholder="Date"
-          className="bg-transparent hover:bg-muted/60 text-muted-foreground/60 hover:text-muted-foreground py-0.5 px-1.5 text-[10px]"
+          className="bg-transparent hover:bg-muted/60 text-muted-foreground/40 hover:text-muted-foreground py-0.5 px-1.5 text-[10px]"
         />
       ) : milestone.deadline ? (
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
+        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/40">
           <RiCalendarLine className="size-2.5" />
           {formatDeadlineCompact(
             milestone.deadline,
@@ -286,9 +281,9 @@ function MilestoneRow({
       {onDelete && (
         <button
           onClick={onDelete}
-          className="flex size-4 shrink-0 items-center justify-center rounded-md text-muted-foreground/40 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/40 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
         >
-          <RiDeleteBinLine className="size-2.5" />
+          <RiDeleteBinLine className="size-3" />
         </button>
       )}
     </div>
@@ -345,12 +340,12 @@ export function GoalDetailMilestones({
   return (
     <div className={cn("flex flex-col", className)}>
       {/* Section header */}
-      <div className="mb-1 flex items-center gap-2 px-2">
-        <span className="text-[11px] font-medium text-muted-foreground/60">
+      <div className="mb-0.5 flex items-center gap-2 pl-4.5 pr-3">
+        <span className="text-[11px] font-medium text-muted-foreground/50">
           Milestones
         </span>
         {hasMilestones && (
-          <span className="text-[10px] text-muted-foreground/40">
+          <span className="text-[10px] text-muted-foreground/30">
             {sortedMilestones.filter((m) => m.completed).length}/
             {sortedMilestones.length}
           </span>

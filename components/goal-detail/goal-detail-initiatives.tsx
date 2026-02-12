@@ -108,12 +108,12 @@ function InlineInitiativeCreator({ onSave }: InlineInitiativeCreatorProps) {
     return (
       <button
         onClick={() => setIsEditing(true)}
-        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 text-left transition-all hover:bg-muted/60"
+        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 text-left transition-all hover:bg-muted/40"
       >
-        <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-transparent text-muted-foreground/40 transition-colors group-hover:border-muted-foreground/50 group-hover:bg-muted/60">
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted/30 text-muted-foreground/30 transition-colors group-hover:bg-muted/50 group-hover:text-muted-foreground/50">
           <RiAddLine className="size-3" />
         </div>
-        <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
+        <span className="text-xs text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/60">
           Add initiative
         </span>
       </button>
@@ -122,7 +122,7 @@ function InlineInitiativeCreator({ onSave }: InlineInitiativeCreatorProps) {
 
   return (
     <div className="flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3">
-      <div className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-muted/60 text-muted-foreground/50">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted/40 text-muted-foreground/40">
         <RiAddLine className="size-3" />
       </div>
       <input
@@ -133,7 +133,7 @@ function InlineInitiativeCreator({ onSave }: InlineInitiativeCreatorProps) {
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder="Initiative name..."
-        className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none"
+        className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground/80 placeholder:text-muted-foreground/40 focus:outline-none"
       />
     </div>
   );
@@ -184,12 +184,12 @@ function InlineTaskCreator({ initiativeId, onSave }: InlineTaskCreatorProps) {
     return (
       <button
         onClick={() => setIsEditing(true)}
-        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-[18px] pr-3 text-left transition-all hover:bg-muted/60"
+        className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-[18px] pr-3 text-left transition-all hover:bg-muted/40"
       >
-        <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground/40 transition-colors group-hover:bg-muted/60 group-hover:text-muted-foreground/60">
+        <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/30 text-muted-foreground/30 transition-colors group-hover:bg-muted/50 group-hover:text-muted-foreground/50">
           <RiAddLine className="size-3" />
         </div>
-        <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
+        <span className="text-xs text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/60">
           Add task...
         </span>
       </button>
@@ -198,7 +198,7 @@ function InlineTaskCreator({ initiativeId, onSave }: InlineTaskCreatorProps) {
 
   return (
     <div className="flex items-center gap-2.5 rounded-lg py-1.5 pl-[18px] pr-3">
-      <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/60 text-muted-foreground/50">
+      <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground/40">
         <RiAddLine className="size-3" />
       </div>
       <input
@@ -209,7 +209,7 @@ function InlineTaskCreator({ initiativeId, onSave }: InlineTaskCreatorProps) {
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder="Task name..."
-        className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none"
+        className="h-5 min-w-0 flex-1 bg-transparent text-xs text-foreground/80 placeholder:text-muted-foreground/40 focus:outline-none"
       />
     </div>
   );
@@ -324,18 +324,15 @@ function InitiativeSection({
     <div className="flex flex-col">
       {/* Initiative header */}
       <div
-        className={cn(
-          "group flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all",
-          !isGeneral && "bg-muted/30",
-        )}
+        className="group flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all"
       >
         {/* Expand/collapse chevron */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:text-muted-foreground"
+          className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/40 transition-colors hover:text-muted-foreground/60"
         >
           <RiArrowRightSLine
-            className={cn("size-4 transition-transform", isOpen && "rotate-90")}
+            className={cn("size-3.5 transition-transform", isOpen && "rotate-90")}
           />
         </button>
 
@@ -359,7 +356,7 @@ function InitiativeSection({
           <span
             onDoubleClick={handleDoubleClick}
             className={cn(
-              "min-w-0 truncate text-xs font-medium text-foreground/80",
+              "min-w-0 truncate text-xs font-medium text-foreground/70",
               onUpdateInitiative && !isGeneral && "cursor-text",
             )}
           >
@@ -369,7 +366,7 @@ function InitiativeSection({
 
         {/* Task count */}
         {totalCount > 0 && (
-          <span className="text-[10px] text-muted-foreground/40">
+          <span className="text-[10px] text-muted-foreground/30">
             {completedCount}/{totalCount}
           </span>
         )}
@@ -379,7 +376,10 @@ function InitiativeSection({
 
         {/* Date range pickers (not for General) */}
         {!isGeneral && onUpdateInitiative && (
-          <div className="flex items-center gap-0.5">
+          <div className={cn(
+            "flex items-center gap-0.5 transition-opacity",
+            !initiative.startDate && !initiative.endDate && "opacity-0 group-hover:opacity-100",
+          )}>
             <GranularDatePicker
               value={
                 initiative.startDate
@@ -389,9 +389,9 @@ function InitiativeSection({
               onChange={handleStartDateChange}
               role="start"
               placeholder="Start"
-              className="bg-transparent hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground py-0.5 px-1.5 text-[10px]"
+              className="bg-transparent hover:bg-muted/60 text-muted-foreground/40 hover:text-muted-foreground py-0.5 px-1.5 text-[10px]"
             />
-            <span className="text-[10px] text-muted-foreground/30">–</span>
+            <span className="text-[10px] text-muted-foreground/20">–</span>
             <GranularDatePicker
               value={
                 initiative.endDate
@@ -401,7 +401,7 @@ function InitiativeSection({
               onChange={handleEndDateChange}
               role="end"
               placeholder="End"
-              className="bg-transparent hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground py-0.5 px-1.5 text-[10px]"
+              className="bg-transparent hover:bg-muted/60 text-muted-foreground/40 hover:text-muted-foreground py-0.5 px-1.5 text-[10px]"
             />
           </div>
         )}
@@ -410,7 +410,7 @@ function InitiativeSection({
         {onDeleteInitiative && !isGeneral && (
           <button
             onClick={onDeleteInitiative}
-            className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/40 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+            className="flex size-5 shrink-0 items-center justify-center rounded-md text-muted-foreground/30 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
           >
             <RiDeleteBinLine className="size-3" />
           </button>
@@ -575,12 +575,12 @@ export function GoalDetailInitiatives({
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       {/* Section header */}
-      <div className="mb-1 flex items-center gap-2 px-2">
-        <span className="text-[11px] font-medium text-muted-foreground/60">
+      <div className="mb-0.5 flex items-center gap-2 pl-4.5 pr-3">
+        <span className="text-[11px] font-medium text-muted-foreground/50">
           Tasks
         </span>
         {tasks.length > 0 && (
-          <span className="text-[10px] text-muted-foreground/40">
+          <span className="text-[10px] text-muted-foreground/30">
             {tasks.filter((t) => t.completed).length}/{tasks.length}
           </span>
         )}
@@ -668,12 +668,12 @@ export function GoalDetailInitiatives({
           {onAddTask && (
             <button
               onClick={() => onAddTask("")}
-              className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-[18px] pr-3 text-left transition-all hover:bg-muted/60"
+              className="group flex w-full items-center gap-2.5 rounded-lg py-1.5 pl-[18px] pr-3 text-left transition-all hover:bg-muted/40"
             >
-              <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground/40 transition-colors group-hover:bg-muted/60 group-hover:text-muted-foreground/60">
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted/30 text-muted-foreground/30 transition-colors group-hover:bg-muted/50 group-hover:text-muted-foreground/50">
                 <RiAddLine className="size-3" />
               </div>
-              <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-muted-foreground/70">
+              <span className="text-xs text-muted-foreground/40 transition-colors group-hover:text-muted-foreground/60">
                 Add task...
               </span>
             </button>

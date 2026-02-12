@@ -362,7 +362,7 @@ export function TaskRow({
         ref={rowRef}
         className={cn(
           "group relative flex items-center gap-2.5 rounded-lg py-1.5 pl-4.5 pr-3 transition-all",
-          !isExpanded && "hover:bg-muted/60",
+          !isExpanded && "hover:bg-muted/40",
           isDragging && "opacity-50",
           onExpand && "cursor-pointer",
         )}
@@ -379,7 +379,7 @@ export function TaskRow({
             "flex size-5 shrink-0 items-center justify-center rounded-md transition-colors",
             task.completed
               ? "bg-muted text-muted-foreground"
-              : "bg-muted/60 text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground",
+              : "bg-muted/40 text-muted-foreground/30 hover:bg-muted/70 hover:text-muted-foreground/60",
           )}
         >
           {task.completed && <RiCheckLine className="size-3" />}
