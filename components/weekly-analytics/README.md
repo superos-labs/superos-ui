@@ -53,6 +53,19 @@
   - Uses goal/life-area color as primary visual encoding
   - If no scheduled hours exist, section renders nothing
 
+### Weekly Report
+- **`weekly-report.tsx`** — Weekly Report unlock card for the analytics sidebar
+  - Shows a "locked" progress checklist of criteria the user must complete to unlock Advanced Analytics
+  - Shows an "unlocked" teaser previewing richer analytics features that become available
+  - All content is currently static / dummy — no real logic wired
+  - Renders locked state with criteria checklist and per-criterion progress
+  - Renders unlocked state with analytics feature preview and CTA
+  - Provides a toggle prop to switch between states for design review
+  - Matches existing sidebar card conventions (rounded-xl, border, shadow-sm)
+  - Title bar mirrors WeeklyAnalytics pattern for visual consistency
+  - Criteria use the same ProgressBar primitive from weekly-analytics
+  - Unlocked state uses muted preview cards to hint at deeper features
+
 ### Example/Playground Components
 - **`weekly-analytics-example.tsx`** — Playground example for the WeeklyAnalytics component
   - Provides sample goal analytics data and minimal set of knobs to toggle high-level presentation states
@@ -76,6 +89,7 @@
 - **`index.ts`** — Public API for the Weekly Analytics component
   - Re-exports WeeklyAnalytics components and types
   - Re-exports PlanningBudget components and types
+  - Re-exports WeeklyReport component and types
   - Single entry point for analytics imports
 
 ## Key Features
@@ -90,6 +104,7 @@
 - **Over-Budget Detection:** Visual emphasis when scheduled time exceeds available budget
 - **Closeable Panel:** Title bar with icon and close button to dismiss analytics panel
 - **Visual Encoding:** Uses goal/life-area colors for visual consistency
+- **Unlock-Gated Report:** Criteria-based progress checklist that unlocks advanced analytics
 
 ## Design Principles
 
@@ -118,4 +133,4 @@
 - **Color System:** Uses goal and life area colors for visual encoding
 - **Time Utils:** Uses time formatting utilities for hour display
 
-**Total Files:** 6 (3 main component files, 2 example files, 1 public API)
+**Total Files:** 7 (4 main component files, 2 example files, 1 public API)

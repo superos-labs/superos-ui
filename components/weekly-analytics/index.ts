@@ -24,3 +24,7 @@ export type {
   PlanningBudgetGoal,
   PlanningBudgetEssential,
 } from "./planning-budget";
+
+// Weekly Report (unlock-gated advanced analytics)
+export { WeeklyReport } from "./weekly-report";
+export type { WeeklyReportProps } from "./weekly-report";

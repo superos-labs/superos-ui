@@ -46,11 +46,17 @@
  * ShellRightPanel - Right sidebar content for the desktop layout.
  *
  * Renders one of: IntegrationsSidebar, BlockSidebar, or Analytics
- * (WeeklyAnalytics or PlanningBudget depending on mode).
+ * (WeeklyAnalytics, PlanningBudget, or WeeklyReport depending on mode).
  */
 
+import * as React from "react";
+import { cn } from "@/lib/utils";
 import { formatWeekRange } from "@/components/calendar";
-import { WeeklyAnalytics, PlanningBudget } from "@/components/weekly-analytics";
+import {
+  WeeklyAnalytics,
+  PlanningBudget,
+  WeeklyReport,
+} from "@/components/weekly-analytics";
 import { BlockSidebar } from "@/components/block";
 import { IntegrationsSidebar } from "@/components/integrations";
 import { UpcomingDeadlinesCard } from "@/components/weekly-planning";
@@ -70,7 +76,14 @@ export interface ShellRightPanelProps {
 // Component
 // =============================================================================
 
+type AnalyticsView = "analytics" | "report";
+
 export function ShellRightPanel({ shellProps, wiring }: ShellRightPanelProps) {
+  // Toggle between regular analytics and the weekly report (for design review)
+  const [analyticsView, setAnalyticsView] = React.useState<AnalyticsView>("analytics");
+  // Toggle between locked/unlocked report state (for design review)
+  const [isReportUnlocked, setIsReportUnlocked] = React.useState(false);
+
   const {
     goals,
     events,
@@ -221,13 +234,68 @@ export function ShellRightPanel({ shellProps, wiring }: ShellRightPanelProps) {
     }
 
     return (
-      <WeeklyAnalytics
-        goals={analyticsGoals}
-        lifeAreas={lifeAreas}
-        weekLabel={formatWeekRange(weekDates)}
-        onClose={handleAnalyticsToggle}
-        className="h-full w-[380px] max-w-none overflow-y-auto"
-      />
+      <div className="flex h-full w-[380px] max-w-none flex-col overflow-y-auto">
+        {/* View toggle — Analytics ↔ Report */}
+        <div className="flex shrink-0 items-center gap-1 border-b border-border/40 bg-background px-3 py-2">
+          <div className="flex flex-1 rounded-md bg-muted p-0.5">
+            <button
+              onClick={() => setAnalyticsView("analytics")}
+              className={cn(
+                "flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors",
+                analyticsView === "analytics"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Analytics
+            </button>
+            <button
+              onClick={() => setAnalyticsView("report")}
+              className={cn(
+                "flex-1 rounded px-2 py-1 text-[11px] font-medium transition-colors",
+                analyticsView === "report"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Weekly Report
+            </button>
+          </div>
+        </div>
+
+        {analyticsView === "analytics" ? (
+          <WeeklyAnalytics
+            goals={analyticsGoals}
+            lifeAreas={lifeAreas}
+            weekLabel={formatWeekRange(weekDates)}
+            onClose={handleAnalyticsToggle}
+            className="flex-1 border-0 shadow-none rounded-none"
+          />
+        ) : (
+          <div className="flex flex-1 flex-col">
+            <WeeklyReport
+              isUnlocked={isReportUnlocked}
+              weekLabel={formatWeekRange(weekDates)}
+              onClose={handleAnalyticsToggle}
+              className="flex-1 border-0 shadow-none rounded-none"
+            />
+            {/* Design review: locked/unlocked toggle */}
+            <div className="shrink-0 border-t border-border/40 px-3 py-2">
+              <button
+                onClick={() => setIsReportUnlocked((prev) => !prev)}
+                className={cn(
+                  "w-full rounded-md px-3 py-1.5 text-[11px] font-medium transition-colors",
+                  "border border-dashed border-border/60 text-muted-foreground",
+                  "hover:bg-muted hover:text-foreground"
+                )}
+              >
+                Design preview: switch to{" "}
+                {isReportUnlocked ? "locked" : "unlocked"} state
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 
